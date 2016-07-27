@@ -1,0 +1,33 @@
+﻿{
+  "version": "0.1.0",
+  "title": "Darker",
+  "description": "Darker query processor ALPHA",
+  "language": "en-GB",
+  "authors": [ "Daniel Stockhammer" ],
+  "packOptions": {
+    "projectUrl": "https://github.com/dstockhammer/Darker",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/dstockhammer/Darker"
+    }
+  },
+
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1",
+    "Polly": "4.2.4"
+  },
+
+  "frameworks": {
+    "net45": {},
+    "netstandard1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "System.Reflection.TypeExtensions": "4.1.0"
+      },
+      "buildOptions": {
+        "define": [ "NETSTANDARD", "LIBLOG_PORTABLE" ]
+      }
+    }
+  }
+}
