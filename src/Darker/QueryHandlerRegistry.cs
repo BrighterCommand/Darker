@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Darker.Exceptions;
 
 namespace Darker
 {
@@ -14,7 +15,7 @@ namespace Darker
 
         public Type Get(Type requestType)
         {
-            return _registry[requestType];
+            return _registry.ContainsKey(requestType) ? _registry[requestType] : null;
         }
 
         public void Register<TRequest, TResponse, THandler>()
@@ -22,7 +23,12 @@ namespace Darker
             where TResponse : IQueryResponse
             where THandler : IQueryHandler<TRequest, TResponse>
         {
-            _registry.Add(typeof(TRequest), typeof(THandler));
+            var requestType = typeof(TRequest);
+
+            if (_registry.ContainsKey(requestType))
+                throw new ConfigurationException($"Registry already contains an entry for {requestType.Name}");
+
+            _registry.Add(requestType, typeof(THandler));
         }
     }
 }
