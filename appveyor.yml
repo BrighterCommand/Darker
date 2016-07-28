@@ -14,7 +14,7 @@ install:
       if ($env:APPVEYOR_REPO_TAG -eq $false) {
         $buildVersion = "$version-ci$($env:APPVEYOR_BUILD_NUMBER)"
 
-        $str.Replace($"""version"": ""$version"",", $"""version"": ""$buildVersion"",") | Set-Content $projectJsonPath
+        $str.Replace("""version"": ""$version"",", """version"": ""$buildVersion"",") | Set-Content $projectJsonPath
       }
 
       Update-AppveyorBuild -Version $buildVersion
