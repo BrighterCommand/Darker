@@ -1,0 +1,31 @@
+version: '{build}'
+configuration: Release
+
+install:
+  - ps: >-
+    $projectJsonPath = "src\Darker\project.json"
+    $str = Get-Content -Raw -Path $projectJsonPath
+    $json = ConvertFrom-Json $str
+    $version = $json.version
+    $buildVersion = "$version-ci$($env:APPVEYOR_BUILD_NUMBER)"
+
+    Write-Host "Setting AppVeyor build version to $buildVersion"
+    Update-AppveyorBuild -Version $buildVersion
+
+    Write-Host "Replacing version $version in project.json with $buildVersion"
+    $versionEl = """version"": ""$version"","
+    $buildVersionEl = """version"": ""$buildVersion"","
+    $str.Replace($versionEl, $buildVersionEl) | Set-Content $projectJsonPath
+
+build_script:
+  - cmd: dotnet restore
+  - cmd: dotnet build */*/project.json --configuration %CONFIGURATION%
+
+test_script:
+  - cmd: dotnet test test\Darker.Tests
+
+on_success:
+  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output artifacts
+
+on_finish:
+  - ps: Get-ChildItem .\artifacts\*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
