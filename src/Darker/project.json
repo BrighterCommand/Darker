@@ -6,6 +6,8 @@
   "authors": [ "Daniel Stockhammer" ],
   "packOptions": {
     "projectUrl": "https://github.com/dstockhammer/Darker",
+    "licenseUrl": "https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.txt",
+    "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",
       "url": "git://github.com/dstockhammer/Darker"
