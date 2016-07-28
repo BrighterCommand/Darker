@@ -9,23 +9,15 @@ install:
 
       $json = ConvertFrom-Json $str
 
-      $version = $json.version
+      $version = $buildVersion = $json.version
 
-      $buildVersion = "$version-ci$($env:APPVEYOR_BUILD_NUMBER)"
+      if ($env:APPVEYOR_REPO_TAG -eq $false) {
+        $buildVersion = "$version-ci$($env:APPVEYOR_BUILD_NUMBER)"
 
-
-      Write-Host "Setting AppVeyor build version to $buildVersion"
+        $str.Replace($"""version"": ""$version"",", $"""version"": ""$buildVersion"",") | Set-Content $projectJsonPath
+      }
 
       Update-AppveyorBuild -Version $buildVersion
-
-
-      Write-Host "Replacing version $version in project.json with $buildVersion"
-
-      $versionEl = """version"": ""$version"","
-
-      $buildVersionEl = """version"": ""$buildVersion"","
-
-      $str.Replace($versionEl, $buildVersionEl) | Set-Content $projectJsonPath
 
 build_script:
   - cmd: dotnet restore
