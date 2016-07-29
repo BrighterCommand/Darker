@@ -35,7 +35,7 @@ namespace Darker.Decorators
             // nothing to do
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next)
+        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
@@ -44,7 +44,11 @@ namespace Darker.Decorators
 
             var result = next(request);
 
-            _logger.InfoFormat("Query execution completed in {0}", sw.Elapsed);
+            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
+                ? " (with fallback)"
+                : string.Empty;
+
+            _logger.InfoFormat("Query execution completed in {0}" + withFallback, sw.Elapsed);
 
             return result;
         }

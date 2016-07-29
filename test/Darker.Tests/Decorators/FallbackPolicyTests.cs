@@ -86,7 +86,7 @@ namespace Darker.Tests.Decorators
             _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQueryRequest<TestQuery.Response>, TestQuery.Response>>(decoratorType)).Returns(decorator);
 
             // Act
-            var exception = Assert.Throws<FormatException>(() => _queryProcessor.Execute(new TestQuery()));
+            Assert.Throws<FormatException>(() => _queryProcessor.Execute(new TestQuery()));
 
             // Assert
             handler.Context.ShouldNotBeNull();

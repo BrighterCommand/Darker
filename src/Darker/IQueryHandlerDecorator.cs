@@ -10,6 +10,6 @@ namespace Darker
 
         void InitializeFromAttributeParams(object[] attributeParams);
 
-        TResponse Execute(TRequest request, Func<TRequest, TResponse> next);
+        TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback);
     }
 }

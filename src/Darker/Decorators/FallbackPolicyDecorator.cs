@@ -23,7 +23,7 @@ namespace Darker.Decorators
             _exceptionTypes = attributeParams.Cast<Type>();
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next)
+        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Darker.Decorators
                 {
                     _logger.InfoException("Fallback handler caught exception, executing fallback", ex);
                     Context.Bag.Add(CauseOfFallbackException, ex);
-                    throw new FallbackException(ex);
+                    return fallback(request);
                 }
 
                 _logger.InfoException("Fallback handler caught exception, but it's not configured to be handled", ex);

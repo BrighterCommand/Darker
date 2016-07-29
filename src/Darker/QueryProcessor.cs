@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Darker.Attributes;
-using Darker.Exceptions;
 using Darker.Logging;
 
 namespace Darker
@@ -96,22 +95,21 @@ namespace Darker
                 r => handler.Execute((dynamic)r)
             };
 
+            // fallback is doesn't have an incoming pipeline
+            Func<IQueryRequest<TResponse>, TResponse> fallback = r => handler.Fallback((dynamic)r);
+
             foreach (var decorator in decorators)
             {
                 _logger.DebugFormat("Adding decorator to pipeline: {0}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
-                pipeline.Add(r => decorator.Execute(r, next));
+                pipeline.Add(r => decorator.Execute(r, next, fallback));
             }
 
             try
             {
                 _logger.DebugFormat("Invoking pipeline...");
                 return pipeline.Last().Invoke(request);
-            }
-            catch (FallbackException)
-            {
-                return handler.Fallback((dynamic)request);
             }
             catch (Exception ex)
             {

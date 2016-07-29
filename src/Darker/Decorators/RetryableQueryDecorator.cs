@@ -22,7 +22,7 @@ namespace Darker.Decorators
                 throw new ConfigurationException($"Policy does not exist in policy registry: {_policyName}");
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next)
+        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
             _logger.InfoFormat("Executing query with policy: {0}", _policyName);
 

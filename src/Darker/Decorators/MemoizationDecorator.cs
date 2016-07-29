@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Darker.Logging;
 
+// ReSharper disable SuspiciousTypeConversion.Global
+// ReSharper disable HeuristicUnreachableCode
 namespace Darker.Decorators
 {
     /// <summary>
@@ -21,7 +23,7 @@ namespace Darker.Decorators
             // nothing to do
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next)
+        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
             if (request is IEquatable<TRequest> == false)
                 throw new InvalidOperationException("Memoization is only supported for query requests that implement IEquatable<TRequest>");
