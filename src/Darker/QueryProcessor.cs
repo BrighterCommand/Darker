@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Darker.Attributes;
+using Darker.Exceptions;
 using Darker.Logging;
 
 namespace Darker
@@ -51,10 +52,16 @@ namespace Darker
 
             _logger.DebugFormat("Looking up handler type in handler registry...");
             var handlerType = _handlerRegistry.Get(requestType);
+            if (handlerType == null)
+                throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
+
             _logger.DebugFormat("Found handler type for {0} in handler registry: {1}", requestType.Name, handlerType.Name);
 
             _logger.Debug("Resolving handler instance...");
             var handler = _handlerFactory.Create<dynamic>(handlerType);
+            if (handler == null)
+                throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
+
             _logger.Debug("Resolved handler instance");
 
             _logger.Debug("Creating request context...");
