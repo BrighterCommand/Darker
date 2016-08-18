@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Darker.Exceptions;
 
 namespace Darker
@@ -23,12 +25,24 @@ namespace Darker
             where TResponse : IQueryResponse
             where THandler : IQueryHandler<TRequest, TResponse>
         {
-            var requestType = typeof(TRequest);
+            Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
+        }
 
+        public void Register(Type requestType, Type responseType, Type handlerType)
+        {
             if (_registry.ContainsKey(requestType))
                 throw new ConfigurationException($"Registry already contains an entry for {requestType.Name}");
 
-            _registry.Add(requestType, typeof(THandler));
+            if (!HasMatchingResponseType(requestType, responseType))
+                throw new ConfigurationException($"Response type not valid for request {requestType.Name}");
+
+            _registry.Add(requestType, handlerType);
+        }
+
+        private bool HasMatchingResponseType(Type requestType, Type responseType)
+        {
+            return requestType.GetInterfaces()
+                              .Any(i => i.GenericTypeArguments.Any(t => t == responseType));
         }
     }
 }

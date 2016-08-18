@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Darker.Attributes;
 using Darker.Exceptions;
 using Darker.Logging;
+
+#if NETSTANDARD1_0
+using System.Reflection;
+#endif
 
 namespace Darker
 {
