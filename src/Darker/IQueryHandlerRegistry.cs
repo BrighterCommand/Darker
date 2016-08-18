@@ -10,5 +10,7 @@ namespace Darker
             where TRequest : IQueryRequest<TResponse>
             where TResponse : IQueryResponse
             where THandler : IQueryHandler<TRequest, TResponse>;
+
+        void Register(Type requestType, Type responseType, Type handlerType);
     }
 }
