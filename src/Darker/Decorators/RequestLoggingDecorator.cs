@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Darker.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -43,6 +44,24 @@ namespace Darker.Decorators
             _logger.InfoFormat("Executing query {0}: {1}", request.GetType().Name, json);
 
             var result = next(request);
+
+            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
+                ? " (with fallback)"
+                : string.Empty;
+
+            _logger.InfoFormat("Query execution completed in {0}" + withFallback, sw.Elapsed);
+
+            return result;
+        }
+
+        public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        {
+            var sw = Stopwatch.StartNew();
+            var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
+
+            _logger.InfoFormat("Executing async query {0}: {1}", request.GetType().Name, json);
+
+            var result = await next(request).ConfigureAwait(false);
 
             var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
                 ? " (with fallback)"

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Darker.Exceptions;
+
+#if NETSTANDARD1_0
+using System.Reflection;
+#endif
 
 namespace Darker
 {
@@ -28,6 +31,14 @@ namespace Darker
             Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
         }
 
+        public void RegisterAsync<TRequest, TResponse, THandler>()
+            where TRequest : IQueryRequest<TResponse>
+            where TResponse : IQueryResponse
+            where THandler : IAsyncQueryHandler<TRequest, TResponse>
+        {
+            Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
+        }
+
         public void Register(Type requestType, Type responseType, Type handlerType)
         {
             if (_registry.ContainsKey(requestType))
@@ -41,8 +52,7 @@ namespace Darker
 
         private bool HasMatchingResponseType(Type requestType, Type responseType)
         {
-            return requestType.GetInterfaces()
-                              .Any(i => i.GenericTypeArguments.Any(t => t == responseType));
+            return requestType.GetInterfaces().Any(i => i.GenericTypeArguments.Any(t => t == responseType));
         }
     }
 }

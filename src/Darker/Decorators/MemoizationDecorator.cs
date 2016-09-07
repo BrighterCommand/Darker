@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Darker.Logging;
 
 // ReSharper disable SuspiciousTypeConversion.Global
@@ -40,6 +41,11 @@ namespace Darker.Decorators
             _cache.Add(request, result);
 
             return result;
+        }
+
+        public Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        {
+            throw new NotImplementedException();
         }
     }
 }

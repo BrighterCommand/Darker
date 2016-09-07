@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Darker.Exceptions;
+using System.Threading.Tasks;
 using Darker.Logging;
 
 namespace Darker.Decorators
@@ -37,6 +37,27 @@ namespace Darker.Decorators
                     _logger.InfoException("Fallback handler caught exception, executing fallback", ex);
                     Context.Bag.Add(CauseOfFallbackException, ex);
                     return fallback(request);
+                }
+
+                _logger.InfoException("Fallback handler caught exception, but it's not configured to be handled", ex);
+                throw;
+            }
+        }
+
+        public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        {
+            try
+            {
+                _logger.Info("Executing async query with fallback handling");
+                return await next(request).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (!_exceptionTypes.Any() || _exceptionTypes.Contains(ex.GetType()))
+                {
+                    _logger.InfoException("Fallback handler caught exception, executing fallback", ex);
+                    Context.Bag.Add(CauseOfFallbackException, ex);
+                    return await fallback(request).ConfigureAwait(false);
                 }
 
                 _logger.InfoException("Fallback handler caught exception, but it's not configured to be handled", ex);

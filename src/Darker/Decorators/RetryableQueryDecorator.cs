@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Darker.Exceptions;
 using Darker.Logging;
 
@@ -27,6 +28,13 @@ namespace Darker.Decorators
             _logger.InfoFormat("Executing query with policy: {0}", _policyName);
 
             return Context.Policies.Get(_policyName).Execute(() => next(request));
+        }
+
+        public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        {
+            _logger.InfoFormat("Executing async query with policy: {0}", _policyName);
+
+            return await Context.Policies.Get(_policyName).ExecuteAsync(() => next(request)).ConfigureAwait(false);
         }
     }
 }
