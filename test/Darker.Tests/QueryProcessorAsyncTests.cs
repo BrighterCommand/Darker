@@ -30,7 +30,7 @@ namespace Darker.Tests
             var id = Guid.NewGuid();
             var handler = new TestQueryHandler();
 
-            _handlerRegistry.RegisterAsync<TestQueryA, TestQueryA.Response, TestQueryHandler>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, TestQueryHandler>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandler))).Returns(handler);
 
             // Act
@@ -49,14 +49,14 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IAsyncQueryHandler<TestQueryA, TestQueryA.Response>>();
-            var handlerB = new Mock<IAsyncQueryHandler<TestQueryB, TestQueryB.Response>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Response>>();
+            var handlerB = new Mock<IQueryHandler<TestQueryB, TestQueryB.Response>>();
 
-            _handlerRegistry.RegisterAsync<TestQueryA, TestQueryA.Response, IAsyncQueryHandler<TestQueryA, TestQueryA.Response>>();
-            _handlerRegistry.RegisterAsync<TestQueryB, TestQueryB.Response, IAsyncQueryHandler<TestQueryB, TestQueryB.Response>>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+            _handlerRegistry.Register<TestQueryB, TestQueryB.Response, IQueryHandler<TestQueryB, TestQueryB.Response>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IAsyncQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IAsyncQueryHandler<TestQueryB, TestQueryB.Response>))).Returns(handlerB.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, TestQueryB.Response>))).Returns(handlerB.Object);
 
             // Act
             await _queryProcessor.ExecuteAsync(new TestQueryA(id));
@@ -74,12 +74,12 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IAsyncQueryHandler<TestQueryA, TestQueryA.Response>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Response>>();
             handlerA.Setup(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id))).Throws<FormatException>();
 
-            _handlerRegistry.RegisterAsync<TestQueryA, TestQueryA.Response, IAsyncQueryHandler<TestQueryA, TestQueryA.Response>>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IAsyncQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
 
             // Act
             await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new TestQueryA(id)));
@@ -113,19 +113,12 @@ namespace Darker.Tests
             public class Response : IQueryResponse { }
         }
 
-        public class TestQueryHandler : IAsyncQueryHandler<TestQueryA, TestQueryA.Response>
+        public class TestQueryHandler : AsyncQueryHandler<TestQueryA, TestQueryA.Response>
         {
-            public IRequestContext Context { get; set; }
-
-            public Task<TestQueryA.Response> ExecuteAsync(TestQueryA request)
+            public override Task<TestQueryA.Response> ExecuteAsync(TestQueryA request)
             {
                 Context.Bag.Add("id", request.Id);
                 return Task.FromResult(new TestQueryA.Response(request.Id));
-            }
-
-            public Task<TestQueryA.Response> FallbackAsync(TestQueryA request)
-            {
-                throw new NotImplementedException();
             }
         }
     }

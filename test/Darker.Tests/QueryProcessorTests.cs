@@ -112,19 +112,12 @@ namespace Darker.Tests
             public class Response : IQueryResponse { }
         }
 
-        public class TestQueryHandler : IQueryHandler<TestQueryA, TestQueryA.Response>
+        public class TestQueryHandler : QueryHandler<TestQueryA, TestQueryA.Response>
         {
-            public IRequestContext Context { get; set; }
-
-            public TestQueryA.Response Execute(TestQueryA request)
+            public override TestQueryA.Response Execute(TestQueryA request)
             {
                 Context.Bag.Add("id", request.Id);
                 return new TestQueryA.Response(request.Id);
-            }
-
-            public TestQueryA.Response Fallback(TestQueryA request)
-            {
-                throw new NotImplementedException();
             }
         }
     }

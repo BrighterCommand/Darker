@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Darker.Attributes;
 using Darker.Exceptions;
@@ -51,54 +52,16 @@ namespace Darker
         public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
             where TResponse : IQueryResponse
         {
-            var requestType = request.GetType();
-            _logger.InfoFormat("Building and executing pipeline for {0}", requestType.Name);
+            // todo: c# 7 tuples to the rescue pls!
+            var deconstructMe = ResolveHandler(request);
+            var handlerType = deconstructMe.Item1;
+            var handler = deconstructMe.Item2;
 
-            _logger.DebugFormat("Looking up handler type in handler registry...");
-            var handlerType = _handlerRegistry.Get(requestType);
-            if (handlerType == null)
-                throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
-
-            _logger.DebugFormat("Found handler type for {0} in handler registry: {1}", requestType.Name, handlerType.Name);
-
-            _logger.Debug("Resolving handler instance...");
-            var handler = _handlerFactory.Create<dynamic>(handlerType);
-            if (handler == null)
-                throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
-
-            _logger.Debug("Resolved handler instance");
-
-            _logger.Debug("Creating request context...");
-            var requestContext = _requestContextFactory.Create();
-            requestContext.Policies = _policyRegistry;
-            requestContext.Bag = new Dictionary<string, object>();
-
+            var requestContext = CreateRequestContext();
             handler.Context = requestContext;
 
-            var attributes = handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.Execute))
-                .GetCustomAttributes(typeof(QueryHandlerAttribute), true)
-                .Cast<QueryHandlerAttribute>()
-                .OrderByDescending(attr => attr.Step)
-                .ToList();
+            var decorators = GetDecorators<TResponse>(handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.Execute)), requestContext);
 
-            _logger.DebugFormat("Found {0} query handler attributes", attributes.Count);
-
-            var decorators = new List<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>();
-            foreach (var attribute in attributes)
-            {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQueryRequest<TResponse>), typeof(TResponse));
-
-                _logger.DebugFormat("Resolving decorator instance of type {0}...", decoratorType.Name);
-                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>(decoratorType);
-                decorator.Context = requestContext;
-
-                _logger.DebugFormat("Initialising decorator from attribute params...");
-                decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
-
-                decorators.Add(decorator);
-            }
-
-            _logger.DebugFormat("Finished initialising {0} decorators", decorators.Count);
             _logger.Debug("Begin building pipeline...");
 
             var pipeline = new List<Func<IQueryRequest<TResponse>, TResponse>>
@@ -132,54 +95,16 @@ namespace Darker
         public async Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request)
             where TResponse : IQueryResponse
         {
-            var requestType = request.GetType();
-            _logger.InfoFormat("Building and executing pipeline for {0}", requestType.Name);
+            // todo: c# 7 tuples to the rescue pls!
+            var deconstructMe = ResolveHandler(request);
+            var handlerType = deconstructMe.Item1;
+            var handler = deconstructMe.Item2;
 
-            _logger.DebugFormat("Looking up handler type in handler registry...");
-            var handlerType = _handlerRegistry.Get(requestType);
-            if (handlerType == null)
-                throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
-
-            _logger.DebugFormat("Found handler type for {0} in handler registry: {1}", requestType.Name, handlerType.Name);
-
-            _logger.Debug("Resolving handler instance...");
-            var handler = _handlerFactory.Create<dynamic>(handlerType);
-            if (handler == null)
-                throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
-
-            _logger.Debug("Resolved handler instance");
-
-            _logger.Debug("Creating request context...");
-            var requestContext = _requestContextFactory.Create();
-            requestContext.Policies = _policyRegistry;
-            requestContext.Bag = new Dictionary<string, object>();
-
+            var requestContext = CreateRequestContext();
             handler.Context = requestContext;
 
-            var attributes = handlerType.GetMethod(nameof(IAsyncQueryHandler<IQueryRequest<TResponse>, TResponse>.ExecuteAsync))
-                .GetCustomAttributes(typeof(QueryHandlerAttribute), true)
-                .Cast<QueryHandlerAttribute>()
-                .OrderByDescending(attr => attr.Step)
-                .ToList();
+            var decorators = GetDecorators<TResponse>(handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.ExecuteAsync)), requestContext);
 
-            _logger.DebugFormat("Found {0} query handler attributes", attributes.Count);
-
-            var decorators = new List<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>();
-            foreach (var attribute in attributes)
-            {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQueryRequest<TResponse>), typeof(TResponse));
-
-                _logger.DebugFormat("Resolving decorator instance of type {0}...", decoratorType.Name);
-                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>(decoratorType);
-                decorator.Context = requestContext;
-
-                _logger.DebugFormat("Initialising decorator from attribute params...");
-                decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
-
-                decorators.Add(decorator);
-            }
-
-            _logger.DebugFormat("Finished initialising {0} decorators", decorators.Count);
             _logger.Debug("Begin building pipeline...");
 
             var pipeline = new List<Func<IQueryRequest<TResponse>, Task<TResponse>>>
@@ -208,6 +133,69 @@ namespace Darker
                 _logger.InfoException("An exception was thrown during pipeline execution", ex);
                 throw;
             }
+        }
+
+        private Tuple<Type, dynamic> ResolveHandler<TResponse>(IQueryRequest<TResponse> request)
+            where TResponse : IQueryResponse
+        {
+            var requestType = request.GetType();
+            _logger.InfoFormat("Building and executing pipeline for {0}", requestType.Name);
+
+            _logger.DebugFormat("Looking up handler type in handler registry...");
+            var handlerType = _handlerRegistry.Get(requestType);
+            if (handlerType == null)
+                throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
+
+            _logger.DebugFormat("Found handler type for {0} in handler registry: {1}", requestType.Name, handlerType.Name);
+
+            _logger.Debug("Resolving handler instance...");
+            var handler = _handlerFactory.Create<dynamic>(handlerType);
+            if (handler == null)
+                throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
+
+            _logger.Debug("Resolved handler instance");
+
+            return new Tuple<Type, dynamic>(handlerType, handler);
+        }
+
+        private IRequestContext CreateRequestContext()
+        {
+            _logger.Debug("Creating request context...");
+            var requestContext = _requestContextFactory.Create();
+            requestContext.Policies = _policyRegistry;
+            requestContext.Bag = new Dictionary<string, object>();
+
+            return requestContext;
+        }
+
+        public IList<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>> GetDecorators<TResponse>(MethodInfo executeMethod, IRequestContext requestContext)
+            where TResponse : IQueryResponse
+        {
+            var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttribute), true)
+                .Cast<QueryHandlerAttribute>()
+                .OrderByDescending(attr => attr.Step)
+                .ToList();
+
+            _logger.DebugFormat("Found {0} query handler attributes", attributes.Count);
+
+            var decorators = new List<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>();
+            foreach (var attribute in attributes)
+            {
+                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQueryRequest<TResponse>), typeof(TResponse));
+
+                _logger.DebugFormat("Resolving decorator instance of type {0}...", decoratorType.Name);
+                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>(decoratorType);
+                decorator.Context = requestContext;
+
+                _logger.DebugFormat("Initialising decorator from attribute params...");
+                decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
+
+                decorators.Add(decorator);
+            }
+
+            _logger.DebugFormat("Finished initialising {0} decorators", decorators.Count);
+
+            return decorators;
         }
     }
 }

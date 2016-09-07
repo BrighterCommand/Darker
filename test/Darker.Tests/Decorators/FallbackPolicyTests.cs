@@ -100,54 +100,48 @@ namespace Darker.Tests.Decorators
             public class Response : IQueryResponse { }
         }
 
-        public class TestQueryHandlerWithCatchAllFallback : IQueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Response>
         {
-            public IRequestContext Context { get; set; }
-
             [FallbackPolicy(1)]
-            public TestQuery.Response Execute(TestQuery request)
+            public override TestQuery.Response Execute(TestQuery request)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public TestQuery.Response Fallback(TestQuery request)
+            public override TestQuery.Response Fallback(TestQuery request)
             {
                 Context.Bag.Add("Check2", true);
                 return new TestQuery.Response();
             }
         }
 
-        public class TestQueryHandlerWithFormatExceptionFallback : IQueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
         {
-            public IRequestContext Context { get; set; }
-
             [FallbackPolicy(1, typeof(AccessViolationException), typeof(FormatException))]
-            public TestQuery.Response Execute(TestQuery request)
+            public override TestQuery.Response Execute(TestQuery request)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public TestQuery.Response Fallback(TestQuery request)
+            public override TestQuery.Response Fallback(TestQuery request)
             {
                 Context.Bag.Add("Check2", true);
                 return new TestQuery.Response();
             }
         }
 
-        public class TestQueryHandlerWithoutFormatExceptionFallback : IQueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
         {
-            public IRequestContext Context { get; set; }
-
             [FallbackPolicy(1, typeof(AccessViolationException))]
-            public TestQuery.Response Execute(TestQuery request)
+            public override TestQuery.Response Execute(TestQuery request)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public TestQuery.Response Fallback(TestQuery request)
+            public override TestQuery.Response Fallback(TestQuery request)
             {
                 Context.Bag.Add("Check2", true);
                 return new TestQuery.Response();

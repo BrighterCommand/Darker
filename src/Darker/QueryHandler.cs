@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Darker.Logging;
 
 namespace Darker
@@ -16,6 +18,16 @@ namespace Darker
         {
             _logger.InfoFormat("Executing the default fallback implementation, returning default(TResponse)");
             return default(TResponse);
+        }
+
+        public virtual Task<TResponse> ExecuteAsync(TRequest request)
+        {
+            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
+        }
+
+        public virtual Task<TResponse> FallbackAsync(TRequest request)
+        {
+            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
         }
     }
 }

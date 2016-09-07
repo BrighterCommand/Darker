@@ -31,14 +31,6 @@ namespace Darker
             Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
         }
 
-        public void RegisterAsync<TRequest, TResponse, THandler>()
-            where TRequest : IQueryRequest<TResponse>
-            where TResponse : IQueryResponse
-            where THandler : IAsyncQueryHandler<TRequest, TResponse>
-        {
-            Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
-        }
-
         public void Register(Type requestType, Type responseType, Type handlerType)
         {
             if (_registry.ContainsKey(requestType))
