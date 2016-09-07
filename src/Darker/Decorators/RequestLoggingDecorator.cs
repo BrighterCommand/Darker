@@ -41,7 +41,7 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
-            _logger.InfoFormat("Executing query {0}: {1}", request.GetType().Name, json);
+            _logger.InfoFormat("Executing query {name}: {query}", request.GetType().Name, json);
 
             var result = next(request);
 
@@ -49,7 +49,7 @@ namespace Darker.Decorators
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Query execution completed in {0}" + withFallback, sw.Elapsed);
+            _logger.InfoFormat("Query execution completed in {elapsed}" + withFallback, sw.Elapsed);
 
             return result;
         }
@@ -59,7 +59,7 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
-            _logger.InfoFormat("Executing async query {0}: {1}", request.GetType().Name, json);
+            _logger.InfoFormat("Executing async query {name}: {query}", request.GetType().Name, json);
 
             var result = await next(request).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ namespace Darker.Decorators
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Query execution completed in {0}" + withFallback, sw.Elapsed);
+            _logger.InfoFormat("Query execution completed in {elapsed}" + withFallback, sw.Elapsed);
 
             return result;
         }
