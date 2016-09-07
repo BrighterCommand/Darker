@@ -2,7 +2,11 @@
 
 namespace Darker
 {
-    public interface IQueryHandlerDecorator<TRequest, TResponse>
+    public interface IQueryHandlerDecorator
+    {
+    }
+
+    public interface IQueryHandlerDecorator<TRequest, TResponse> : IQueryHandlerDecorator
         where TRequest : IQueryRequest<TResponse>
         where TResponse : IQueryResponse
     {

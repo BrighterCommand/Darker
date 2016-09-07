@@ -1,6 +1,10 @@
 namespace Darker
 {
-    public interface IQueryHandler<in TRequest, out TResponse>
+    public interface IQueryHandler
+    {
+    }
+
+    public interface IQueryHandler<in TRequest, out TResponse> : IQueryHandler
         where TRequest : IQueryRequest<TResponse>
         where TResponse : IQueryResponse
     {

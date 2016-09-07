@@ -37,6 +37,19 @@ namespace Darker.Builder
             return this;
         }
 
+        public INeedPolicies Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
+        {
+            if (handlerRegistry == null)
+                throw new ArgumentNullException(nameof(handlerRegistry));
+            if (handlerFactory == null)
+                throw new ArgumentNullException(nameof(handlerFactory));
+            if (decoratorFactory == null)
+                throw new ArgumentNullException(nameof(decoratorFactory));
+
+            _handlerConfiguration = new HandlerConfiguration(handlerRegistry, new FactoryFuncWrapper(handlerFactory), new FactoryFuncWrapper(decoratorFactory));
+            return this;
+        }
+
         public INeedARequestContext Policies(IPolicyRegistry policyRegistry)
         {
             if (policyRegistry == null)
