@@ -31,13 +31,13 @@ namespace Darker.Decorators
 
             if (_cache.ContainsKey(request))
             {
-                _logger.InfoFormat("Returning cached result for {request}", request);
+                _logger.InfoFormat("Returning cached result for {Request}", request);
                 return _cache[request];
             }
 
             var result = next(request);
 
-            _logger.InfoFormat("Adding result for {request} to cache", request);
+            _logger.InfoFormat("Adding result for {Request} to cache", request);
             _cache.Add(request, result);
 
             return result;

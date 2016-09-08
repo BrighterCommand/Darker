@@ -25,14 +25,14 @@ namespace Darker.Decorators
 
         public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
-            _logger.InfoFormat("Executing query with policy: {policyName}", _policyName);
+            _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
 
             return Context.Policies.Get(_policyName).Execute(() => next(request));
         }
 
         public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
         {
-            _logger.InfoFormat("Executing async query with policy: {policyName}", _policyName);
+            _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
             return await Context.Policies.Get(_policyName).ExecuteAsync(() => next(request)).ConfigureAwait(false);
         }

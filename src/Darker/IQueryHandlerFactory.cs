@@ -4,6 +4,6 @@ namespace Darker
 {
     public interface IQueryHandlerFactory
     {
-        T Create<T>(Type handlerType); // where T : IQueryHandler; doesn't work because handlers are resolved as dynamic
+        T Create<T>(Type handlerType) where T : class; //IQueryHandler; doesn't work because handlers are resolved as dynamic
     }
 }

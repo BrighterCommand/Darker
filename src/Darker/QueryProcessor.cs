@@ -52,8 +52,11 @@ namespace Darker
         public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
             where TResponse : IQueryResponse
         {
+            var requestType = request.GetType();
+            _logger.InfoFormat("Building and executing pipeline for {RequestType}", requestType.Name);
+
             // todo: c# 7 tuples to the rescue pls!
-            var deconstructMe = ResolveHandler(request);
+            var deconstructMe = ResolveHandler(requestType);
             var handlerType = deconstructMe.Item1;
             var handler = deconstructMe.Item2;
 
@@ -74,7 +77,7 @@ namespace Darker
 
             foreach (var decorator in decorators)
             {
-                _logger.DebugFormat("Adding decorator to pipeline: {decorator}", decorator.GetType().Name);
+                _logger.DebugFormat("Adding decorator to pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
                 pipeline.Add(r => decorator.Execute(r, next, fallback));
@@ -95,8 +98,11 @@ namespace Darker
         public async Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request)
             where TResponse : IQueryResponse
         {
+            var requestType = request.GetType();
+            _logger.InfoFormat("Building and executing async pipeline for {RequestType}", requestType.Name);
+
             // todo: c# 7 tuples to the rescue pls!
-            var deconstructMe = ResolveHandler(request);
+            var deconstructMe = ResolveHandler(requestType);
             var handlerType = deconstructMe.Item1;
             var handler = deconstructMe.Item2;
 
@@ -105,7 +111,7 @@ namespace Darker
 
             var decorators = GetDecorators<TResponse>(handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.ExecuteAsync)), requestContext);
 
-            _logger.Debug("Begin building pipeline...");
+            _logger.Debug("Begin building async pipeline...");
 
             var pipeline = new List<Func<IQueryRequest<TResponse>, Task<TResponse>>>
             {
@@ -117,7 +123,7 @@ namespace Darker
 
             foreach (var decorator in decorators)
             {
-                _logger.DebugFormat("Adding decorator to pipeline: {decorator}", decorator.GetType().Name);
+                _logger.DebugFormat("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
                 pipeline.Add(r => decorator.ExecuteAsync(r, next, fallback));
@@ -125,28 +131,24 @@ namespace Darker
 
             try
             {
-                _logger.DebugFormat("Invoking pipeline...");
+                _logger.DebugFormat("Invoking async pipeline...");
                 return await pipeline.Last().Invoke(request).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.InfoException("An exception was thrown during pipeline execution", ex);
+                _logger.InfoException("An exception was thrown during async pipeline execution", ex);
                 throw;
             }
         }
 
-        private Tuple<Type, dynamic> ResolveHandler<TResponse>(IQueryRequest<TResponse> request)
-            where TResponse : IQueryResponse
+        private Tuple<Type, dynamic> ResolveHandler(Type requestType)
         {
-            var requestType = request.GetType();
-            _logger.InfoFormat("Building and executing pipeline for {requestType}", requestType.Name);
-
             _logger.DebugFormat("Looking up handler type in handler registry...");
             var handlerType = _handlerRegistry.Get(requestType);
             if (handlerType == null)
                 throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
 
-            _logger.DebugFormat("Found handler type for {requestType} in handler registry: {handlerType}", requestType.Name, handlerType.Name);
+            _logger.DebugFormat("Found handler type for {RequestType} in handler registry: {HandlerType}", requestType.Name, handlerType.Name);
 
             _logger.Debug("Resolving handler instance...");
             var handler = _handlerFactory.Create<dynamic>(handlerType);
@@ -176,17 +178,17 @@ namespace Darker
                 .OrderByDescending(attr => attr.Step)
                 .ToList();
 
-            _logger.DebugFormat("Found {attributesCount} query handler attributes", attributes.Count);
+            _logger.DebugFormat("Found {AttributesCount} query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>();
             foreach (var attribute in attributes)
             {
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQueryRequest<TResponse>), typeof(TResponse));
 
-                _logger.DebugFormat("Resolving decorator instance of type {decoratorType}...", decoratorType.Name);
+                _logger.DebugFormat("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>(decoratorType);
                 if (decorator == null)
-                    throw new MissingHandlerException($"Handler decorator could not be created for type: {decoratorType.FullName}");
+                    throw new MissingHandlerDecoratorException($"Handler decorator could not be created for type: {decoratorType.FullName}");
 
                 decorator.Context = requestContext;
 
@@ -196,7 +198,7 @@ namespace Darker
                 decorators.Add(decorator);
             }
 
-            _logger.DebugFormat("Finished initialising {decoratorsCount} decorators", decorators.Count);
+            _logger.DebugFormat("Finished initialising {DecoratorsCount} decorators", decorators.Count);
 
             return decorators;
         }

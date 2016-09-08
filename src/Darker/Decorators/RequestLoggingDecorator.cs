@@ -41,7 +41,8 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
-            _logger.InfoFormat("Executing query {name}: {query}", request.GetType().Name, json);
+            var queryName = request.GetType().Name;
+            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, json);
 
             var result = next(request);
 
@@ -49,7 +50,7 @@ namespace Darker.Decorators
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Query execution completed in {elapsed}" + withFallback, sw.Elapsed);
+            _logger.InfoFormat("Execution of query {QueryName} completed in {Elapsed}" + withFallback, queryName, sw.Elapsed);
 
             return result;
         }
@@ -59,7 +60,8 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
-            _logger.InfoFormat("Executing async query {name}: {query}", request.GetType().Name, json);
+            var queryName = request.GetType().Name;
+            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, json);
 
             var result = await next(request).ConfigureAwait(false);
 
@@ -67,7 +69,7 @@ namespace Darker.Decorators
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Query execution completed in {elapsed}" + withFallback, sw.Elapsed);
+            _logger.InfoFormat("Async execution of query {QueryName} completed in {Elapsed}" + withFallback, queryName, sw.Elapsed);
 
             return result;
         }
