@@ -31,3 +31,8 @@ on_success:
 
 on_finish:
   - ps: Get-ChildItem .\artifacts\*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  
+deploy:
+  provider: NuGet
+  api_key:
+    secure: NLJUBg6WGLN/c7rADEe50wdSE+DwN0XKzPGz5iFbYkVtT3bwSyYuKuZbcGb75xM2
