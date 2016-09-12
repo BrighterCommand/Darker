@@ -118,7 +118,7 @@ namespace Darker.Tests.Decorators
 
         public class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
         {
-            [FallbackPolicy(1, typeof(AccessViolationException), typeof(FormatException))]
+            [FallbackPolicy(1, typeof(ArithmeticException), typeof(FormatException))]
             public override TestQuery.Response Execute(TestQuery request)
             {
                 Context.Bag.Add("Check1", true);
@@ -134,7 +134,7 @@ namespace Darker.Tests.Decorators
 
         public class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
         {
-            [FallbackPolicy(1, typeof(AccessViolationException))]
+            [FallbackPolicy(1, typeof(ArithmeticException))]
             public override TestQuery.Response Execute(TestQuery request)
             {
                 Context.Bag.Add("Check1", true);
