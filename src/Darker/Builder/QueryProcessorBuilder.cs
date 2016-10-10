@@ -10,6 +10,10 @@ namespace Darker.Builder
         private IPolicyRegistry _policyRegistry;
         private IRequestContextFactory _requestContextFactory;
 
+        private QueryProcessorBuilder()
+        {
+        }
+
         public static INeedHandlers With()
         {
             return new QueryProcessorBuilder();
