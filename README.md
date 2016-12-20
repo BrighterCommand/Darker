@@ -26,6 +26,7 @@ Inject `IQueryProcessor` and call `Execute` or `ExecuteAsync` to dispatch your q
 ```csharp
 using Darker;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 using System.Threading.Tasks;
 
 public class FooController : ControllerBase
@@ -37,10 +38,10 @@ public class FooController : ControllerBase
         _queryProcessor = queryProcessor;
     }
 
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(CancellationToken cancellationToken = default(CancellationToken))
     {
         var query = new FooQuery();
-        var result = await _queryProcessor.ExecuteAsync(query);
+        var result = await _queryProcessor.ExecuteAsync(query, cancellationToken);
         return Ok(result);
     }
 }
@@ -75,13 +76,15 @@ For most control, you can also implement `IQueryHandler<,>` directly.
 
 ```csharp
 using Darker;
+using System.Threading;
+using System.Threading.Tasks;
 
 public sealed class FooQueryHandler : AsyncQueryHandler<FooQuery, FooQuery.Result>
 {
     [RequestLogging(1)]
-    public override async Task<FooQuery.Result> ExecuteAsync(FooQuery query)
+    public override async Task<FooQuery.Result> ExecuteAsync(FooQuery query, CancellationToken cancellationToken = default(CancellationToken))
     {
-        var answer = await CalculateAnswerForNumber(query.Number);
+        var answer = await CalculateAnswerForNumber(query.Number, cancellationToken).ConfigureAwait(false);
         return new FooQuery.Result(answer);
     }
 }
