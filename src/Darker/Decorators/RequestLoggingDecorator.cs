@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Logging;
 using Newtonsoft.Json;
@@ -55,7 +56,10 @@ namespace Darker.Decorators
             return result;
         }
 
-        public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        public async Task<TResponse> ExecuteAsync(TRequest request,
+            Func<TRequest, CancellationToken, Task<TResponse>> next,
+            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var sw = Stopwatch.StartNew();
             var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
@@ -63,7 +67,7 @@ namespace Darker.Decorators
             var queryName = request.GetType().Name;
             _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, json);
 
-            var result = await next(request).ConfigureAwait(false);
+            var result = await next(request, cancellationToken).ConfigureAwait(false);
 
             var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
                 ? " (with fallback)"

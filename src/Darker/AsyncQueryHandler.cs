@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Logging;
 
@@ -22,9 +23,9 @@ namespace Darker
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries sync.");
         }
 
-        public abstract Task<TResponse> ExecuteAsync(TRequest request);
+        public abstract Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken));
 
-        public virtual Task<TResponse> FallbackAsync(TRequest request)
+        public virtual Task<TResponse> FallbackAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.InfoFormat("Executing the default fallback implementation, returning default(TResponse)");
             return Task.FromResult(default(TResponse));

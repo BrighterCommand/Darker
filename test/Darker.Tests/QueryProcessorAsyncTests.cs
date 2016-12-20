@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Shouldly;
@@ -62,10 +63,10 @@ namespace Darker.Tests
             await _queryProcessor.ExecuteAsync(new TestQueryA(id));
 
             // Assert
-            handlerA.Verify(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id)), Times.Once);
-            handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>()), Times.Never);
-            handlerB.Verify(x => x.ExecuteAsync(It.IsAny<TestQueryB>()), Times.Never);
-            handlerB.Verify(x => x.FallbackAsync(It.IsAny<TestQueryB>()), Times.Never);
+            handlerA.Verify(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id), default(CancellationToken)), Times.Once);
+            handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
+            handlerB.Verify(x => x.ExecuteAsync(It.IsAny<TestQueryB>(), default(CancellationToken)), Times.Never);
+            handlerB.Verify(x => x.FallbackAsync(It.IsAny<TestQueryB>(), default(CancellationToken)), Times.Never);
         }
 
         [Fact]
@@ -75,7 +76,7 @@ namespace Darker.Tests
             var id = Guid.NewGuid();
 
             var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Response>>();
-            handlerA.Setup(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id))).Throws<FormatException>();
+            handlerA.Setup(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id), default(CancellationToken))).Throws<FormatException>();
 
             _handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
 
@@ -85,7 +86,7 @@ namespace Darker.Tests
             await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new TestQueryA(id)));
 
             // Assert
-            handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>()), Times.Never);
+            handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
         }
 
         public class TestQueryA : IQueryRequest<TestQueryA.Response>
@@ -115,7 +116,7 @@ namespace Darker.Tests
 
         public class TestQueryHandler : AsyncQueryHandler<TestQueryA, TestQueryA.Response>
         {
-            public override Task<TestQueryA.Response> ExecuteAsync(TestQueryA request)
+            public override Task<TestQueryA.Response> ExecuteAsync(TestQueryA request, CancellationToken cancellationToken = default(CancellationToken))
             {
                 Context.Bag.Add("id", request.Id);
                 return Task.FromResult(new TestQueryA.Response(request.Id));

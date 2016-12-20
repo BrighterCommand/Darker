@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Exceptions;
 using Darker.Logging;
@@ -30,11 +31,14 @@ namespace Darker.Decorators
             return Context.Policies.Get(_policyName).Execute(() => next(request));
         }
 
-        public async Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        public async Task<TResponse> ExecuteAsync(TRequest request,
+            Func<TRequest, CancellationToken, Task<TResponse>> next,
+            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
-            return await Context.Policies.Get(_policyName).ExecuteAsync(() => next(request)).ConfigureAwait(false);
+            return await Context.Policies.Get(_policyName).ExecuteAsync(() => next(request, cancellationToken)).ConfigureAwait(false);
         }
     }
 }

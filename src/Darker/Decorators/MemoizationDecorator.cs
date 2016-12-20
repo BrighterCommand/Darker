@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Logging;
 
@@ -43,7 +44,10 @@ namespace Darker.Decorators
             return result;
         }
 
-        public Task<TResponse> ExecuteAsync(TRequest request, Func<TRequest, Task<TResponse>> next, Func<TRequest, Task<TResponse>> fallback)
+        public Task<TResponse> ExecuteAsync(TRequest request,
+            Func<TRequest, CancellationToken, Task<TResponse>> next,
+            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }

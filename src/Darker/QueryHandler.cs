@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Logging;
 
@@ -20,12 +21,12 @@ namespace Darker
             return default(TResponse);
         }
 
-        public virtual Task<TResponse> ExecuteAsync(TRequest request)
+        public virtual Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
         }
 
-        public virtual Task<TResponse> FallbackAsync(TRequest request)
+        public virtual Task<TResponse> FallbackAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
         }

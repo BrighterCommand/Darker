@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Darker.Attributes;
 using Darker.Exceptions;
@@ -95,7 +96,7 @@ namespace Darker
             }
         }
 
-        public async Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request)
+        public async Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request, CancellationToken cancellationToken = default(CancellationToken))
             where TResponse : IQueryResponse
         {
             var requestType = request.GetType();
@@ -113,26 +114,26 @@ namespace Darker
 
             _logger.Debug("Begin building async pipeline...");
 
-            var pipeline = new List<Func<IQueryRequest<TResponse>, Task<TResponse>>>
+            var pipeline = new List<Func<IQueryRequest<TResponse>, CancellationToken, Task<TResponse>>>
             {
-                r => handler.ExecuteAsync((dynamic)r)
+                (r, ct) => handler.ExecuteAsync((dynamic)r, ct)
             };
 
             // fallback is doesn't have an incoming pipeline
-            Func<IQueryRequest<TResponse>, Task<TResponse>> fallback = r => handler.FallbackAsync((dynamic)r);
+            Func<IQueryRequest<TResponse>, CancellationToken, Task<TResponse>> fallback = (r, ct) => handler.FallbackAsync((dynamic)r, ct);
 
             foreach (var decorator in decorators)
             {
                 _logger.DebugFormat("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
-                pipeline.Add(r => decorator.ExecuteAsync(r, next, fallback));
+                pipeline.Add((r, ct) => decorator.ExecuteAsync(r, next, fallback, ct));
             }
 
             try
             {
                 _logger.DebugFormat("Invoking async pipeline...");
-                return await pipeline.Last().Invoke(request).ConfigureAwait(false);
+                return await pipeline.Last().Invoke(request, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
