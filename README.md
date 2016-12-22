@@ -17,11 +17,14 @@ IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Handlers(registry, Activator.CreateInstance, Activator.CreateInstance)
     .DefaultPolicies()
     .InMemoryRequestContextFactory()
+    .NewtonsoftJsonSerializer()
     .Build();
 ```
 
 Instead of `Activator.CreateInstance`, you can pass any factory `Func<Type, object>` to constuct handlers and decorator. Usually this calls your IoC container.
 Inject `IQueryProcessor` and call `Execute` or `ExecuteAsync` to dispatch your query to the registered query handler.
+
+This example uses the Newtonsoft Json integration provided by [Darker.Serialization.NewtonsoftJson](https://www.nuget.org/packages/Darker.Serialization.NewtonsoftJson/).
 
 ```csharp
 using Darker;
