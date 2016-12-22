@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Darker.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
 namespace Darker.Decorators
 {
@@ -15,20 +11,6 @@ namespace Darker.Decorators
         where TResponse : IQueryResponse
     {
         private static readonly ILog _logger = LogProvider.GetLogger(typeof(RequestLoggingDecorator<,>));
-
-        // todo: maybe make some of these settings configurable?
-        private static readonly JsonSerializerSettings _defaultSerialiserSettings = new JsonSerializerSettings
-        {
-            Formatting = Formatting.None,
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            NullValueHandling = NullValueHandling.Include,
-            DateFormatString = "O", // ISO 8601: 2009-06-15T13:45:30.0000000-07:00
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            Converters = new List<JsonConverter>
-            {
-                new StringEnumConverter()
-            }
-        };
 
         public IRequestContext Context { get; set; }
 
@@ -40,10 +22,9 @@ namespace Darker.Decorators
         public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
             var sw = Stopwatch.StartNew();
-            var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
             var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, json);
+            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, Context.Serializer.Serialize(request));
 
             var result = next(request);
 
@@ -62,10 +43,9 @@ namespace Darker.Decorators
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var sw = Stopwatch.StartNew();
-            var json = JsonConvert.SerializeObject(request, _defaultSerialiserSettings);
 
             var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, json);
+            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, Context.Serializer.Serialize(request));
 
             var result = await next(request, cancellationToken).ConfigureAwait(false);
 

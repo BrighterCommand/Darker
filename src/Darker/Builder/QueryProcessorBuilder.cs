@@ -1,14 +1,16 @@
 ﻿using System;
 using Darker.Exceptions;
+using Darker.Serialization;
 using Polly;
 
 namespace Darker.Builder
 {
-    public sealed class QueryProcessorBuilder : INeedHandlers, INeedPolicies, INeedARequestContext, IBuildTheQueryProcessor
+    public sealed class QueryProcessorBuilder : INeedHandlers, INeedPolicies, INeedARequestContext, INeedASerializer, IBuildTheQueryProcessor
     {
         private IHandlerConfiguration _handlerConfiguration;
         private IPolicyRegistry _policyRegistry;
         private IRequestContextFactory _requestContextFactory;
+        private ISerializer _serializer;
 
         private QueryProcessorBuilder()
         {
@@ -93,7 +95,7 @@ namespace Darker.Builder
             return this;
         }
 
-        public IBuildTheQueryProcessor RequestContextFactory(IRequestContextFactory requestContextFactory)
+        public INeedASerializer RequestContextFactory(IRequestContextFactory requestContextFactory)
         {
             if (requestContextFactory == null)
                 throw new ArgumentNullException(nameof(requestContextFactory));
@@ -102,15 +104,27 @@ namespace Darker.Builder
             return this;
         }
 
-        public IBuildTheQueryProcessor InMemoryRequestContextFactory()
+        public INeedASerializer InMemoryRequestContextFactory()
         {
             _requestContextFactory = new InMemoryRequestContextFactory();
             return this;
         }
 
+        public IBuildTheQueryProcessor NoSerializer()
+        {
+            _serializer = new NullSerializer();
+            return this;
+        }
+
+        public IBuildTheQueryProcessor Serializer(ISerializer serializer)
+        {
+            _serializer = serializer;
+            return this;
+        }
+
         public IQueryProcessor Build()
         {
-            return new QueryProcessor(_handlerConfiguration, _policyRegistry, _requestContextFactory);
+            return new QueryProcessor(_handlerConfiguration, _policyRegistry, _requestContextFactory, _serializer);
         }
     }
 }

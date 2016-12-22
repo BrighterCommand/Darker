@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyDescription("Darker Query Processor")]
+[assembly: AssemblyDescription("Newtonsoft.Json integration for Darker")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Darker")]
@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 #if !NETSTANDARD
 [assembly: ComVisible(false)]
-[assembly: Guid("1751f55c-5ae3-43df-adeb-8615b9102f70")]
+[assembly: Guid("9239808f-a38c-4881-9c55-05f685b663d0")]
 #endif
 
 [assembly: AssemblyVersion("1.0.0.0")]

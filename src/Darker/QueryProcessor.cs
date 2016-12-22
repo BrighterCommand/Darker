@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 using Darker.Attributes;
 using Darker.Exceptions;
 using Darker.Logging;
-
-#if NETSTANDARD1_0
-using System.Reflection;
-#endif
+using Darker.Serialization;
 
 namespace Darker
 {
@@ -26,8 +23,13 @@ namespace Darker
         private readonly IRequestContextFactory _requestContextFactory;
         private readonly IQueryHandlerFactory _handlerFactory;
         private readonly IQueryHandlerDecoratorFactory _decoratorFactory;
+        private readonly ISerializer _serializer;
 
-        public QueryProcessor(IHandlerConfiguration handlerConfiguration, IPolicyRegistry policyRegistry, IRequestContextFactory requestContextFactory)
+        public QueryProcessor(
+            IHandlerConfiguration handlerConfiguration,
+            IPolicyRegistry policyRegistry,
+            IRequestContextFactory requestContextFactory,
+            ISerializer serializer)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -35,6 +37,8 @@ namespace Darker
                 throw new ArgumentNullException(nameof(policyRegistry));
             if (requestContextFactory == null)
                 throw new ArgumentNullException(nameof(requestContextFactory));
+            if (serializer == null)
+                throw new ArgumentNullException(nameof(serializer));
 
             if (handlerConfiguration.HandlerRegistry == null)
                 throw new ArgumentException($"{nameof(handlerConfiguration.HandlerRegistry)} must not be null", nameof(handlerConfiguration));
@@ -48,6 +52,7 @@ namespace Darker
             _decoratorFactory = handlerConfiguration.DecoratorFactory;
             _policyRegistry = policyRegistry;
             _requestContextFactory = requestContextFactory;
+            _serializer = serializer;
         }
 
         public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
@@ -164,8 +169,10 @@ namespace Darker
         private IRequestContext CreateRequestContext()
         {
             _logger.Debug("Creating request context...");
+
             var requestContext = _requestContextFactory.Create();
             requestContext.Policies = _policyRegistry;
+            requestContext.Serializer = _serializer;
             requestContext.Bag = new Dictionary<string, object>();
 
             return requestContext;

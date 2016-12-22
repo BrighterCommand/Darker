@@ -2,7 +2,7 @@ namespace Darker.Builder
 {
     public interface INeedARequestContext
     {
-        IBuildTheQueryProcessor RequestContextFactory(IRequestContextFactory requestContextFactory);
-        IBuildTheQueryProcessor InMemoryRequestContextFactory();
+        INeedASerializer RequestContextFactory(IRequestContextFactory requestContextFactory);
+        INeedASerializer InMemoryRequestContextFactory();
     }
 }

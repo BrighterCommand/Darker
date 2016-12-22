@@ -1,4 +1,5 @@
 ﻿using System;
+using Darker.Serialization;
 using Moq;
 using Shouldly;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Darker.Tests
             _handlerRegistry = new QueryHandlerRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, _decoratorFactory.Object);
-            _queryProcessor = new QueryProcessor(handlerConfiguration, new PolicyRegistry(), new InMemoryRequestContextFactory());
+            _queryProcessor = new QueryProcessor(handlerConfiguration, new PolicyRegistry(), new InMemoryRequestContextFactory(), new NullSerializer());
         }
 
         [Fact]

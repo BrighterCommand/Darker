@@ -38,7 +38,9 @@ namespace Darker.Decorators
         {
             _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
-            return await Context.Policies.Get(_policyName).ExecuteAsync(() => next(request, cancellationToken)).ConfigureAwait(false);
+            return await Context.Policies.Get(_policyName)
+                .ExecuteAsync(ct => next(request, ct), cancellationToken, false)
+                .ConfigureAwait(false);
         }
     }
 }

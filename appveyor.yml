@@ -2,36 +2,25 @@ version: '{build}'
 configuration: Release
 
 install:
-  - ps: >-
-      $projectJsonPath = "src\Darker\project.json"
-
-      $str = Get-Content -Raw -Path $projectJsonPath
-
-      $json = ConvertFrom-Json $str
-
-      $version = $buildVersion = $json.version
-
-      if ($env:APPVEYOR_REPO_TAG -eq $false) {
-        $buildVersion = "$version-ci$($env:APPVEYOR_BUILD_NUMBER)"
-
-        $str.Replace("""version"": ""$version"",", """version"": ""$buildVersion"",") | Set-Content $projectJsonPath
-      }
-
-      Update-AppveyorBuild -Version $buildVersion
+  - ps: Invoke-WebRequest -Uri "https://gist.githubusercontent.com/dstockhammer/e5b8858c9318db7970532cc35f520294/raw/Set-ProjectVersion.psm1" -OutFile "Set-ProjectVersion.psm1"
+  - ps: Import-Module .\Set-ProjectVersion.psm1
+  - ps: Set-ProjectVersion -Path "src\Darker\project.json" -SetAppveyorVersion
+  - ps: Set-ProjectVersion -Path "src\Darker.Serialization.NewtonsoftJson\project.json"
 
 build_script:
   - cmd: dotnet restore
   - cmd: dotnet build */*/project.json --configuration %CONFIGURATION%
 
+after_build:
+  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output artifacts
+  - cmd: dotnet pack src\Darker.Serialization.NewtonsoftJson --configuration %CONFIGURATION% --output artifacts
+
 test_script:
   - cmd: dotnet test test\Darker.Tests
 
-on_success:
-  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output artifacts
+artifacts:
+  - path: artifacts\*.nupkg
 
-on_finish:
-  - ps: Get-ChildItem .\artifacts\*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
-  
 deploy:
   provider: NuGet
   api_key:
