@@ -11,6 +11,8 @@ namespace Darker
 
         public void Add(string policyName, Policy policy)
         {
+            if (policyName == null)
+                throw new ArgumentNullException(nameof(policyName));
             if (policy == null)
                 throw new ArgumentNullException(nameof(policy));
 
@@ -25,19 +27,10 @@ namespace Darker
             throw new ArgumentException($"There is no policy for {policyName}", nameof(policyName));
         }
 
-        public bool Has(string policyName)
-        {
-            return _policies.ContainsKey(policyName);
-        }
+        public bool Has(string policyName) => _policies.ContainsKey(policyName);
 
-        public IEnumerator<KeyValuePair<string, Policy>> GetEnumerator()
-        {
-            return _policies.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<string, Policy>> GetEnumerator() => _policies.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -33,12 +33,6 @@ namespace Darker
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
-            if (policyRegistry == null)
-                throw new ArgumentNullException(nameof(policyRegistry));
-            if (requestContextFactory == null)
-                throw new ArgumentNullException(nameof(requestContextFactory));
-            if (serializer == null)
-                throw new ArgumentNullException(nameof(serializer));
 
             if (handlerConfiguration.HandlerRegistry == null)
                 throw new ArgumentException($"{nameof(handlerConfiguration.HandlerRegistry)} must not be null", nameof(handlerConfiguration));
@@ -50,9 +44,10 @@ namespace Darker
             _handlerRegistry = handlerConfiguration.HandlerRegistry;
             _handlerFactory = handlerConfiguration.HandlerFactory;
             _decoratorFactory = handlerConfiguration.DecoratorFactory;
-            _policyRegistry = policyRegistry;
-            _requestContextFactory = requestContextFactory;
-            _serializer = serializer;
+
+            _policyRegistry = policyRegistry ?? throw new ArgumentNullException(nameof(policyRegistry));
+            _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         }
 
         public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
@@ -61,10 +56,7 @@ namespace Darker
             var requestType = request.GetType();
             _logger.InfoFormat("Building and executing pipeline for {RequestType}", requestType.Name);
 
-            // todo: c# 7 tuples to the rescue pls!
-            var deconstructMe = ResolveHandler(requestType);
-            var handlerType = deconstructMe.Item1;
-            var handler = deconstructMe.Item2;
+            (var handlerType, var handler) = ResolveHandler(requestType);
 
             var requestContext = CreateRequestContext();
             handler.Context = requestContext;
@@ -107,10 +99,7 @@ namespace Darker
             var requestType = request.GetType();
             _logger.InfoFormat("Building and executing async pipeline for {RequestType}", requestType.Name);
 
-            // todo: c# 7 tuples to the rescue pls!
-            var deconstructMe = ResolveHandler(requestType);
-            var handlerType = deconstructMe.Item1;
-            var handler = deconstructMe.Item2;
+            (var handlerType, var handler) = ResolveHandler(requestType);
 
             var requestContext = CreateRequestContext();
             handler.Context = requestContext;
@@ -147,7 +136,7 @@ namespace Darker
             }
         }
 
-        private Tuple<Type, dynamic> ResolveHandler(Type requestType)
+        private (Type handlerType, dynamic handler) ResolveHandler(Type requestType)
         {
             _logger.DebugFormat("Looking up handler type in handler registry...");
             var handlerType = _handlerRegistry.Get(requestType);
@@ -163,7 +152,7 @@ namespace Darker
 
             _logger.Debug("Resolved handler instance");
 
-            return new Tuple<Type, dynamic>(handlerType, handler);
+            return (handlerType, handler);
         }
 
         private IRequestContext CreateRequestContext()

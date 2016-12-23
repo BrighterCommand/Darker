@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>Darker Query Processor</Description>
     <AssemblyTitle>Darker</AssemblyTitle>
@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Polly" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />

@@ -10,16 +10,9 @@ namespace Darker
 
         public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, IQueryHandlerFactory handlerFactory, IQueryHandlerDecoratorFactory decoratorFactory)
         {
-            if (handlerRegistry == null)
-                throw new ArgumentNullException(nameof(handlerRegistry));
-            if (handlerFactory == null)
-                throw new ArgumentNullException(nameof(handlerFactory));
-            if (decoratorFactory == null)
-                throw new ArgumentNullException(nameof(decoratorFactory));
-
-            HandlerRegistry = handlerRegistry;
-            HandlerFactory = handlerFactory;
-            DecoratorFactory = decoratorFactory;
+            HandlerRegistry = handlerRegistry ?? throw new ArgumentNullException(nameof(handlerRegistry));
+            HandlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
+            DecoratorFactory = decoratorFactory ?? throw new ArgumentNullException(nameof(decoratorFactory));
         }
     }
 }

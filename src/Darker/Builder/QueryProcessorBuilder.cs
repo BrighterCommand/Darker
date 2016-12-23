@@ -23,10 +23,7 @@ namespace Darker.Builder
 
         public INeedPolicies Handlers(IHandlerConfiguration handlerConfiguration)
         {
-            if (handlerConfiguration == null)
-                throw new ArgumentNullException(nameof(handlerConfiguration));
-
-            _handlerConfiguration = handlerConfiguration;
+            _handlerConfiguration = handlerConfiguration ?? throw new ArgumentNullException(nameof(handlerConfiguration));
             return this;
         }
 
@@ -97,10 +94,7 @@ namespace Darker.Builder
 
         public INeedASerializer RequestContextFactory(IRequestContextFactory requestContextFactory)
         {
-            if (requestContextFactory == null)
-                throw new ArgumentNullException(nameof(requestContextFactory));
-
-            _requestContextFactory = requestContextFactory;
+            _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
             return this;
         }
 

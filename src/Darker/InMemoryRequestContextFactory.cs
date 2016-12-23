@@ -2,9 +2,6 @@
 {
     public class InMemoryRequestContextFactory : IRequestContextFactory
     {
-        public IRequestContext Create()
-        {
-            return new RequestContext();
-        }
+        public IRequestContext Create() => new RequestContext();
     }
 }
