@@ -13,23 +13,20 @@ namespace Darker
 {
     public sealed class QueryProcessor : IQueryProcessor
     {
-        public const string RetryPolicyName = "Darker.RetryPolicy";
-        public const string CircuitBreakerPolicyName = "Darker.CircuitBreakerPolicy";
-
         private static readonly ILog _logger = LogProvider.For<QueryProcessor>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
-        private readonly IPolicyRegistry _policyRegistry;
         private readonly IRequestContextFactory _requestContextFactory;
         private readonly IQueryHandlerFactory _handlerFactory;
         private readonly IQueryHandlerDecoratorFactory _decoratorFactory;
         private readonly ISerializer _serializer;
+        private readonly IReadOnlyDictionary<string, object> _contextBagData;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
-            IPolicyRegistry policyRegistry,
             IRequestContextFactory requestContextFactory,
-            ISerializer serializer)
+            ISerializer serializer,
+            IReadOnlyDictionary<string, object> contextBagData = null)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -45,9 +42,9 @@ namespace Darker
             _handlerFactory = handlerConfiguration.HandlerFactory;
             _decoratorFactory = handlerConfiguration.DecoratorFactory;
 
-            _policyRegistry = policyRegistry ?? throw new ArgumentNullException(nameof(policyRegistry));
             _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _contextBagData = contextBagData ?? new Dictionary<string, object>();
         }
 
         public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
@@ -70,7 +67,7 @@ namespace Darker
                 r => handler.Execute((dynamic)r)
             };
 
-            // fallback is doesn't have an incoming pipeline
+            // fallback doesn't have an incoming pipeline
             Func<IQueryRequest<TResponse>, TResponse> fallback = r => handler.Fallback((dynamic)r);
 
             foreach (var decorator in decorators)
@@ -113,7 +110,7 @@ namespace Darker
                 (r, ct) => handler.ExecuteAsync((dynamic)r, ct)
             };
 
-            // fallback is doesn't have an incoming pipeline
+            // fallback doesn't have an incoming pipeline
             Func<IQueryRequest<TResponse>, CancellationToken, Task<TResponse>> fallback = (r, ct) => handler.FallbackAsync((dynamic)r, ct);
 
             foreach (var decorator in decorators)
@@ -160,9 +157,8 @@ namespace Darker
             _logger.Debug("Creating request context...");
 
             var requestContext = _requestContextFactory.Create();
-            requestContext.Policies = _policyRegistry;
             requestContext.Serializer = _serializer;
-            requestContext.Bag = new Dictionary<string, object>();
+            requestContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
 
             return requestContext;
         }

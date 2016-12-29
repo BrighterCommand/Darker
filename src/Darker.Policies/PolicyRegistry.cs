@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Polly;
 
-namespace Darker
+namespace Darker.Policies
 {
     public sealed class PolicyRegistry : IPolicyRegistry, IEnumerable<KeyValuePair<string, Policy>>
     {

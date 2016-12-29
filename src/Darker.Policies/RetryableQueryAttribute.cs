@@ -1,14 +1,14 @@
 using System;
-using Darker.Decorators;
+using Darker.Attributes;
 
-namespace Darker.Attributes
+namespace Darker.Policies
 {
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class RetryableQueryAttribute : QueryHandlerAttribute
     {
         private readonly string _policyName;
 
-        public RetryableQueryAttribute(int step, string policyName = QueryProcessor.RetryPolicyName)
+        public RetryableQueryAttribute(int step, string policyName = Constants.RetryPolicyName)
             : base(step)
         {
             _policyName = policyName;

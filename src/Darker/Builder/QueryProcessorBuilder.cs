@@ -1,19 +1,19 @@
 ﻿using System;
-using Darker.Exceptions;
 using Darker.Serialization;
-using Polly;
+using System.Collections.Generic;
 
 namespace Darker.Builder
 {
-    public sealed class QueryProcessorBuilder : INeedHandlers, INeedPolicies, INeedARequestContext, INeedASerializer, IBuildTheQueryProcessor
+    public sealed class QueryProcessorBuilder : INeedHandlers, INeedARequestContext, INeedASerializer, IBuildTheQueryProcessor
     {
         private IHandlerConfiguration _handlerConfiguration;
-        private IPolicyRegistry _policyRegistry;
         private IRequestContextFactory _requestContextFactory;
+        private Dictionary<string, object> _contextBagData;
         private ISerializer _serializer;
 
         private QueryProcessorBuilder()
         {
+            _contextBagData = new Dictionary<string, object>();
         }
 
         public static INeedHandlers With()
@@ -21,13 +21,13 @@ namespace Darker.Builder
             return new QueryProcessorBuilder();
         }
 
-        public INeedPolicies Handlers(IHandlerConfiguration handlerConfiguration)
+        public INeedARequestContext Handlers(IHandlerConfiguration handlerConfiguration)
         {
             _handlerConfiguration = handlerConfiguration ?? throw new ArgumentNullException(nameof(handlerConfiguration));
             return this;
         }
 
-        public INeedPolicies Handlers(IQueryHandlerRegistry handlerRegistry, IQueryHandlerFactory handlerFactory, IQueryHandlerDecoratorFactory decoratorFactory)
+        public INeedARequestContext Handlers(IQueryHandlerRegistry handlerRegistry, IQueryHandlerFactory handlerFactory, IQueryHandlerDecoratorFactory decoratorFactory)
         {
             if (handlerRegistry == null)
                 throw new ArgumentNullException(nameof(handlerRegistry));
@@ -40,7 +40,7 @@ namespace Darker.Builder
             return this;
         }
 
-        public INeedPolicies Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
+        public INeedARequestContext Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
         {
             if (handlerRegistry == null)
                 throw new ArgumentNullException(nameof(handlerRegistry));
@@ -50,45 +50,6 @@ namespace Darker.Builder
                 throw new ArgumentNullException(nameof(decoratorFactory));
 
             _handlerConfiguration = new HandlerConfiguration(handlerRegistry, new FactoryFuncWrapper(handlerFactory), new FactoryFuncWrapper(decoratorFactory));
-            return this;
-        }
-
-        public INeedARequestContext Policies(IPolicyRegistry policyRegistry)
-        {
-            if (policyRegistry == null)
-                throw new ArgumentNullException(nameof(policyRegistry));
-
-            if (!policyRegistry.Has(QueryProcessor.RetryPolicyName))
-                throw new ConfigurationException($"The policy registry is missing the {QueryProcessor.RetryPolicyName} policy which is required");
-
-            if (!policyRegistry.Has(QueryProcessor.CircuitBreakerPolicyName))
-                throw new ConfigurationException($"The policy registry is missing the {QueryProcessor.CircuitBreakerPolicyName} policy which is required");
-
-            _policyRegistry = policyRegistry;
-            return this;
-        }
-
-        public INeedARequestContext DefaultPolicies()
-        {
-            var defaultRetryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetry(new[]
-                {
-                    TimeSpan.FromMilliseconds(50),
-                    TimeSpan.FromMilliseconds(100),
-                    TimeSpan.FromMilliseconds(150)
-                });
-
-            var circuitBreakerPolicy = Policy
-                .Handle<Exception>()
-                .CircuitBreaker(1, TimeSpan.FromMilliseconds(500));
-
-            _policyRegistry = new PolicyRegistry
-            {
-                { QueryProcessor.RetryPolicyName, defaultRetryPolicy },
-                { QueryProcessor.CircuitBreakerPolicyName, circuitBreakerPolicy }
-            };
-
             return this;
         }
 
@@ -116,9 +77,16 @@ namespace Darker.Builder
             return this;
         }
 
+        public IBuildTheQueryProcessor ContextBagItem(string key, object item)
+        {
+            // todo dupe check
+            _contextBagData.Add(key, item);
+            return this;
+        }
+
         public IQueryProcessor Build()
         {
-            return new QueryProcessor(_handlerConfiguration, _policyRegistry, _requestContextFactory, _serializer);
+            return new QueryProcessor(_handlerConfiguration, _requestContextFactory, _serializer, _contextBagData);
         }
     }
 }

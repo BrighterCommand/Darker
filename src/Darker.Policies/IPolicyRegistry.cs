@@ -1,6 +1,6 @@
 ﻿using Polly;
 
-namespace Darker
+namespace Darker.Policies
 {
     public interface IPolicyRegistry
     {
