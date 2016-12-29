@@ -1,7 +1,7 @@
 using System;
-using Darker.Decorators;
+using Darker.Attributes;
 
-namespace Darker.Attributes
+namespace Darker.RequestLogging
 {
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class RequestLoggingAttribute : QueryHandlerAttribute

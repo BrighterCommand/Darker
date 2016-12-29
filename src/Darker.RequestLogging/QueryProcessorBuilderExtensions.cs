@@ -2,13 +2,18 @@
 using Darker.Builder;
 using Newtonsoft.Json;
 
-namespace Darker.Serialization.NewtonsoftJson
+namespace Darker.RequestLogging
 {
+    public static class Constants
+    {
+        public const string ContextBagKey = "Darker.JsonSerializer";
+    }
+
     public static class QueryProcessorBuilderExtensions
     {
-        public static IBuildTheQueryProcessor NewtonsoftJsonSerializer(this INeedASerializer serializerBuilder, Action<JsonSerializerSettings> settings = null)
+        public static IBuildTheQueryProcessor JsonRequestLogging(this IBuildTheQueryProcessor lastStageBuilder, Action<JsonSerializerSettings> settings = null)
         {
-            var builder = serializerBuilder as QueryProcessorBuilder;
+            var builder = lastStageBuilder as QueryProcessorBuilder;
             if (builder == null)
                 throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
@@ -20,7 +25,7 @@ namespace Darker.Serialization.NewtonsoftJson
                 settings(serializerSettings);
             }
 
-            return builder.Serializer(new NewtonsftJsonSerializer(serializerSettings));
+            return builder.ContextBagItem(Constants.ContextBagKey, new NewtonsftJsonSerializer(serializerSettings));
         }
     }
 }

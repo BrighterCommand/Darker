@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Darker.Exceptions;
+using Darker.Policies.Logging;
 
 namespace Darker.Policies
 {
@@ -9,7 +10,7 @@ namespace Darker.Policies
         where TRequest : IQueryRequest<TResponse>
         where TResponse : IQueryResponse
     {
-        //private static readonly ILog _logger = LogProvider.GetLogger(typeof(RetryableQueryDecorator<,>));
+        private static readonly ILog _logger = LogProvider.GetLogger(typeof(RetryableQueryDecorator<,>));
 
         private string _policyName;
 
@@ -25,7 +26,7 @@ namespace Darker.Policies
 
         public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
         {
-            //_logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
+            _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
 
             return GetPolicyRegistry().Get(_policyName).Execute(() => next(request));
         }
@@ -35,7 +36,7 @@ namespace Darker.Policies
             Func<TRequest, CancellationToken, Task<TResponse>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            //_logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
+            _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
             return await GetPolicyRegistry().Get(_policyName)
                 .ExecuteAsync(ct => next(request, ct), cancellationToken, false)
@@ -45,7 +46,7 @@ namespace Darker.Policies
         private IPolicyRegistry GetPolicyRegistry()
         {
             if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
-                throw new ConfigurationException($"Policy does not exist in policy registry: {_policyName}");
+                throw new ConfigurationException($"Policy registry does not exist in context bag with key {Constants.ContextBagKey}.");
 
             var policyRegistry = Context.Bag[Constants.ContextBagKey] as IPolicyRegistry;
             if (policyRegistry == null)

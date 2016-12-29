@@ -1,15 +1,13 @@
 ﻿using System;
-using Darker.Serialization;
 using System.Collections.Generic;
 
 namespace Darker.Builder
 {
-    public sealed class QueryProcessorBuilder : INeedHandlers, INeedARequestContext, INeedASerializer, IBuildTheQueryProcessor
+    public sealed class QueryProcessorBuilder : INeedHandlers, INeedARequestContext, IBuildTheQueryProcessor
     {
         private IHandlerConfiguration _handlerConfiguration;
         private IRequestContextFactory _requestContextFactory;
         private Dictionary<string, object> _contextBagData;
-        private ISerializer _serializer;
 
         private QueryProcessorBuilder()
         {
@@ -53,27 +51,15 @@ namespace Darker.Builder
             return this;
         }
 
-        public INeedASerializer RequestContextFactory(IRequestContextFactory requestContextFactory)
+        public IBuildTheQueryProcessor RequestContextFactory(IRequestContextFactory requestContextFactory)
         {
             _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
             return this;
         }
 
-        public INeedASerializer InMemoryRequestContextFactory()
+        public IBuildTheQueryProcessor InMemoryRequestContextFactory()
         {
             _requestContextFactory = new InMemoryRequestContextFactory();
-            return this;
-        }
-
-        public IBuildTheQueryProcessor NoSerializer()
-        {
-            _serializer = new NullSerializer();
-            return this;
-        }
-
-        public IBuildTheQueryProcessor Serializer(ISerializer serializer)
-        {
-            _serializer = serializer;
             return this;
         }
 
@@ -86,7 +72,7 @@ namespace Darker.Builder
 
         public IQueryProcessor Build()
         {
-            return new QueryProcessor(_handlerConfiguration, _requestContextFactory, _serializer, _contextBagData);
+            return new QueryProcessor(_handlerConfiguration, _requestContextFactory, _contextBagData);
         }
     }
 }

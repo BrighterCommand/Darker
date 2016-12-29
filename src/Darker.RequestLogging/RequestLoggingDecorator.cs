@@ -2,9 +2,11 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Darker.Logging;
+using Darker.Decorators;
+using Darker.Exceptions;
+using Darker.RequestLogging.Logging;
 
-namespace Darker.Decorators
+namespace Darker.RequestLogging
 {
     public class RequestLoggingDecorator<TRequest, TResponse> : IQueryHandlerDecorator<TRequest, TResponse>
         where TRequest : IQueryRequest<TResponse>
@@ -24,7 +26,7 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
 
             var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, Context.Serializer.Serialize(request));
+            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(request));
 
             var result = next(request);
 
@@ -45,7 +47,7 @@ namespace Darker.Decorators
             var sw = Stopwatch.StartNew();
 
             var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, Context.Serializer.Serialize(request));
+            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(request));
 
             var result = await next(request, cancellationToken).ConfigureAwait(false);
 
@@ -56,6 +58,18 @@ namespace Darker.Decorators
             _logger.InfoFormat("Async execution of query {QueryName} completed in {Elapsed}" + withFallback, queryName, sw.Elapsed);
 
             return result;
+        }
+
+        private NewtonsftJsonSerializer GetSerializer()
+        {
+            if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
+                throw new ConfigurationException($"Serializer does not exist in context bag with key {Constants.ContextBagKey}.");
+
+            var serializer = Context.Bag[Constants.ContextBagKey] as NewtonsftJsonSerializer;
+            if (serializer == null)
+                throw new ConfigurationException($"The serializer in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(NewtonsftJsonSerializer)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
+
+            return serializer;
         }
     }
 }

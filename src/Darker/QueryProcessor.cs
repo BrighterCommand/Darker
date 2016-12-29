@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Darker.Attributes;
 using Darker.Exceptions;
 using Darker.Logging;
-using Darker.Serialization;
 
 namespace Darker
 {
@@ -19,13 +18,11 @@ namespace Darker
         private readonly IRequestContextFactory _requestContextFactory;
         private readonly IQueryHandlerFactory _handlerFactory;
         private readonly IQueryHandlerDecoratorFactory _decoratorFactory;
-        private readonly ISerializer _serializer;
         private readonly IReadOnlyDictionary<string, object> _contextBagData;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IRequestContextFactory requestContextFactory,
-            ISerializer serializer,
             IReadOnlyDictionary<string, object> contextBagData = null)
         {
             if (handlerConfiguration == null)
@@ -43,7 +40,6 @@ namespace Darker
             _decoratorFactory = handlerConfiguration.DecoratorFactory;
 
             _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
-            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _contextBagData = contextBagData ?? new Dictionary<string, object>();
         }
 
@@ -157,7 +153,8 @@ namespace Darker
             _logger.Debug("Creating request context...");
 
             var requestContext = _requestContextFactory.Create();
-            requestContext.Serializer = _serializer;
+
+            // todo: no need for IRequestContext i think. just use dictionary
             requestContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
 
             return requestContext;

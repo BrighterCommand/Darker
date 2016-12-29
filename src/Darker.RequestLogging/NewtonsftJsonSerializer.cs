@@ -3,9 +3,9 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 
-namespace Darker.Serialization.NewtonsoftJson
+namespace Darker.RequestLogging
 {
-    public sealed class NewtonsftJsonSerializer : ISerializer
+    public sealed class NewtonsftJsonSerializer
     {
         private readonly JsonSerializerSettings _serializerSettings;
 
