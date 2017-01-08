@@ -2,11 +2,11 @@
   <PropertyGroup>
     <Description>LightInject integration for Darker</Description>
     <AssemblyTitle>Darker.LightInject</AssemblyTitle>
+    <AssemblyName>Darker.LightInject</AssemblyName>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <VersionPrefix>0.1.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
-    <AssemblyName>Darker</AssemblyName>
     <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>

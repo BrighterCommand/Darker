@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>Darker Query Processor</Description>
     <AssemblyTitle>Darker</AssemblyTitle>
+    <AssemblyName>Darker</AssemblyName>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <VersionPrefix>0.8.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
-    <AssemblyName>Darker</AssemblyName>
     <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
