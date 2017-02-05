@@ -2,6 +2,7 @@ version: '{build}'
 configuration: Release
 
 install:
+  - cmd: dotnet --version
   - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Darker\Darker.csproj" -SetAppveyorVersion
   - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
@@ -10,7 +11,7 @@ install:
 
 build_script:
   - cmd: dotnet restore
-  - cmd: dotnet build -configuration %CONFIGURATION%
+  - cmd: dotnet build --configuration %CONFIGURATION%
 
 after_build:
   - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output ..\..\artifacts
