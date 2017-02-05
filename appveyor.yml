@@ -2,23 +2,24 @@ version: '{build}'
 configuration: Release
 
 install:
-  - ps: Invoke-WebRequest -Uri "https://gist.githubusercontent.com/dstockhammer/e5b8858c9318db7970532cc35f520294/raw/Set-ProjectVersion.psm1" -OutFile "Set-ProjectVersion.psm1"
-  - ps: Import-Module .\Set-ProjectVersion.psm1
-  - ps: Set-ProjectVersion -Path "src\Darker\project.json" -SetAppveyorVersion
-  - ps: Set-ProjectVersion -Path "src\Darker.Serialization.NewtonsoftJson\project.json"
-  - ps: Set-ProjectVersion -Path "src\Darker.LightInject\project.json"
+  - ps: Import-Module .\Set-Version.psm1
+  - ps: Set-Version -Path "src\Darker\Darker.csproj" -SetAppveyorVersion
+  - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
+  - ps: Set-Version -Path "src\Darker.Policies\Darker.Policies.csproj"
+  - ps: Set-Version -Path "src\Darker.LightInject\Darker.LightInject.csproj"
 
 build_script:
   - cmd: dotnet restore
-  - cmd: dotnet build */*/project.json --configuration %CONFIGURATION%
+  - cmd: dotnet build -configuration %CONFIGURATION%
 
 after_build:
-  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output artifacts
-  - cmd: dotnet pack src\Darker.Serialization.NewtonsoftJson --configuration %CONFIGURATION% --output artifacts
-  - cmd: dotnet pack src\Darker.LightInject --configuration %CONFIGURATION% --output artifacts
+  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output ..\..\artifacts
+  - cmd: dotnet pack src\Darker.RequestLogging --configuration %CONFIGURATION% --output ..\..\artifacts
+  - cmd: dotnet pack src\Darker.Policies --configuration %CONFIGURATION% --output ..\..\artifacts
+  - cmd: dotnet pack src\Darker.LightInject --configuration %CONFIGURATION% --output ..\..\artifacts
 
 test_script:
-  - cmd: dotnet test test\Darker.Tests
+  - cmd: dotnet test test\Darker.Tests\Darker.Tests.csproj
 
 artifacts:
   - path: artifacts\*.nupkg
