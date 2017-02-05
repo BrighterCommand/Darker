@@ -6,6 +6,7 @@ install:
   - ps: Import-Module .\Set-ProjectVersion.psm1
   - ps: Set-ProjectVersion -Path "src\Darker\project.json" -SetAppveyorVersion
   - ps: Set-ProjectVersion -Path "src\Darker.Serialization.NewtonsoftJson\project.json"
+  - ps: Set-ProjectVersion -Path "src\Darker.LightInject\project.json"
 
 build_script:
   - cmd: dotnet restore
@@ -14,6 +15,7 @@ build_script:
 after_build:
   - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output artifacts
   - cmd: dotnet pack src\Darker.Serialization.NewtonsoftJson --configuration %CONFIGURATION% --output artifacts
+  - cmd: dotnet pack src\Darker.LightInject --configuration %CONFIGURATION% --output artifacts
 
 test_script:
   - cmd: dotnet test test\Darker.Tests

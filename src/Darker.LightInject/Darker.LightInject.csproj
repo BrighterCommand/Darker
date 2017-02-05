@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Description>Darker Query Processor</Description>
-    <AssemblyTitle>Darker</AssemblyTitle>
-    <AssemblyName>Darker</AssemblyName>
+    <Description>LightInject integration for Darker</Description>
+    <AssemblyTitle>Darker.LightInject</AssemblyTitle>
+    <AssemblyName>Darker.LightInject</AssemblyName>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <VersionPrefix>0.8.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
     <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>
@@ -26,17 +26,17 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+    <ProjectReference Include="..\Darker\Darker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LightInject" Version="4.1.5" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="NETStandard.Library" Version="1.6.1" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD;LIBLOG_PORTABLE</DefineConstants>
