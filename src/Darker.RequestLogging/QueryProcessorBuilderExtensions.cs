@@ -13,9 +13,7 @@ namespace Darker.RequestLogging
     {
         public static IBuildTheQueryProcessor JsonRequestLogging(this IBuildTheQueryProcessor lastStageBuilder, Action<JsonSerializerSettings> settings = null)
         {
-            var builder = lastStageBuilder as QueryProcessorBuilder;
-            if (builder == null)
-                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+            var builder = lastStageBuilder.ToQueryProcessorBuilder();
 
             JsonSerializerSettings serializerSettings = null;
 

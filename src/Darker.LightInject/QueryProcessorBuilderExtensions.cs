@@ -6,9 +6,12 @@ namespace Darker.LightInject
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static INeedPolicies LightInjectHandlers(this INeedHandlers handlerBuilder, ServiceContainer container, Action<HandlerSettings> settings)
+        public static INeedARequestContext LightInjectHandlers(this INeedHandlers handlerBuilder, ServiceContainer container, Action<HandlerSettings> settings)
         {
-            var factory = new HandlerFactory(container);
+            if (container == null) throw new ArgumentNullException(nameof(container));
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+            var factory = new LightInjectHandlerFactory(container);
             var handlerRegistry = new QueryHandlerRegistry();
 
             var handlerSettings = new HandlerSettings(container, handlerRegistry);
@@ -24,7 +27,7 @@ namespace Darker.LightInject
             public IQueryHandlerFactory HandlerFactory { get; }
             public IQueryHandlerDecoratorFactory DecoratorFactory { get; }
 
-            public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, HandlerFactory factory)
+            public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, LightInjectHandlerFactory factory)
             {
                 HandlerRegistry = handlerRegistry;
                 HandlerFactory = factory;
@@ -32,11 +35,11 @@ namespace Darker.LightInject
             }
         }
 
-        private sealed class HandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
+        private sealed class LightInjectHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
         {
             private readonly ServiceContainer _container;
 
-            public HandlerFactory(ServiceContainer container)
+            public LightInjectHandlerFactory(ServiceContainer container)
             {
                 _container = container;
             }

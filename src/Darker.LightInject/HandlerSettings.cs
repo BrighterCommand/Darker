@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Reflection;
-using Darker.Decorators;
 using LightInject;
 
 namespace Darker.LightInject
@@ -31,15 +30,6 @@ namespace Darker.LightInject
                 _handlerRegistry.Register(subscriber.Request, subscriber.ResponseType, subscriber.Handler);
                 _container.Register(subscriber.Handler);
             }
-
-            return this;
-        }
-
-        public HandlerSettings WithDefaultDecorators()
-        {
-            _container.Register(typeof(RequestLoggingDecorator<,>));
-            _container.Register(typeof(RetryableQueryDecorator<,>));
-            _container.Register(typeof(FallbackPolicyDecorator<,>));
 
             return this;
         }

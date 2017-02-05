@@ -9,9 +9,7 @@ namespace Darker.Policies
     {
         public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor lastStageBuilder, IPolicyRegistry policyRegistry)
         {
-            var builder = lastStageBuilder as QueryProcessorBuilder;
-            if (builder == null)
-                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+            var builder = lastStageBuilder.ToQueryProcessorBuilder();
 
             if (policyRegistry == null)
                 throw new ArgumentNullException(nameof(policyRegistry));
@@ -27,9 +25,7 @@ namespace Darker.Policies
 
         public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor lastStageBuilder)
         {
-            var builder = lastStageBuilder as QueryProcessorBuilder;
-            if (builder == null)
-                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+            var builder = lastStageBuilder.ToQueryProcessorBuilder();
 
             var defaultRetryPolicy = Policy
                 .Handle<Exception>()

@@ -8,15 +8,21 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Darker.LightInject\Darker.LightInject.csproj" />
+    <ProjectReference Include="..\..\src\Darker.Policies\Darker.Policies.csproj" />
+    <ProjectReference Include="..\..\src\Darker.RequestLogging\Darker.RequestLogging.csproj" />
     <ProjectReference Include="..\..\src\Darker\Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161216-01" />
-    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="15.0.0-preview-20161216-01" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170125-04" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="15.0.0-preview-20170125-04" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
     <PackageReference Include="Moq" Version="4.6.38-alpha" />
     <PackageReference Include="Shouldly" Version="2.8.2" />
-    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444" />
+    <PackageReference Include="xunit" Version="2.2.0-beta5-build3474" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>

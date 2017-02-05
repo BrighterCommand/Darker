@@ -5,14 +5,10 @@ namespace Darker.Builder
 {
     public sealed class QueryProcessorBuilder : INeedHandlers, INeedARequestContext, IBuildTheQueryProcessor
     {
+        private readonly Dictionary<string, object> _contextBagData = new Dictionary<string, object>();
+
         private IHandlerConfiguration _handlerConfiguration;
         private IRequestContextFactory _requestContextFactory;
-        private Dictionary<string, object> _contextBagData;
-
-        private QueryProcessorBuilder()
-        {
-            _contextBagData = new Dictionary<string, object>();
-        }
 
         public static INeedHandlers With()
         {
