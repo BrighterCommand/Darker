@@ -5,13 +5,12 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <VersionPrefix>0.2.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
-    <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <AssemblyName>Darker.RequestLogging</AssemblyName>
     <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.md</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/dstockhammer/Darker</RepositoryUrl>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -30,8 +29,11 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD;LIBLOG_PORTABLE</DefineConstants>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>

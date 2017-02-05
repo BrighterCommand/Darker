@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Darker.Exceptions;
 
-#if NETSTANDARD1_0
+#if NETSTANDARD
 using System.Reflection;
 #endif
 
