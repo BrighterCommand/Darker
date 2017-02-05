@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 #if !NETSTANDARD
 [assembly: ComVisible(false)]
-[assembly: Guid("1751f55c-5ae3-43df-adeb-8615b9102f70")]
+[assembly: Guid("66702f2c-ea0d-48e8-821a-112a6d6ce231")]
 #endif
 
 [assembly: AssemblyVersion("1.0.0.0")]

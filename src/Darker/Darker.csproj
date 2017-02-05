@@ -1,21 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>Darker Query Processor</Description>
-    <AssemblyTitle>Darker</AssemblyTitle>
-    <AssemblyName>Darker</AssemblyName>
-    <NeutralLanguage>en-GB</NeutralLanguage>
     <VersionPrefix>0.9.0</VersionPrefix>
-    <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
-    <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/dstockhammer/Darker/master/LICENSE.md</PackageLicenseUrl>
+    <Authors>Daniel Stockhammer</Authors>
+    <Description>Darker Query Processor</Description>
+    <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/dstockhammer/Darker</RepositoryUrl>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <RepositoryUrl>git://github.com/BrighterCommand/Darker</RepositoryUrl>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
