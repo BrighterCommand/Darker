@@ -4,7 +4,7 @@
     <AssemblyTitle>Darker.LightInject</AssemblyTitle>
     <AssemblyName>Darker.LightInject</AssemblyName>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
     <PackageProjectUrl>https://github.com/dstockhammer/Darker</PackageProjectUrl>

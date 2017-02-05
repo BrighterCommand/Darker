@@ -6,7 +6,7 @@
     <AssemblyTitle>Darker.Serialization.NewtonsoftJson</AssemblyTitle>
     <AssemblyName>Darker.Serialization.NewtonsoftJson</AssemblyName>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix>0.5.0</VersionPrefix>
     <Authors>Daniel Stockhammer</Authors>
     <TargetFrameworks>net45;netstandard1.0</TargetFrameworks>
     <AssemblyName>Darker.Policies</AssemblyName>
