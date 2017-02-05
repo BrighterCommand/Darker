@@ -1,10 +1,12 @@
 version: '{build}'
 configuration: Release
 
+environment:
+  - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
 install:
   - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-rc3/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
   - ps: ./dotnet-install.ps1 -Version 1.0.0-rc3-004530
-  - cmd: dotnet --version
   - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Darker\Darker.csproj" -SetAppveyorVersion
   - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
@@ -30,4 +32,4 @@ artifacts:
 deploy:
   provider: NuGet
   api_key:
-    secure: NLJUBg6WGLN/c7rADEe50wdSE+DwN0XKzPGz5iFbYkVtT3bwSyYuKuZbcGb75xM2
+    secure: mYg+TXuLQs9C2GPJj26Cjy7MFWJcN1p5C5/n0ksQIvL7a14QcLGX09CUU7Hlq8hM
