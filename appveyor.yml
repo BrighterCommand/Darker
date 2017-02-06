@@ -9,6 +9,7 @@ install:
   - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
   - ps: Set-Version -Path "src\Darker.Policies\Darker.Policies.csproj"
   - ps: Set-Version -Path "src\Darker.LightInject\Darker.LightInject.csproj"
+  - ps: Set-Version -Path "src\Darker.SimpleInjector\Darker.SimpleInjector.csproj"
 
 build_script:
   - cmd: set DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -20,6 +21,7 @@ after_build:
   - cmd: dotnet pack src\Darker.RequestLogging --configuration %CONFIGURATION% --output ..\..\artifacts
   - cmd: dotnet pack src\Darker.Policies --configuration %CONFIGURATION% --output ..\..\artifacts
   - cmd: dotnet pack src\Darker.LightInject --configuration %CONFIGURATION% --output ..\..\artifacts
+  - cmd: dotnet pack src\Darker.SimpleInjector --configuration %CONFIGURATION% --output ..\..\artifacts
 
 test_script:
   - cmd: dotnet test test\Darker.Tests\Darker.Tests.csproj

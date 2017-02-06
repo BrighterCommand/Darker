@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <Authors>Daniel Stockhammer</Authors>
+    <Description>Simple Injector integration for Darker</Description>
+    <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/BrighterCommand/Darker</RepositoryUrl>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SimpleInjector" Version="3.3.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Darker\Darker.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD;LIBLOG_PORTABLE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+</Project>
