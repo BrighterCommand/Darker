@@ -8,7 +8,7 @@ using SampleApi.Domain;
 
 namespace SampleApi.Ports
 {
-    public sealed class GetPersonQuery : IQueryRequest<GetPersonQuery.Response>
+    public sealed class GetPersonQuery : IQuery<GetPersonQuery.Result>
     {
         public int PersonId { get; }
 
@@ -17,34 +17,34 @@ namespace SampleApi.Ports
             PersonId = personId;
         }
 
-        public sealed class Response : IQueryResponse
+        public sealed class Result
         {
             public string Name { get; }
 
-            public Response(string name)
+            public Result(string name)
             {
                 Name = name;
             }
         }
     }
 
-    public sealed class GetPersonQueryHandler : AsyncQueryHandler<GetPersonQuery, GetPersonQuery.Response>
+    public sealed class GetPersonQueryHandler : AsyncQueryHandler<GetPersonQuery, GetPersonQuery.Result>
     {
         [RequestLogging(1)]
         [FallbackPolicy(2)]
         [RetryableQuery(3, Startup.SomethingWentTerriblyWrongCircuitBreakerName)]
-        public override async Task<GetPersonQuery.Response> ExecuteAsync(GetPersonQuery request, CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<GetPersonQuery.Result> ExecuteAsync(GetPersonQuery query, CancellationToken cancellationToken = new CancellationToken())
         {
             var repository = new PersonRepository();
-            var person = await repository.GetById(request.PersonId, cancellationToken);
+            var person = await repository.GetById(query.PersonId, cancellationToken);
 
-            return new GetPersonQuery.Response(person);
+            return new GetPersonQuery.Result(person);
         }
 
-        public override Task<GetPersonQuery.Response> FallbackAsync(GetPersonQuery request, CancellationToken cancellationToken = new CancellationToken())
+        public override Task<GetPersonQuery.Result> FallbackAsync(GetPersonQuery query, CancellationToken cancellationToken = new CancellationToken())
         {
             // this will happen when the circuit is broken or when the id doesn't exist
-            return Task.FromResult(new GetPersonQuery.Response("Linus Torvalds"));
+            return Task.FromResult(new GetPersonQuery.Result("Linus Torvalds"));
         }
     }
 }

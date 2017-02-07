@@ -4,13 +4,12 @@ namespace Darker
 {
     public interface IQueryHandlerRegistry
     {
-        Type Get(Type requestType);
+        Type Get(Type queryType);
 
-        void Register<TRequest, TResponse, THandler>()
-            where TRequest : IQueryRequest<TResponse>
-            where TResponse : IQueryResponse
-            where THandler : IQueryHandler<TRequest, TResponse>;
+        void Register<TQuery, TResult, THandler>()
+            where TQuery : IQuery<TResult>
+            where THandler : IQueryHandler<TQuery, TResult>;
 
-        void Register(Type requestType, Type responseType, Type handlerType);
+        void Register(Type queryType, Type resultType, Type handlerType);
     }
 }

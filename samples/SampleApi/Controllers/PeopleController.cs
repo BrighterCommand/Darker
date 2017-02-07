@@ -20,16 +20,16 @@ namespace SampleApi.Controllers
         [HttpGet]
         public async Task<IReadOnlyDictionary<int, string>> Get()
         {
-            var response = await _queryProcessor.ExecuteAsync(new GetPeopleQuery());
-            return response.People;
+            var result = await _queryProcessor.ExecuteAsync(new GetPeopleQuery());
+            return result.People;
         }
 
         // GET api/people/5
         [HttpGet("{id}")]
         public async Task<string> Get(int id)
         {
-            var response = await _queryProcessor.ExecuteAsync(new GetPersonQuery(id));
-            return response.Name;
+            var result = await _queryProcessor.ExecuteAsync(new GetPersonQuery(id));
+            return result.Name;
         }
     }
 }

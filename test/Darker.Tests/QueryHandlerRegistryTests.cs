@@ -13,13 +13,13 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Response), typeof(IQueryHandler<TestQueryA, TestQueryA.Response>));
+                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryA));
 
                 // Assert
-                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>));
+                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
             }
 
             [Fact]
@@ -27,7 +27,7 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Response), typeof(IQueryHandler<TestQueryA, TestQueryA.Response>));
+                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryB));
@@ -41,10 +41,11 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
 
                 // Act
-                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Response), typeof(IQueryHandler<TestQueryA, TestQueryA.Response>)));
+                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register(
+                    typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>)));
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
@@ -54,17 +55,17 @@ namespace Darker.Tests
             }
 
             [Fact]
-            public void ThrowsConfigurationExceptionWhenResponseTypeDoesnotMatch()
+            public void ThrowsConfigurationExceptionWhenResultTypeDoesnotMatch()
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
 
                 // Act
                 var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register(
-                    typeof(TestQueryA), typeof(string), typeof(IQueryHandler<TestQueryA, TestQueryA.Response>)));
+                    typeof(TestQueryA), typeof(string), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>)));
 
                 // Assert
-                exception.Message.ShouldBe($"Response type not valid for request {typeof(TestQueryA).Name}");
+                exception.Message.ShouldBe($"Result type not valid for query {typeof(TestQueryA).Name}");
             }
         }
 
@@ -75,13 +76,13 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryA));
 
                 // Assert
-                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>));
+                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
             }
 
             [Fact]
@@ -89,7 +90,7 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryB));
@@ -103,10 +104,10 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
 
                 // Act
-                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>());
+                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>());
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
@@ -116,19 +117,19 @@ namespace Darker.Tests
             }
         }
 
-        public class TestQueryA : IQueryRequest<TestQueryA.Response>
+        public class TestQueryA : IQuery<TestQueryA.Result>
         {
-            public class Response : IQueryResponse { }
+            public class Result { }
         }
 
-        public class TestQueryB : IQueryRequest<TestQueryB.Response>
+        public class TestQueryB : IQuery<TestQueryB.Result>
         {
-            public class Response : IQueryResponse { }
+            public class Result { }
         }
 
-        public class TestQueryC : IQueryRequest<TestQueryC.Response>
+        public class TestQueryC : IQuery<TestQueryC.Result>
         {
-            public class Response : IQueryResponse { }
+            public class Result { }
         }
     }
 }

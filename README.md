@@ -11,7 +11,7 @@ Register your queries and handlers with `QueryHandlerRegistry` and use `QueryPro
 
 ```csharp
 var registry = new QueryHandlerRegistry();
-registry.Register<FooQuery, FooQuery.Response, FooQueryHandler>();
+registry.Register<FooQuery, FooQuery.Result, FooQueryHandler>();
 
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Handlers(registry, Activator.CreateInstance, Activator.CreateInstance)
@@ -47,9 +47,9 @@ public class FooController : ControllerBase
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default(CancellationToken))
     {
         var query = new FooQuery();
-        var response = await _queryProcessor.ExecuteAsync(query, cancellationToken);
+        var result = await _queryProcessor.ExecuteAsync(query, cancellationToken);
 
-        return Ok(response.Answer);
+        return Ok(result.Answer);
     }
 }
 ```
@@ -57,7 +57,7 @@ public class FooController : ControllerBase
 ```csharp
 using Darker;
 
-public sealed class FooQuery : IQueryRequest<FooQuery.Response>
+public sealed class FooQuery : IQuery<FooQuery.Response>
 {
     public int Number { get; }
 
@@ -66,11 +66,11 @@ public sealed class FooQuery : IQueryRequest<FooQuery.Response>
         Number = number;
     }
 
-    public sealed class Response : IQueryResponse
+    public sealed class Result
     {
         public string Answer { get; }
 
-        public Response(string answer)
+        public Result(string answer)
         {
             Answer = answer;
         }
@@ -89,15 +89,15 @@ using Darker.RequestLogging;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class FooQueryHandler : AsyncQueryHandler<FooQuery, FooQuery.Response>
+public sealed class FooQueryHandler : AsyncQueryHandler<FooQuery, FooQuery.Result>
 {
     [RequestLogging(1)]
     [FallbackPolicy(2)]
     [RetryableQuery(3)]
-    public override async Task<FooQuery.Response> ExecuteAsync(FooQuery query, CancellationToken cancellationToken = default(CancellationToken))
+    public override async Task<FooQuery.Result> ExecuteAsync(FooQuery query, CancellationToken cancellationToken = default(CancellationToken))
     {
         var answer = await CalculateAnswerForNumber(query.Number, cancellationToken).ConfigureAwait(false);
-        return new FooQuery.Response(answer);
+        return new FooQuery.Result(answer);
     }
 }
 ```

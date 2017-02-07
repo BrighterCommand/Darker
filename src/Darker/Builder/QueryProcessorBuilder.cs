@@ -3,25 +3,25 @@ using System.Collections.Generic;
 
 namespace Darker.Builder
 {
-    public sealed class QueryProcessorBuilder : INeedHandlers, INeedARequestContext, IBuildTheQueryProcessor
+    public sealed class QueryProcessorBuilder : INeedHandlers, INeedAQueryContext, IBuildTheQueryProcessor
     {
         private readonly Dictionary<string, object> _contextBagData = new Dictionary<string, object>();
 
         private IHandlerConfiguration _handlerConfiguration;
-        private IRequestContextFactory _requestContextFactory;
+        private IQueryContextFactory _queryContextFactory;
 
         public static INeedHandlers With()
         {
             return new QueryProcessorBuilder();
         }
 
-        public INeedARequestContext Handlers(IHandlerConfiguration handlerConfiguration)
+        public INeedAQueryContext Handlers(IHandlerConfiguration handlerConfiguration)
         {
             _handlerConfiguration = handlerConfiguration ?? throw new ArgumentNullException(nameof(handlerConfiguration));
             return this;
         }
 
-        public INeedARequestContext Handlers(IQueryHandlerRegistry handlerRegistry, IQueryHandlerFactory handlerFactory, IQueryHandlerDecoratorFactory decoratorFactory)
+        public INeedAQueryContext Handlers(IQueryHandlerRegistry handlerRegistry, IQueryHandlerFactory handlerFactory, IQueryHandlerDecoratorFactory decoratorFactory)
         {
             if (handlerRegistry == null)
                 throw new ArgumentNullException(nameof(handlerRegistry));
@@ -34,7 +34,7 @@ namespace Darker.Builder
             return this;
         }
 
-        public INeedARequestContext Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
+        public INeedAQueryContext Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
         {
             if (handlerRegistry == null)
                 throw new ArgumentNullException(nameof(handlerRegistry));
@@ -47,15 +47,15 @@ namespace Darker.Builder
             return this;
         }
 
-        public IBuildTheQueryProcessor RequestContextFactory(IRequestContextFactory requestContextFactory)
+        public IBuildTheQueryProcessor QueryContextFactory(IQueryContextFactory queryContextFactory)
         {
-            _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
+            _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             return this;
         }
 
-        public IBuildTheQueryProcessor InMemoryRequestContextFactory()
+        public IBuildTheQueryProcessor InMemoryQueryContextFactory()
         {
-            _requestContextFactory = new InMemoryRequestContextFactory();
+            _queryContextFactory = new InMemoryQueryContextFactory();
             return this;
         }
 
@@ -68,7 +68,7 @@ namespace Darker.Builder
 
         public IQueryProcessor Build()
         {
-            return new QueryProcessor(_handlerConfiguration, _requestContextFactory, _contextBagData);
+            return new QueryProcessor(_handlerConfiguration, _queryContextFactory, _contextBagData);
         }
     }
 }

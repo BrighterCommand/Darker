@@ -5,30 +5,29 @@ using Darker.Logging;
 
 namespace Darker
 {
-    public abstract class AsyncQueryHandler<TRequest, TResponse> : IQueryHandler<TRequest, TResponse>
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public abstract class AsyncQueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
+        where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.For<AsyncQueryHandler<TRequest, TResponse>>();
+        private static readonly ILog _logger = LogProvider.For<AsyncQueryHandler<TQuery, TResult>>();
 
-        public IRequestContext Context { get; set; }
+        public IQueryContext Context { get; set; }
 
-        public virtual TResponse Execute(TRequest request)
+        public virtual TResult Execute(TQuery query)
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries sync.");
         }
 
-        public virtual TResponse Fallback(TRequest request)
+        public virtual TResult Fallback(TQuery query)
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries sync.");
         }
 
-        public abstract Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken));
+        public abstract Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
-        public virtual Task<TResponse> FallbackAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TResult> FallbackAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.InfoFormat("Executing the default fallback implementation, returning default(TResponse)");
-            return Task.FromResult(default(TResponse));
+            _logger.InfoFormat("Executing the default fallback implementation, returning default(TResult)");
+            return Task.FromResult(default(TResult));
         }
     }
 }

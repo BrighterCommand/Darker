@@ -2,7 +2,7 @@
 
 namespace Darker
 {
-    public sealed class RequestContext : IRequestContext
+    public sealed class QueryContext : IQueryContext
     {
         public IDictionary<string, object> Bag { get; set; }
     }

@@ -8,29 +8,28 @@ using Darker.RequestLogging.Logging;
 
 namespace Darker.RequestLogging
 {
-    public class RequestLoggingDecorator<TRequest, TResponse> : IQueryHandlerDecorator<TRequest, TResponse>
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public class RequestLoggingDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
+        where TQuery : IQuery<TResult>
     {
         private static readonly ILog _logger = LogProvider.GetLogger(typeof(RequestLoggingDecorator<,>));
 
-        public IRequestContext Context { get; set; }
+        public IQueryContext Context { get; set; }
 
         public void InitializeFromAttributeParams(object[] attributeParams)
         {
             // nothing to do
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
+        public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
             var sw = Stopwatch.StartNew();
 
-            var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(request));
+            var queryName = query.GetType().Name;
+            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
-            var result = next(request);
+            var result = next(query);
 
-            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
+            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TQuery, TResult>.CauseOfFallbackException)
                 ? " (with fallback)"
                 : string.Empty;
 
@@ -39,19 +38,19 @@ namespace Darker.RequestLogging
             return result;
         }
 
-        public async Task<TResponse> ExecuteAsync(TRequest request,
-            Func<TRequest, CancellationToken, Task<TResponse>> next,
-            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+        public async Task<TResult> ExecuteAsync(TQuery query,
+            Func<TQuery, CancellationToken, Task<TResult>> next,
+            Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var sw = Stopwatch.StartNew();
 
-            var queryName = request.GetType().Name;
-            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(request));
+            var queryName = query.GetType().Name;
+            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
-            var result = await next(request, cancellationToken).ConfigureAwait(false);
+            var result = await next(query, cancellationToken).ConfigureAwait(false);
 
-            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TRequest, TResponse>.CauseOfFallbackException)
+            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TQuery, TResult>.CauseOfFallbackException)
                 ? " (with fallback)"
                 : string.Empty;
 

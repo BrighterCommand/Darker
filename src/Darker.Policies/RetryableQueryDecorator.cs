@@ -6,15 +6,14 @@ using Darker.Policies.Logging;
 
 namespace Darker.Policies
 {
-    public class RetryableQueryDecorator<TRequest, TResponse> : IQueryHandlerDecorator<TRequest, TResponse>
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public class RetryableQueryDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
+        where TQuery : IQuery<TResult>
     {
         private static readonly ILog _logger = LogProvider.GetLogger(typeof(RetryableQueryDecorator<,>));
 
         private string _policyName;
 
-        public IRequestContext Context { get; set; }
+        public IQueryContext Context { get; set; }
 
         public void InitializeFromAttributeParams(object[] attributeParams)
         {
@@ -24,22 +23,22 @@ namespace Darker.Policies
                 throw new ConfigurationException($"Policy does not exist in policy registry: {_policyName}");
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
+        public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
             _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
 
-            return GetPolicyRegistry().Get(_policyName).Execute(() => next(request));
+            return GetPolicyRegistry().Get(_policyName).Execute(() => next(query));
         }
 
-        public async Task<TResponse> ExecuteAsync(TRequest request,
-            Func<TRequest, CancellationToken, Task<TResponse>> next,
-            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+        public async Task<TResult> ExecuteAsync(TQuery query,
+            Func<TQuery, CancellationToken, Task<TResult>> next,
+            Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
             return await GetPolicyRegistry().Get(_policyName)
-                .ExecuteAsync(ct => next(request, ct), cancellationToken, false)
+                .ExecuteAsync(ct => next(query, ct), cancellationToken, false)
                 .ConfigureAwait(false);
         }
 
