@@ -26,7 +26,7 @@ namespace SampleApi.Domain
             return Db;
         }
 
-        public async Task<string> GetById(int id, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<string> GetNameById(int id, CancellationToken cancellationToken = new CancellationToken())
         {
             await FakeSomeActivity(cancellationToken);
 

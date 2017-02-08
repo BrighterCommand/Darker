@@ -15,7 +15,7 @@ registry.Register<FooQuery, FooQuery.Result, FooQueryHandler>();
 
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Handlers(registry, Activator.CreateInstance, Activator.CreateInstance)
-    .InMemoryRequestContextFactory()
+    .InMemoryQueryContextFactory()
     .JsonRequestLogging()
     .DefaultPolicies()
     .Build();
@@ -57,7 +57,7 @@ public class FooController : ControllerBase
 ```csharp
 using Darker;
 
-public sealed class FooQuery : IQuery<FooQuery.Response>
+public sealed class FooQuery : IQuery<FooQuery.Result>
 {
     public int Number { get; }
 
