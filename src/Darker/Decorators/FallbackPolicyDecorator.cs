@@ -7,9 +7,8 @@ using Darker.Logging;
 
 namespace Darker.Decorators
 {
-    public class FallbackPolicyDecorator<TRequest, TResponse> : IQueryHandlerDecorator<TRequest, TResponse>
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public class FallbackPolicyDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
+        where TQuery : IQuery<TResult>
     {
         public const string CauseOfFallbackException = "Fallback_Exception_Cause";
 
@@ -17,19 +16,19 @@ namespace Darker.Decorators
 
         private IEnumerable<Type> _exceptionTypes;
 
-        public IRequestContext Context { get; set; }
+        public IQueryContext Context { get; set; }
 
         public void InitializeFromAttributeParams(object[] attributeParams)
         {
             _exceptionTypes = attributeParams.Cast<Type>();
         }
 
-        public TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback)
+        public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
             try
             {
                 _logger.Info("Executing query with fallback handling");
-                return next(request);
+                return next(query);
             }
             catch (Exception ex)
             {
@@ -37,7 +36,7 @@ namespace Darker.Decorators
                 {
                     _logger.InfoException("Fallback handler caught exception, executing fallback", ex);
                     Context.Bag.Add(CauseOfFallbackException, ex);
-                    return fallback(request);
+                    return fallback(query);
                 }
 
                 _logger.InfoException("Fallback handler caught exception, but it's not configured to be handled", ex);
@@ -45,15 +44,15 @@ namespace Darker.Decorators
             }
         }
 
-        public async Task<TResponse> ExecuteAsync(TRequest request,
-            Func<TRequest, CancellationToken, Task<TResponse>> next,
-            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+        public async Task<TResult> ExecuteAsync(TQuery query,
+            Func<TQuery, CancellationToken, Task<TResult>> next,
+            Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
                 _logger.Info("Executing async query with fallback handling");
-                return await next(request, cancellationToken).ConfigureAwait(false);
+                return await next(query, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -61,7 +60,7 @@ namespace Darker.Decorators
                 {
                     _logger.InfoException("Fallback handler caught exception, executing fallback", ex);
                     Context.Bag.Add(CauseOfFallbackException, ex);
-                    return await fallback(request, cancellationToken).ConfigureAwait(false);
+                    return await fallback(query, cancellationToken).ConfigureAwait(false);
                 }
 
                 _logger.InfoException("Fallback handler caught exception, but it's not configured to be handled", ex);

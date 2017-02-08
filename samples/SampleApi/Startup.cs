@@ -56,7 +56,7 @@ namespace SampleApi
             var queryProcessor = QueryProcessorBuilder.With()
                 .LightInjectHandlers(container, opts => opts
                     .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
-                .InMemoryRequestContextFactory()
+                .InMemoryQueryContextFactory()
                 .JsonRequestLogging()
                 .Policies(ConfigurePolicies())
                 .Build();

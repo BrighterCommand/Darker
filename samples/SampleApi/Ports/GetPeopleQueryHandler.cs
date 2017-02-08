@@ -8,29 +8,29 @@ using SampleApi.Domain;
 
 namespace SampleApi.Ports
 {
-    public sealed class GetPeopleQuery : IQueryRequest<GetPeopleQuery.Response>
+    public sealed class GetPeopleQuery : IQuery<GetPeopleQuery.Result>
     {
-        public sealed class Response : IQueryResponse
+        public sealed class Result
         {
             public IReadOnlyDictionary<int, string> People { get; }
 
-            public Response(IReadOnlyDictionary<int, string> people)
+            public Result(IReadOnlyDictionary<int, string> people)
             {
                 People = people;
             }
         }
     }
 
-    public sealed class GetPeopleQueryHandler : AsyncQueryHandler<GetPeopleQuery, GetPeopleQuery.Response>
+    public sealed class GetPeopleQueryHandler : AsyncQueryHandler<GetPeopleQuery, GetPeopleQuery.Result>
     {
         [RequestLogging(1)]
         [RetryableQuery(2, Startup.SomethingWentTerriblyWrongCircuitBreakerName)]
-        public override async Task<GetPeopleQuery.Response> ExecuteAsync(GetPeopleQuery request, CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<GetPeopleQuery.Result> ExecuteAsync(GetPeopleQuery query, CancellationToken cancellationToken = new CancellationToken())
         {
             var repository = new PersonRepository();
             var people = await repository.GetAll(cancellationToken);
 
-            return new GetPeopleQuery.Response(people);
+            return new GetPeopleQuery.Result(people);
         }
     }
 }

@@ -5,10 +5,8 @@ namespace Darker
 {
     public interface IQueryProcessor
     {
-        TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
-            where TResponse : IQueryResponse;
+        TResult Execute<TResult>(IQuery<TResult> query);
 
-        Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request, CancellationToken cancellationToken = default(CancellationToken))
-            where TResponse : IQueryResponse;
+        Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

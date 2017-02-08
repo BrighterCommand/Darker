@@ -23,12 +23,12 @@ namespace Darker.LightInject
                 where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
                 from i in t.GetInterfaces()
                 where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
-                select new { Request = i.GetGenericArguments().First(), ResponseType = i.GetGenericArguments().ElementAt(1), Handler = t };
+                select new { QueryType = i.GetGenericArguments().First(), ResultType = i.GetGenericArguments().ElementAt(1), HandlerType = t };
 
             foreach (var subscriber in subscribers)
             {
-                _handlerRegistry.Register(subscriber.Request, subscriber.ResponseType, subscriber.Handler);
-                _container.Register(subscriber.Handler);
+                _handlerRegistry.Register(subscriber.QueryType, subscriber.ResultType, subscriber.HandlerType);
+                _container.Register(subscriber.HandlerType);
             }
 
             return this;

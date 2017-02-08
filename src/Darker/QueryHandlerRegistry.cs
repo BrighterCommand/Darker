@@ -18,33 +18,32 @@ namespace Darker
             _registry = new Dictionary<Type, Type>();
         }
 
-        public Type Get(Type requestType)
+        public Type Get(Type queryType)
         {
-            return _registry.ContainsKey(requestType) ? _registry[requestType] : null;
+            return _registry.ContainsKey(queryType) ? _registry[queryType] : null;
         }
 
-        public void Register<TRequest, TResponse, THandler>()
-            where TRequest : IQueryRequest<TResponse>
-            where TResponse : IQueryResponse
-            where THandler : IQueryHandler<TRequest, TResponse>
+        public void Register<TQuery, TResult, THandler>()
+            where TQuery : IQuery<TResult>
+            where THandler : IQueryHandler<TQuery, TResult>
         {
-            Register(typeof(TRequest), typeof(TResponse), typeof(THandler));
+            Register(typeof(TQuery), typeof(TResult), typeof(THandler));
         }
 
-        public void Register(Type requestType, Type responseType, Type handlerType)
+        public void Register(Type queryType, Type resultType, Type handlerType)
         {
-            if (_registry.ContainsKey(requestType))
-                throw new ConfigurationException($"Registry already contains an entry for {requestType.Name}");
+            if (_registry.ContainsKey(queryType))
+                throw new ConfigurationException($"Registry already contains an entry for {queryType.Name}");
 
-            if (!HasMatchingResponseType(requestType, responseType))
-                throw new ConfigurationException($"Response type not valid for request {requestType.Name}");
+            if (!HasMatchingResultType(queryType, resultType))
+                throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
-            _registry.Add(requestType, handlerType);
+            _registry.Add(queryType, handlerType);
         }
 
-        private bool HasMatchingResponseType(Type requestType, Type responseType)
+        private bool HasMatchingResultType(Type queryType, Type resultType)
         {
-            return requestType.GetInterfaces().Any(i => i.GenericTypeArguments.Any(t => t == responseType));
+            return queryType.GetInterfaces().Any(i => i.GenericTypeArguments.Any(t => t == resultType));
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Darker.SimpleInjector
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static INeedARequestContext SimpleInjectorHandlers(this INeedHandlers handlerBuilder, Container container, Action<HandlerSettings> settings)
+        public static INeedAQueryContext SimpleInjectorHandlers(this INeedHandlers handlerBuilder, Container container, Action<HandlerSettings> settings)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             if (settings == null) throw new ArgumentNullException(nameof(settings));

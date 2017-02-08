@@ -21,7 +21,7 @@ namespace Darker.Tests
             _handlerRegistry = new QueryHandlerRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, _decoratorFactory.Object);
-            _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryRequestContextFactory());
+            _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Darker.Tests
             var id = Guid.NewGuid();
             var handler = new TestQueryHandler();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, TestQueryHandler>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, TestQueryHandler>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandler))).Returns(handler);
 
             // Act
@@ -50,14 +50,14 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Response>>();
-            var handlerB = new Mock<IQueryHandler<TestQueryB, TestQueryB.Response>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Result>>();
+            var handlerB = new Mock<IQueryHandler<TestQueryB, TestQueryB.Result>>();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
-            _handlerRegistry.Register<TestQueryB, TestQueryB.Response, IQueryHandler<TestQueryB, TestQueryB.Response>>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+            _handlerRegistry.Register<TestQueryB, TestQueryB.Result, IQueryHandler<TestQueryB, TestQueryB.Result>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, TestQueryB.Response>))).Returns(handlerB.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, TestQueryB.Result>))).Returns(handlerB.Object);
 
             // Act
             await _queryProcessor.ExecuteAsync(new TestQueryA(id));
@@ -75,12 +75,12 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Response>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Result>>();
             handlerA.Setup(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id), default(CancellationToken))).Throws<FormatException>();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Response, IQueryHandler<TestQueryA, TestQueryA.Response>>();
+            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Response>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>))).Returns(handlerA.Object);
 
             // Act
             await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new TestQueryA(id)));
@@ -89,7 +89,7 @@ namespace Darker.Tests
             handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
         }
 
-        public class TestQueryA : IQueryRequest<TestQueryA.Response>
+        public class TestQueryA : IQuery<TestQueryA.Result>
         {
             public Guid Id { get; }
 
@@ -98,28 +98,28 @@ namespace Darker.Tests
                 Id = id;
             }
 
-            public class Response : IQueryResponse
+            public class Result
             {
                 public Guid Id { get; }
 
-                public Response(Guid id)
+                public Result(Guid id)
                 {
                     Id = id;
                 }
             }
         }
 
-        public class TestQueryB : IQueryRequest<TestQueryB.Response>
+        public class TestQueryB : IQuery<TestQueryB.Result>
         {
-            public class Response : IQueryResponse { }
+            public class Result { }
         }
 
-        public class TestQueryHandler : AsyncQueryHandler<TestQueryA, TestQueryA.Response>
+        public class TestQueryHandler : AsyncQueryHandler<TestQueryA, TestQueryA.Result>
         {
-            public override Task<TestQueryA.Response> ExecuteAsync(TestQueryA request, CancellationToken cancellationToken = default(CancellationToken))
+            public override Task<TestQueryA.Result> ExecuteAsync(TestQueryA request, CancellationToken cancellationToken = default(CancellationToken))
             {
                 Context.Bag.Add("id", request.Id);
-                return Task.FromResult(new TestQueryA.Response(request.Id));
+                return Task.FromResult(new TestQueryA.Result(request.Id));
             }
         }
     }

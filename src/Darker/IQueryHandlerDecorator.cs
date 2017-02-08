@@ -6,19 +6,18 @@ namespace Darker
 {
     public interface IQueryHandlerDecorator
     {
-        IRequestContext Context { get; set; }
+        IQueryContext Context { get; set; }
         void InitializeFromAttributeParams(object[] attributeParams);
     }
 
-    public interface IQueryHandlerDecorator<TRequest, TResponse> : IQueryHandlerDecorator
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public interface IQueryHandlerDecorator<TQuery, TResult> : IQueryHandlerDecorator
+        where TQuery : IQuery<TResult>
     {
-        TResponse Execute(TRequest request, Func<TRequest, TResponse> next, Func<TRequest, TResponse> fallback);
+        TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback);
 
-        Task<TResponse> ExecuteAsync(TRequest request,
-            Func<TRequest, CancellationToken, Task<TResponse>> next,
-            Func<TRequest, CancellationToken, Task<TResponse>> fallback,
+        Task<TResult> ExecuteAsync(TQuery query,
+            Func<TQuery, CancellationToken, Task<TResult>> next,
+            Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

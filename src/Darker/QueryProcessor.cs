@@ -15,14 +15,14 @@ namespace Darker
         private static readonly ILog _logger = LogProvider.For<QueryProcessor>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
-        private readonly IRequestContextFactory _requestContextFactory;
+        private readonly IQueryContextFactory _queryContextFactory;
         private readonly IQueryHandlerFactory _handlerFactory;
         private readonly IQueryHandlerDecoratorFactory _decoratorFactory;
         private readonly IReadOnlyDictionary<string, object> _contextBagData;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
-            IRequestContextFactory requestContextFactory,
+            IQueryContextFactory queryContextFactory,
             IReadOnlyDictionary<string, object> contextBagData = null)
         {
             if (handlerConfiguration == null)
@@ -39,32 +39,31 @@ namespace Darker
             _handlerFactory = handlerConfiguration.HandlerFactory;
             _decoratorFactory = handlerConfiguration.DecoratorFactory;
 
-            _requestContextFactory = requestContextFactory ?? throw new ArgumentNullException(nameof(requestContextFactory));
+            _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _contextBagData = contextBagData ?? new Dictionary<string, object>();
         }
 
-        public TResponse Execute<TResponse>(IQueryRequest<TResponse> request)
-            where TResponse : IQueryResponse
+        public TResult Execute<TResult>(IQuery<TResult> query)
         {
-            var requestType = request.GetType();
-            _logger.InfoFormat("Building and executing pipeline for {RequestType}", requestType.Name);
+            var queryType = query.GetType();
+            _logger.InfoFormat("Building and executing pipeline for {QueryType}", queryType.Name);
 
-            (var handlerType, var handler) = ResolveHandler(requestType);
+            (var handlerType, var handler) = ResolveHandler(queryType);
 
-            var requestContext = CreateRequestContext();
-            handler.Context = requestContext;
+            var queryContext = CreateQueryContext();
+            handler.Context = queryContext;
 
-            var decorators = GetDecorators<TResponse>(handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.Execute)), requestContext);
+            var decorators = GetDecorators<TResult>(handlerType.GetMethod(nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute)), queryContext);
 
             _logger.Debug("Begin building pipeline...");
 
-            var pipeline = new List<Func<IQueryRequest<TResponse>, TResponse>>
+            var pipeline = new List<Func<IQuery<TResult>, TResult>>
             {
                 r => handler.Execute((dynamic)r)
             };
 
             // fallback doesn't have an incoming pipeline
-            Func<IQueryRequest<TResponse>, TResponse> fallback = r => handler.Fallback((dynamic)r);
+            Func<IQuery<TResult>, TResult> fallback = r => handler.Fallback((dynamic)r);
 
             foreach (var decorator in decorators)
             {
@@ -77,7 +76,7 @@ namespace Darker
             try
             {
                 _logger.DebugFormat("Invoking pipeline...");
-                return pipeline.Last().Invoke(request);
+                return pipeline.Last().Invoke(query);
             }
             catch (Exception ex)
             {
@@ -86,28 +85,27 @@ namespace Darker
             }
         }
 
-        public async Task<TResponse> ExecuteAsync<TResponse>(IQueryRequest<TResponse> request, CancellationToken cancellationToken = default(CancellationToken))
-            where TResponse : IQueryResponse
+        public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var requestType = request.GetType();
-            _logger.InfoFormat("Building and executing async pipeline for {RequestType}", requestType.Name);
+            var queryType = query.GetType();
+            _logger.InfoFormat("Building and executing async pipeline for {QueryType}", queryType.Name);
 
-            (var handlerType, var handler) = ResolveHandler(requestType);
+            (var handlerType, var handler) = ResolveHandler(queryType);
 
-            var requestContext = CreateRequestContext();
-            handler.Context = requestContext;
+            var queryContext = CreateQueryContext();
+            handler.Context = queryContext;
 
-            var decorators = GetDecorators<TResponse>(handlerType.GetMethod(nameof(IQueryHandler<IQueryRequest<TResponse>, TResponse>.ExecuteAsync)), requestContext);
+            var decorators = GetDecorators<TResult>(handlerType.GetMethod(nameof(IQueryHandler<IQuery<TResult>, TResult>.ExecuteAsync)), queryContext);
 
             _logger.Debug("Begin building async pipeline...");
 
-            var pipeline = new List<Func<IQueryRequest<TResponse>, CancellationToken, Task<TResponse>>>
+            var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
             {
                 (r, ct) => handler.ExecuteAsync((dynamic)r, ct)
             };
 
             // fallback doesn't have an incoming pipeline
-            Func<IQueryRequest<TResponse>, CancellationToken, Task<TResponse>> fallback = (r, ct) => handler.FallbackAsync((dynamic)r, ct);
+            Func<IQuery<TResult>, CancellationToken, Task<TResult>> fallback = (r, ct) => handler.FallbackAsync((dynamic)r, ct);
 
             foreach (var decorator in decorators)
             {
@@ -120,7 +118,7 @@ namespace Darker
             try
             {
                 _logger.DebugFormat("Invoking async pipeline...");
-                return await pipeline.Last().Invoke(request, cancellationToken).ConfigureAwait(false);
+                return await pipeline.Last().Invoke(query, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -129,14 +127,14 @@ namespace Darker
             }
         }
 
-        private (Type handlerType, dynamic handler) ResolveHandler(Type requestType)
+        private (Type handlerType, dynamic handler) ResolveHandler(Type queryType)
         {
             _logger.DebugFormat("Looking up handler type in handler registry...");
-            var handlerType = _handlerRegistry.Get(requestType);
+            var handlerType = _handlerRegistry.Get(queryType);
             if (handlerType == null)
-                throw new MissingHandlerException($"No handler registered for query: {requestType.FullName}");
+                throw new MissingHandlerException($"No handler registered for query: {queryType.FullName}");
 
-            _logger.DebugFormat("Found handler type for {RequestType} in handler registry: {HandlerType}", requestType.Name, handlerType.Name);
+            _logger.DebugFormat("Found handler type for {QueryType} in handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
             _logger.Debug("Resolving handler instance...");
             var handler = _handlerFactory.Create<dynamic>(handlerType);
@@ -148,20 +146,19 @@ namespace Darker
             return (handlerType, handler);
         }
 
-        private IRequestContext CreateRequestContext()
+        private IQueryContext CreateQueryContext()
         {
-            _logger.Debug("Creating request context...");
+            _logger.Debug("Creating query context...");
 
-            var requestContext = _requestContextFactory.Create();
+            var queryContext = _queryContextFactory.Create();
 
-            // todo: no need for IRequestContext i think. just use dictionary
-            requestContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
+            // todo: no need for IQueryContext i think. just use dictionary
+            queryContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
 
-            return requestContext;
+            return queryContext;
         }
 
-        public IList<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>> GetDecorators<TResponse>(MethodInfo executeMethod, IRequestContext requestContext)
-            where TResponse : IQueryResponse
+        public IList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators<TResult>(MethodInfo executeMethod, IQueryContext queryContext)
         {
             var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttribute), true)
                 .Cast<QueryHandlerAttribute>()
@@ -170,17 +167,17 @@ namespace Darker
 
             _logger.DebugFormat("Found {AttributesCount} query handler attributes", attributes.Count);
 
-            var decorators = new List<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>();
+            var decorators = new List<IQueryHandlerDecorator<IQuery<TResult>, TResult>>();
             foreach (var attribute in attributes)
             {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQueryRequest<TResponse>), typeof(TResponse));
+                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
 
                 _logger.DebugFormat("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
-                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQueryRequest<TResponse>, TResponse>>(decoratorType);
+                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType);
                 if (decorator == null)
                     throw new MissingHandlerDecoratorException($"Handler decorator could not be created for type: {decoratorType.FullName}");
 
-                decorator.Context = requestContext;
+                decorator.Context = queryContext;
 
                 _logger.DebugFormat("Initialising decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());

@@ -2,7 +2,7 @@
 
 namespace Darker
 {
-    public interface IRequestContext
+    public interface IQueryContext
     {
         IDictionary<string, object> Bag { get; set; }
     }

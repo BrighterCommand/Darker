@@ -5,28 +5,27 @@ using Darker.Logging;
 
 namespace Darker
 {
-    public abstract class QueryHandler<TRequest, TResponse> : IQueryHandler<TRequest, TResponse>
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public abstract class QueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
+        where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.For<QueryHandler<TRequest, TResponse>>();
+        private static readonly ILog _logger = LogProvider.For<QueryHandler<TQuery, TResult>>();
 
-        public IRequestContext Context { get; set; }
+        public IQueryContext Context { get; set; }
 
-        public abstract TResponse Execute(TRequest request);
+        public abstract TResult Execute(TQuery query);
 
-        public virtual TResponse Fallback(TRequest request)
+        public virtual TResult Fallback(TQuery query)
         {
-            _logger.InfoFormat("Executing the default fallback implementation, returning default(TResponse)");
-            return default(TResponse);
+            _logger.InfoFormat("Executing the default fallback implementation, returning default(TResult)");
+            return default(TResult);
         }
 
-        public virtual Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
         }
 
-        public virtual Task<TResponse> FallbackAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<TResult> FallbackAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
         }

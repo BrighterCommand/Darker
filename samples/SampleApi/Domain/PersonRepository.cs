@@ -9,7 +9,7 @@ namespace SampleApi.Domain
     {
         private static readonly IReadOnlyDictionary<int, string> Db = new Dictionary<int, string>
         {
-            { 1, "Alan Touring" },
+            { 1, "Alan Turing" },
             { 2, "Donald Knuth" },
             { 3, "Edsger W. Dijkstra" },
             { 4, "John von Neumann" },

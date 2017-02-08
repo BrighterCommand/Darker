@@ -5,19 +5,18 @@ namespace Darker
 {
     public interface IQueryHandler
     {
-        IRequestContext Context { get; set; }
+        IQueryContext Context { get; set; }
     }
 
-    public interface IQueryHandler<in TRequest, TResponse> : IQueryHandler
-        where TRequest : IQueryRequest<TResponse>
-        where TResponse : IQueryResponse
+    public interface IQueryHandler<in TQuery, TResult> : IQueryHandler
+        where TQuery : IQuery<TResult>
     {
-        TResponse Execute(TRequest request);
+        TResult Execute(TQuery query);
 
-        TResponse Fallback(TRequest request);
+        TResult Fallback(TQuery query);
 
-        Task<TResponse> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<TResponse> FallbackAsync(TRequest request, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TResult> FallbackAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
