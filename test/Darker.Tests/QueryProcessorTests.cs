@@ -29,15 +29,14 @@ namespace Darker.Tests
             var id = Guid.NewGuid();
             var handler = new TestQueryHandler();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, TestQueryHandler>();
+            _handlerRegistry.Register<TestQueryA, Guid, TestQueryHandler>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandler))).Returns(handler);
 
             // Act
-            var response = _queryProcessor.Execute(new TestQueryA(id));
+            var result = _queryProcessor.Execute(new TestQueryA(id));
 
             // Assert
-            response.ShouldNotBeNull();
-            response.Id.ShouldBe(id);
+            result.ShouldBe(id);
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag.ShouldContainKeyAndValue("id", id);
         }
@@ -48,14 +47,14 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Result>>();
-            var handlerB = new Mock<IQueryHandler<TestQueryB, TestQueryB.Result>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, Guid>>();
+            var handlerB = new Mock<IQueryHandler<TestQueryB, object>>();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
-            _handlerRegistry.Register<TestQueryB, TestQueryB.Result, IQueryHandler<TestQueryB, TestQueryB.Result>>();
+            _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
+            _handlerRegistry.Register<TestQueryB, object, IQueryHandler<TestQueryB, object>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, TestQueryB.Result>))).Returns(handlerB.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, object>))).Returns(handlerB.Object);
 
             // Act
             _queryProcessor.Execute(new TestQueryA(id));
@@ -73,12 +72,12 @@ namespace Darker.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, TestQueryA.Result>>();
+            var handlerA = new Mock<IQueryHandler<TestQueryA, Guid>>();
             handlerA.Setup(x => x.Execute(It.Is<TestQueryA>(q => q.Id == id))).Throws<FormatException>();
 
-            _handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+            _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
 
             // Act
             Assert.Throws<FormatException>(() => _queryProcessor.Execute(new TestQueryA(id)));
@@ -87,7 +86,7 @@ namespace Darker.Tests
             handlerA.Verify(x => x.Fallback(It.IsAny<TestQueryA>()), Times.Never);
         }
 
-        public class TestQueryA : IQuery<TestQueryA.Result>
+        public class TestQueryA : IQuery<Guid>
         {
             public Guid Id { get; }
 
@@ -95,29 +94,18 @@ namespace Darker.Tests
             {
                 Id = id;
             }
-
-            public class Result
-            {
-                public Guid Id { get; }
-
-                public Result(Guid id)
-                {
-                    Id = id;
-                }
-            }
         }
 
-        public class TestQueryB : IQuery<TestQueryB.Result>
+        public class TestQueryB : IQuery<object>
         {
-            public class Result { }
         }
 
-        public class TestQueryHandler : QueryHandler<TestQueryA, TestQueryA.Result>
+        public class TestQueryHandler : QueryHandler<TestQueryA, Guid>
         {
-            public override TestQueryA.Result Execute(TestQueryA query)
+            public override Guid Execute(TestQueryA query)
             {
                 Context.Bag.Add("id", query.Id);
-                return new TestQueryA.Result(query.Id);
+                return query.Id;
             }
         }
     }

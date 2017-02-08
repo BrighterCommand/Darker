@@ -29,19 +29,19 @@ namespace Darker.Tests.Decorators
         {
             // Arrange
             var handler = new TestQueryHandlerWithCatchAllFallback();
-            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>();
+            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
-            _handlerRegistry.Register<TestQuery, TestQuery.Response, TestQueryHandlerWithCatchAllFallback>();
+            _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithCatchAllFallback>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithCatchAllFallback))).Returns(handler);
             
-            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>);
-            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Response>, TestQuery.Response>>(decoratorType)).Returns(decorator);
+            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
+            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
 
             // Act
-            var response = _queryProcessor.Execute(new TestQuery());
+            var result = _queryProcessor.Execute(new TestQuery());
 
             // Assert
-            response.ShouldNotBeNull();
+            result.ShouldNotBeNull();
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag["Fallback_Exception_Cause"].ShouldBeAssignableTo<FormatException>();
             handler.Context.Bag.ShouldContainKeyAndValue("Check1", true);
@@ -53,19 +53,19 @@ namespace Darker.Tests.Decorators
         {
             // Arrange
             var handler = new TestQueryHandlerWithFormatExceptionFallback();
-            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>();
+            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
-            _handlerRegistry.Register<TestQuery, TestQuery.Response, TestQueryHandlerWithFormatExceptionFallback>();
+            _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithFormatExceptionFallback>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithFormatExceptionFallback))).Returns(handler);
 
-            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>);
-            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Response>, TestQuery.Response>>(decoratorType)).Returns(decorator);
+            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
+            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
 
             // Act
-            var response = _queryProcessor.Execute(new TestQuery());
+            var result = _queryProcessor.Execute(new TestQuery());
 
             // Assert
-            response.ShouldNotBeNull();
+            result.ShouldNotBeNull();
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag["Fallback_Exception_Cause"].ShouldBeAssignableTo<FormatException>();
             handler.Context.Bag.ShouldContainKeyAndValue("Check1", true);
@@ -77,13 +77,13 @@ namespace Darker.Tests.Decorators
         {
             // Arrange
             var handler = new TestQueryHandlerWithoutFormatExceptionFallback();
-            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>();
+            var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
-            _handlerRegistry.Register<TestQuery, TestQuery.Response, TestQueryHandlerWithoutFormatExceptionFallback>();
+            _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithoutFormatExceptionFallback>();
             _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithoutFormatExceptionFallback))).Returns(handler);
 
-            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Response>, TestQuery.Response>);
-            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Response>, TestQuery.Response>>(decoratorType)).Returns(decorator);
+            var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
+            _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
 
             // Act
             Assert.Throws<FormatException>(() => _queryProcessor.Execute(new TestQuery()));
@@ -95,56 +95,56 @@ namespace Darker.Tests.Decorators
             handler.Context.Bag.ShouldNotContainKey("Check2");
         }
 
-        public class TestQuery : IQuery<TestQuery.Response>
+        public class TestQuery : IQuery<TestQuery.Result>
         {
-            public class Response { }
+            public class Result { }
         }
 
-        public class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1)]
-            public override TestQuery.Response Execute(TestQuery query)
+            public override TestQuery.Result Execute(TestQuery query)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public override TestQuery.Response Fallback(TestQuery query)
+            public override TestQuery.Result Fallback(TestQuery query)
             {
                 Context.Bag.Add("Check2", true);
-                return new TestQuery.Response();
+                return new TestQuery.Result();
             }
         }
 
-        public class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1, typeof(ArithmeticException), typeof(FormatException))]
-            public override TestQuery.Response Execute(TestQuery query)
+            public override TestQuery.Result Execute(TestQuery query)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public override TestQuery.Response Fallback(TestQuery query)
+            public override TestQuery.Result Fallback(TestQuery query)
             {
                 Context.Bag.Add("Check2", true);
-                return new TestQuery.Response();
+                return new TestQuery.Result();
             }
         }
 
-        public class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Response>
+        public class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1, typeof(ArithmeticException))]
-            public override TestQuery.Response Execute(TestQuery query)
+            public override TestQuery.Result Execute(TestQuery query)
             {
                 Context.Bag.Add("Check1", true);
                 throw new FormatException();
             }
 
-            public override TestQuery.Response Fallback(TestQuery query)
+            public override TestQuery.Result Fallback(TestQuery query)
             {
                 Context.Bag.Add("Check2", true);
-                return new TestQuery.Response();
+                return new TestQuery.Result();
             }
         }
     }

@@ -13,13 +13,13 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
+                handlerRegistry.Register(typeof(TestQueryA), typeof(object), typeof(IQueryHandler<TestQueryA, object>));
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryA));
 
                 // Assert
-                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
+                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, object>));
             }
 
             [Fact]
@@ -27,7 +27,7 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register(typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
+                handlerRegistry.Register(typeof(TestQueryA), typeof(object), typeof(IQueryHandler<TestQueryA, object>));
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryB));
@@ -41,11 +41,11 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+                handlerRegistry.Register<TestQueryA, object, IQueryHandler<TestQueryA, object>>();
 
                 // Act
                 var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register(
-                    typeof(TestQueryA), typeof(TestQueryA.Result), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>)));
+                    typeof(TestQueryA), typeof(object), typeof(IQueryHandler<TestQueryA, object>)));
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
@@ -62,7 +62,7 @@ namespace Darker.Tests
 
                 // Act
                 var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register(
-                    typeof(TestQueryA), typeof(string), typeof(IQueryHandler<TestQueryA, TestQueryA.Result>)));
+                    typeof(TestQueryA), typeof(string), typeof(IQueryHandler<TestQueryA, object>)));
 
                 // Assert
                 exception.Message.ShouldBe($"Result type not valid for query {typeof(TestQueryA).Name}");
@@ -76,13 +76,13 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+                handlerRegistry.Register<TestQueryA, object, IQueryHandler<TestQueryA, object>>();
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryA));
 
                 // Assert
-                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, TestQueryA.Result>));
+                handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, object>));
             }
 
             [Fact]
@@ -90,7 +90,7 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+                handlerRegistry.Register<TestQueryA, object, IQueryHandler<TestQueryA, object>>();
 
                 // Act
                 var handlerType = handlerRegistry.Get(typeof(TestQueryB));
@@ -104,10 +104,10 @@ namespace Darker.Tests
             {
                 // Arrange
                 var handlerRegistry = new QueryHandlerRegistry();
-                handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>();
+                handlerRegistry.Register<TestQueryA, object, IQueryHandler<TestQueryA, object>>();
 
                 // Act
-                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register<TestQueryA, TestQueryA.Result, IQueryHandler<TestQueryA, TestQueryA.Result>>());
+                var exception = Assert.Throws<ConfigurationException>(() => handlerRegistry.Register<TestQueryA, object, IQueryHandler<TestQueryA, object>>());
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
@@ -117,19 +117,16 @@ namespace Darker.Tests
             }
         }
 
-        public class TestQueryA : IQuery<TestQueryA.Result>
+        public class TestQueryA : IQuery<object>
         {
-            public class Result { }
         }
 
-        public class TestQueryB : IQuery<TestQueryB.Result>
+        public class TestQueryB : IQuery<object>
         {
-            public class Result { }
         }
 
-        public class TestQueryC : IQuery<TestQueryC.Result>
+        public class TestQueryC : IQuery<object>
         {
-            public class Result { }
         }
     }
 }
