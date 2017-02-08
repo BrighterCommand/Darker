@@ -12,10 +12,10 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SimpleInjector" Version="3.3.2" />
+    <ProjectReference Include="..\Darker\Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Darker\Darker.csproj" />
+    <PackageReference Include="SimpleInjector" Version="3.3.2" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />

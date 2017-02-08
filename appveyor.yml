@@ -2,8 +2,8 @@ version: '{build}'
 configuration: Release
 
 install:
-  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-rc3/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-  - ps: ./dotnet-install.ps1 -Version 1.0.0-rc3-004530
+  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+  - ps: ./dotnet-install.ps1 -Version 1.0.0-rc4-004771
   - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Darker\Darker.csproj" -SetAppveyorVersion
   - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
