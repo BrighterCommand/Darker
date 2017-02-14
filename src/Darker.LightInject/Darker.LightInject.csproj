@@ -15,7 +15,7 @@
     <ProjectReference Include="..\Darker\Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LightInject" Version="5.0.0" />
+    <PackageReference Include="LightInject" Version="5.0.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />

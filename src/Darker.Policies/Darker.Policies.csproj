@@ -15,7 +15,7 @@
     <ProjectReference Include="..\Darker\Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Polly" Version="5.0.5" />
+    <PackageReference Include="Polly" Version="5.0.6" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />
