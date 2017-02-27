@@ -25,9 +25,11 @@ after_build:
 
 test_script:
   - cmd: dotnet test test\Darker.Tests\Darker.Tests.csproj
+  - cmd: dotnet run --project test\Darker.Benchmarks\Darker.Benchmarks.csproj --configuration %CONFIGURATION%
 
 artifacts:
   - path: artifacts\*.nupkg
+  - path: BenchmarkDotNet.Artifacts\results\*
 
 deploy:
   provider: NuGet
