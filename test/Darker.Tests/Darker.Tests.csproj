@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\src\Darker.LightInject\Darker.LightInject.csproj" />
     <ProjectReference Include="..\..\src\Darker.Policies\Darker.Policies.csproj" />
     <ProjectReference Include="..\..\src\Darker.RequestLogging\Darker.RequestLogging.csproj" />
+    <ProjectReference Include="..\..\src\Darker.Testing\Darker.Testing.csproj" />
     <ProjectReference Include="..\..\src\Darker\Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
