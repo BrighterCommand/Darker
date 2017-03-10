@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.10.2.371" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.3.31" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Darker\Darker.csproj" />
