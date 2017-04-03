@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Darker;
 using Microsoft.AspNetCore.Mvc;
+using Paramore.Darker;
 using SampleApi.Ports;
 
 namespace SampleApi.Controllers

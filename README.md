@@ -2,7 +2,7 @@
 The query-side counterpart of [Brighter](https://github.com/BrighterCommand/Paramore.Brighter).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/almoys73cgc7gs8n?svg=true)](https://ci.appveyor.com/project/BrighterCommand/darker)
-[![NuGet](https://img.shields.io/nuget/v/Darker.svg)](https://www.nuget.org/packages/Darker)
+[![NuGet](https://img.shields.io/nuget/v/Paramore.Darker.svg)](https://www.nuget.org/packages/Paramore.Darker)
 
 **This project is in a very early alpha stage. Use with caution!**
 
@@ -17,7 +17,7 @@ registry.Register<FooQuery, FooQuery.Result, FooQueryHandler>();
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Handlers(registry, Activator.CreateInstance, Activator.CreateInstance)
     .InMemoryQueryContextFactory()
-    .JsonRequestLogging()
+    .JsonQueryLogging()
     .DefaultPolicies()
     .Build();
 ```
@@ -25,13 +25,13 @@ IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
 Instead of `Activator.CreateInstance`, you can pass any factory `Func<Type, object>` to constuct handlers and decorator. Usually this calls your IoC container.
 Inject `IQueryProcessor` and call `Execute` or `ExecuteAsync` to dispatch your query to the registered query handler.
 
-This example uses the request logging integration provided by [Darker.RequestLogging](https://www.nuget.org/packages/Darker.RequestLogging)
-and policy integration provided by [Darker.Policies](https://www.nuget.org/packages/Darker.Policies).
+This example uses the request logging integration provided by [Paramore.Darker.QueryLogging](https://www.nuget.org/packages/Paramore.Darker.QueryLogging)
+and policy integration provided by [Paramore.Darker.Policies](https://www.nuget.org/packages/Paramore.Darker.Policies).
 Have a look at the [Startup.ConfigureServices](https://github.com/BrighterCommand/Darker/blob/master/samples/SampleApi/Startup.cs) method
 in the [SampleApi](https://github.com/BrighterCommand/Darker/tree/master/samples/SampleApi) project for more examples on how to use the integrations.
 
 ```csharp
-using Darker;
+using Paramore.Darker;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +56,7 @@ public class FooController : ControllerBase
 ```
 
 ```csharp
-using Darker;
+using Paramore.Darker;
 
 public sealed class FooQuery : IQuery<FooQuery.Result>
 {
@@ -83,16 +83,16 @@ Implement either `QueryHandler<,>` or `AsyncQueryHandler<,>` depending on whethe
 For most control, you can also implement `IQueryHandler<,>` directly.
 
 ```csharp
-using Darker;
-using Darker.Attributes;
-using Darker.Policies;
-using Darker.RequestLogging;
+using Paramore.Darker;
+using Paramore.Darker.Attributes;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
 using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class FooQueryHandler : AsyncQueryHandler<FooQuery, FooQuery.Result>
 {
-    [RequestLogging(1)]
+    [QueryLogging(1)]
     [FallbackPolicy(2)]
     [RetryableQuery(3)]
     public override async Task<FooQuery.Result> ExecuteAsync(FooQuery query, CancellationToken cancellationToken = default(CancellationToken))

@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Darker;
-using Darker.Attributes;
-using Darker.Policies;
-using Darker.RequestLogging;
+using Paramore.Darker;
+using Paramore.Darker.Attributes;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
 using SampleApi.Domain;
 
 namespace SampleApi.Ports
@@ -20,7 +20,7 @@ namespace SampleApi.Ports
 
     public sealed class GetPersonQueryHandler : AsyncQueryHandler<GetPersonNameQuery, string>
     {
-        [RequestLogging(1)]
+        [QueryLogging(1)]
         [FallbackPolicy(2)]
         [RetryableQuery(3, Startup.SomethingWentTerriblyWrongCircuitBreakerName)]
         public override async Task<string> ExecuteAsync(GetPersonNameQuery query, CancellationToken cancellationToken = default(CancellationToken))

@@ -8,28 +8,28 @@ install:
   - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
   - ps: ./dotnet-install.ps1 -Version 1.0.0
   - ps: Import-Module .\Set-Version.psm1
-  - ps: Set-Version -Path "src\Darker\Darker.csproj" -SetAppveyorVersion
-  - ps: Set-Version -Path "src\Darker.RequestLogging\Darker.RequestLogging.csproj"
-  - ps: Set-Version -Path "src\Darker.Policies\Darker.Policies.csproj"
-  - ps: Set-Version -Path "src\Darker.LightInject\Darker.LightInject.csproj"
-  - ps: Set-Version -Path "src\Darker.SimpleInjector\Darker.SimpleInjector.csproj"
-  - ps: Set-Version -Path "src\Darker.Testing\Darker.Testing.csproj"
+  - ps: Set-Version -Path "src\Paramore.Darker\Paramore.Darker.csproj" -SetAppveyorVersion
+  - ps: Set-Version -Path "src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj"
+  - ps: Set-Version -Path "src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj"
+  - ps: Set-Version -Path "src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj"
+  - ps: Set-Version -Path "src\Paramore.Darker.SimpleInjector\Paramore.Darker.SimpleInjector.csproj"
+  - ps: Set-Version -Path "src\Paramore.Darker.Testing\Paramore.Darker.Testing.csproj"
 
 build_script:
   - cmd: dotnet restore
   - cmd: dotnet build --configuration %CONFIGURATION%
 
 after_build:
-  - cmd: dotnet pack src\Darker --configuration %CONFIGURATION% --output ..\..\artifacts
-  - cmd: dotnet pack src\Darker.RequestLogging --configuration %CONFIGURATION% --output ..\..\artifacts
-  - cmd: dotnet pack src\Darker.Policies --configuration %CONFIGURATION% --output ..\..\artifacts
-  - cmd: dotnet pack src\Darker.LightInject --configuration %CONFIGURATION% --output ..\..\artifacts
-  - cmd: dotnet pack src\Darker.SimpleInjector --configuration %CONFIGURATION% --output ..\..\artifacts
-  - cmd: dotnet pack src\Darker.Testing --configuration %CONFIGURATION% --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.QueryLogging --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.Policies --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.LightInject --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.SimpleInjector --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.Testing --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
 
 test_script:
-  - cmd: dotnet test test\Darker.Tests\Darker.Tests.csproj
-  - cmd: dotnet run --project test\Darker.Benchmarks\Darker.Benchmarks.csproj --configuration %CONFIGURATION%
+  - cmd: dotnet test test\Paramore.Darker.Tests\Paramore.Darker.Tests.csproj
+  - cmd: dotnet run --project test\Paramore.Darker.Benchmarks\Paramore.Darker.Benchmarks.csproj --configuration %CONFIGURATION%
 
 artifacts:
   - path: artifacts\*.nupkg

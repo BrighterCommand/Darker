@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Darker.Builder;
-using Darker.Decorators;
-using Darker.LightInject;
-using Darker.Policies;
-using Darker.RequestLogging;
 using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Paramore.Darker.Builder;
+using Paramore.Darker.Decorators;
+using Paramore.Darker.LightInject;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
 using Polly;
 using SampleApi.Domain;
 using SampleApi.Ports;
@@ -57,14 +57,14 @@ namespace SampleApi
                 .LightInjectHandlers(container, opts => opts
                     .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
                 .InMemoryQueryContextFactory()
-                .JsonRequestLogging()
+                .JsonQueryLogging()
                 .Policies(ConfigurePolicies())
                 .Build();
 
             container.RegisterInstance(queryProcessor);
 
             // Don't forget to register the required decorators. todo maybe find a way to auto-discover these
-            container.Register(typeof(RequestLoggingDecorator<,>));
+            container.Register(typeof(QueryLoggingDecorator<,>));
             container.Register(typeof(RetryableQueryDecorator<,>));
             container.Register(typeof(FallbackPolicyDecorator<,>));
 
@@ -108,8 +108,8 @@ namespace SampleApi
 
             return new PolicyRegistry
             {
-                { Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy },
-                { Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy },
+                { Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy },
+                { Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy },
                 { SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario },
             };
         }

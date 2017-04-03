@@ -16,9 +16,9 @@
     <PackageReference Include="Serilog.Sinks.Literate" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Darker.LightInject\Darker.LightInject.csproj" />
-    <ProjectReference Include="..\..\src\Darker.Policies\Darker.Policies.csproj" />
-    <ProjectReference Include="..\..\src\Darker.RequestLogging\Darker.RequestLogging.csproj" />
-    <ProjectReference Include="..\..\src\Darker\Darker.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.RequestLogging\Paramore.Darker.QueryLogging.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
 </Project>
