@@ -35,7 +35,7 @@ artifacts:
   - path: artifacts\*.nupkg
   - path: BenchmarkDotNet.Artifacts\results\*
 
-deploy:
-  provider: NuGet
-  api_key:
-    secure: mYg+TXuLQs9C2GPJj26Cjy7MFWJcN1p5C5/n0ksQIvL7a14QcLGX09CUU7Hlq8hM
+# deploy:
+#   provider: NuGet
+#   api_key:
+#     secure: mYg+TXuLQs9C2GPJj26Cjy7MFWJcN1p5C5/n0ksQIvL7a14QcLGX09CUU7Hlq8hM
