@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker", "src\Para
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.Policies", "src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj", "{A4DF68F1-79F7-4B73-B1F6-BB59A6B8F136}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.QueryLogging", "src\Paramore.Darker.RequestLogging\Paramore.Darker.QueryLogging.csproj", "{66702F2C-EA0D-48E8-821A-112A6D6CE231}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.QueryLogging", "src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj", "{66702F2C-EA0D-48E8-821A-112A6D6CE231}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.LightInject", "src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj", "{A92E15F9-CD84-43BF-8AF8-C605B9DFD264}"
 EndProject
