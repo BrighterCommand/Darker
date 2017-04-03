@@ -12,7 +12,7 @@ namespace SampleApi.Ports
     {
     }
 
-    public sealed class GetPeopleQueryHandler : AsyncQueryHandler<GetPeopleQuery, IReadOnlyDictionary<int, string>>
+    public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IReadOnlyDictionary<int, string>>
     {
         [QueryLogging(1)]
         [RetryableQuery(2, Startup.SomethingWentTerriblyWrongCircuitBreakerName)]

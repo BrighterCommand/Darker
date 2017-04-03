@@ -22,12 +22,12 @@ namespace Paramore.Darker
 
         public virtual Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
+            throw new NotImplementedException($"Please derive from {nameof(QueryHandlerAsync<TQuery, TResult>)} if you want to execute queries asynchronously.");
         }
 
         public virtual Task<TResult> FallbackAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries async.");
+            throw new NotImplementedException($"Please derive from {nameof(QueryHandlerAsync<TQuery, TResult>)} if you want to execute queries asynchronously.");
         }
     }
 }

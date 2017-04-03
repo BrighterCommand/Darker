@@ -18,7 +18,7 @@ namespace SampleApi.Ports
         }
     }
 
-    public sealed class GetPersonQueryHandler : AsyncQueryHandler<GetPersonNameQuery, string>
+    public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery, string>
     {
         [QueryLogging(1)]
         [FallbackPolicy(2)]

@@ -5,21 +5,21 @@ using Paramore.Darker.Logging;
 
 namespace Paramore.Darker
 {
-    public abstract class AsyncQueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
+    public abstract class QueryHandlerAsync<TQuery, TResult> : IQueryHandler<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.For<AsyncQueryHandler<TQuery, TResult>>();
+        private static readonly ILog _logger = LogProvider.For<QueryHandlerAsync<TQuery, TResult>>();
 
         public IQueryContext Context { get; set; }
 
         public virtual TResult Execute(TQuery query)
         {
-            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries sync.");
+            throw new NotImplementedException($"Please derive from {nameof(QueryHandler<TQuery, TResult>)} if you want to execute queries synchronously.");
         }
 
         public virtual TResult Fallback(TQuery query)
         {
-            throw new NotImplementedException("Please derive from AsyncQueryHandler if you want to execute queries sync.");
+            throw new NotImplementedException($"Please derive from {nameof(QueryHandler<TQuery, TResult>)} if you want to execute queries synchronously.");
         }
 
         public abstract Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default(CancellationToken));

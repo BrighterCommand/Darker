@@ -101,7 +101,7 @@ namespace Paramore.Darker.Tests
         {
         }
 
-        public class TestQueryHandler : AsyncQueryHandler<TestQueryA, Guid>
+        public class TestQueryHandler : QueryHandlerAsync<TestQueryA, Guid>
         {
             public override Task<Guid> ExecuteAsync(TestQueryA request, CancellationToken cancellationToken = default(CancellationToken))
             {

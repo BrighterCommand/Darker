@@ -7,7 +7,7 @@ namespace Paramore.Darker.Benchmarks
     {
     }
 
-    public class BasicAsyncQueryHandler : AsyncQueryHandler<BasicAsyncQuery, bool>
+    public class BasicAsyncQueryHandler : QueryHandlerAsync<BasicAsyncQuery, bool>
     {
         public override Task<bool> ExecuteAsync(BasicAsyncQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
