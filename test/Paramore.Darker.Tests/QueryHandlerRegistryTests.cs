@@ -1,4 +1,4 @@
-﻿using Paramore.Darker.Exceptions;
+using Paramore.Darker.Exceptions;
 using Shouldly;
 using Xunit;
 

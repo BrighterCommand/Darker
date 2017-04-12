@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using LightInject;
 using Paramore.Darker.Builder;
 

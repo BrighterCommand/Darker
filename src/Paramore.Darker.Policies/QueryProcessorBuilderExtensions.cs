@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Exceptions;
 using Polly;

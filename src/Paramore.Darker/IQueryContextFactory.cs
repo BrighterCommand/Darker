@@ -1,4 +1,4 @@
-﻿namespace Paramore.Darker
+namespace Paramore.Darker
 {
     public interface IQueryContextFactory
     {

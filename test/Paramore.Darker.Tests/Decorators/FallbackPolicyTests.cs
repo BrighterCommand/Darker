@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Moq;
 using Paramore.Darker.Attributes;
 using Paramore.Darker.Decorators;

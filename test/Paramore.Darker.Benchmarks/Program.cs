@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BenchmarkDotNet.Running;
 
 namespace Paramore.Darker.Benchmarks

@@ -1,4 +1,4 @@
-﻿namespace Paramore.Darker.Policies
+namespace Paramore.Darker.Policies
 {
     public static class Constants
     {
