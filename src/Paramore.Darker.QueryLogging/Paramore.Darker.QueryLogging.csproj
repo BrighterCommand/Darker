@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
     <Description>Request logging integration for Darker (via Newtonsoft.Json)</Description>
