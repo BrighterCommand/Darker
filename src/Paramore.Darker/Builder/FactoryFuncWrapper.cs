@@ -11,14 +11,24 @@ namespace Paramore.Darker.Builder
             _func = func;
         }
 
+        IQueryHandler IQueryHandlerFactory.Create(Type handlerType)
+        {
+            return (IQueryHandler)_func(handlerType);
+        }
+
+        void IQueryHandlerFactory.Release(IQueryHandler handler)
+        {
+            // no nop
+        }
+
         T IQueryHandlerDecoratorFactory.Create<T>(Type handlerType)
         {
             return (T)_func(handlerType);
         }
 
-        T IQueryHandlerFactory.Create<T>(Type handlerType)
+        void IQueryHandlerDecoratorFactory.Release<T>(T handler)
         {
-            return (T)_func(handlerType);
+            // no nop
         }
     }
 }

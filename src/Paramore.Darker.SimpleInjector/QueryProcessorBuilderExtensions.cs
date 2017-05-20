@@ -44,14 +44,24 @@ namespace Paramore.Darker.SimpleInjector
                 _container = container;
             }
 
-            T IQueryHandlerFactory.Create<T>(Type handlerType)
+            IQueryHandler IQueryHandlerFactory.Create(Type handlerType)
             {
-                return (T)_container.GetInstance(handlerType);
+                return (IQueryHandler)_container.GetInstance(handlerType);
+            }
+
+            void IQueryHandlerFactory.Release(IQueryHandler handler)
+            {
+                // no nop
             }
 
             T IQueryHandlerDecoratorFactory.Create<T>(Type decoratorType)
             {
                 return (T)_container.GetInstance(decoratorType);
+            }
+
+            void IQueryHandlerDecoratorFactory.Release<T>(T handler)
+            {
+                // no nop
             }
         }
     }

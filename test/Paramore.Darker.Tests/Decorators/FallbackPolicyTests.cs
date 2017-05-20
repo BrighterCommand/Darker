@@ -32,7 +32,7 @@ namespace Paramore.Darker.Tests.Decorators
             var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
             _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithCatchAllFallback>();
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithCatchAllFallback))).Returns(handler);
+            _handlerFactory.Setup(x => x.Create(typeof(TestQueryHandlerWithCatchAllFallback))).Returns(handler);
             
             var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
             _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
@@ -46,6 +46,8 @@ namespace Paramore.Darker.Tests.Decorators
             handler.Context.Bag["Fallback_Exception_Cause"].ShouldBeAssignableTo<FormatException>();
             handler.Context.Bag.ShouldContainKeyAndValue("Check1", true);
             handler.Context.Bag.ShouldContainKeyAndValue("Check2", true);
+            _handlerFactory.Verify(x => x.Release(handler), Times.Once);
+            _decoratorFactory.Verify(x => x.Release<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decorator), Times.Once);
         }
 
         [Fact]
@@ -56,7 +58,7 @@ namespace Paramore.Darker.Tests.Decorators
             var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
             _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithFormatExceptionFallback>();
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithFormatExceptionFallback))).Returns(handler);
+            _handlerFactory.Setup(x => x.Create(typeof(TestQueryHandlerWithFormatExceptionFallback))).Returns(handler);
 
             var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
             _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
@@ -70,6 +72,8 @@ namespace Paramore.Darker.Tests.Decorators
             handler.Context.Bag["Fallback_Exception_Cause"].ShouldBeAssignableTo<FormatException>();
             handler.Context.Bag.ShouldContainKeyAndValue("Check1", true);
             handler.Context.Bag.ShouldContainKeyAndValue("Check2", true);
+            _handlerFactory.Verify(x => x.Release(handler), Times.Once);
+            _decoratorFactory.Verify(x => x.Release<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decorator), Times.Once);
         }
 
         [Fact]
@@ -80,7 +84,7 @@ namespace Paramore.Darker.Tests.Decorators
             var decorator = new FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>();
 
             _handlerRegistry.Register<TestQuery, TestQuery.Result, TestQueryHandlerWithoutFormatExceptionFallback>();
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandlerWithoutFormatExceptionFallback))).Returns(handler);
+            _handlerFactory.Setup(x => x.Create(typeof(TestQueryHandlerWithoutFormatExceptionFallback))).Returns(handler);
 
             var decoratorType = typeof(FallbackPolicyDecorator<IQuery<TestQuery.Result>, TestQuery.Result>);
             _decoratorFactory.Setup(x => x.Create<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decoratorType)).Returns(decorator);
@@ -93,6 +97,8 @@ namespace Paramore.Darker.Tests.Decorators
             handler.Context.Bag.ShouldNotContainKey("Fallback_Exception_Cause");
             handler.Context.Bag.ShouldContainKeyAndValue("Check1", true);
             handler.Context.Bag.ShouldNotContainKey("Check2");
+            _handlerFactory.Verify(x => x.Release(handler), Times.Once);
+            _decoratorFactory.Verify(x => x.Release<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decorator), Times.Once);
         }
 
         public class TestQuery : IQuery<TestQuery.Result>

@@ -34,7 +34,7 @@ namespace Paramore.Darker.Builder
             return this;
         }
 
-        public INeedAQueryContext Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, object> handlerFactory, Func<Type, object> decoratorFactory)
+        public INeedAQueryContext Handlers(IQueryHandlerRegistry handlerRegistry, Func<Type, IQueryHandler> handlerFactory, Func<Type, IQueryHandlerDecorator> decoratorFactory)
         {
             if (handlerRegistry == null)
                 throw new ArgumentNullException(nameof(handlerRegistry));

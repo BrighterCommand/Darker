@@ -4,7 +4,7 @@ namespace Paramore.Darker
     {
     }
 
-    public interface IQuery<TResult> : IQuery
+    public interface IQuery<out TResult> : IQuery
     {
     }
 }

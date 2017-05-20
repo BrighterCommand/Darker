@@ -16,7 +16,7 @@ namespace Paramore.Darker.Benchmarks
             handlerRegistry.Register<BasicAsyncQuery, bool, BasicAsyncQueryHandler>();
 
             _queryProcessor = QueryProcessorBuilder.With()
-                .Handlers(handlerRegistry, Activator.CreateInstance, Activator.CreateInstance)
+                .Handlers(handlerRegistry, t => (IQueryHandler)Activator.CreateInstance(t), t => (IQueryHandlerDecorator)Activator.CreateInstance(t))
                 .InMemoryQueryContextFactory()
                 .Build();
         }

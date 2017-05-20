@@ -32,7 +32,7 @@ namespace Paramore.Darker.Tests
             var handler = new TestQueryHandler();
 
             _handlerRegistry.Register<TestQueryA, Guid, TestQueryHandler>();
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(TestQueryHandler))).Returns(handler);
+            _handlerFactory.Setup(x => x.Create(typeof(TestQueryHandler))).Returns(handler);
 
             // Act
             var result = await _queryProcessor.ExecuteAsync(new TestQueryA(id));
@@ -41,6 +41,7 @@ namespace Paramore.Darker.Tests
             result.ShouldBe(id);
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag.ShouldContainKeyAndValue("id", id);
+            _handlerFactory.Verify(x => x.Release(handler), Times.Once);
         }
 
         [Fact]
@@ -55,8 +56,8 @@ namespace Paramore.Darker.Tests
             _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
             _handlerRegistry.Register<TestQueryB, object, IQueryHandler<TestQueryB, object>>();
 
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryB, object>))).Returns(handlerB.Object);
+            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryB, object>))).Returns(handlerB.Object);
 
             // Act
             await _queryProcessor.ExecuteAsync(new TestQueryA(id));
@@ -66,6 +67,8 @@ namespace Paramore.Darker.Tests
             handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
             handlerB.Verify(x => x.ExecuteAsync(It.IsAny<TestQueryB>(), default(CancellationToken)), Times.Never);
             handlerB.Verify(x => x.FallbackAsync(It.IsAny<TestQueryB>(), default(CancellationToken)), Times.Never);
+            _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
+            _handlerFactory.Verify(x => x.Release(handlerB.Object), Times.Never);
         }
 
         [Fact]
@@ -78,13 +81,14 @@ namespace Paramore.Darker.Tests
             handlerA.Setup(x => x.ExecuteAsync(It.Is<TestQueryA>(q => q.Id == id), default(CancellationToken))).Throws<FormatException>();
 
             _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
-            _handlerFactory.Setup(x => x.Create<dynamic>(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
+            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
 
             // Act
             await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new TestQueryA(id)));
 
             // Assert
             handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
+            _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
         }
 
         public class TestQueryA : IQuery<Guid>
