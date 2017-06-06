@@ -12,6 +12,8 @@ using Paramore.Darker.Decorators;
 using Paramore.Darker.LightInject;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
+using Paramore.Darker.RemoteQueries.AwsLambda;
+using Paramore.Darker.RemoteQueries.AzureFunctions;
 using Polly;
 using SampleApi.Domain;
 using SampleApi.Ports;
@@ -30,6 +32,7 @@ namespace SampleApi
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.secrets.json", optional: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
@@ -52,21 +55,7 @@ namespace SampleApi
 
             container.RegisterInstance(Log.Logger);
 
-            // Configure and register Darker.
-            var queryProcessor = QueryProcessorBuilder.With()
-                .LightInjectHandlers(container, opts => opts
-                    .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
-                .InMemoryQueryContextFactory()
-                .JsonQueryLogging()
-                .Policies(ConfigurePolicies())
-                .Build();
-
-            container.RegisterInstance(queryProcessor);
-
-            // Don't forget to register the required decorators. todo maybe find a way to auto-discover these
-            container.Register(typeof(QueryLoggingDecorator<,>));
-            container.Register(typeof(RetryableQueryDecorator<,>));
-            container.Register(typeof(FallbackPolicyDecorator<,>));
+            ConfigureDarker(container);
 
             // Add framework services.
             services.AddMvc();
@@ -85,6 +74,35 @@ namespace SampleApi
             }
 
             app.UseMvc();
+        }
+
+        private void ConfigureDarker(ServiceContainer container)
+        {
+            var remoteQueriesConfig = Configuration.GetSection("RemoteQueries");
+
+            var azureQueries = new AzureQueryRegistry(remoteQueriesConfig["Azure:baseUri"], remoteQueriesConfig["Azure:functionsKey"]);
+            azureQueries.Register<GetRandomQuote, GetRandomQuote.Result>("RandomQuote");
+            azureQueries.Register<GetAzureGreeting, string>("DarkerGreeting");
+
+            var awsQueries = new AwsQueryRegistry(remoteQueriesConfig["AWS:baseUri"], remoteQueriesConfig["AWS:apiKey"]);
+            awsQueries.Register<GetAwsGreeting, string>("darkerHelloWorld");
+
+            // Configure and register Darker.
+            var queryProcessor = QueryProcessorBuilder.With()
+                .LightInjectHandlers(container, opts => opts
+                    .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
+                .RemoteQueries(azureQueries, awsQueries)
+                .InMemoryQueryContextFactory()
+                .JsonQueryLogging()
+                .Policies(ConfigurePolicies())
+                .Build();
+
+            container.RegisterInstance(queryProcessor);
+
+            // Don't forget to register the required decorators. todo maybe find a way to auto-discover these
+            container.Register(typeof(QueryLoggingDecorator<,>));
+            container.Register(typeof(RetryableQueryDecorator<,>));
+            container.Register(typeof(FallbackPolicyDecorator<,>));
         }
 
         private IPolicyRegistry ConfigurePolicies()

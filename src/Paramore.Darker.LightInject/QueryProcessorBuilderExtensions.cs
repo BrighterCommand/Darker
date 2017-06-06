@@ -6,7 +6,7 @@ namespace Paramore.Darker.LightInject
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static INeedAQueryContext LightInjectHandlers(this INeedHandlers handlerBuilder, ServiceContainer container, Action<HandlerSettings> settings)
+        public static INeedRemoteQueries LightInjectHandlers(this INeedHandlers handlerBuilder, ServiceContainer container, Action<HandlerSettings> settings)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             if (settings == null) throw new ArgumentNullException(nameof(settings));

@@ -9,6 +9,8 @@
     <ProjectReference Include="..\..\src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.RemoteQueries.AzureFunctions\Paramore.Darker.RemoteQueries.AzureFunctions.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.RemoteQueries.AwsLambda\Paramore.Darker.RemoteQueries.AwsLambda.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>

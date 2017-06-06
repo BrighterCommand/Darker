@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Paramore.Darker.Exceptions;
 using Shouldly;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Paramore.Darker.Tests
             _handlerRegistry = new QueryHandlerRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, _decoratorFactory.Object);
-            _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
+            _queryProcessor = new QueryProcessor(new NullRemoteQueryRegistry(), handlerConfiguration, new InMemoryQueryContextFactory());
         }
 
         [Fact]
@@ -89,6 +90,19 @@ namespace Paramore.Darker.Tests
             // Assert
             handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
             _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
+        }
+
+        [Fact]
+        public async Task ThrowsMissingHandlerExceptionWhenNoHandlerIsRegistered()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<MissingHandlerException>(async () => await _queryProcessor.ExecuteAsync(new TestQueryA(id)));
+
+            // Assert
+            exception.Message.ShouldBe($"No handler registered for query: {typeof(TestQueryA).FullName}");
         }
 
         public class TestQueryA : IQuery<Guid>

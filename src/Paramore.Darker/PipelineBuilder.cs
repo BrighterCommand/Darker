@@ -143,11 +143,17 @@ namespace Paramore.Darker
         {
             _logger.DebugFormat("Disposing pipeline; releasing handler and decorators.");
 
-            _handlerFactory.Release(_handler);
-
-            foreach (var decorator in _decorators)
+            if (_handler != null)
             {
-                _decoratorFactory.Release(decorator);
+                _handlerFactory.Release(_handler);
+            }
+
+            if (_decorators != null)
+            {
+                foreach (var decorator in _decorators)
+                {
+                    _decoratorFactory.Release(decorator);
+                }
             }
         }
     }

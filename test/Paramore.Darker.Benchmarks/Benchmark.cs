@@ -17,6 +17,7 @@ namespace Paramore.Darker.Benchmarks
 
             _queryProcessor = QueryProcessorBuilder.With()
                 .Handlers(handlerRegistry, t => (IQueryHandler)Activator.CreateInstance(t), t => (IQueryHandlerDecorator)Activator.CreateInstance(t))
+                .NoRemoteQueries()
                 .InMemoryQueryContextFactory()
                 .Build();
         }
