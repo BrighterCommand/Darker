@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
 
 namespace Paramore.Darker
@@ -39,9 +40,6 @@ namespace Paramore.Darker
 
         public TResult Execute<TResult>(IQuery<TResult> query)
         {
-            if (_remoteQueryRegistry.CanHandle(query.GetType()))
-                throw new InvalidOperationException($"Remote queries only support async execution. Please use {nameof(ExecuteAsync)} instead.");
-
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
                 var queryContext = CreateQueryContext();
@@ -60,14 +58,7 @@ namespace Paramore.Darker
         }
 
         public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var queryType = query.GetType();
-            if (_remoteQueryRegistry.CanHandle(queryType))
-            {
-                dynamic handler = _remoteQueryRegistry.ResolveHandler(queryType);
-                return await handler.ExecuteAsync((dynamic)query, cancellationToken).ConfigureAwait(false);
-            }
-            
+        {          
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
                 var queryContext = CreateQueryContext();
@@ -85,6 +76,18 @@ namespace Paramore.Darker
                 }
             }
         }
+
+#if NETSTANDARD
+        public async Task<TResult> ExecuteRemoteAsync<TResult>(IRemoteQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var queryType = query.GetType();
+            if (!_remoteQueryRegistry.CanHandle(queryType))
+                throw new MissingHandlerException($"No handler registered for remote query: {queryType.FullName}");
+
+            dynamic handler = _remoteQueryRegistry.ResolveHandler(queryType);
+            return await handler.ExecuteAsync((dynamic)query, cancellationToken).ConfigureAwait(false);
+        }
+#endif
 
         private IQueryContext CreateQueryContext()
         {

@@ -6,6 +6,5 @@ namespace Paramore.Darker
     {
         bool CanHandle(Type query);
         IQueryHandler ResolveHandler(Type query);
-
     }
 }

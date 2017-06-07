@@ -3,7 +3,7 @@
     <VersionPrefix>0.1.0</VersionPrefix>
     <TargetFrameworks>netstandard1.3</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
-    <Description>Remote Queries support for AWS Lambda</Description>
+    <Description>JSON serialization for remote queries (via Newtonsoft.Json)</Description>
     <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
@@ -13,6 +13,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
   </ItemGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);NETSTANDARD;LIBLOG_PORTABLE</DefineConstants>

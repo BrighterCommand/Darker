@@ -1,8 +1,8 @@
 using Paramore.Darker;
 
-namespace SampleApi.Ports
+namespace SampleApi.Ports.Queries
 {
-    public sealed class GetAzureGreeting : IQuery<string>
+    public sealed class GetAzureGreeting : IRemoteQuery<string>
     {
         public string Name { get; }
 

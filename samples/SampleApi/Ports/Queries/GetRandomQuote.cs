@@ -1,8 +1,8 @@
-﻿using Paramore.Darker;
+using Paramore.Darker;
 
-namespace SampleApi.Ports
+namespace SampleApi.Ports.Queries
 {
-    public sealed class GetRandomQuote : IQuery<GetRandomQuote.Result>
+    public sealed class GetRandomQuote : IRemoteQuery<GetRandomQuote.Result>
     {
         public sealed class Result
         {

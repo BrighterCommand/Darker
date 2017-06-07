@@ -14,9 +14,12 @@ using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using Paramore.Darker.RemoteQueries.AwsLambda;
 using Paramore.Darker.RemoteQueries.AzureFunctions;
+using Paramore.Darker.RemoteQueries.JsonSerialization;
 using Polly;
 using SampleApi.Domain;
 using SampleApi.Ports;
+using SampleApi.Ports.Handlers;
+using SampleApi.Ports.Queries;
 using Serilog;
 
 namespace SampleApi
@@ -78,19 +81,20 @@ namespace SampleApi
 
         private void ConfigureDarker(ServiceContainer container)
         {
+            var jsonSerializer = new JsonRemoteQuerySerializer();
             var remoteQueriesConfig = Configuration.GetSection("RemoteQueries");
 
-            var azureQueries = new AzureQueryRegistry(remoteQueriesConfig["Azure:baseUri"], remoteQueriesConfig["Azure:functionsKey"]);
+            var azureQueries = new AzureQueryRegistry(jsonSerializer, remoteQueriesConfig["Azure:baseUri"], remoteQueriesConfig["Azure:functionsKey"]);
             azureQueries.Register<GetRandomQuote, GetRandomQuote.Result>("RandomQuote");
             azureQueries.Register<GetAzureGreeting, string>("DarkerGreeting");
 
-            var awsQueries = new AwsQueryRegistry(remoteQueriesConfig["AWS:baseUri"], remoteQueriesConfig["AWS:apiKey"]);
+            var awsQueries = new AwsQueryRegistry(jsonSerializer, remoteQueriesConfig["AWS:baseUri"], remoteQueriesConfig["AWS:apiKey"]);
             awsQueries.Register<GetAwsGreeting, string>("darkerHelloWorld");
 
             // Configure and register Darker.
             var queryProcessor = QueryProcessorBuilder.With()
                 .LightInjectHandlers(container, opts => opts
-                    .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
+                    .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleHandler).GetTypeInfo().Assembly))
                 .RemoteQueries(azureQueries, awsQueries)
                 .InMemoryQueryContextFactory()
                 .JsonQueryLogging()

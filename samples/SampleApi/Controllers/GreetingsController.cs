@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Paramore.Darker;
-using SampleApi.Ports;
+using SampleApi.Ports.Queries;
 
 namespace SampleApi.Controllers
 {
@@ -15,16 +15,22 @@ namespace SampleApi.Controllers
             _queryProcessor = queryProcessor;
         }
 
-        [HttpGet("aws/{name}")]
+        [HttpGet("{name}")]
+        public async Task<string> Get(string name)
+        {
+            return await _queryProcessor.ExecuteAsync(new GetGreeting(name));
+        }
+
+        [HttpGet("{name}/aws")]
         public async Task<string> GetAws(string name)
         {
-            return await _queryProcessor.ExecuteAsync(new GetAwsGreeting(name));
+            return await _queryProcessor.ExecuteRemoteAsync(new GetAwsGreeting(name));
         }
         
-        [HttpGet("azure/{name}")]
+        [HttpGet("{name}/azure")]
         public async Task<string> GetAzure(string name)
         {
-            return await _queryProcessor.ExecuteAsync(new GetAzureGreeting(name));
+            return await _queryProcessor.ExecuteRemoteAsync(new GetAzureGreeting(name));
         }
     }
 }

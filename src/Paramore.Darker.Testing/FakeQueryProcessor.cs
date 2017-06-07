@@ -50,14 +50,21 @@ namespace Paramore.Darker.Testing
             return Task.FromResult(Execute(query));
         }
 
+#if NETSTANDARD
+        public Task<TResponse> ExecuteRemoteAsync<TResponse>(IRemoteQuery<TResponse> query, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+#endif
+
         public void SetupResultFor<TQuery>(Predicate<TQuery> predicate, object result)
         {
             var queryType = typeof(TQuery);
             if (!_results.ContainsKey(queryType))
                 _results.Add(queryType, new Dictionary<Predicate<IQuery>, Func<IQuery, object>>());
 
-            Predicate<IQuery> untypedPredicate = r => predicate((TQuery)r);
-            _results[queryType].Add(untypedPredicate, r => result);
+            bool UntypedPredicate(IQuery r) => predicate((TQuery) r);
+            _results[queryType].Add(UntypedPredicate, r => result);
         }
 
         public void SetupResultFor<TQuery>(Predicate<TQuery> predicate, Func<TQuery, object> result)
@@ -67,8 +74,8 @@ namespace Paramore.Darker.Testing
             if (!_results.ContainsKey(queryType))
                 _results.Add(queryType, new Dictionary<Predicate<IQuery>, Func<IQuery, object>>());
 
-            Predicate<IQuery> untypedPredicate = r => predicate((TQuery)r);
-            _results[queryType].Add(untypedPredicate, r => result((TQuery)r));
+            bool UntypedPredicate(IQuery r) => predicate((TQuery) r);
+            _results[queryType].Add(UntypedPredicate, r => result((TQuery)r));
         }
 
         public void SetupResultFor<TQuery>(object result)
@@ -98,8 +105,8 @@ namespace Paramore.Darker.Testing
             if (!_exceptions.ContainsKey(queryType))
                 _exceptions.Add(queryType, new Dictionary<Predicate<IQuery>, Exception>());
 
-            Predicate<IQuery> untypedPredicate = r => predicate((TQuery)r);
-            _exceptions[queryType].Add(untypedPredicate, exception);
+            bool UntypedPredicate(IQuery r) => predicate((TQuery) r);
+            _exceptions[queryType].Add(UntypedPredicate, exception);
         }
 
         public void SetupExceptionFor<TQuery>(Exception exception)

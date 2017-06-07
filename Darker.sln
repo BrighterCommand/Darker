@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.RemoteQueri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paramore.Darker.RemoteQueries.AwsLambda", "src\Paramore.Darker.RemoteQueries.AwsLambda\Paramore.Darker.RemoteQueries.AwsLambda.csproj", "{D52CB2F3-5B2B-456D-94D6-A095BB6F08F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paramore.Darker.RemoteQueries.JsonSerialization", "src\Paramore.Darker.RemoteQueries.JsonSerialization\Paramore.Darker.RemoteQueries.JsonSerialization.csproj", "{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,6 +181,18 @@ Global
 		{D52CB2F3-5B2B-456D-94D6-A095BB6F08F4}.Release|x64.Build.0 = Release|Any CPU
 		{D52CB2F3-5B2B-456D-94D6-A095BB6F08F4}.Release|x86.ActiveCfg = Release|Any CPU
 		{D52CB2F3-5B2B-456D-94D6-A095BB6F08F4}.Release|x86.Build.0 = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|x64.Build.0 = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Debug|x86.Build.0 = Debug|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|x64.ActiveCfg = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|x64.Build.0 = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|x86.ActiveCfg = Release|Any CPU
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,5 +209,6 @@ Global
 		{A9D232FD-EE31-4284-ADA6-C874C88ADDA9} = {75225A8D-3180-4D86-9D4D-0E85C8AF7810}
 		{B386D3F5-4A21-4D47-8493-73DA0010FA14} = {D4B49614-55AA-46B7-B639-0EE7BAFAA722}
 		{D52CB2F3-5B2B-456D-94D6-A095BB6F08F4} = {D4B49614-55AA-46B7-B639-0EE7BAFAA722}
+		{3823BC8F-A1E0-4B2E-AA05-FDAB28733F48} = {D4B49614-55AA-46B7-B639-0EE7BAFAA722}
 	EndGlobalSection
 EndGlobal

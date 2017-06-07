@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Paramore.Darker;
-using SampleApi.Ports;
+using SampleApi.Ports.Queries;
 
 namespace SampleApi.Controllers
 {
@@ -20,14 +20,14 @@ namespace SampleApi.Controllers
         [HttpGet]
         public async Task<IReadOnlyDictionary<int, string>> Get()
         {
-            return await _queryProcessor.ExecuteAsync(new GetPeopleQuery());
+            return await _queryProcessor.ExecuteAsync(new GetPeople());
         }
 
         // GET api/people/5
         [HttpGet("{id}")]
         public async Task<string> Get(int id)
         {
-            return await _queryProcessor.ExecuteAsync(new GetPersonNameQuery(id));
+            return await _queryProcessor.ExecuteAsync(new GetPersonName(id));
         }
     }
 }

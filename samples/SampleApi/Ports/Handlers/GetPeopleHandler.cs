@@ -5,18 +5,15 @@ using Paramore.Darker;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using SampleApi.Domain;
+using SampleApi.Ports.Queries;
 
-namespace SampleApi.Ports
+namespace SampleApi.Ports.Handlers
 {
-    public sealed class GetPeopleQuery : IQuery<IReadOnlyDictionary<int, string>>
-    {
-    }
-
-    public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IReadOnlyDictionary<int, string>>
+    public sealed class GetPeopleHandler : QueryHandlerAsync<GetPeople, IReadOnlyDictionary<int, string>>
     {
         [QueryLogging(1)]
         [RetryableQuery(2, Startup.SomethingWentTerriblyWrongCircuitBreakerName)]
-        public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(GetPeopleQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(GetPeople query, CancellationToken cancellationToken = default(CancellationToken))
         {
             var repository = new PersonRepository();
             return await repository.GetAll(cancellationToken);

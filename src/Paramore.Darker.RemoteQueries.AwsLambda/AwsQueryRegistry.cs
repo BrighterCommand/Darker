@@ -1,30 +1,21 @@
 using System;
-using System.Collections.Generic;
 
 namespace Paramore.Darker.RemoteQueries.AwsLambda
 { 
-    public sealed class AwsQueryRegistry : IRemoteQueryRegistry
+    public sealed class AwsQueryRegistry : HttpRemoteQueryRegistry
     {
-        private readonly AwsConfig _config;
-        private readonly IDictionary<Type, Func<IQueryHandler>> _handlerFactories;
+        private readonly IRemoteQuerySerializer _serializer;
+        private readonly HttpRemoteQueryConfig _config;
 
-        public AwsQueryRegistry(string baseUri, string apiKey)
+        public AwsQueryRegistry(IRemoteQuerySerializer serializer, string baseUri, string functionsKey)
         {
-            _handlerFactories = new Dictionary<Type, Func<IQueryHandler>>();
-            _config = new AwsConfig
-            {
-                BaseUri = new Uri(baseUri),
-                ApiKey = apiKey
-            };
+            _serializer = serializer;
+            _config = new HttpRemoteQueryConfig(new Uri(baseUri), functionsKey, "X-Api-Key");
         }
 
-        public bool CanHandle(Type query) => _handlerFactories.ContainsKey(query);
-
-        public IQueryHandler ResolveHandler(Type query) => _handlerFactories[query]();
-
-        public void Register<TQuery, TResult>(string name) where TQuery : IQuery<TResult>
+        public void Register<TQuery, TResult>(string functionName) where TQuery : IRemoteQuery<TResult>
         {
-            _handlerFactories.Add(typeof(TQuery), () => new AwsRemoteQueryHandler<TQuery, TResult>(_config, name));
+            HandlerFactories.Add(typeof(TQuery), () => new HttpRemoteQueryHandler<TQuery, TResult>(_serializer, _config, functionName));
         }
     }
 }

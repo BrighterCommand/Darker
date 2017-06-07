@@ -1,8 +1,8 @@
-﻿using Paramore.Darker;
+using Paramore.Darker;
 
-namespace SampleApi.Ports
+namespace SampleApi.Ports.Queries
 {
-    public sealed class GetAwsGreeting : IQuery<string>
+    public sealed class GetAwsGreeting : IRemoteQuery<string>
     {
         public string Name { get; }
 

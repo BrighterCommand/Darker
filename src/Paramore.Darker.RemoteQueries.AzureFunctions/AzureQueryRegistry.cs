@@ -1,30 +1,21 @@
 using System;
-using System.Collections.Generic;
 
 namespace Paramore.Darker.RemoteQueries.AzureFunctions
 { 
-    public sealed class AzureQueryRegistry : IRemoteQueryRegistry
+    public sealed class AzureQueryRegistry : HttpRemoteQueryRegistry
     {
-        private readonly AzureConfig _config;
-        private readonly IDictionary<Type, Func<IQueryHandler>> _handlerFactories;
+        private readonly IRemoteQuerySerializer _serializer;
+        private readonly HttpRemoteQueryConfig _config;
 
-        public AzureQueryRegistry(string baseUri, string functionsKey)
+        public AzureQueryRegistry(IRemoteQuerySerializer serializer, string baseUri, string functionsKey)
         {
-            _handlerFactories = new Dictionary<Type, Func<IQueryHandler>>();
-            _config = new AzureConfig
-            {
-                BaseUri = new Uri(baseUri),
-                FunctionsKey = functionsKey
-            };
+            _serializer = serializer;
+            _config = new HttpRemoteQueryConfig(new Uri(baseUri), functionsKey, "X-Functions-Key");
         }
 
-        public bool CanHandle(Type query) => _handlerFactories.ContainsKey(query);
-
-        public IQueryHandler ResolveHandler(Type query) => _handlerFactories[query]();
-
-        public void Register<TQuery, TResult>(string name) where TQuery : IQuery<TResult>
+        public void Register<TQuery, TResult>(string functionName) where TQuery : IRemoteQuery<TResult>
         {
-            _handlerFactories.Add(typeof(TQuery), () => new AzureRemoteQueryHandler<TQuery, TResult>(_config, name));
+            HandlerFactories.Add(typeof(TQuery), () => new HttpRemoteQueryHandler<TQuery, TResult>(_serializer, _config, functionName));
         }
     }
 }

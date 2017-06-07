@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Paramore.Darker;
-using SampleApi.Ports;
+using SampleApi.Ports.Queries;
 
 namespace SampleApi.Controllers
 {
@@ -18,7 +18,7 @@ namespace SampleApi.Controllers
         [HttpGet]
         public async Task<string> Get()
         {
-            var quote = await _queryProcessor.ExecuteAsync(new GetRandomQuote());
+            var quote = await _queryProcessor.ExecuteRemoteAsync(new GetRandomQuote());
 
             return $"\"{quote.Quote}\" – {quote.Author}";
         }
