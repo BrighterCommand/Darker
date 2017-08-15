@@ -3,72 +3,57 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Paramore.Darker;
 using Paramore.Darker.Builder;
 
-namespace SampleApi
+namespace Paramore.Darker.AspNetCore
 {
     public static class ServiceCollectionExtensions
     {
-        public static IQueryProcessorExtensionBuilder AddDarker(this IServiceCollection services)
-        {           
-            // todo: executing assembly isn't good enough, need to be able to configure assemblies
-            var assembly = Assembly.GetExecutingAssembly();
-            
-            // todo: must be configurable
-            var queryContextFactory = new InMemoryQueryContextFactory();
-            
-            var handlerRegistry = new QueryHandlerRegistry();
-            
-            new HandlerSettings(services, handlerRegistry)
-                .WithQueriesAndHandlersFromAssembly(assembly);
+        public static IQueryProcessorExtensionBuilder AddDarker(this IServiceCollection services, Action<DarkerOptions> configure)
+        {
+            var options = new DarkerOptions();
+            configure(options);
 
+            var handlerRegistry = new QueryHandlerRegistry();
             var factory = new HandlerFactory(services);
             var decoratorRegistry = new DecoratorRegistry(services);
             var handlerConfiguration = new HandlerConfiguration(handlerRegistry, decoratorRegistry, factory);
 
+            RegisterQueriesAndHandlersFromAssemblies(services, handlerRegistry, options.DiscoverQueriesAndHandlersFromAssemblies);
+
             var builder = QueryProcessorBuilder.With()
                 .Handlers(handlerConfiguration)
-                .QueryContextFactory(queryContextFactory);
+                .QueryContextFactory(options.QueryContextFactory);
 
             var queryProcessor = builder.Build();
-            
+
             services.AddSingleton(queryProcessor);
-            
+
             return (QueryProcessorBuilder)builder;
         }
-        
-        private sealed class HandlerSettings
+
+        private static void RegisterQueriesAndHandlersFromAssemblies(IServiceCollection services, IQueryHandlerRegistry handlerRegistry, IEnumerable<Assembly> assemblies)
         {
-            private readonly IServiceCollection _services;
-            private readonly IQueryHandlerRegistry _handlerRegistry;
-
-            public HandlerSettings(IServiceCollection services, IQueryHandlerRegistry handlerRegistry)
-            {
-                _services = services;
-                _handlerRegistry = handlerRegistry;
-            }
-
-            public HandlerSettings WithQueriesAndHandlersFromAssembly(Assembly assembly)
-            {
-                var subscribers =
-                    from t in assembly.GetExportedTypes()
-                    let ti = t.GetTypeInfo()
-                    where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
-                    from i in t.GetInterfaces()
-                    where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
-                    select new { QueryType = i.GetGenericArguments().First(), ResultType = i.GetGenericArguments().ElementAt(1), HandlerType = t };
-
-                foreach (var subscriber in subscribers)
+            var subscribers =
+                from t in assemblies.SelectMany(a => a.ExportedTypes)
+                let ti = t.GetTypeInfo()
+                where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
+                from i in t.GetTypeInfo().ImplementedInterfaces
+                where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
+                select new
                 {
-                    _handlerRegistry.Register(subscriber.QueryType, subscriber.ResultType, subscriber.HandlerType);
-                    _services.AddTransient(subscriber.HandlerType);
-                }
+                    QueryType = i.GenericTypeArguments.ElementAt(0),
+                    ResultType = i.GenericTypeArguments.ElementAt(1),
+                    HandlerType = t
+                };
 
-                return this;
+            foreach (var subscriber in subscribers)
+            {
+                handlerRegistry.Register(subscriber.QueryType, subscriber.ResultType, subscriber.HandlerType);
+                services.AddTransient(subscriber.HandlerType);
             }
         }
-        
+
         private sealed class HandlerConfiguration : IHandlerConfiguration
         {
             public IQueryHandlerRegistry HandlerRegistry { get; }
@@ -84,7 +69,7 @@ namespace SampleApi
                 DecoratorFactory = factory;
             }
         }
-        
+
         private sealed class DecoratorRegistry : IQueryHandlerDecoratorRegistry
         {
             private readonly IServiceCollection _services;
@@ -93,7 +78,7 @@ namespace SampleApi
             {
                 _services = services;
             }
-            
+
             public void Register(Type decoratorType)
             {
                 _services.AddTransient(decoratorType);

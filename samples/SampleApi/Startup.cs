@@ -2,10 +2,12 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using Polly;
 using SampleApi.Domain;
+using SampleApi.Ports;
 
 namespace SampleApi
 {
@@ -17,7 +19,10 @@ namespace SampleApi
         public void ConfigureServices(IServiceCollection services)
         {
             // Add Darker and some extensions.
-            services.AddDarker()
+            services.AddDarker(opts =>
+                {
+                    opts.DiscoverQueriesAndHandlersFromAssemblies = new[] { typeof(GetPeopleQuery).Assembly };
+                })
                 .AddJsonQueryLogging()
                 .AddPolicies(ConfigurePolicies());
 
@@ -59,7 +64,7 @@ namespace SampleApi
             {
                 { Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy },
                 { Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy },
-                { SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario },
+                { SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario }
             };
         }
     }

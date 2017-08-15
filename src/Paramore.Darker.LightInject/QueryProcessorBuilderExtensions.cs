@@ -37,7 +37,7 @@ namespace Paramore.Darker.LightInject
                 DecoratorFactory = factory;
             }
         }
-        
+
         private sealed class DecoratorRegistry : IQueryHandlerDecoratorRegistry
         {
             private readonly ServiceContainer _container;

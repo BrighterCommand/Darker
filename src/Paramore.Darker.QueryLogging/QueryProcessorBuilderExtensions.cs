@@ -6,13 +6,13 @@ namespace Paramore.Darker.QueryLogging
 {
    public static class QueryProcessorBuilderExtensions
     {
-        public static IBuildTheQueryProcessor JsonQueryLogging(this IBuildTheQueryProcessor builder, Action<JsonSerializerSettings> settings = null)
+        public static IBuildTheQueryProcessor JsonQueryLogging(this IBuildTheQueryProcessor builder, Action<JsonSerializerSettings> configure = null)
         {
             var queryProcessorBuilder = builder as QueryProcessorBuilder;
             if (queryProcessorBuilder == null)
                 throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
-            AddJsonQueryLogging(queryProcessorBuilder, settings);
+            AddJsonQueryLogging(queryProcessorBuilder, configure);
 
             return queryProcessorBuilder;
         }

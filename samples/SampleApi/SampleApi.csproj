@@ -6,6 +6,7 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />

@@ -7,10 +7,11 @@ environment:
   NUGET_XMLDOC_MODE: skip
 
 install:
-  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-  - ps: ./dotnet-install.ps1 -Version 1.0.0
+  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/v2.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+  - ps: ./dotnet-install.ps1 -Version 2.0.0
   - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Paramore.Darker\Paramore.Darker.csproj" -SetAppveyorVersion
+  - ps: Set-Version -Path "src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj"
   - ps: Set-Version -Path "src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj"
   - ps: Set-Version -Path "src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj"
   - ps: Set-Version -Path "src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj"
@@ -18,11 +19,11 @@ install:
   - ps: Set-Version -Path "src\Paramore.Darker.Testing\Paramore.Darker.Testing.csproj"
 
 build_script:
-  - cmd: dotnet restore
   - cmd: dotnet build --configuration %CONFIGURATION%
 
 after_build:
   - cmd: dotnet pack src\Paramore.Darker --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
+  - cmd: dotnet pack src\Paramore.Darker.AspNetCore --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
   - cmd: dotnet pack src\Paramore.Darker.QueryLogging --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
   - cmd: dotnet pack src\Paramore.Darker.Policies --configuration %CONFIGURATION% --no-build --output ..\..\artifacts
   - cmd: dotnet pack src\Paramore.Darker.LightInject --configuration %CONFIGURATION% --no-build --output ..\..\artifacts

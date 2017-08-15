@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFrameworks>netstandard1.1;netstandard2.0</TargetFrameworks>
+    <Authors>Daniel Stockhammer</Authors>
+    <Description>Simple Injector integration for Darker</Description>
+    <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/BrighterCommand/Darker</RepositoryUrl>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+  </ItemGroup>
+</Project>

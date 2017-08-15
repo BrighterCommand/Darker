@@ -37,7 +37,7 @@ namespace Paramore.Darker.SimpleInjector
                 DecoratorFactory = factory;
             }
         }
-        
+
         private sealed class DecoratorRegistry : IQueryHandlerDecoratorRegistry
         {
             private readonly Container _container;
@@ -46,7 +46,7 @@ namespace Paramore.Darker.SimpleInjector
             {
                 _container = container;
             }
-            
+
             public void Register(Type decoratorType)
             {
                 _container.Register(decoratorType);
