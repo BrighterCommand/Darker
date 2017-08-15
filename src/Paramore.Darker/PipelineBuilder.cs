@@ -12,6 +12,9 @@ namespace Paramore.Darker
 {
     internal sealed class PipelineBuilder<TResult> : IDisposable
     {
+        private const string ExecuteMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute);
+        private const string ExecuteAsyncMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.ExecuteAsync);
+
         private static readonly ILog _logger = LogProvider.For<PipelineBuilder<TResult>>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
@@ -38,7 +41,8 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            _decorators = GetDecorators(handlerType.GetMethod(nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute)), queryContext);
+            var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType);
+            _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, TResult>>
             {
@@ -69,7 +73,8 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            _decorators = GetDecorators(handlerType.GetMethod(nameof(IQueryHandler<IQuery<TResult>, TResult>.ExecuteAsync)), queryContext);
+            var executeAsyncMethodInfo = GetExecuteAsyncMethodInfo(handlerType, queryType);
+            _decorators = GetDecorators(executeAsyncMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
             {
@@ -90,6 +95,24 @@ namespace Paramore.Darker
             return pipeline;
         }
 
+        private static MemberInfo GetExecuteMethodInfo(Type handlerType, Type queryType)
+        {
+#if NETSTANDARD1_0
+            return handlerType.GetRuntimeMethod(ExecuteMethodName, new[] { queryType });
+#else
+            return handlerType.GetMethod(ExecuteMethodName);
+#endif
+        }
+
+        private static MemberInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
+        {
+#if NETSTANDARD1_0
+            return handlerType.GetRuntimeMethod(ExecuteAsyncMethodName, new[] { queryType, typeof(CancellationToken) });
+#else
+            return handlerType.GetMethod(ExecuteAsyncMethodName);
+#endif
+        }
+
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType)
         {
             _logger.DebugFormat("Looking up handler type in handler registry...");
@@ -107,7 +130,7 @@ namespace Paramore.Darker
             return (handlerType, handler);
         }
 
-        private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(ICustomAttributeProvider executeMethod, IQueryContext queryContext)
+        private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(MemberInfo executeMethod, IQueryContext queryContext)
         {
             var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttribute), true)
                 .Cast<QueryHandlerAttribute>()

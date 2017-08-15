@@ -54,6 +54,7 @@ namespace Paramore.Darker.Tests
                 handlerRegistry.Get(typeof(TestQueryC)).ShouldBeNull();
             }
 
+#if !NET452
             [Fact]
             public void ThrowsConfigurationExceptionWhenResultTypeDoesnotMatch()
             {
@@ -67,6 +68,7 @@ namespace Paramore.Darker.Tests
                 // Assert
                 exception.Message.ShouldBe($"Result type not valid for query {typeof(TestQueryA).Name}");
             }
+#endif
         }
 
         public class WhenRegisteringUsingGenerics

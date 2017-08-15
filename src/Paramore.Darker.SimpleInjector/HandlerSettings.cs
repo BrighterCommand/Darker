@@ -18,17 +18,22 @@ namespace Paramore.Darker.SimpleInjector
         public HandlerSettings WithQueriesAndHandlersFromAssembly(Assembly assembly)
         {
             var subscribers =
-                from t in assembly.GetExportedTypes()
+                from t in assembly.ExportedTypes
                 let ti = t.GetTypeInfo()
                 where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
-                from i in t.GetInterfaces()
+                from i in t.GetTypeInfo().ImplementedInterfaces
                 where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
-                select new { Request = i.GetGenericArguments().First(), ResultType = i.GetGenericArguments().ElementAt(1), Handler = t };
+                select new
+                {
+                    QueryType = i.GenericTypeArguments.ElementAt(0),
+                    ResultType = i.GenericTypeArguments.ElementAt(1),
+                    HandlerType = t
+                };
 
             foreach (var subscriber in subscribers)
             {
-                _handlerRegistry.Register(subscriber.Request, subscriber.ResultType, subscriber.Handler);
-                _container.Register(subscriber.Handler);
+                _handlerRegistry.Register(subscriber.QueryType, subscriber.ResultType, subscriber.HandlerType);
+                _container.Register(subscriber.HandlerType);
             }
 
             return this;
