@@ -4,17 +4,21 @@ using Paramore.Darker.Builder;
 
 namespace Paramore.Darker.QueryLogging
 {
-    public static class Constants
+   public static class QueryProcessorBuilderExtensions
     {
-        public const string ContextBagKey = "Darker.JsonSerializer";
-    }
-
-    public static class QueryProcessorBuilderExtensions
-    {
-        public static IBuildTheQueryProcessor JsonQueryLogging(this IBuildTheQueryProcessor lastStageBuilder, Action<JsonSerializerSettings> settings = null)
+        public static IBuildTheQueryProcessor JsonQueryLogging(this IBuildTheQueryProcessor builder, Action<JsonSerializerSettings> settings = null)
         {
-            var builder = lastStageBuilder.ToQueryProcessorBuilder();
+            var queryProcessorBuilder = builder as QueryProcessorBuilder;
+            if (queryProcessorBuilder == null)
+                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
+            AddJsonQueryLogging(queryProcessorBuilder, settings);
+
+            return queryProcessorBuilder;
+        }
+        
+        public static IQueryProcessorExtensionBuilder AddJsonQueryLogging(this IQueryProcessorExtensionBuilder builder, Action<JsonSerializerSettings> settings = null)
+        {
             JsonSerializerSettings serializerSettings = null;
 
             if (settings != null)
@@ -23,7 +27,10 @@ namespace Paramore.Darker.QueryLogging
                 settings(serializerSettings);
             }
 
-            return builder.ContextBagItem(Constants.ContextBagKey, new NewtonsftJsonSerializer(serializerSettings));
+            builder.RegisterDecorator(typeof(QueryLoggingDecorator<,>));
+            builder.AddContextBagItem(Constants.ContextBagKey, new NewtonsftJsonSerializer(serializerSettings));
+
+            return builder;
         }
     }
 }

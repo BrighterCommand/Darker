@@ -11,13 +11,14 @@ namespace Paramore.Darker.LightInject
             if (container == null) throw new ArgumentNullException(nameof(container));
             if (settings == null) throw new ArgumentNullException(nameof(settings));
 
-            var factory = new LightInjectHandlerFactory(container);
+            var factory = new HandlerFactory(container);
+            var decoratorRegistry = new DecoratorRegistry(container);
             var handlerRegistry = new QueryHandlerRegistry();
 
             var handlerSettings = new HandlerSettings(container, handlerRegistry);
             settings(handlerSettings);
 
-            var handlerConfiguration = new HandlerConfiguration(handlerRegistry, factory);
+            var handlerConfiguration = new HandlerConfiguration(handlerRegistry, decoratorRegistry, factory);
             return handlerBuilder.Handlers(handlerConfiguration);
         }
 
@@ -25,21 +26,38 @@ namespace Paramore.Darker.LightInject
         {
             public IQueryHandlerRegistry HandlerRegistry { get; }
             public IQueryHandlerFactory HandlerFactory { get; }
+            public IQueryHandlerDecoratorRegistry DecoratorRegistry { get; }
             public IQueryHandlerDecoratorFactory DecoratorFactory { get; }
 
-            public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, LightInjectHandlerFactory factory)
+            public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, IQueryHandlerDecoratorRegistry decoratorRegistry, HandlerFactory factory)
             {
                 HandlerRegistry = handlerRegistry;
                 HandlerFactory = factory;
+                DecoratorRegistry = decoratorRegistry;
                 DecoratorFactory = factory;
             }
         }
-
-        private sealed class LightInjectHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
+        
+        private sealed class DecoratorRegistry : IQueryHandlerDecoratorRegistry
         {
             private readonly ServiceContainer _container;
 
-            public LightInjectHandlerFactory(ServiceContainer container)
+            public DecoratorRegistry(ServiceContainer container)
+            {
+                _container = container;
+            }
+            
+            public void Register(Type decoratorType)
+            {
+                _container.Register(decoratorType);
+            }
+        }
+
+        private sealed class HandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
+        {
+            private readonly ServiceContainer _container;
+
+            public HandlerFactory(ServiceContainer container)
             {
                 _container = container;
             }

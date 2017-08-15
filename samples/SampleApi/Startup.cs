@@ -1,18 +1,11 @@
 using System;
-using System.Reflection;
-using LightInject;
-using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Paramore.Darker.Builder;
-using Paramore.Darker.Decorators;
-using Paramore.Darker.LightInject;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using Polly;
 using SampleApi.Domain;
-using SampleApi.Ports;
 
 namespace SampleApi
 {
@@ -21,40 +14,20 @@ namespace SampleApi
         internal const string SomethingWentTerriblyWrongCircuitBreakerName = "SomethingWentTerriblyWrongCircuitBreaker";
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
-            var container = new ServiceContainer
-            {
-                ScopeManagerProvider = new StandaloneScopeManagerProvider()
-            };
-
-            // Configure and register Darker.
-            var queryProcessor = QueryProcessorBuilder.With()
-                .LightInjectHandlers(container, opts => opts
-                    .WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQueryHandler).GetTypeInfo().Assembly))
-                .InMemoryQueryContextFactory()
-                .JsonQueryLogging()
-                .Policies(ConfigurePolicies())
-                .Build();
-
-            container.RegisterInstance(queryProcessor);
-
-            // Don't forget to register the required decorators. todo maybe find a way to auto-discover these
-            container.Register(typeof(QueryLoggingDecorator<,>));
-            container.Register(typeof(RetryableQueryDecorator<,>));
-            container.Register(typeof(FallbackPolicyDecorator<,>));
+            // Add Darker and some extensions.
+            services.AddDarker()
+                .AddJsonQueryLogging()
+                .AddPolicies(ConfigurePolicies());
 
             // Add framework services.
             services.AddMvc();
-
-            return container.CreateServiceProvider(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            //loggerFactory.AddSerilog();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

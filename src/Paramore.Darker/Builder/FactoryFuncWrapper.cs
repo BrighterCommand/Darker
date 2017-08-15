@@ -2,7 +2,7 @@ using System;
 
 namespace Paramore.Darker.Builder
 {
-    internal class FactoryFuncWrapper : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
+    internal sealed class FactoryFuncWrapper : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
     {
         private readonly Func<Type, object> _func;
 

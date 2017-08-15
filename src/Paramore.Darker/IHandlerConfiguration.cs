@@ -4,6 +4,7 @@ namespace Paramore.Darker
     {
         IQueryHandlerRegistry HandlerRegistry { get; }
         IQueryHandlerFactory HandlerFactory { get; }
+        IQueryHandlerDecoratorRegistry DecoratorRegistry { get; }
         IQueryHandlerDecoratorFactory DecoratorFactory { get; }
     }
 }

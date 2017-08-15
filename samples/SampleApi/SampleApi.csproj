@@ -6,15 +6,12 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="LightInject" Version="5.0.3" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.0-dev-10172" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.0.1" />
   </ItemGroup>

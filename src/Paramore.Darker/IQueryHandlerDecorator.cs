@@ -7,6 +7,7 @@ namespace Paramore.Darker
     public interface IQueryHandlerDecorator
     {
         IQueryContext Context { get; set; }
+        
         void InitializeFromAttributeParams(object[] attributeParams);
     }
 

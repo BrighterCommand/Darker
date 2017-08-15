@@ -107,7 +107,7 @@ namespace Paramore.Darker
             return (handlerType, handler);
         }
 
-        private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(MethodInfo executeMethod, IQueryContext queryContext)
+        private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(ICustomAttributeProvider executeMethod, IQueryContext queryContext)
         {
             var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttribute), true)
                 .Cast<QueryHandlerAttribute>()

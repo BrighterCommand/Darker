@@ -7,10 +7,19 @@ namespace Paramore.Darker.Policies
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor lastStageBuilder, IPolicyRegistry policyRegistry)
+        public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor builder, IPolicyRegistry policyRegistry)
         {
-            var builder = lastStageBuilder.ToQueryProcessorBuilder();
+            var queryProcessorBuilder = builder as QueryProcessorBuilder;
+            if (queryProcessorBuilder == null)
+                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
+            AddPolicies(queryProcessorBuilder, policyRegistry);
+
+            return queryProcessorBuilder;
+        }
+        
+        public static IQueryProcessorExtensionBuilder AddPolicies(this IQueryProcessorExtensionBuilder builder, IPolicyRegistry policyRegistry)
+        {
             if (policyRegistry == null)
                 throw new ArgumentNullException(nameof(policyRegistry));
 
@@ -20,13 +29,25 @@ namespace Paramore.Darker.Policies
             if (!policyRegistry.Has(Constants.CircuitBreakerPolicyName))
                 throw new ConfigurationException($"The policy registry is missing the {Constants.CircuitBreakerPolicyName} policy which is required");
 
-            return builder.ContextBagItem(Constants.ContextBagKey, policyRegistry);
+            builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
+
+            return builder;
         }
 
-        public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor lastStageBuilder)
+        public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor builder)
         {
-            var builder = lastStageBuilder.ToQueryProcessorBuilder();
+            var queryProcessorBuilder = builder as QueryProcessorBuilder;
+            if (queryProcessorBuilder == null)
+                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
+            AddDefaultPolicies(queryProcessorBuilder);
+
+            return queryProcessorBuilder;
+        }
+
+        public static IQueryProcessorExtensionBuilder AddDefaultPolicies(this IQueryProcessorExtensionBuilder builder)
+        {
             var defaultRetryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetry(new[]
@@ -46,7 +67,10 @@ namespace Paramore.Darker.Policies
                 { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
             };
 
-            return builder.ContextBagItem(Constants.ContextBagKey, policyRegistry);
+            builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
+
+            return builder;
         }
     }
 }

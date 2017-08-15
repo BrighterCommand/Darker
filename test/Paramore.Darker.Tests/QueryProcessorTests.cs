@@ -8,17 +8,17 @@ namespace Paramore.Darker.Tests
     public class QueryProcessorTests
     {
         private readonly Mock<IQueryHandlerFactory> _handlerFactory;
-        private readonly Mock<IQueryHandlerDecoratorFactory> _decoratorFactory;
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryProcessor _queryProcessor;
 
         public QueryProcessorTests()
         {
-            _handlerFactory = new Mock<IQueryHandlerFactory>();
-            _decoratorFactory = new Mock<IQueryHandlerDecoratorFactory>();
             _handlerRegistry = new QueryHandlerRegistry();
+            _handlerFactory = new Mock<IQueryHandlerFactory>();
+            var decoratorFactory = new Mock<IQueryHandlerDecoratorFactory>();
+            var decoratorRegistry = new Mock<IQueryHandlerDecoratorRegistry>();
 
-            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, _decoratorFactory.Object);
+            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, decoratorRegistry.Object, decoratorFactory.Object);
             _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
         }
 

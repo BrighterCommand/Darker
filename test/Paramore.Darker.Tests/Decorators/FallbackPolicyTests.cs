@@ -16,11 +16,12 @@ namespace Paramore.Darker.Tests.Decorators
 
         public FallbackPolicyTests()
         {
+            _handlerRegistry = new QueryHandlerRegistry();
             _handlerFactory = new Mock<IQueryHandlerFactory>();
             _decoratorFactory = new Mock<IQueryHandlerDecoratorFactory>();
-            _handlerRegistry = new QueryHandlerRegistry();
-
-            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, _decoratorFactory.Object);
+            var decoratorRegistry = new Mock<IQueryHandlerDecoratorRegistry>();
+            
+            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, decoratorRegistry.Object, _decoratorFactory.Object);
             _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
         }
 
