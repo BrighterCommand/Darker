@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>0.3.0</VersionPrefix>
-    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <VersionPrefix>0.4.0</VersionPrefix>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
     <Description>Simple Injector integration for Darker</Description>
     <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
@@ -15,9 +15,6 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SimpleInjector" Version="4.0.6" />
+    <PackageReference Include="SimpleInjector" Version="4.0.8" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD;LIBLOG_PORTABLE</DefineConstants>
-  </PropertyGroup>
 </Project>

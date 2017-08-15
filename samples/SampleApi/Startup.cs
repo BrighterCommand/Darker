@@ -4,9 +4,7 @@ using LightInject;
 using LightInject.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Decorators;
 using Paramore.Darker.LightInject;
@@ -15,25 +13,12 @@ using Paramore.Darker.QueryLogging;
 using Polly;
 using SampleApi.Domain;
 using SampleApi.Ports;
-using Serilog;
 
 namespace SampleApi
 {
     public class Startup
     {
         internal const string SomethingWentTerriblyWrongCircuitBreakerName = "SomethingWentTerriblyWrongCircuitBreaker";
-
-        public IConfigurationRoot Configuration { get; }
-
-        public Startup(IHostingEnvironment env)
-        {
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public IServiceProvider ConfigureServices(IServiceCollection services)
@@ -42,15 +27,6 @@ namespace SampleApi
             {
                 ScopeManagerProvider = new StandaloneScopeManagerProvider()
             };
-
-            // Configure and register Serilog.
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.FromLogContext()
-                .WriteTo.LiterateConsole()
-                .CreateLogger();
-
-            container.RegisterInstance(Log.Logger);
 
             // Configure and register Darker.
             var queryProcessor = QueryProcessorBuilder.With()
@@ -75,9 +51,9 @@ namespace SampleApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddSerilog();
+            //loggerFactory.AddSerilog();
 
             if (env.IsDevelopment())
             {

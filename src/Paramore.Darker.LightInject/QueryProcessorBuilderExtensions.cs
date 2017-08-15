@@ -51,7 +51,7 @@ namespace Paramore.Darker.LightInject
 
             void IQueryHandlerFactory.Release(IQueryHandler handler)
             {
-                // no nop
+                // no op
             }
 
             T IQueryHandlerDecoratorFactory.Create<T>(Type decoratorType)
@@ -61,7 +61,7 @@ namespace Paramore.Darker.LightInject
 
             void IQueryHandlerDecoratorFactory.Release<T>(T handler)
             {
-                // no nop
+                // no op
             }
         }
     }

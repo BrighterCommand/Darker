@@ -18,7 +18,7 @@ namespace Paramore.Darker.Builder
 
         void IQueryHandlerFactory.Release(IQueryHandler handler)
         {
-            // no nop
+            // no op
         }
 
         T IQueryHandlerDecoratorFactory.Create<T>(Type handlerType)
@@ -28,7 +28,7 @@ namespace Paramore.Darker.Builder
 
         void IQueryHandlerDecoratorFactory.Release<T>(T handler)
         {
-            // no nop
+            // no op
         }
     }
 }
