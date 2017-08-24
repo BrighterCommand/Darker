@@ -6,81 +6,17 @@ namespace Paramore.Darker.SimpleInjector
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static INeedAQueryContext SimpleInjectorHandlers(this INeedHandlers handlerBuilder, Container container, Action<HandlerSettings> settings)
+        public static INeedAQueryContext SimpleInjectorHandlers(this INeedHandlers handlerBuilder, Container container, Action<HandlerSettings> settings = null)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (container == null)
+                throw new ArgumentNullException(nameof(container));
 
-            var factory = new HandlerFactory(container);
-            var decoratorRegistry = new DecoratorRegistry(container);
-            var handlerRegistry = new QueryHandlerRegistry();
+            var factory = new SimpleInjectorHandlerFactory(container);
+            var registry = new SimpleInjectorHandlerRegistry(container);
+            var handlerSettings = new HandlerSettings(registry);
+            settings?.Invoke(handlerSettings);
 
-            var handlerSettings = new HandlerSettings(container, handlerRegistry);
-            settings(handlerSettings);
-
-            var handlerConfiguration = new HandlerConfiguration(handlerRegistry, decoratorRegistry, factory);
-            return handlerBuilder.Handlers(handlerConfiguration);
-        }
-
-        private sealed class HandlerConfiguration : IHandlerConfiguration
-        {
-            public IQueryHandlerRegistry HandlerRegistry { get; }
-            public IQueryHandlerFactory HandlerFactory { get; }
-            public IQueryHandlerDecoratorRegistry DecoratorRegistry { get; }
-            public IQueryHandlerDecoratorFactory DecoratorFactory { get; }
-
-            public HandlerConfiguration(IQueryHandlerRegistry handlerRegistry, IQueryHandlerDecoratorRegistry decoratorRegistry, HandlerFactory factory)
-            {
-                HandlerRegistry = handlerRegistry;
-                HandlerFactory = factory;
-                DecoratorRegistry = decoratorRegistry;
-                DecoratorFactory = factory;
-            }
-        }
-
-        private sealed class DecoratorRegistry : IQueryHandlerDecoratorRegistry
-        {
-            private readonly Container _container;
-
-            public DecoratorRegistry(Container container)
-            {
-                _container = container;
-            }
-
-            public void Register(Type decoratorType)
-            {
-                _container.Register(decoratorType);
-            }
-        }
-
-        private sealed class HandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
-        {
-            private readonly Container _container;
-
-            public HandlerFactory(Container container)
-            {
-                _container = container;
-            }
-
-            IQueryHandler IQueryHandlerFactory.Create(Type handlerType)
-            {
-                return (IQueryHandler)_container.GetInstance(handlerType);
-            }
-
-            void IQueryHandlerFactory.Release(IQueryHandler handler)
-            {
-                // no op
-            }
-
-            T IQueryHandlerDecoratorFactory.Create<T>(Type decoratorType)
-            {
-                return (T)_container.GetInstance(decoratorType);
-            }
-
-            void IQueryHandlerDecoratorFactory.Release<T>(T handler)
-            {
-                // no op
-            }
+            return handlerBuilder.Handlers(registry, factory, registry, factory);
         }
     }
 }
