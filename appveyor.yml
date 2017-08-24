@@ -7,9 +7,6 @@ environment:
   NUGET_XMLDOC_MODE: skip
 
 install:
-  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/v2.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-  - ps: ./dotnet-install.ps1 -Version 2.0.0
-  - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Paramore.Darker\Paramore.Darker.csproj" -SetAppveyorVersion
   - ps: Set-Version -Path "src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj"
   - ps: Set-Version -Path "src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj"
@@ -38,7 +35,9 @@ artifacts:
   - path: artifacts\*.nupkg
   - path: BenchmarkDotNet.Artifacts\results\*
 
-# deploy:
-#   provider: NuGet
-#   api_key:
-#     secure: mYg+TXuLQs9C2GPJj26Cjy7MFWJcN1p5C5/n0ksQIvL7a14QcLGX09CUU7Hlq8hM
+deploy:
+  provider: NuGet
+  api_key:
+    secure: mYg+TXuLQs9C2GPJj26Cjy7MFWJcN1p5C5/n0ksQIvL7a14QcLGX09CUU7Hlq8hM
+  on:
+    appveyor_repo_tag: true
