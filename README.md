@@ -4,8 +4,6 @@ The query-side counterpart of [Brighter](https://github.com/BrighterCommand/Para
 [![Build status](https://ci.appveyor.com/api/projects/status/almoys73cgc7gs8n?svg=true)](https://ci.appveyor.com/project/BrighterCommand/darker)
 [![NuGet](https://img.shields.io/nuget/v/Paramore.Darker.svg)](https://www.nuget.org/packages/Paramore.Darker)
 
-**This project is in a very early alpha stage. Use with caution!**
-
 ## Usage
 
 Register your queries and handlers with `QueryHandlerRegistry` and use `QueryProcessorBuilder` to configure and build a `IQueryProcessor`.
