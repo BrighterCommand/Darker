@@ -15,6 +15,6 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LightInject" Version="5.0.3" />
+    <PackageReference Include="LightInject" Version="5.1.0" />
   </ItemGroup>
 </Project>
