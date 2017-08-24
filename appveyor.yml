@@ -7,6 +7,8 @@ environment:
   NUGET_XMLDOC_MODE: skip
 
 install:
+  - ps: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dotnet/cli/v2.0.0/scripts/obtain/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+  - ps: ./dotnet-install.ps1 -Version 2.0.0
   - ps: Import-Module .\Set-Version.psm1
   - ps: Set-Version -Path "src\Paramore.Darker\Paramore.Darker.csproj" -SetAppveyorVersion
   - ps: Set-Version -Path "src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj"
