@@ -14,12 +14,11 @@
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'netstandard1.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
   </ItemGroup>
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
   </PropertyGroup>
 </Project>
