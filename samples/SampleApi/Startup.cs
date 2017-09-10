@@ -19,10 +19,8 @@ namespace SampleApi
         public void ConfigureServices(IServiceCollection services)
         {
             // Add Darker and some extensions.
-            services.AddDarker(opts =>
-                {
-                    opts.DiscoverQueriesAndHandlersFromAssemblies = new[] { typeof(GetPeopleQuery).Assembly };
-                })
+            services.AddDarker()
+                .HandlersFromAssemblies(typeof(GetPeopleQuery).Assembly)
                 .AddJsonQueryLogging()
                 .AddPolicies(ConfigurePolicies());
 

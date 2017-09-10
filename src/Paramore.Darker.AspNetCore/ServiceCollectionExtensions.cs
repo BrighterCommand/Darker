@@ -6,7 +6,7 @@ namespace Paramore.Darker.AspNetCore
 {
     public static class ServiceCollectionExtensions
     {
-        public static IQueryProcessorExtensionBuilder AddDarker(this IServiceCollection services, Action<DarkerOptions> configure = null)
+        public static IDarkerHandlerBuilder AddDarker(this IServiceCollection services, Action<DarkerOptions> configure = null)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
@@ -17,8 +17,6 @@ namespace Paramore.Darker.AspNetCore
             var registry = new AspNetHandlerRegistry(services);
             var factory = new AspNetHandlerFactory(services);
 
-            registry.RegisterFromAssemblies(options.DiscoverQueriesAndHandlersFromAssemblies);
-
             var builder = QueryProcessorBuilder.With()
                 .Handlers(registry, factory, registry, factory)
                 .QueryContextFactory(options.QueryContextFactory);
@@ -27,7 +25,7 @@ namespace Paramore.Darker.AspNetCore
 
             services.AddSingleton(queryProcessor);
 
-            return (QueryProcessorBuilder)builder;
+            return new AspNetHandlerBuilder(registry, (QueryProcessorBuilder)builder);
         }
     }
 }
