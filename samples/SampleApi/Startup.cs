@@ -20,7 +20,7 @@ namespace SampleApi
         {
             // Add Darker and some extensions.
             services.AddDarker()
-                .HandlersFromAssemblies(typeof(GetPeopleQuery).Assembly)
+                .AddHandlersFromAssemblies(typeof(GetPeopleQuery).Assembly)
                 .AddJsonQueryLogging()
                 .AddPolicies(ConfigurePolicies());
 

@@ -13,10 +13,8 @@ ASP.NET Core integration is provided by the [Paramore.Darker.AspNetCore](https:/
 public void ConfigureServices(IServiceCollection services)
 {
     // Add Darker and some extensions.
-    services.AddDarker(opts =>
-        {
-            opts.DiscoverQueriesAndHandlersFromAssemblies = new[] { typeof(GetPeopleQuery).Assembly };
-        })
+    services.AddDarker()
+        .AddHandlersFromAssemblies(typeof(GetPeopleQueryHandler).Assembly)
         .AddJsonQueryLogging()
         .AddDefaultPolicies();
 

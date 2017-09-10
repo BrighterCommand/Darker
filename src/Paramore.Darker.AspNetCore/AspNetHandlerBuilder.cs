@@ -15,13 +15,13 @@ namespace Paramore.Darker.AspNetCore
             _builder = builder;
         }
 
-        public IQueryProcessorExtensionBuilder HandlersFromAssemblies(params Assembly[] assemblies)
+        public IQueryProcessorExtensionBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)
         {
             _registry.RegisterFromAssemblies(assemblies);
             return _builder;
         }
 
-        public IQueryProcessorExtensionBuilder Handlers(Action<IQueryHandlerRegistry> registerHandlers)
+        public IQueryProcessorExtensionBuilder AddHandlers(Action<IQueryHandlerRegistry> registerHandlers)
         {
             if (registerHandlers == null)
                 throw new ArgumentNullException(nameof(registerHandlers));

@@ -3,7 +3,7 @@
     <VersionPrefix>1.1.0</VersionPrefix>
     <TargetFrameworks>netstandard1.1;netstandard2.0</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
-    <Description>Simple Injector integration for Darker</Description>
+    <Description>ASP.NET Core integration for Darker</Description>
     <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>

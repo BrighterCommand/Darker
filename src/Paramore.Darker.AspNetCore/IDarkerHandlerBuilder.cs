@@ -6,7 +6,7 @@ namespace Paramore.Darker.AspNetCore
 {
     public interface IDarkerHandlerBuilder
     {
-        IQueryProcessorExtensionBuilder HandlersFromAssemblies(params Assembly[] assemblies);
-        IQueryProcessorExtensionBuilder Handlers(Action<IQueryHandlerRegistry> registerHandlers);
+        IQueryProcessorExtensionBuilder AddHandlersFromAssemblies(params Assembly[] assemblies);
+        IQueryProcessorExtensionBuilder AddHandlers(Action<IQueryHandlerRegistry> registerHandlers);
     }
 }
