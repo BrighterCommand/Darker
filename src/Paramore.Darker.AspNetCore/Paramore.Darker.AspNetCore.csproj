@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>1.1.0</VersionPrefix>
+    <VersionPrefix>1.1.1</VersionPrefix>
     <TargetFrameworks>netstandard1.1;netstandard2.0</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
     <Description>ASP.NET Core integration for Darker</Description>
