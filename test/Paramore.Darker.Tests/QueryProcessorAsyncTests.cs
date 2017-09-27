@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Paramore.Darker.Testing.Ports;
 using Shouldly;
 using Xunit;
 
@@ -51,13 +52,13 @@ namespace Paramore.Darker.Tests
             var id = Guid.NewGuid();
 
             var handlerA = new Mock<IQueryHandler<TestQueryA, Guid>>();
-            var handlerB = new Mock<IQueryHandler<TestQueryB, object>>();
+            var handlerB = new Mock<IQueryHandler<TestQueryB, int>>();
 
             _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
-            _handlerRegistry.Register<TestQueryB, object, IQueryHandler<TestQueryB, object>>();
+            _handlerRegistry.Register<TestQueryB, int, IQueryHandler<TestQueryB, int>>();
 
             _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryB, object>))).Returns(handlerB.Object);
+            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryB, int>))).Returns(handlerB.Object);
 
             // Act
             await _queryProcessor.ExecuteAsync(new TestQueryA(id));
@@ -89,29 +90,6 @@ namespace Paramore.Darker.Tests
             // Assert
             handlerA.Verify(x => x.FallbackAsync(It.IsAny<TestQueryA>(), default(CancellationToken)), Times.Never);
             _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
-        }
-
-        public class TestQueryA : IQuery<Guid>
-        {
-            public Guid Id { get; }
-
-            public TestQueryA(Guid id)
-            {
-                Id = id;
-            }
-        }
-
-        public class TestQueryB : IQuery<object>
-        {
-        }
-
-        public class TestQueryHandler : QueryHandlerAsync<TestQueryA, Guid>
-        {
-            public override Task<Guid> ExecuteAsync(TestQueryA request, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                Context.Bag.Add("id", request.Id);
-                return Task.FromResult(request.Id);
-            }
         }
     }
 }

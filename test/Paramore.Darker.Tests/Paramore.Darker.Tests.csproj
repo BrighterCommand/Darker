@@ -3,11 +3,14 @@
     <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.SimpleInjector\Paramore.Darker.SimpleInjector.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Testing\Paramore.Darker.Testing.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />
+    <ProjectReference Include="..\Paramore.Darker.Testing.Ports\Paramore.Darker.Testing.Ports.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />

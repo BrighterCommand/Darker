@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker.Testing;
+using Paramore.Darker.Testing.Ports;
 using Shouldly;
 using Xunit;
 
@@ -272,29 +273,6 @@ namespace Paramore.Darker.Tests
 
             // Assert
             result.ShouldBe(default(int));
-        }
-
-        public class TestQueryA : IQuery<Guid>
-        {
-            public Guid Id { get; }
-
-            public TestQueryA(Guid id)
-            {
-                Id = id;
-            }
-        }
-
-        public class TestQueryB : IQuery<int>
-        {
-            public decimal Number { get; }
-
-            public TestQueryB(decimal number)
-            {
-                Number = number;
-            }
-        }
-        public class TestQueryC : IQuery<object>
-        {
         }
     }
 }
