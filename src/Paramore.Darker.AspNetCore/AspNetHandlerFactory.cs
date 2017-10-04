@@ -5,16 +5,16 @@ namespace Paramore.Darker.AspNetCore
 {
     internal sealed class AspNetHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
     {
-        private readonly Lazy<IServiceProvider> _serviceProvider;
+        private readonly IServiceCollection _services;
 
         public AspNetHandlerFactory(IServiceCollection services)
         {
-            _serviceProvider = new Lazy<IServiceProvider>(services.BuildServiceProvider);
+            _services = services;
         }
 
         IQueryHandler IQueryHandlerFactory.Create(Type handlerType)
         {
-            return (IQueryHandler)_serviceProvider.Value.GetService(handlerType);
+            return (IQueryHandler)_services.BuildServiceProvider().GetService(handlerType);
         }
 
         void IQueryHandlerFactory.Release(IQueryHandler handler)
@@ -24,7 +24,7 @@ namespace Paramore.Darker.AspNetCore
 
         T IQueryHandlerDecoratorFactory.Create<T>(Type decoratorType)
         {
-            return (T)_serviceProvider.Value.GetService(decoratorType);
+            return (T)_services.BuildServiceProvider().GetService(decoratorType);
         }
 
         void IQueryHandlerDecoratorFactory.Release<T>(T handler)
