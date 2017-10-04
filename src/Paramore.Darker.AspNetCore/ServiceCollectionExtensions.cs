@@ -14,7 +14,7 @@ namespace Paramore.Darker.AspNetCore
             var options = new DarkerOptions();
             configure?.Invoke(options);
 
-            var registry = new AspNetHandlerRegistry(services);
+            var registry = new AspNetHandlerRegistry(services, options.HandlerLifetime);
             var factory = new AspNetHandlerFactory(services);
 
             var builder = QueryProcessorBuilder.With()
