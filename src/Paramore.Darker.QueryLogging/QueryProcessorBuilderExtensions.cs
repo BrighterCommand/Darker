@@ -17,7 +17,8 @@ namespace Paramore.Darker.QueryLogging
             return queryProcessorBuilder;
         }
         
-        public static IQueryProcessorExtensionBuilder AddJsonQueryLogging(this IQueryProcessorExtensionBuilder builder, Action<JsonSerializerSettings> settings = null)
+        public static TBuilder AddJsonQueryLogging<TBuilder>(this TBuilder builder, Action<JsonSerializerSettings> settings = null)
+            where TBuilder : IQueryProcessorExtensionBuilder
         {
             JsonSerializerSettings serializerSettings = null;
 

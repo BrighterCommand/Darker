@@ -17,8 +17,9 @@ namespace Paramore.Darker.Policies
 
             return queryProcessorBuilder;
         }
-        
-        public static IQueryProcessorExtensionBuilder AddPolicies(this IQueryProcessorExtensionBuilder builder, IPolicyRegistry policyRegistry)
+
+        public static TBuilder AddPolicies<TBuilder>(this TBuilder builder, IPolicyRegistry policyRegistry)
+            where TBuilder : IQueryProcessorExtensionBuilder
         {
             if (policyRegistry == null)
                 throw new ArgumentNullException(nameof(policyRegistry));
@@ -46,7 +47,8 @@ namespace Paramore.Darker.Policies
             return queryProcessorBuilder;
         }
 
-        public static IQueryProcessorExtensionBuilder AddDefaultPolicies(this IQueryProcessorExtensionBuilder builder)
+        public static TBuilder AddDefaultPolicies<TBuilder>(this TBuilder builder)
+            where TBuilder : IQueryProcessorExtensionBuilder
         {
             var defaultRetryPolicy = Policy
                 .Handle<Exception>()

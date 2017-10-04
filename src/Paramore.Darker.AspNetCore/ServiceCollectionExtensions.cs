@@ -25,7 +25,7 @@ namespace Paramore.Darker.AspNetCore
 
             services.AddSingleton(queryProcessor);
 
-            return new AspNetHandlerBuilder(registry, (QueryProcessorBuilder)builder);
+            return new AspNetHandlerBuilder(services, registry, (QueryProcessorBuilder)builder);
         }
     }
 }

@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7522
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApi", "samples\SampleApi\SampleApi.csproj", "{A9D232FD-EE31-4284-ADA6-C874C88ADDA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paramore.Darker.Testing.Ports", "test\Paramore.Darker.Testing.Ports\Paramore.Darker.Testing.Ports.csproj", "{BAE5E3C9-D7A6-4C4C-8291-1141031E4215}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paramore.Darker.Testing.Ports", "test\Paramore.Darker.Testing.Ports\Paramore.Darker.Testing.Ports.csproj", "{BAE5E3C9-D7A6-4C4C-8291-1141031E4215}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
