@@ -79,7 +79,7 @@ public sealed class FooQuery : IQuery<FooQuery.Result>
 }
 ```
 
-Implement either `QueryHandler<,>` or `AsyncQueryHandler<,>` depending on whether you wish to execute your queries synchronously or asynchronously.
+Implement either `QueryHandler<,>` or `QueryHandlerAsync<,>` depending on whether you wish to execute your queries synchronously or asynchronously.
 For most control, you can also implement `IQueryHandler<,>` directly.
 
 ```csharp
@@ -90,7 +90,7 @@ using Paramore.Darker.QueryLogging;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class FooQueryHandler : AsyncQueryHandler<FooQuery, FooQuery.Result>
+public sealed class FooQueryHandler : QueryHandlerAsync<FooQuery, FooQuery.Result>
 {
     [QueryLogging(1)]
     [FallbackPolicy(2)]
