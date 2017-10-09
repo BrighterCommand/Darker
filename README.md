@@ -47,10 +47,9 @@ public class FooController : ControllerBase
 
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default(CancellationToken))
     {
-        var query = new FooQuery();
+        var query = new GetFoo(42);
         var result = await _queryProcessor.ExecuteAsync(query, cancellationToken);
-
-        return Ok(result.Answer);
+        return Ok(result);
     }
 }
 ```
@@ -58,23 +57,13 @@ public class FooController : ControllerBase
 ```csharp
 using Paramore.Darker;
 
-public sealed class FooQuery : IQuery<FooQuery.Result>
+public sealed class GetFoo : IQuery<string>
 {
     public int Number { get; }
 
-    public FooQuery(int number)
+    public GetFoo(int number)
     {
         Number = number;
-    }
-
-    public sealed class Result
-    {
-        public string Answer { get; }
-
-        public Result(string answer)
-        {
-            Answer = answer;
-        }
     }
 }
 ```
@@ -90,15 +79,14 @@ using Paramore.Darker.QueryLogging;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class FooQueryHandler : QueryHandlerAsync<FooQuery, FooQuery.Result>
+public sealed class GetFooHandler : QueryHandlerAsync<GetFoo, string>
 {
     [QueryLogging(1)]
     [FallbackPolicy(2)]
     [RetryableQuery(3)]
-    public override async Task<FooQuery.Result> ExecuteAsync(FooQuery query, CancellationToken cancellationToken = default(CancellationToken))
+    public override async Task<string> ExecuteAsync(GetFoo query, CancellationToken cancellationToken = default(CancellationToken))
     {
-        var answer = await CalculateAnswerForNumber(query.Number, cancellationToken).ConfigureAwait(false);
-        return new FooQuery.Result(answer);
+        return await FetchFooForNumber(query.Number, cancellationToken);
     }
 }
 ```
@@ -108,7 +96,7 @@ Register your queries and handlers with `QueryHandlerRegistry` and use `QueryPro
 
 ```csharp
 var registry = new QueryHandlerRegistry();
-registry.Register<FooQuery, FooQuery.Result, FooQueryHandler>();
+registry.Register<GetFoo, string, GetFooHandler>();
 
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)
