@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>1.0.2</VersionPrefix>
-    <TargetFrameworks>netstandard1.0;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <TargetFrameworks>net452;net461;netstandard1.0;netstandard1.3;netstandard2.0</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
     <Description>Darker Query Processor</Description>
     <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
@@ -18,7 +18,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
+    <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
   </PropertyGroup>
 </Project>

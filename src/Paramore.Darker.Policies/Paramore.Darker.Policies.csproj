@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>1.0.3</VersionPrefix>
-    <TargetFrameworks>netstandard1.1;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <TargetFrameworks>net452;net461;netstandard1.1;netstandard1.3;netstandard2.0</TargetFrameworks>
     <Authors>Daniel Stockhammer</Authors>
     <Description>Policy integration for Darker (via Polly)</Description>
     <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
@@ -17,7 +17,10 @@
   <ItemGroup>
     <PackageReference Include="Polly" Version="5.3.1" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
   </PropertyGroup>
 </Project>
