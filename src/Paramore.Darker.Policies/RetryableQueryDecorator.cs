@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Policies.Logging;
+using Polly;
+using Polly.Registry;
 
 namespace Paramore.Darker.Policies
 {
@@ -19,7 +21,7 @@ namespace Paramore.Darker.Policies
         {
             _policyName = (string)attributeParams[0];
 
-            if (!GetPolicyRegistry().Has(_policyName))
+            if (!GetPolicyRegistry().ContainsKey(_policyName))
                 throw new ConfigurationException($"Policy does not exist in policy registry: {_policyName}");
         }
 
@@ -27,9 +29,10 @@ namespace Paramore.Darker.Policies
         {
             _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
 
-            return GetPolicyRegistry().Get(_policyName).Execute(() => next(query));
+            return GetPolicyRegistry().Get<ISyncPolicy<TResult>>(_policyName).Execute(() => next(query));
         }
 
+        
         public async Task<TResult> ExecuteAsync(TQuery query,
             Func<TQuery, CancellationToken, Task<TResult>> next,
             Func<TQuery, CancellationToken, Task<TResult>> fallback,
@@ -37,19 +40,19 @@ namespace Paramore.Darker.Policies
         {
             _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
-            return await GetPolicyRegistry().Get(_policyName)
+            return await GetPolicyRegistry().Get<IAsyncPolicy<TResult>>(_policyName)
                 .ExecuteAsync(ct => next(query, ct), cancellationToken, false)
                 .ConfigureAwait(false);
         }
 
-        private IPolicyRegistry GetPolicyRegistry()
+        private IReadOnlyPolicyRegistry<string> GetPolicyRegistry()
         {
             if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
                 throw new ConfigurationException($"Policy registry does not exist in context bag with key {Constants.ContextBagKey}.");
 
-            var policyRegistry = Context.Bag[Constants.ContextBagKey] as IPolicyRegistry;
+            var policyRegistry = Context.Bag[Constants.ContextBagKey] as IPolicyRegistry<string>;
             if (policyRegistry == null)
-                throw new ConfigurationException($"The policy registry in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(IPolicyRegistry)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
+                throw new ConfigurationException($"The policy registry in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(IPolicyRegistry<string>)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
 
             return policyRegistry;
         }
