@@ -2,12 +2,13 @@ using System;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Exceptions;
 using Polly;
+using Polly.Registry;
 
 namespace Paramore.Darker.Policies
 {
     public static class QueryProcessorBuilderExtensions
     {
-        public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor builder, IPolicyRegistry policyRegistry)
+        public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor builder, IPolicyRegistry<string> policyRegistry)
         {
             var queryProcessorBuilder = builder as QueryProcessorBuilder;
             if (queryProcessorBuilder == null)
@@ -18,16 +19,16 @@ namespace Paramore.Darker.Policies
             return queryProcessorBuilder;
         }
 
-        public static TBuilder AddPolicies<TBuilder>(this TBuilder builder, IPolicyRegistry policyRegistry)
+        public static TBuilder AddPolicies<TBuilder>(this TBuilder builder, IPolicyRegistry<string> policyRegistry)
             where TBuilder : IQueryProcessorExtensionBuilder
         {
             if (policyRegistry == null)
                 throw new ArgumentNullException(nameof(policyRegistry));
 
-            if (!policyRegistry.Has(Constants.RetryPolicyName))
+            if (!policyRegistry.ContainsKey(Constants.RetryPolicyName))
                 throw new ConfigurationException($"The policy registry is missing the {Constants.RetryPolicyName} policy which is required");
 
-            if (!policyRegistry.Has(Constants.CircuitBreakerPolicyName))
+            if (!policyRegistry.ContainsKey(Constants.CircuitBreakerPolicyName))
                 throw new ConfigurationException($"The policy registry is missing the {Constants.CircuitBreakerPolicyName} policy which is required");
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
@@ -63,11 +64,9 @@ namespace Paramore.Darker.Policies
                 .Handle<Exception>()
                 .CircuitBreaker(1, TimeSpan.FromMilliseconds(500));
 
-            var policyRegistry = new PolicyRegistry
-            {
-                { Constants.RetryPolicyName, defaultRetryPolicy },
-                { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
-            };
+            var policyRegistry = new PolicyRegistry();
+            policyRegistry.Add(Constants.RetryPolicyName, defaultRetryPolicy);
+            policyRegistry.Add(Constants.CircuitBreakerPolicyName, circuitBreakerPolicy);
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);

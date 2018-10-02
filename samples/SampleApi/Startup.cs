@@ -6,6 +6,7 @@ using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using Polly;
+using Polly.Registry;
 using SampleApi.Domain;
 using SampleApi.Ports;
 
@@ -39,7 +40,7 @@ namespace SampleApi
             app.UseMvc();
         }
 
-        private IPolicyRegistry ConfigurePolicies()
+        private IPolicyRegistry<string> ConfigurePolicies()
         {
             var defaultRetryPolicy = Policy
                 .Handle<Exception>()
@@ -58,12 +59,11 @@ namespace SampleApi
                 .Handle<SomethingWentTerriblyWrongException>()
                 .CircuitBreakerAsync(1, TimeSpan.FromSeconds(5));
 
-            return new PolicyRegistry
-            {
-                { Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy },
-                { Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy },
-                { SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario }
-            };
-        }
+            var policyRegistry =new PolicyRegistry();
+            policyRegistry.Add(Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy);
+            policyRegistry.Add(Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy);
+            policyRegistry.Add(SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario);
+            return policyRegistry;
+            }
     }
 }
