@@ -38,11 +38,11 @@ namespace Paramore.Darker
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
                 var queryContext = CreateQueryContext();
-                var pipeline = pipelineBuilder.Build(query, queryContext);
+                var handlerToExecute = pipelineBuilder.Build(query, queryContext);
 
                 try
                 {
-                    return pipeline.Last().Invoke(query);
+                    return handlerToExecute.Invoke(query);
                 }
                 catch (Exception ex)
                 {
@@ -57,12 +57,12 @@ namespace Paramore.Darker
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
                 var queryContext = CreateQueryContext();
-                var pipeline = pipelineBuilder.BuildAsync(query, queryContext);
+                var handlerToExecute = pipelineBuilder.BuildAsync(query, queryContext);
 
                 try
                 {
                     _logger.DebugFormat("Invoking async pipeline...");
-                    return await pipeline.Last().Invoke(query, cancellationToken).ConfigureAwait(false);
+                    return await handlerToExecute.Invoke(query, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
