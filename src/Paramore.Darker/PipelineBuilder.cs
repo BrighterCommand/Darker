@@ -31,7 +31,7 @@ namespace Paramore.Darker
             _decoratorFactory = decoratorFactory;
         }
 
-        public IReadOnlyList<Func<IQuery<TResult>, TResult>> Build(IQuery<TResult> query, IQueryContext queryContext)
+        public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext)
         {
             var queryType = query.GetType();
             _logger.InfoFormat("Building pipeline for {QueryType}", queryType.Name);
@@ -60,10 +60,10 @@ namespace Paramore.Darker
                 pipeline.Add(r => decorator.Execute(r, next, fallback));
             }
 
-            return pipeline;
+            return pipeline.Last();
         }
 
-        public IReadOnlyList<Func<IQuery<TResult>, CancellationToken, Task<TResult>>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
+        public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
         {
             var queryType = query.GetType();
             _logger.InfoFormat("Building and executing async pipeline for {QueryType}", queryType.Name);
@@ -92,7 +92,7 @@ namespace Paramore.Darker
                 pipeline.Add((r, ct) => decorator.ExecuteAsync(r, next, fallback, ct));
             }
 
-            return pipeline;
+            return pipeline.Last();
         }
 
         private static MemberInfo GetExecuteMethodInfo(Type handlerType, Type queryType)
