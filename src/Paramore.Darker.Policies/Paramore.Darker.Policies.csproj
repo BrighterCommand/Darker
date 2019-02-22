@@ -15,7 +15,7 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Polly" Version="6.0.1" />
+    <PackageReference Include="Polly" Version="7.0.3" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
     <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE</DefineConstants>
