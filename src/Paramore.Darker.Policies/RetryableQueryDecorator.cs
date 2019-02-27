@@ -29,7 +29,7 @@ namespace Paramore.Darker.Policies
         {
             _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
 
-            return GetPolicyRegistry().Get<ISyncPolicy<TResult>>(_policyName).Execute(() => next(query));
+            return GetPolicyRegistry().Get<ISyncPolicy>(_policyName).Execute(() => next(query));
         }
 
         
@@ -40,12 +40,12 @@ namespace Paramore.Darker.Policies
         {
             _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
 
-            return await GetPolicyRegistry().Get<IAsyncPolicy<TResult>>(_policyName)
+            return await GetPolicyRegistry().Get<IAsyncPolicy>(_policyName)
                 .ExecuteAsync(ct => next(query, ct), cancellationToken, false)
                 .ConfigureAwait(false);
         }
 
-        private IReadOnlyPolicyRegistry<string> GetPolicyRegistry()
+        private IPolicyRegistry<string> GetPolicyRegistry()
         {
             if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
                 throw new ConfigurationException($"Policy registry does not exist in context bag with key {Constants.ContextBagKey}.");
