@@ -32,20 +32,18 @@ namespace Paramore.Darker
             if (_registry.ContainsKey(queryType))
                 throw new ConfigurationException($"Registry already contains an entry for {queryType.Name}");
 
-#if !NETSTANDARD1_0
+
             if (!HasMatchingResultType(queryType, resultType))
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
-#endif
 
             _registry.Add(queryType, handlerType);
         }
 
-#if !NETSTANDARD1_0
         private static bool HasMatchingResultType(Type queryType, Type resultType)
         {
             return queryType.GetInterfaces().Any(i => i.GenericTypeArguments.Any(t => t == resultType));
         }
-#endif
+
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
         {

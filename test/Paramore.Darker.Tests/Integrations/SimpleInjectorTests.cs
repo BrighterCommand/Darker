@@ -21,7 +21,7 @@ namespace Paramore.Darker.Tests.Integrations
                 .InMemoryQueryContextFactory()
                 .Build();
 
-            container.RegisterSingleton(queryProcessor);
+            container.RegisterInstance(queryProcessor);
 
             var resolvedQueryProcessor = container.GetInstance<IQueryProcessor>();
             resolvedQueryProcessor.ShouldNotBeNull();

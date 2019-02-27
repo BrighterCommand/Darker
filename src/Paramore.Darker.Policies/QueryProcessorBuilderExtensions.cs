@@ -53,7 +53,7 @@ namespace Paramore.Darker.Policies
         {
             var defaultRetryPolicy = Policy
                 .Handle<Exception>()
-                .WaitAndRetry(new[]
+                .WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromMilliseconds(50),
                     TimeSpan.FromMilliseconds(100),
@@ -62,11 +62,13 @@ namespace Paramore.Darker.Policies
 
             var circuitBreakerPolicy = Policy
                 .Handle<Exception>()
-                .CircuitBreaker(1, TimeSpan.FromMilliseconds(500));
+                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
 
-            var policyRegistry = new PolicyRegistry();
-            policyRegistry.Add(Constants.RetryPolicyName, defaultRetryPolicy);
-            policyRegistry.Add(Constants.CircuitBreakerPolicyName, circuitBreakerPolicy);
+            var policyRegistry = new PolicyRegistry
+            {
+                {Constants.RetryPolicyName, defaultRetryPolicy},
+                {Constants.CircuitBreakerPolicyName, circuitBreakerPolicy}
+            };
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);

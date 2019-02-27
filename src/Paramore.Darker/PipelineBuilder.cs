@@ -36,7 +36,7 @@ namespace Paramore.Darker
             var queryType = query.GetType();
             _logger.InfoFormat("Building pipeline for {QueryType}", queryType.Name);
 
-            (var handlerType, var handler) = ResolveHandler(queryType);
+            var (handlerType, handler) = ResolveHandler(queryType);
 
             _handler = handler;
             _handler.Context = queryContext;
@@ -68,7 +68,7 @@ namespace Paramore.Darker
             var queryType = query.GetType();
             _logger.InfoFormat("Building and executing async pipeline for {QueryType}", queryType.Name);
 
-            (var handlerType, var handler) = ResolveHandler(queryType);
+            var (handlerType, handler) = ResolveHandler(queryType);
 
             _handler = handler;
             _handler.Context = queryContext;
@@ -97,20 +97,13 @@ namespace Paramore.Darker
 
         private static MemberInfo GetExecuteMethodInfo(Type handlerType, Type queryType)
         {
-#if NETSTANDARD1_0
-            return handlerType.GetRuntimeMethod(ExecuteMethodName, new[] { queryType });
-#else
+
             return handlerType.GetMethod(ExecuteMethodName);
-#endif
         }
 
         private static MemberInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
         {
-#if NETSTANDARD1_0
-            return handlerType.GetRuntimeMethod(ExecuteAsyncMethodName, new[] { queryType, typeof(CancellationToken) });
-#else
             return handlerType.GetMethod(ExecuteAsyncMethodName);
-#endif
         }
 
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType)

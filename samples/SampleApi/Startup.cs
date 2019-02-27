@@ -59,11 +59,13 @@ namespace SampleApi
                 .Handle<SomethingWentTerriblyWrongException>()
                 .CircuitBreakerAsync(1, TimeSpan.FromSeconds(5));
 
-            var policyRegistry =new PolicyRegistry();
-            policyRegistry.Add(Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy);
-            policyRegistry.Add(Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy);
-            policyRegistry.Add(SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario);
+            var policyRegistry = new PolicyRegistry
+            {
+                {Paramore.Darker.Policies.Constants.RetryPolicyName, defaultRetryPolicy},
+                {Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy},
+                {SomethingWentTerriblyWrongCircuitBreakerName, circuitBreakTheWorstCaseScenario}
+            };
             return policyRegistry;
-            }
+        }
     }
 }
