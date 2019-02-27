@@ -1,5 +1,10 @@
 <Project>
   <PropertyGroup>
+    <Company>Brighter Command</Company>
+    <Authors>Daniel Stockhammer, Toby Henderson</Authors>
+    <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\Darker.snk</AssemblyOriginatorKeyFile>
 

@@ -1,12 +1,5 @@
 <Project>
   <PropertyGroup>
-    <Authors>Daniel Stockhammer, Toby Henderson</Authors>
-    <PackageProjectUrl>https://github.com/BrighterCommand/Darker</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/BrighterCommand/Darker/master/LICENSE.md</PackageLicenseUrl>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
-    <InformationalVersion>2.0.0</InformationalVersion>
-    <Version>2.0.0</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 </Project>
