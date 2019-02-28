@@ -16,8 +16,8 @@ build_script:
 test_script:
   - cmd: dotnet build ./Darker.sln --configuration %CONFIGURATION%
 
-after_test:
-  - cmd: dotnet run --project test\Paramore.Darker.Benchmarks\Paramore.Darker.Benchmarks.csproj --configuration %CONFIGURATION%
+# after_test:
+#   - cmd: dotnet run --project test\Paramore.Darker.Benchmarks\Paramore.Darker.Benchmarks.csproj --configuration %CONFIGURATION%
 
 artifacts:
   - path: '**\*.nupkg'
