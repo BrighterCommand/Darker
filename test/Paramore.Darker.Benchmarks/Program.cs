@@ -9,9 +9,6 @@ namespace Paramore.Darker.Benchmarks
         {
             var summary = BenchmarkRunner.Run<Benchmark>();
             Console.WriteLine(summary);
-
-
-            Console.ReadLine();
         }
     }
 }
