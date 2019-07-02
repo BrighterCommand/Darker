@@ -1,35 +1,36 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.AspNetCore
 {
     internal sealed class AspNetHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
     {
-        private readonly IServiceCollection _services;
+        private readonly IServiceProvider _serviceProvider;
 
-        public AspNetHandlerFactory(IServiceCollection services)
+        public AspNetHandlerFactory(IServiceProvider serviceProvider)
         {
-            _services = services;
+            _serviceProvider = serviceProvider;
         }
 
         IQueryHandler IQueryHandlerFactory.Create(Type handlerType)
         {
-            return (IQueryHandler)_services.BuildServiceProvider().GetService(handlerType);
+            return (IQueryHandler)_serviceProvider.GetService(handlerType);
         }
 
         void IQueryHandlerFactory.Release(IQueryHandler handler)
         {
-            // no op
+            var disposal = handler as IDisposable;
+            disposal?.Dispose();
         }
 
         T IQueryHandlerDecoratorFactory.Create<T>(Type decoratorType)
         {
-            return (T)_services.BuildServiceProvider().GetService(decoratorType);
+            return (T)_serviceProvider.GetService(decoratorType);
         }
 
         void IQueryHandlerDecoratorFactory.Release<T>(T handler)
         {
-            // no op
+            var disposal = handler as IDisposable;
+            disposal?.Dispose();
         }
     }
 }

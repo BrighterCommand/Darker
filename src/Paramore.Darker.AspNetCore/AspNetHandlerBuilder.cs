@@ -10,19 +10,17 @@ namespace Paramore.Darker.AspNetCore
         public IServiceCollection Services { get; }
 
         private readonly AspNetHandlerRegistry _registry;
-        private readonly QueryProcessorBuilder _builder;
 
-        public AspNetHandlerBuilder(IServiceCollection services, AspNetHandlerRegistry registry, QueryProcessorBuilder builder)
+        public AspNetHandlerBuilder(IServiceCollection services, AspNetHandlerRegistry registry)
         {
             Services = services;
             _registry = registry;
-            _builder = builder;
         }
 
         public IQueryProcessorAspNetExtensionBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)
         {
             _registry.RegisterFromAssemblies(assemblies);
-            return new AspNetBuilderWrapper(Services, _builder);
+            return new AspNetBuilderWrapper(Services);
         }
 
         public IQueryProcessorAspNetExtensionBuilder AddHandlers(Action<IQueryHandlerRegistry> registerHandlers)
@@ -32,7 +30,7 @@ namespace Paramore.Darker.AspNetCore
 
             registerHandlers(_registry);
 
-            return new AspNetBuilderWrapper(Services, _builder);
+            return new AspNetBuilderWrapper(Services);
         }
     }
 }
