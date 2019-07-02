@@ -6,5 +6,6 @@ namespace Paramore.Darker.AspNetCore
     {
         public IQueryContextFactory QueryContextFactory { get; set; } = new InMemoryQueryContextFactory();
         public ServiceLifetime HandlerLifetime { get; set; } = ServiceLifetime.Transient;
+        public ServiceLifetime QueryProcessorLifetime { get; set; } = ServiceLifetime.Singleton;
     }
 }

@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.AspNetCore
 {
-    internal sealed class AspNetHandlerRegistry : QueryHandlerRegistry, IQueryHandlerDecoratorRegistry
+    internal sealed class ServiceCollectionHandlerRegistry : QueryHandlerRegistry
     {
-        private readonly IServiceCollection _services;
         private readonly ServiceLifetime _lifetime;
+        private readonly IServiceCollection _services;
 
-        public AspNetHandlerRegistry(IServiceCollection services, ServiceLifetime lifetime)
+        public ServiceCollectionHandlerRegistry(IServiceCollection services, ServiceLifetime lifetime)
         {
             _services = services;
             _lifetime = lifetime;
@@ -19,11 +19,6 @@ namespace Paramore.Darker.AspNetCore
             _services.Add(new ServiceDescriptor(handlerType, handlerType, _lifetime));
 
             base.Register(queryType, resultType, handlerType);
-        }
-
-        public void Register(Type decoratorType)
-        {
-            _services.Add(new ServiceDescriptor(decoratorType, decoratorType, _lifetime));
         }
     }
 }

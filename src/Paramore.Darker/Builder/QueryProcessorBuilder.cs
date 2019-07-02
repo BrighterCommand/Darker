@@ -82,7 +82,6 @@ namespace Paramore.Darker.Builder
 
         public IQueryProcessorExtensionBuilder AddContextBagItem(string key, object item)
         {
-            // todo dupe check
             _contextBagData.Add(key, item);
             return this;
         }
