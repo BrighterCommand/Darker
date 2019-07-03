@@ -13,24 +13,25 @@ namespace Paramore.Darker.AspNetCore
 
             var options = new DarkerOptions();
             configure?.Invoke(options);
-            services.AddSingleton<DarkerOptions>(options);
-            var registry = new AspNetHandlerRegistry(services, options.HandlerLifetime);
-            services.AddSingleton<AspNetHandlerRegistry>(registry);
+            services.AddSingleton(options);
+            var registry = new ServiceCollectionHandlerRegistry(services, options.HandlerLifetime);
+            services.AddSingleton(registry);
 
             services.Add(new ServiceDescriptor(typeof(IQueryProcessor), BuildDarker, options.HandlerLifetime));
 
-            return new AspNetHandlerBuilder(services, registry);
+            return new ServiceCollectionDarkerHandlerBuilder(services, registry);
         }
 
-        private static IQueryProcessor  BuildDarker(IServiceProvider serviceProvider)
+        private static IQueryProcessor BuildDarker(IServiceProvider serviceProvider)
         {
             var options = serviceProvider.GetService<DarkerOptions>();
-            var factory = new AspNetHandlerFactory(serviceProvider);
-            var registry = serviceProvider.GetService<AspNetHandlerRegistry>();
+            var factory = new ServiceProviderHandlerFactory(serviceProvider);
+            var registry = serviceProvider.GetService<ServiceCollectionHandlerRegistry>();
 
             var builder = QueryProcessorBuilder.With()
                 .Handlers(registry, factory, registry, factory)
                 .QueryContextFactory(options.QueryContextFactory);
+
 
             return builder.Build();
         }

@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.AspNetCore
 {
-    internal sealed class AspNetHandlerRegistry : QueryHandlerRegistry, IQueryHandlerDecoratorRegistry
+    internal sealed class ServiceCollectionHandlerRegistry : QueryHandlerRegistry, IQueryHandlerDecoratorRegistry
     {
         private readonly IServiceCollection _services;
         private readonly ServiceLifetime _lifetime;
 
-        public AspNetHandlerRegistry(IServiceCollection services, ServiceLifetime lifetime)
+        public ServiceCollectionHandlerRegistry(IServiceCollection services, ServiceLifetime lifetime)
         {
             _services = services;
             _lifetime = lifetime;

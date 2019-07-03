@@ -2,11 +2,11 @@ using System;
 
 namespace Paramore.Darker.AspNetCore
 {
-    internal sealed class AspNetHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
+    internal sealed class ServiceProviderHandlerFactory : IQueryHandlerFactory, IQueryHandlerDecoratorFactory
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public AspNetHandlerFactory(IServiceProvider serviceProvider)
+        public ServiceProviderHandlerFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
