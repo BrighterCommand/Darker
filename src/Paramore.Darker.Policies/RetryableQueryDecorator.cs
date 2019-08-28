@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker.Exceptions;
-using Paramore.Darker.Policies.Logging;
+using Paramore.Darker.Logging;
 using Polly;
 using Polly.Registry;
 

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker.Decorators;
 using Paramore.Darker.Exceptions;
-using Paramore.Darker.QueryLogging.Logging;
+using Paramore.Darker.Logging;
 
 namespace Paramore.Darker.QueryLogging
 {
