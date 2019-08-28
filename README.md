@@ -22,6 +22,14 @@ public void ConfigureServices(IServiceCollection services)
     services.AddMvc();
 }
 ```
+**WARNING** if you are using EFCore the DBContext DI Lifetime is scoped, for Darker to play nicely with EFCore and DI the QueryProcessor must also be registration as Scoped
+```csharp
+ services.AddDarker(options =>
+                {
+                    //EFCore by default registers Context as scoped, which forces the QueryProcessorLifetime to also be scoped
+                    options.QueryProcessorLifetime = ServiceLifetime.Scoped;
+                })
+```
 
 This example uses the request logging integration provided by [Paramore.Darker.QueryLogging](https://www.nuget.org/packages/Paramore.Darker.QueryLogging)
 and policy integration provided by [Paramore.Darker.Policies](https://www.nuget.org/packages/Paramore.Darker.Policies).
