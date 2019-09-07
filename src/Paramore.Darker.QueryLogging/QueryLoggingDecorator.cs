@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker.Decorators;
@@ -11,7 +12,7 @@ namespace Paramore.Darker.QueryLogging
     public class QueryLoggingDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.GetLogger(typeof(QueryLoggingDecorator<,>));
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof(QueryLoggingDecorator<,>));
 
         public IQueryContext Context { get; set; }
 
@@ -25,7 +26,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            _logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
             var result = next(query);
 
@@ -33,7 +34,7 @@ namespace Paramore.Darker.QueryLogging
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Execution of query {QueryName} completed in {Elapsed}" + withFallback, queryName, sw.Elapsed);
+            Logger.InfoFormat("Execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }
@@ -46,7 +47,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            _logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
             var result = await next(query, cancellationToken).ConfigureAwait(false);
 
@@ -54,7 +55,7 @@ namespace Paramore.Darker.QueryLogging
                 ? " (with fallback)"
                 : string.Empty;
 
-            _logger.InfoFormat("Async execution of query {QueryName} completed in {Elapsed}" + withFallback, queryName, sw.Elapsed);
+            Logger.InfoFormat("Async execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }

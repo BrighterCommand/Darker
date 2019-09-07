@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.Decorators;
 
 namespace Paramore.Darker.AspNetCore
 {
@@ -17,6 +18,11 @@ namespace Paramore.Darker.AspNetCore
         public void Register(Type decoratorType)
         {
             _services.Add(new ServiceDescriptor(decoratorType, decoratorType, _optionsHandlerLifetime));
+        }
+        
+        public void RegisterDefaultDecorators()
+        {
+            Register(typeof(FallbackPolicyDecorator<,>));
         }
     }
 }
