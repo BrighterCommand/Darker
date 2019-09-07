@@ -7,6 +7,6 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SimpleInjector" Version="4.6.2" />
+    <PackageReference Include="SimpleInjector" Version="4.7.1" />
   </ItemGroup>
 </Project>
