@@ -7,6 +7,6 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>
