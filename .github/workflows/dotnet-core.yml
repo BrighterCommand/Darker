@@ -3,8 +3,23 @@ name: .NET Core
 on:
   push:
     branches: [ master ]
+    tags:
+      - '*.*.*'
   pull_request:
     branches: [ master ]
+
+env:
+ # Stop wasting time caching packages
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  # Disable sending usage data to Microsoft
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Don't show a logo on first run of CLI
+  DOTNET_NOLOGO: true
+  # GitHub Packages Feed settings
+  GITHUB_FEED: https://nuget.pkg.github.com/
+  GITHUB_USER: iancooper
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 jobs:
   build:
@@ -12,14 +27,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core
+    - name: Setup dotnet 3.1
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.301
-    - name: Install dependencies
-      run: dotnet restore
+        dotnet-version: '3.1.x'
+    - name: Setup dotnet 6.0.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Build
-      run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet build -c Release
+    - name: Core Tests
+      run: dotnet test -c Release --no-restore --no-build --verbosity d
+    - name: Upload packages as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: nuget packages
+        path: "**/*.nupkg"
+    - name: Push to GitHub Feed
+      if: ${{ github.event_name != 'pull_request' }}
+      run: dotnet nuget push **/*.nupkg --source https://nuget.pkg.github.com/${REPOSITORY_OWNER}/index.json --api-key ${GITHUB_TOKEN} --skip-duplicate
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPOSITORY_OWNER: ${{ github.repository_owner }}
+
+
+  release:
+    if: startsWith(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: nuget packages
+      - name: Push generated package to NuGet
+        run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
+    
