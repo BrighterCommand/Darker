@@ -8,5 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Update="MinVer" Version="4.2.0" />
   </ItemGroup>
 </Project>

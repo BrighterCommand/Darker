@@ -6,4 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="MinVer" Version="4.2.0" />
+  </ItemGroup>
 </Project>
