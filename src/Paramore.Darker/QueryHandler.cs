@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
 
 namespace Paramore.Darker
@@ -8,7 +9,7 @@ namespace Paramore.Darker
     public abstract class QueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.For<QueryHandler<TQuery, TResult>>();
+        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<QueryHandler<TQuery, TResult>>();
 
         public IQueryContext Context { get; set; }
 
@@ -16,7 +17,7 @@ namespace Paramore.Darker
 
         public virtual TResult Fallback(TQuery query)
         {
-            _logger.InfoFormat("Executing the default fallback implementation, returning default(TResult)");
+            _logger.LogInformation("Executing the default fallback implementation, returning default(TResult)");
             return default(TResult);
         }
 

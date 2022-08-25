@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Attributes;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
@@ -15,7 +16,7 @@ namespace Paramore.Darker
         private const string ExecuteMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute);
         private const string ExecuteAsyncMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.ExecuteAsync);
 
-        private static readonly ILog _logger = LogProvider.For<PipelineBuilder<TResult>>();
+        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<PipelineBuilder<TResult>>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryHandlerFactory _handlerFactory;
@@ -34,7 +35,7 @@ namespace Paramore.Darker
         public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext)
         {
             var queryType = query.GetType();
-            _logger.InfoFormat("Building pipeline for {QueryType}", queryType.Name);
+            _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
 
             var (handlerType, handler) = ResolveHandler(queryType);
 
@@ -54,7 +55,7 @@ namespace Paramore.Darker
 
             foreach (var decorator in _decorators)
             {
-                _logger.DebugFormat("Adding decorator to pipeline: {Decorator}", decorator.GetType().Name);
+                _logger.LogDebug("Adding decorator to pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
                 pipeline.Add(r => decorator.Execute(r, next, fallback));
@@ -66,7 +67,7 @@ namespace Paramore.Darker
         public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
         {
             var queryType = query.GetType();
-            _logger.InfoFormat("Building and executing async pipeline for {QueryType}", queryType.Name);
+            _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
 
             var (handlerType, handler) = ResolveHandler(queryType);
 
@@ -86,7 +87,7 @@ namespace Paramore.Darker
 
             foreach (var decorator in _decorators)
             {
-                _logger.DebugFormat("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
+                _logger.LogDebug("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
                 pipeline.Add((r, ct) => decorator.ExecuteAsync(r, next, fallback, ct));
@@ -108,14 +109,14 @@ namespace Paramore.Darker
 
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType)
         {
-            _logger.DebugFormat("Looking up handler type in handler registry...");
+            _logger.LogDebug("Looking up handler type in handler registry...");
             var handlerType = _handlerRegistry.Get(queryType);
             if (handlerType == null)
                 throw new MissingHandlerException($"No handler registered for query: {queryType.FullName}");
 
-            _logger.DebugFormat("Found handler type for {QueryType} in handler registry: {HandlerType}", queryType.Name, handlerType.Name);
+            _logger.LogDebug("Found handler type for {QueryType} in handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
-            _logger.Debug("Resolving handler instance...");
+            _logger.LogDebug("Resolving handler instance...");
             var handler = _handlerFactory.Create(handlerType);
             if (handler == null)
                 throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
@@ -130,34 +131,34 @@ namespace Paramore.Darker
                 .OrderByDescending(attr => attr.Step)
                 .ToList();
 
-            _logger.DebugFormat("Found {AttributesCount} query handler attributes", attributes.Count);
+            _logger.LogDebug("Found {AttributesCount} query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecorator<IQuery<TResult>, TResult>>();
             foreach (var attribute in attributes)
             {
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
 
-                _logger.DebugFormat("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
+                _logger.LogDebug("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType);
                 if (decorator == null)
                     throw new MissingHandlerDecoratorException($"Handler decorator could not be created for type: {decoratorType.FullName}");
 
                 decorator.Context = queryContext;
 
-                _logger.DebugFormat("Initialising decorator from attribute params...");
+                _logger.LogDebug("Initialising decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
                 decorators.Add(decorator);
             }
 
-            _logger.DebugFormat("Finished initialising {DecoratorsCount} decorators", decorators.Count);
+            _logger.LogDebug("Finished initialising {DecoratorsCount} decorators", decorators.Count);
 
             return decorators;
         }
 
         public void Dispose()
         {
-            _logger.DebugFormat("Disposing pipeline; releasing handler and decorators.");
+            _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
             _handlerFactory?.Release(_handler);
 

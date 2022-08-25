@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Decorators;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
@@ -12,7 +12,7 @@ namespace Paramore.Darker.QueryLogging
     public class QueryLoggingDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(typeof(QueryLoggingDecorator<,>));
+        private static readonly ILogger Logger = ApplicationLogging.CreateLogger<QueryLoggingDecorator<TQuery, TResult>>();
 
         public IQueryContext Context { get; set; }
 
@@ -26,7 +26,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            Logger.InfoFormat("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.LogInformation("Executing query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
             var result = next(query);
 
@@ -34,7 +34,7 @@ namespace Paramore.Darker.QueryLogging
                 ? " (with fallback)"
                 : string.Empty;
 
-            Logger.InfoFormat("Execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
+            Logger.LogInformation("Execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }
@@ -47,7 +47,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            Logger.InfoFormat("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
 
             var result = await next(query, cancellationToken).ConfigureAwait(false);
 
@@ -55,7 +55,7 @@ namespace Paramore.Darker.QueryLogging
                 ? " (with fallback)"
                 : string.Empty;
 
-            Logger.InfoFormat("Async execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
+            Logger.LogInformation("Async execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }
