@@ -43,7 +43,7 @@ jobs:
     - name: Core Tests
       run: dotnet test -c Release --no-restore --no-build --verbosity d
     - name: Upload packages as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: nuget packages
         path: "**/*.nupkg"
