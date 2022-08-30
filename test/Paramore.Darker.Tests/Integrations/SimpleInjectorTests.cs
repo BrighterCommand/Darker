@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Builder;
 using Paramore.Darker.SimpleInjector;
 using Paramore.Darker.Testing.Ports;
@@ -15,14 +16,24 @@ namespace Paramore.Darker.Tests.Integrations
         {
             var container = new Container();
 
+            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            {
+                //builder.AddConsole();
+                //builder.AddDebug();
+            });
+
+            container.RegisterInstance<ILoggerFactory>(loggerFactory);
+
             var queryProcessor = QueryProcessorBuilder.With()
                 .SimpleInjectorHandlers(container, opts =>
                     opts.WithQueriesAndHandlersFromAssembly(typeof(TestQueryHandler).Assembly))
                 .InMemoryQueryContextFactory()
                 .Build();
-
+            
             container.RegisterInstance(queryProcessor);
-
+            
+            container.Verify();
+            
             var resolvedQueryProcessor = container.GetInstance<IQueryProcessor>();
             resolvedQueryProcessor.ShouldNotBeNull();
 
