@@ -1,7 +1,8 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Paramore.Darker.Builder;
-using Paramore.Darker.Exceptions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Paramore.Darker.Logging;
 
 namespace Paramore.Darker.AspNetCore
 {
@@ -23,11 +24,21 @@ namespace Paramore.Darker.AspNetCore
 
             var contextBag = new DarkerContextBag();
             
-            services.Add(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  new QueryProcessor(
-                new HandlerConfiguration(handlerRegistry, new ServiceProviderHandlerFactory(provider), decoratorRegistry,
-                    new ServiceProviderHandlerDecoratorFactory(provider)), options.QueryContextFactory, contextBag), options.QueryProcessorLifetime));
+            services.Add(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
+
+
 
             return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, decoratorRegistry, contextBag);
+        }
+
+        private static QueryProcessor BuildQueryProcessor(IQueryHandlerRegistry handlerRegistry, IServiceProvider provider, IQueryHandlerDecoratorRegistry decoratorRegistry, DarkerOptions options, DarkerContextBag contextBag)
+        {
+            var loggerFactory = provider.GetService<ILoggerFactory>() ?? new NullLoggerFactory();
+            ApplicationLogging.LoggerFactory = loggerFactory;
+
+            return new QueryProcessor(
+                new HandlerConfiguration(handlerRegistry, new ServiceProviderHandlerFactory(provider), decoratorRegistry,
+                    new ServiceProviderHandlerDecoratorFactory(provider)), options.QueryContextFactory, contextBag);
         }
     }
 }

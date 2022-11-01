@@ -1,5 +1,6 @@
 ﻿using System;
 using LightInject;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Builder;
 using Paramore.Darker.LightInject;
 using Paramore.Darker.Testing.Ports;
@@ -14,6 +15,14 @@ namespace Paramore.Darker.Tests.Integrations
         public void HandlersGetWiredWithLightInject()
         {
             var container = new ServiceContainer();
+
+            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            {
+                //builder.AddConsole();
+                //builder.AddDebug();
+            });
+
+            container.RegisterInstance<ILoggerFactory>(loggerFactory);
 
             var queryProcessor = QueryProcessorBuilder.With()
                 .LightInjectHandlers(container, opts =>

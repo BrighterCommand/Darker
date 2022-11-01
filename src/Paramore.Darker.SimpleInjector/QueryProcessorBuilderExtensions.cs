@@ -1,5 +1,7 @@
 using System;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Builder;
+using Paramore.Darker.Logging;
 using SimpleInjector;
 
 namespace Paramore.Darker.SimpleInjector
@@ -10,6 +12,12 @@ namespace Paramore.Darker.SimpleInjector
         {
             if (container == null)
                 throw new ArgumentNullException(nameof(container));
+
+
+            container.RegisterInitializer<ILoggerFactory>(loggerFactory =>
+            {
+                ApplicationLogging.LoggerFactory = loggerFactory;
+            });
 
             var factory = new SimpleInjectorHandlerFactory(container);
             var registry = new SimpleInjectorHandlerRegistry(container);

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
 
 namespace Paramore.Darker
 {
     public sealed class QueryProcessor : IQueryProcessor
     {
-        private static readonly ILog _logger = LogProvider.For<QueryProcessor>();
+        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<QueryProcessor>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryContextFactory _queryContextFactory;
@@ -46,7 +47,7 @@ namespace Paramore.Darker
                 }
                 catch (Exception ex)
                 {
-                    _logger.InfoException("An exception was thrown during pipeline execution", ex);
+                    _logger.LogInformation(ex,"An exception was thrown during pipeline execution");
                     throw;
                 }
             }
@@ -61,12 +62,12 @@ namespace Paramore.Darker
 
                 try
                 {
-                    _logger.DebugFormat("Invoking async pipeline...");
+                    _logger.LogDebug("Invoking async pipeline...");
                     return await entryPoint.Invoke(query, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.InfoException("An exception was thrown during async pipeline execution", ex);
+                    _logger.LogInformation(ex,"An exception was thrown during async pipeline execution");
                     throw;
                 }
             }
@@ -74,7 +75,7 @@ namespace Paramore.Darker
 
         private IQueryContext CreateQueryContext()
         {
-            _logger.Debug("Creating query context...");
+            _logger.LogDebug("Creating query context...");
 
             var queryContext = _queryContextFactory.Create();
 

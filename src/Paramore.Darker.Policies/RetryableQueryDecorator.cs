@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
 using Polly;
@@ -11,7 +12,7 @@ namespace Paramore.Darker.Policies
     public class RetryableQueryDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILog _logger = LogProvider.GetLogger(typeof(RetryableQueryDecorator<,>));
+        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<RetryableQueryDecorator<TQuery, TResult>>();
 
         private string _policyName;
 
@@ -27,7 +28,7 @@ namespace Paramore.Darker.Policies
 
         public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
-            _logger.InfoFormat("Executing query with policy: {PolicyName}", _policyName);
+            _logger.LogInformation("Executing query with policy: {PolicyName}", _policyName);
 
             return GetPolicyRegistry().Get<ISyncPolicy>(_policyName).Execute(() => next(query));
         }
@@ -38,7 +39,7 @@ namespace Paramore.Darker.Policies
             Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.InfoFormat("Executing async query with policy: {PolicyName}", _policyName);
+            _logger.LogInformation("Executing async query with policy: {PolicyName}", _policyName);
 
             return await GetPolicyRegistry().Get<IAsyncPolicy>(_policyName)
                 .ExecuteAsync(ct => next(query, ct), cancellationToken, false)

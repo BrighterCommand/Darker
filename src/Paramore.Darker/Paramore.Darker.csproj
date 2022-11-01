@@ -5,11 +5,9 @@
     <Description>Darker Query Processor</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="LibLog" Version="5.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     <PackageReference Update="MinVer" Version="4.2.0" />
   </ItemGroup>
 </Project>
