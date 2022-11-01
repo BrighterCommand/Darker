@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Paramore.Darker.Logging;
@@ -24,16 +25,15 @@ namespace Paramore.Darker.AspNetCore
 
             var contextBag = new DarkerContextBag();
             
-            services.Add(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
-
-
+            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
+            
 
             return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, decoratorRegistry, contextBag);
         }
 
         private static QueryProcessor BuildQueryProcessor(IQueryHandlerRegistry handlerRegistry, IServiceProvider provider, IQueryHandlerDecoratorRegistry decoratorRegistry, DarkerOptions options, DarkerContextBag contextBag)
         {
-            var loggerFactory = provider.GetService<ILoggerFactory>() ?? new NullLoggerFactory();
+            var loggerFactory = provider.GetService<ILoggerFactory>();
             ApplicationLogging.LoggerFactory = loggerFactory;
 
             return new QueryProcessor(

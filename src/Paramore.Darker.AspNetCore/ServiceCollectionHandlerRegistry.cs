@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Paramore.Darker.AspNetCore
 {
@@ -16,7 +17,7 @@ namespace Paramore.Darker.AspNetCore
 
         public override void Register(Type queryType, Type resultType, Type handlerType)
         {
-            _services.Add(new ServiceDescriptor(handlerType, handlerType, _lifetime));
+            _services.TryAdd(new ServiceDescriptor(handlerType, handlerType, _lifetime));
 
             base.Register(queryType, resultType, handlerType);
         }
