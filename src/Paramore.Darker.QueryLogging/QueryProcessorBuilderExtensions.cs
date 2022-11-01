@@ -29,7 +29,7 @@ namespace Paramore.Darker.QueryLogging
             }
 
             builder.RegisterDecorator(typeof(QueryLoggingDecorator<,>));
-            builder.AddContextBagItem(Constants.ContextBagKey, new NewtonsftJsonSerializer(serializerSettings));
+            builder.AddContextBagItem(Constants.ContextBagKey, new NewtonsoftJsonSerializer(serializerSettings));
 
             return builder;
         }

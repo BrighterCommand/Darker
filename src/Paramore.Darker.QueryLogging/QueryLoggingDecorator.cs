@@ -60,14 +60,14 @@ namespace Paramore.Darker.QueryLogging
             return result;
         }
 
-        private NewtonsftJsonSerializer GetSerializer()
+        private NewtonsoftJsonSerializer GetSerializer()
         {
             if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
                 throw new ConfigurationException($"Serializer does not exist in context bag with key {Constants.ContextBagKey}.");
 
-            var serializer = Context.Bag[Constants.ContextBagKey] as NewtonsftJsonSerializer;
+            var serializer = Context.Bag[Constants.ContextBagKey] as NewtonsoftJsonSerializer;
             if (serializer == null)
-                throw new ConfigurationException($"The serializer in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(NewtonsftJsonSerializer)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
+                throw new ConfigurationException($"The serializer in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(NewtonsoftJsonSerializer)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
 
             return serializer;
         }

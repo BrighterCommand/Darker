@@ -5,11 +5,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace Paramore.Darker.QueryLogging
 {
-    public sealed class NewtonsftJsonSerializer
+    public sealed class NewtonsoftJsonSerializer
     {
         private readonly JsonSerializerSettings _serializerSettings;
 
-        public NewtonsftJsonSerializer(JsonSerializerSettings serializerSettings = null)
+        public NewtonsoftJsonSerializer(JsonSerializerSettings serializerSettings = null)
         {
             _serializerSettings = serializerSettings ?? new JsonSerializerSettings
             {
