@@ -8,6 +8,6 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Update="MinVer" Version="4.2.0" />
+    <PackageReference Update="MinVer" Version="4.3.0" />
   </ItemGroup>
 </Project>

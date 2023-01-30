@@ -8,6 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SimpleInjector" Version="5.4.1" />
-    <PackageReference Update="MinVer" Version="4.2.0" />
+    <PackageReference Update="MinVer" Version="4.3.0" />
   </ItemGroup>
 </Project>
