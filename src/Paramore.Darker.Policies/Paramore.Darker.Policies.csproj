@@ -7,7 +7,7 @@
     <ProjectReference Include="..\Paramore.Darker\Paramore.Darker.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Polly" Version="8.2.0" />
+    <PackageReference Include="Polly" Version="8.2.1" />
     <PackageReference Update="MinVer" Version="4.3.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
