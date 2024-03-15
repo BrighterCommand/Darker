@@ -8,7 +8,7 @@
 
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\Darker.snk</AssemblyOriginatorKeyFile>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
