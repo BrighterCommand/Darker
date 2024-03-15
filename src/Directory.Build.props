@@ -8,6 +8,7 @@
 
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\Darker.snk</AssemblyOriginatorKeyFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
@@ -31,18 +32,10 @@
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
-  <ItemGroup Label="Package References">
-    <PackageReference Include="MinVer" PrivateAssets="All" Version="2.5.0" />
-  </ItemGroup>
-
+ 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+<!--    <None Include="..\..\images\DarkerSticker.png" Pack="true" PackagePath="packageicon.png"/>-->
+    <None Include="../../README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
-<!-- 
-  <ItemGroup>
-    <None Include="..\..\images\DarkerSticker.png" Pack="true" PackagePath="packageicon.png"/>
-  </ItemGroup> -->
+  
 </Project>
