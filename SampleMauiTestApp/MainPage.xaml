@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SampleMauiTestApp.MainPage"
+             Title="Darker Sample Application">
+
+    <ScrollView>
+        <StackLayout Padding="20">
+            <StackLayout Orientation="Horizontal" Padding="5">
+                <Entry x:Name="numberEntry"
+                       Placeholder="Enter a ID for Person"
+                       Keyboard="Numeric"
+                       HorizontalOptions="Start"/>
+                <Label Padding="5" HorizontalOptions="Start"></Label>
+                <Button Text="Find Person"
+                        Clicked="OnPersonButtonClicked"
+                        HorizontalOptions="Start" />
+                <Label Padding="5" HorizontalOptions="Start"></Label>
+                <Button Padding="10, 0" Text="Find All People"
+                        Clicked="OnAllPeopleButtonClicked"
+                        HorizontalOptions="Start" />
+            </StackLayout>
+            <Label x:Name="resultLabel"
+                   Text="Result will be displayed here"
+                   Padding="10"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center" />
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>
