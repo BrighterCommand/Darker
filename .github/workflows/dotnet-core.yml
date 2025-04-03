@@ -27,12 +27,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup dotnet 8
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.x
           8.0.x
+          9.0.x
     - run: dotnet --info
     - uses: actions/checkout@v4
       with:
@@ -40,7 +40,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
-        key: Linux-nuget-${{ hashFiles('**/*.csproj') }}
+        key: Linux-nuget-${{ hashFiles('**/Directory.Packages.props') }}
         restore-keys: |
           Linux-nuget-
     - name: Build
