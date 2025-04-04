@@ -43,6 +43,8 @@ jobs:
         key: Linux-nuget-${{ hashFiles('**/Directory.Packages.props') }}
         restore-keys: |
           Linux-nuget-
+    - name: Install MAUI workloads
+      run: dotnet workload restore       
     - name: Build
       run: dotnet build -c Release
     - name: Core Tests
