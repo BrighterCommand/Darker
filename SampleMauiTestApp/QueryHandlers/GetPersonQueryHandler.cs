@@ -21,11 +21,11 @@ namespace SampleMauiTestApp.QueryHandlers
         [QueryLogging(1)]
         [FallbackPolicy(2)]
         [RetryableQuery(3, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
-        public override async Task<string> ExecuteAsync(GetPersonNameQuery query,
+        public override Task<string> ExecuteAsync(GetPersonNameQuery query,
             CancellationToken cancellationToken = default)
         {
             var repository = new PersonRepository();
-            return await repository.GetNameById(query.PersonId, cancellationToken);
+            return repository.GetNameById(query.PersonId, cancellationToken);
         }
 
         public override Task<string> FallbackAsync(GetPersonNameQuery query, CancellationToken cancellationToken = default)

@@ -1,8 +1,4 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,8 +10,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     /// <summary>
     /// Provides a JSON console formatter for logging, inheriting from <see cref="ConsoleFormatter"/>.
@@ -387,7 +387,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
                                         }
                                     }
 
-                                    this.WriteScopeInformation(writer, scopeProvider, formatterOptions.StateKeysToExclude);
+                                    WriteScopeInformation(writer, scopeProvider, formatterOptions.StateKeysToExclude);
 
                                     break;
                                 }

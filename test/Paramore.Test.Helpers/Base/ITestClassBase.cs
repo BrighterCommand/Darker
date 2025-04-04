@@ -1,8 +1,8 @@
-using Paramore.Darker.Tests.AOT.Helpers.TestOutput;
-using System;
+﻿using System;
+using Paramore.Test.Helpers.TestOutput;
 using Xunit.Abstractions;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Base
+namespace Paramore.Test.Helpers.Base
 {
     /// <summary>
     /// Defines the base interface for test classes in the AOT test suite.
@@ -14,7 +14,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Base
         /// Gets the test output helper used for capturing and managing test output during execution.
         /// </summary>
         /// <value>
-        /// An instance of <see cref="Paramore.Darker.Tests.AOT.Helpers.TestOutput.ICoreTestOutputHelper"/> 
+        /// An instance of <see cref="ICoreTestOutputHelper"/> 
         /// that provides functionality for writing and managing test output.
         /// </value>
         ICoreTestOutputHelper TestOutputHelper { get; }
@@ -27,13 +27,17 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Base
         IServiceProvider ServiceProvider { get; }
 
         /// <summary>
-        /// Gets the current xUnit test instance associated with the test class.
-        /// This property provides access to metadata and context of the test being executed.
+        /// Gets the current xUnit test instance associated with the test execution.
         /// </summary>
         /// <value>
-        /// An instance of <see cref="Xunit.Abstractions.ITest"/> representing the current test.
+        /// An instance of <see cref="Xunit.Abstractions.ITest"/> representing the current test,
+        /// or <c>null</c> if no test is associated.
         /// </value>
-        ITest XunitTest { get; }
+        /// <remarks>
+        /// This property provides access to the xUnit test metadata, such as the test's display name
+        /// and other related information. It may return <c>null</c> if the test context is not initialized.
+        /// </remarks>
+        ITest? XunitTest { get; }
 
         /// <summary>
         /// Gets the fully qualified name of the test, including its namespace and class name.

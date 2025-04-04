@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Extensions
+namespace Paramore.Test.Helpers.Extensions
 {
     public static class StringExtensions
     {
@@ -24,7 +22,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Extensions
             }
 
             int titleLength = titleString!.Length + ((1 + indent) * 2);
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append(titleChar, titleLength);
             sb.AppendLine();
             sb.Append(indentChar);
@@ -93,7 +91,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Extensions
         /// </remarks>
         public static string? CenterTitle(this string? titleString)
             => CenterTitle(titleString, '*', ' ', 5);
-        
+
         /// <summary>
         /// Removes the namespace from a fully qualified type or member name, returning only the simple name.
         /// </summary>

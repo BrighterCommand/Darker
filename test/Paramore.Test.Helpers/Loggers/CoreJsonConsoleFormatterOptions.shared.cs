@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Console;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     /// <summary>
     /// Provides configuration options for the <see cref="JsonConsoleFormatter"/> which formats log messages in JSON format for console output.
@@ -80,7 +80,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
         /// </param>
         public CoreJsonConsoleFormatterOptions(CoreLoggingFormatterOptions formatterOptions)
         {
-            this.FormatterFields = GetFieldList(formatterOptions);
+            FormatterFields = GetFieldList(formatterOptions);
         }
 
         /// <summary>
@@ -123,12 +123,9 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
                 return FormatterFieldsMinimum;
             }
 
-            if (formatterOptions.HasFlag(CoreLoggingFormatterOptions.LoggingDetailNormalWithScope))
-            {
-                return FormatterFieldsNormalWithScope;
-            }
-
-            return formatterOptions.HasFlag(CoreLoggingFormatterOptions.LoggingDetailVerbose) ? FormatterFieldsVerbose : FormatterFieldsNormal;
+            return formatterOptions.HasFlag(CoreLoggingFormatterOptions.LoggingDetailNormalWithScope)
+                ? FormatterFieldsNormalWithScope
+                : formatterOptions.HasFlag(CoreLoggingFormatterOptions.LoggingDetailVerbose) ? FormatterFieldsVerbose : FormatterFieldsNormal;
         }
     }
 }

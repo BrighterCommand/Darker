@@ -13,11 +13,11 @@ namespace SampleMauiTestApp.QueryHandlers
     {
         [QueryLogging(1)]
         [RetryableQuery(2, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
-        public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(GetPeopleQuery query,
+        public override Task<IReadOnlyDictionary<int, string>> ExecuteAsync(GetPeopleQuery query,
             CancellationToken cancellationToken = default)
         {
             var repository = new PersonRepository();
-            return await repository.GetAll(cancellationToken);
+            return repository.GetAll(cancellationToken);
         }
     }
 }

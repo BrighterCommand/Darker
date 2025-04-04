@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Testing.Ports;
-using Paramore.Darker.Tests.AOT.Helpers.Base;
 using Shouldly;
 using System;
 using System.Threading.Tasks;
+using Paramore.Test.Helpers.Base;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,9 +16,9 @@ namespace Paramore.Darker.Tests.AOT.QueryProcessor
     /// and function as expected within the test environment.
     /// </summary>
     /// <remarks>
-    /// Inherits from <see cref="TestClassBase"/> to utilize shared setup and utility functionality for test execution.
+    /// Inherits from <see cref="AOTTestClassBase{T}"/> to utilize shared setup and utility functionality for test execution.
     /// </remarks>
-    public class AOTQueryProcessorTests : TestClassBase
+    public class AOTQueryProcessorTests : AOTTestClassBase<AOTQueryProcessorTests>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AOTQueryProcessorTests"/> class.
@@ -52,7 +52,7 @@ namespace Paramore.Darker.Tests.AOT.QueryProcessor
         public void AOTQueryProcessor_Logger()
         {
             ServiceProvider.ShouldNotBeNull();
-            ILogger logger = ServiceProvider.GetRequiredService<ILogger<TestClassBase>>();
+            ILogger logger = ServiceProvider.GetRequiredService<ILogger<AOTQueryProcessorTests>>();
             logger.ShouldNotBeNull();
             logger.LogInformation("Test Information");
         }
@@ -61,7 +61,7 @@ namespace Paramore.Darker.Tests.AOT.QueryProcessor
         public void AOTQueryProcessor_Logger_BeginScope()
         {
             ServiceProvider.ShouldNotBeNull();
-            ILogger logger = ServiceProvider.GetRequiredService<ILogger<TestClassBase>>();
+            ILogger logger = ServiceProvider.GetRequiredService<ILogger<AOTQueryProcessorTests>>();
             logger.ShouldNotBeNull();
 
             using (logger.BeginScope("TestScope"))

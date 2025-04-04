@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     /// <summary>
     /// Specifies the fields that can be included in the JSON output when formatting log messages

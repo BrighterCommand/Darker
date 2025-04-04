@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using Paramore.Darker.Tests.AOT.Helpers.TestOutput;
+using Paramore.Test.Helpers.TestOutput;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     /// <summary>
     /// Represents a logger interface that integrates with test output mechanisms.

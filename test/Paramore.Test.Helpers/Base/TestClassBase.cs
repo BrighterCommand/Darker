@@ -1,31 +1,28 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Paramore.Darker.AspNetCore;
-using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
-using Paramore.Darker.Testing.Ports;
-using Paramore.Darker.Tests.AOT.Helpers.Extensions;
-using Paramore.Darker.Tests.AOT.Helpers.Loggers;
-using Paramore.Darker.Tests.AOT.Helpers.TestOutput;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Test.Helpers.Extensions;
+using Paramore.Test.Helpers.TestOutput;
 using Xunit.Abstractions;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Base
+namespace Paramore.Test.Helpers.Base
 {
     /// <summary>
     /// Serves as a base class for test classes in the AOT test suite.
     /// This abstract class provides shared setup and utility functionality for derived test classes.
     /// Implements the <see cref="Xunit.IClassFixture{TFixture}"/> interface to support shared test context.
     /// </summary>
-    public abstract class TestClassBase : ITestClassBase
+    /// <typeparam name="T">
+    /// The type parameter representing the specific test class deriving from this base class.
+    /// </typeparam>
+    public abstract class TestClassBase<T> : ITestClassBase
     {
         private bool _disposedValue;
+        private readonly Lazy<IServiceProvider> _serviceProviderLazy;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestClassBase"/> class.
+        /// Initializes a new instance of the <see cref="TestClassBase{T}"/> class.
         /// This constructor is used to set up the shared test context and output helper for derived test classes.
         /// </summary>
         /// <param name="testOutputHelper">
@@ -33,65 +30,37 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Base
         /// </param>
         protected TestClassBase(ITestOutputHelper testOutputHelper)
         {
+            if (testOutputHelper is null)
+            {
+                throw new ArgumentNullException(nameof(testOutputHelper));
+            }
+
             TestOutputHelper = new CoreTestOutputHelper(this, testOutputHelper);
-            ServiceProvider = BuildServiceProvider(new ServiceCollection(), TestOutputHelper);
-            XunitTest = (ITest)GetTestField(testOutputHelper)?.GetValue(testOutputHelper)!;
+            _serviceProviderLazy = new Lazy<IServiceProvider>(() => BuildServiceProvider(new ServiceCollection(), TestOutputHelper));
         }
 
         /// <inheritdoc />
-        public IServiceProvider ServiceProvider { get; }
+        public IServiceProvider ServiceProvider => _serviceProviderLazy.Value;
 
         /// <inheritdoc />
         public ICoreTestOutputHelper TestOutputHelper { get; }
 
         /// <inheritdoc />
-        public ITest XunitTest { get; }
+        public ITest? XunitTest => (ITest?)GetTestField(TestOutputHelper.WrappedTestOutputHelper)?.GetValue(TestOutputHelper.WrappedTestOutputHelper);
 
         /// <inheritdoc />
-        public string TestQualifiedName => XunitTest.DisplayName;
+        public string TestQualifiedName => XunitTest?.DisplayName ?? typeof(T).GetLoggerCategoryName();
 
         /// <inheritdoc />
-        public string TestDisplayName => XunitTest.DisplayName.RemoveNamespace();
+        public string TestDisplayName => TestQualifiedName.RemoveNamespace();
 
-        /// <summary>
-        /// Builds and configures an <see cref="IServiceProvider"/> instance using the provided <see cref="IServiceCollection"/> 
-        /// and a test output helper.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to configure.</param>
-        /// <param name="testOutputHelper">The <see cref="ICoreTestOutputHelper"/> used for logging test output.</param>
-        /// <returns>An <see cref="IServiceProvider"/> instance with the configured services.</returns>
-        /// <remarks>
-        /// This method sets up the necessary services and configurations for testing with the Darker library. 
-        /// It includes the following configurations:
-        /// - Registers the test output helper for logging.
-        /// - Configures logging to use the test output logger.
-        /// - Adds Darker query handlers from the specified assemblies.
-        /// - Enables JSON-based query logging.
-        /// - Configures default retry and circuit breaker policies.
-        /// </remarks>
-        public static IServiceProvider BuildServiceProvider(IServiceCollection services, ICoreTestOutputHelper testOutputHelper)
+        protected virtual IServiceProvider BuildServiceProvider(IServiceCollection services, ICoreTestOutputHelper testOutputHelper)
         {
-            services.AddSingleton(testOutputHelper);
-            services.AddLogging(builder =>
-            {
-                builder.Services.AddSingleton<ITestOutputLoggingProvider, TestOutputLoggingProvider>();
-                builder.Services.AddSingleton<ILoggerProvider, TestOutputLoggingProvider>(provider => (provider.GetRequiredService<ITestOutputLoggingProvider>() as TestOutputLoggingProvider)!);
-
-                // Replace existing logging with test output logger
-                builder.Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger), typeof(TestOutputLogger)));
-                builder.Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(TestOutputLogger<>)));
-            });
-
-            services.AddDarker()
-                .AddHandlersFromAssemblies(typeof(TestQueryA).Assembly)
-                .AddJsonQueryLogging()
-                .AddDefaultPolicies();
-
             return services.BuildServiceProvider();
         }
 
         /// <summary>
-        /// Releases all resources used by the <see cref="TestClassBase"/> instance.
+        /// Releases all resources used by the <see cref="TestClassBase{T}"/> instance.
         /// </summary>
         /// <remarks>
         /// This method is responsible for performing cleanup operations for the current instance of the class.

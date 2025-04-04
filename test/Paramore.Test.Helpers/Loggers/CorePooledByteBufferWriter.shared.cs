@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     /// <summary>
     /// Provides a pooled buffer writer for bytes, implementing <see cref="IBufferWriter{T}"/> and <see cref="IDisposable"/>.

@@ -1,8 +1,8 @@
-﻿using Paramore.Darker.Tests.AOT.Helpers.Base;
-using System;
+﻿using System;
+using Paramore.Test.Helpers.Base;
 using Xunit.Abstractions;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.TestOutput
+namespace Paramore.Test.Helpers.TestOutput
 {
     public interface ICoreTestOutputHelper : ITestOutputHelper, IDisposable
     {

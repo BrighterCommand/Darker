@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Extensions
+namespace Paramore.Test.Helpers.Extensions
 {
     public static class TypeExtensions
     {
@@ -27,7 +27,7 @@ namespace Paramore.Darker.Tests.AOT.Helpers.Extensions
             { typeof(ulong), "ulong" },
             { typeof(ushort), "ushort" },
         };
-        
+
         /// <summary>
         /// Gets the display name of the full.
         /// </summary>

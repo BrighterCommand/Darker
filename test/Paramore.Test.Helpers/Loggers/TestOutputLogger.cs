@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Paramore.Darker.Tests.AOT.Helpers.Extensions;
-using Paramore.Darker.Tests.AOT.Helpers.TestOutput;
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Paramore.Test.Helpers.Extensions;
+using Paramore.Test.Helpers.TestOutput;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     public class TestOutputLogger : ITestOutputLogger
     {

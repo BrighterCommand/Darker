@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using Paramore.Darker.Tests.AOT.Helpers.TestOutput;
-using System;
+﻿using System;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Paramore.Test.Helpers.TestOutput;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.Loggers
+namespace Paramore.Test.Helpers.Loggers
 {
     public class TestOutputLoggingProvider : ITestOutputLoggingProvider
     {

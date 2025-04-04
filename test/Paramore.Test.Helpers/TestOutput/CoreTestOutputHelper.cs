@@ -1,12 +1,12 @@
-﻿using Paramore.Darker.Tests.AOT.Helpers.Base;
-using Paramore.Darker.Tests.AOT.Helpers.Extensions;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using Paramore.Test.Helpers.Base;
+using Paramore.Test.Helpers.Extensions;
 using Xunit.Abstractions;
 
-namespace Paramore.Darker.Tests.AOT.Helpers.TestOutput
+namespace Paramore.Test.Helpers.TestOutput
 {
     /// <summary>
     /// Class CoreTestOutputHelper. Base class for all xUnit tests.
