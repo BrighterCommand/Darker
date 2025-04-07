@@ -9,7 +9,7 @@ on:
     branches: [ master ]
 
 env:
- # Stop wasting time caching packages
+  # Stop wasting time caching packages
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   # Disable sending usage data to Microsoft
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -20,45 +20,42 @@ env:
   GITHUB_USER: iancooper
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-    - run: dotnet --info
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: Linux-nuget-${{ hashFiles('**/Directory.Packages.props') }}
-        restore-keys: |
-          Linux-nuget-
-    - name: Build
-      run: dotnet build -c Release
-    - name: Core Tests
-      run: dotnet test -c Release --no-restore --no-build --verbosity d
-    - name: Upload packages as artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: nuget packages
-        path: "**/*.nupkg"
-    - name: Push to GitHub Feed
-      if: ${{ github.event_name != 'pull_request' }}
-      run: dotnet nuget push **/*.nupkg --source https://nuget.pkg.github.com/${REPOSITORY_OWNER}/index.json --api-key ${GITHUB_TOKEN} --skip-duplicate
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REPOSITORY_OWNER: ${{ github.repository_owner }}
-
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - run: dotnet --info
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: Linux-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            Linux-nuget-
+      - name: Build
+        run:  dotnet build ./test/Paramore.Darker.Tests/Paramore.Darker.Tests.csproj -c Release
+      - name: Core Tests
+        run: dotnet test ./test/Paramore.Darker.Tests/Paramore.Darker.Tests.csproj -c Release --no-restore --no-build --verbosity d
+      - name: Upload packages as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget packages
+          path: "**/*.nupkg"
+      - name: Push to GitHub Feed
+        if: ${{ github.event_name != 'pull_request' }}
+        run: dotnet nuget push **/*.nupkg --source https://nuget.pkg.github.com/${REPOSITORY_OWNER}/index.json --api-key ${GITHUB_TOKEN} --skip-duplicate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
 
   release:
     if: startsWith(github.ref, 'refs/tags')
@@ -72,4 +69,3 @@ jobs:
           name: nuget packages
       - name: Push generated package to NuGet
         run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
-    

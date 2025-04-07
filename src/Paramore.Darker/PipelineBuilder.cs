@@ -42,16 +42,27 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType);
+            var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType) as MethodInfo;
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, TResult>>
             {
-                r => ((dynamic)_handler).Execute((dynamic)r)
+                r =>
+                    {
+                        try
+                        {
+                            return (TResult)executeMethodInfo.Invoke(_handler, new object[] { r });
+                        }
+                        catch (TargetInvocationException targetInvocationException)
+                        {
+                            throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                        }
+                    }
             };
 
             // fallback doesn't have an incoming pipeline
-            Func<IQuery<TResult>, TResult> fallback = r => ((dynamic)_handler).Fallback((dynamic)r);
+            var fallbackMethodInfo = handlerType.GetMethod("Fallback", new[] { queryType });
+            Func<IQuery<TResult>, TResult> fallback = r => (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
 
             foreach (var decorator in _decorators)
             {
@@ -74,16 +85,27 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            var executeAsyncMethodInfo = GetExecuteAsyncMethodInfo(handlerType, queryType);
+            var executeAsyncMethodInfo = GetExecuteAsyncMethodInfo(handlerType, queryType) as MethodInfo;
             _decorators = GetDecorators(executeAsyncMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
             {
-                (r, ct) => ((dynamic)_handler).ExecuteAsync((dynamic)r, ct)
+                (r, ct) =>
+                {
+                    try
+                    {
+                        return (Task<TResult>)executeAsyncMethodInfo.Invoke(_handler, new object[] { r, ct });
+                    }
+                    catch (TargetInvocationException targetInvocationException)
+                    {
+                        throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                    }
+                }
             };
 
             // fallback doesn't have an incoming pipeline
-            Func<IQuery<TResult>, CancellationToken, Task<TResult>> fallback = (r, ct) => ((dynamic)_handler).FallbackAsync((dynamic)r, ct);
+            var fallbackMethodInfo = handlerType.GetMethod("FallbackAsync", new[] { queryType, typeof(CancellationToken) });
+            Func<IQuery<TResult>, CancellationToken, Task<TResult>> fallback = (r, ct) => (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
 
             foreach (var decorator in _decorators)
             {
@@ -98,11 +120,10 @@ namespace Paramore.Darker
 
         private static MemberInfo GetExecuteMethodInfo(Type handlerType, Type queryType)
         {
-
             return handlerType.GetMethod(ExecuteMethodName);
         }
 
-        private static MemberInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
+        private static MethodInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
         {
             return handlerType.GetMethod(ExecuteAsyncMethodName);
         }
