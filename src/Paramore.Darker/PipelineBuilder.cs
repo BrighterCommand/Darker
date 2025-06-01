@@ -55,7 +55,8 @@ namespace Paramore.Darker
                         }
                         catch (TargetInvocationException targetInvocationException)
                         {
-                            throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                            // Unwrap the original exception instead of wrapping it in a FormatException
+                            throw targetInvocationException.InnerException;
                         }
                     }
             };
@@ -98,7 +99,8 @@ namespace Paramore.Darker
                     }
                     catch (TargetInvocationException targetInvocationException)
                     {
-                        throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                        // Unwrap the original exception instead of wrapping it in a FormatException
+                        throw targetInvocationException.InnerException;
                     }
                 }
             };
