@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
 {
@@ -46,9 +47,10 @@ namespace Paramore.Darker
                 {
                     return entryPoint.Invoke(query);
                 }
-                catch (TargetInvocationException targetInvocationException)
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
                 {
-                    throw targetInvocationException.InnerException;
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached, but required by compiler
                 }
                 catch (Exception ex)
                 {
@@ -70,9 +72,10 @@ namespace Paramore.Darker
                     _logger.LogDebug("Invoking async pipeline...");
                     return await entryPoint.Invoke(query, cancellationToken).ConfigureAwait(false);
                 }
-                catch (TargetInvocationException targetInvocationException)
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
                 {
-                    throw targetInvocationException.InnerException;
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached, but required by compiler
                 }
                 catch (Exception ex)
                 {
