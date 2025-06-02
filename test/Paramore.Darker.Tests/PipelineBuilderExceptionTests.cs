@@ -172,7 +172,7 @@ namespace Paramore.Darker.Tests
             var query = new NullInnerExceptionQuery();
 
             // Act & Assert
-            var exception = Should.Throw<NullReferenceException>(() => _queryProcessor.Execute(query));
+            var exception = Should.Throw<TargetInvocationException>(() => _queryProcessor.Execute(query));
             exception.InnerException.ShouldBeNull();
         }
 
