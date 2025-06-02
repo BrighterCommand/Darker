@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Paramore.Darker.Attributes;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
+using System.Runtime.ExceptionServices;   // ✨ new
 
 namespace Paramore.Darker
 {
@@ -53,9 +54,10 @@ namespace Paramore.Darker
                         {
                             return (TResult)executeMethodInfo.Invoke(_handler, new object[] { r });
                         }
-                        catch (TargetInvocationException targetInvocationException)
+                        catch (TargetInvocationException ex) when (ex.InnerException != null) 
                         {
-                            throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                            throw; // never reached
                         }
                     }
             };
@@ -96,9 +98,10 @@ namespace Paramore.Darker
                     {
                         return (Task<TResult>)executeAsyncMethodInfo.Invoke(_handler, new object[] { r, ct });
                     }
-                    catch (TargetInvocationException targetInvocationException)
+                    catch (TargetInvocationException ex) when (ex.InnerException != null)
                     {
-                        throw new FormatException("One of the identified items was in an invalid format", targetInvocationException);
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                        throw; // never reached for complier 
                     }
                 }
             };

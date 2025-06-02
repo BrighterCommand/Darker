@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
 {
@@ -45,6 +47,11 @@ namespace Paramore.Darker
                 {
                     return entryPoint.Invoke(query);
                 }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached, but required by compiler
+                }
                 catch (Exception ex)
                 {
                     _logger.LogInformation(ex,"An exception was thrown during pipeline execution");
@@ -64,6 +71,11 @@ namespace Paramore.Darker
                 {
                     _logger.LogDebug("Invoking async pipeline...");
                     return await entryPoint.Invoke(query, cancellationToken).ConfigureAwait(false);
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached, but required by compiler
                 }
                 catch (Exception ex)
                 {
