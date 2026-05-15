@@ -4,10 +4,8 @@
     "projects": [
       "samples\\SampleMinimalApi\\SampleMinimalApi.csproj",
       "src\\Paramore.Darker.AspNetCore\\Paramore.Darker.AspNetCore.csproj",
-      "src\\Paramore.Darker.LightInject\\Paramore.Darker.LightInject.csproj",
       "src\\Paramore.Darker.Policies\\Paramore.Darker.Policies.csproj",
       "src\\Paramore.Darker.QueryLogging\\Paramore.Darker.QueryLogging.csproj",
-      "src\\Paramore.Darker.SimpleInjector\\Paramore.Darker.SimpleInjector.csproj",
       "src\\Paramore.Darker.Testing\\Paramore.Darker.Testing.csproj",
       "src\\Paramore.Darker\\Paramore.Darker.csproj",
       "test\\Paramore.Darker.Benchmarks\\Paramore.Darker.Benchmarks.csproj",

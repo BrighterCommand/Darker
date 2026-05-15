@@ -34,12 +34,6 @@
       <Configuration Solution="Release|x64" Project="Release|Any CPU" />
       <Configuration Solution="Release|x86" Project="Release|Any CPU" />
     </Project>
-    <Project Path="src\Paramore.Darker.LightInject\Paramore.Darker.LightInject.csproj">
-      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
-      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
-      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
-      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
-    </Project>
     <Project Path="src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj">
       <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
       <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
@@ -47,12 +41,6 @@
       <Configuration Solution="Release|x86" Project="Release|Any CPU" />
     </Project>
     <Project Path="src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj">
-      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
-      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
-      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
-      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
-    </Project>
-    <Project Path="src\Paramore.Darker.SimpleInjector\Paramore.Darker.SimpleInjector.csproj">
       <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
       <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
       <Configuration Solution="Release|x64" Project="Release|Any CPU" />

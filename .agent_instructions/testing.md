@@ -98,6 +98,6 @@ This ensures the mandatory approval step is never skipped and tests are reviewed
   - Do not inject dependencies into a constructor or property for test isolation
 - You MAY use fakes or mocks (test doubles) for I/O or the strategy pattern. Prefer in-memory alternatives to fakes to mocks.
   - You may use a test double to replace I/O as it is slow and has shared fixture making tests brittle.
-  - If you are testing the implementation of a DI integration (ASP.NET Core, SimpleInjector, LightInject), you should create a suite of tests that prove the integration works. This allows the core tests to run without additional dependencies.
+  - If you are testing the implementation of a DI integration (e.g. ASP.NET Core), you should create a suite of tests that prove the integration works. This allows the core tests to run without additional dependencies.
 - Only add code needed to satisfy a behavioral requirement expressed in a test.
   - Do not add speculative code, the need for which is not indicated by test.

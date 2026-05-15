@@ -112,19 +112,6 @@ IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
     .Build();
 ```
 
-Instead of `Activator.CreateInstance`, you can pass any factory `Func<Type, object>` to constuct handlers and decorator.
-Integrations with some DI frameworks are available, for example [SimpleInjector](https://simpleinjector.org), as provided by the [Paramore.Darker.SimpleInjector](https://www.nuget.org/packages/Paramore.Darker.SimpleInjector) package:
+Instead of `Activator.CreateInstance`, you can pass any factory `Func<Type, object>` to construct handlers and decorators.
 
-```csharp
-var container = new Container();
-
-var queryProcessor = QueryProcessorBuilder.With()
-    .SimpleInjectoHandlers(container, opts =>
-        opts.WithQueriesAndHandlersFromAssembly(typeof(GetPeopleQuery).Assembly))
-    .InMemoryQueryContextFactory()
-    .Build();
-
-container.Register<IQueryProcessor>(queryProcessor);
-```
-
-In this case you don't need to manually register queries or handlers as the integration allows scanning assemblies for matching types.
+> **Note:** The `Paramore.Darker.SimpleInjector` and `Paramore.Darker.LightInject` packages have been removed as of V5. If you use a third-party DI container, use its built-in adapter for `Microsoft.Extensions.DependencyInjection` and integrate with Darker via the ASP.NET Core / MS DI package instead.
