@@ -20,6 +20,16 @@ Darker needs to create query handler and decorator instances at runtime. The `Pi
 
 Different applications use different DI containers (Microsoft.Extensions.DependencyInjection, SimpleInjector, LightInject, Autofac) or no container at all. Darker must work with all of them without taking a dependency on any specific one.
 
+### Design Approach
+
+We follow the approach outlined by Mark Seemann in [DI-Friendly Framework](https://blog.ploeh.dk/2014/05/19/di-friendly-framework/). The core principle is that a framework should be DI-friendly without depending on any specific DI container. Instead of creating a generic abstraction over DI containers (which Seemann identifies as the "conforming container" anti-pattern), we define specific Abstract Factory interfaces for each extensibility point, with `Create` and `Release` methods. This allows:
+
+- Hand-coded composition without any container (using `Activator.CreateInstance` or custom factories)
+- Integration with any DI container via a thin adapter that implements our factory interfaces
+- Default implementations for users who don't need customisation
+
+The framework (Darker) is the client of user-provided handlers and decorators, so following the Dependency Inversion Principle, the framework owns the abstract interfaces that user code implements.
+
 ### Constraints
 
 - Darker's core package (`Paramore.Darker`) must have zero DI container dependencies
@@ -117,7 +127,16 @@ Use `IServiceProvider` directly in the core library.
 - `IServiceProvider.GetService()` returns `object` with no release mechanism for scoped resources
 - Not all DI containers implement `IServiceProvider` natively (though most now do via adapters)
 
-### Alternative 2: Service Locator Pattern
+### Alternative 2: Conforming Container
+
+Define a single generic abstraction over DI containers (e.g. `IContainer` with `Resolve<T>()` and `Register<T>()`), and require all container integrations to implement it.
+
+**Rejected because**:
+- This is the ["conforming container" anti-pattern](https://blog.ploeh.dk/2014/05/19/di-friendly-framework/) identified by Mark Seemann - it forces a lowest-common-denominator interface onto containers with fundamentally different capabilities
+- Obscures container-specific features and lifecycle management
+- Creates a false abstraction that leaks in practice
+
+### Alternative 3: Service Locator Pattern
 
 Pass a service locator that resolves any type.
 
@@ -126,7 +145,7 @@ Pass a service locator that resolves any type.
 - No distinction between handler and decorator concerns
 - No explicit lifecycle management (create/release)
 
-### Alternative 3: Convention-Based Resolution
+### Alternative 4: Convention-Based Resolution
 
 Resolve handlers by naming convention (e.g. `GetFooQuery` -> `GetFooQueryHandler`).
 
@@ -151,5 +170,6 @@ Resolve handlers by naming convention (e.g. `GetFooQuery` -> `GetFooQueryHandler
   - `src/Paramore.Darker/Builder/FactoryFuncWrapper.cs`
   - `src/Paramore.Darker/Builder/RegistryActionWrapper.cs`
 - External references:
-  - [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle)
+  - Mark Seemann, [DI-Friendly Framework](https://blog.ploeh.dk/2014/05/19/di-friendly-framework/) - The approach Darker follows: specific Abstract Factory interfaces per extensibility point, not a conforming container
   - Mark Seemann, [Dependency Injection in .NET](https://www.manning.com/books/dependency-injection-in-dot-net)
+  - [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle)
