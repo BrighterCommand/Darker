@@ -1,7 +1,7 @@
 # Project Structure
 
 - `src/Paramore.Darker/` - Core framework (QueryProcessor, PipelineBuilder, registries)
-- `src/Paramore.Darker.AspNetCore/` - ASP.NET Core integration with DI extensions
+- `src/Paramore.Darker.Extensions.DependencyInjection/` - Microsoft.Extensions.DependencyInjection integration
 - `src/Paramore.Darker.Policies/` - Polly-based retry and circuit breaker decorators
 - `src/Paramore.Darker.QueryLogging/` - Request/response logging decorator
 - `src/Paramore.Darker.Testing/` - Testing utilities

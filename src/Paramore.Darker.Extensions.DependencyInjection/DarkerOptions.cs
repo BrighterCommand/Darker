@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     public sealed class DarkerOptions
     {

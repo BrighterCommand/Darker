@@ -2,7 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     internal sealed class ServiceCollectionHandlerRegistry : QueryHandlerRegistry
     {

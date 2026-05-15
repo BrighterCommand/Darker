@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Paramore.Darker.Logging;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

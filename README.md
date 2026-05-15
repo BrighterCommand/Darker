@@ -4,9 +4,9 @@ The query-side counterpart of [Brighter](https://github.com/BrighterCommand/Para
 ![.NET Core](https://github.com/BrighterCommand/Darker/workflows/.NET%20Core/badge.svg)
 [![NuGet](https://img.shields.io/nuget/v/Paramore.Darker.svg)](https://www.nuget.org/packages/Paramore.Darker)
 
-## Usage with ASP.NET Core
+## Usage with Microsoft.Extensions.DependencyInjection
 In your `ConfigureServices` method, use `AddDarker` to add Darker to the container.
-ASP.NET Core integration is provided by the [Paramore.Darker.AspNetCore](https://www.nuget.org/packages/Paramore.Darker.AspNetCore) package.
+DI integration is provided by the [Paramore.Darker.Extensions.DependencyInjection](https://www.nuget.org/packages/Paramore.Darker.Extensions.DependencyInjection) package.
 
 ```csharp
 // This method gets called by the runtime. Use this method to add services to the container.
@@ -114,4 +114,4 @@ IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
 
 Instead of `Activator.CreateInstance`, you can pass any factory `Func<Type, object>` to construct handlers and decorators.
 
-> **Note:** The `Paramore.Darker.SimpleInjector` and `Paramore.Darker.LightInject` packages have been removed as of V5. If you use a third-party DI container, use its built-in adapter for `Microsoft.Extensions.DependencyInjection` and integrate with Darker via the ASP.NET Core / MS DI package instead.
+> **Note:** The `Paramore.Darker.SimpleInjector` and `Paramore.Darker.LightInject` packages have been removed as of V5. If you use a third-party DI container, use its built-in adapter for `Microsoft.Extensions.DependencyInjection` and integrate with Darker via the `Paramore.Darker.Extensions.DependencyInjection` package instead.

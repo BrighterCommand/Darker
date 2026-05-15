@@ -3,7 +3,7 @@
     "path": "Darker.slnx",
     "projects": [
       "samples\\SampleMinimalApi\\SampleMinimalApi.csproj",
-      "src\\Paramore.Darker.AspNetCore\\Paramore.Darker.AspNetCore.csproj",
+      "src\\Paramore.Darker.Extensions.DependencyInjection\\Paramore.Darker.Extensions.DependencyInjection.csproj",
       "src\\Paramore.Darker.Policies\\Paramore.Darker.Policies.csproj",
       "src\\Paramore.Darker.QueryLogging\\Paramore.Darker.QueryLogging.csproj",
       "src\\Paramore.Darker.Testing\\Paramore.Darker.Testing.csproj",

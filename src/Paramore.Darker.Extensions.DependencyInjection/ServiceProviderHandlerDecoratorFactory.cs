@@ -1,6 +1,6 @@
 using System;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     internal sealed class ServiceProviderHandlerDecoratorFactory : IQueryHandlerDecoratorFactory
     {

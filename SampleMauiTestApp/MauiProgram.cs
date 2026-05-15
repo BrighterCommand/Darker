@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using SampleMauiTestApp.QueryHandlers;
