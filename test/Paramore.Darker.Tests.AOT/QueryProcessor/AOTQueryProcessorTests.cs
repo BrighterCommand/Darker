@@ -32,15 +32,9 @@ namespace Paramore.Darker.Tests.AOT.QueryProcessor
         {
         }
 
-        /// <summary>
-        /// Gets the <see cref="IQueryProcessor"/> instance from the service provider.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="IQueryProcessor"/> is used to execute queries in the application.
-        /// It is resolved from the <see cref="ServiceProvider"/> and provides methods for both synchronous
-        /// and asynchronous query execution.
-        /// </remarks>
         protected IQueryProcessor QueryProcessor => ServiceProvider.GetRequiredService<IQueryProcessor>();
+
+        protected IQueryProcessorAsync QueryProcessorAsync => (IQueryProcessorAsync)ServiceProvider.GetRequiredService<IQueryProcessor>();
 
         [Fact]
         public void AOTQueryProcessor_ServiceProvider()
@@ -96,10 +90,10 @@ namespace Paramore.Darker.Tests.AOT.QueryProcessor
         public async Task AOTQueryProcessor_QueryProcessor_ExecuteAsync()
         {
             var id = Guid.NewGuid();
-            QueryProcessor.ShouldNotBeNull();
+            QueryProcessorAsync.ShouldNotBeNull();
 
             var query = new TestQueryA(id);
-            var result = await QueryProcessor.ExecuteAsync(query);
+            var result = await QueryProcessorAsync.ExecuteAsync(query);
             result.ShouldNotBe(Guid.Empty);
 
             result.ShouldBe(id);

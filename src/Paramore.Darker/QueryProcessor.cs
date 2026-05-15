@@ -10,7 +10,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
 {
-    public sealed class QueryProcessor : IQueryProcessor
+    public sealed class QueryProcessor : IQueryProcessor, IQueryProcessorAsync
     {
         private static readonly ILogger _logger = ApplicationLogging.CreateLogger<QueryProcessor>();
 

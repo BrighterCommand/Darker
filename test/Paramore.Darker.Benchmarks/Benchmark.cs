@@ -8,6 +8,7 @@ namespace Paramore.Darker.Benchmarks
     public class Benchmark
     {
         private readonly IQueryProcessor _queryProcessor;
+        private readonly IQueryProcessorAsync _queryProcessorAsync;
 
         public Benchmark()
         {
@@ -15,10 +16,13 @@ namespace Paramore.Darker.Benchmarks
             handlerRegistry.Register<BasicSyncQuery, bool, BasicSyncQueryHandler>();
             handlerRegistry.Register<BasicAsyncQuery, bool, BasicAsyncQueryHandler>();
 
-            _queryProcessor = QueryProcessorBuilder.With()
+            var processor = QueryProcessorBuilder.With()
                 .Handlers(handlerRegistry, t => (IQueryHandler)Activator.CreateInstance(t), t => {}, t => (IQueryHandlerDecorator)Activator.CreateInstance(t))
                 .InMemoryQueryContextFactory()
                 .Build();
+
+            _queryProcessor = (IQueryProcessor)processor;
+            _queryProcessorAsync = (IQueryProcessorAsync)processor;
         }
 
         [Benchmark]
@@ -30,7 +34,7 @@ namespace Paramore.Darker.Benchmarks
         [Benchmark]
         public async Task BasicAsyncQuery()
         {
-            await _queryProcessor.ExecuteAsync(new BasicAsyncQuery());
+            await _queryProcessorAsync.ExecuteAsync(new BasicAsyncQuery());
         }
     }
 }

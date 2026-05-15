@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Paramore.Darker.Testing
 {
-    public class FakeQueryProcessor : IQueryProcessor
+    public class FakeQueryProcessor : IQueryProcessor, IQueryProcessorAsync
     {
         private readonly IList<IQuery> _executedQueries;
         private readonly IDictionary<Type, IDictionary<Predicate<IQuery>, Func<IQuery, object>>> _results;

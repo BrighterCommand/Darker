@@ -16,6 +16,7 @@ namespace Paramore.Darker.Tests
         private readonly Mock<IQueryHandlerFactory> _handlerFactory;
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly IQueryProcessorAsync _queryProcessorAsync;
         private readonly Mock<IQueryHandlerDecoratorFactory> _decoratorFactory;
 
         // Query and handler for normal exception scenario
@@ -131,7 +132,9 @@ namespace Paramore.Darker.Tests
                 decoratorRegistry.Object,
                 _decoratorFactory.Object);
 
-            _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
+            var processor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
+            _queryProcessor = processor;
+            _queryProcessorAsync = processor;
         }
 
         [Fact]
@@ -158,7 +161,7 @@ namespace Paramore.Darker.Tests
 
             // Act & Assert
             var exception = await Should.ThrowAsync<ArgumentException>(async () =>
-                await _queryProcessor.ExecuteAsync(query));
+                await _queryProcessorAsync.ExecuteAsync(query));
             exception.Message.ShouldBe("Test exception from ExecuteAsync");
             _handlerFactory.Verify(x => x.Release(It.IsAny<ExceptionQueryHandler>()), Times.Once);
         }
