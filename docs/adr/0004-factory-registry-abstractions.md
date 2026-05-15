@@ -87,11 +87,13 @@ The `FactoryFuncWrapper` also handles cleanup: on `Release()`, if the instance i
 
 ### Container Integration Pattern
 
-Each DI container integration package (e.g. `Paramore.Darker.AspNetCore`, `Paramore.Darker.SimpleInjector`) provides:
+DI container integration packages (e.g. `Paramore.Darker.AspNetCore`) provide:
 1. Implementations of the factory and registry interfaces that delegate to the container
 2. Extension methods on the builder interfaces for fluent configuration
 
 For example, `Paramore.Darker.AspNetCore` provides `AddDarker()` on `IServiceCollection` which registers all components with `Microsoft.Extensions.DependencyInjection` and constructs the `QueryProcessor`.
+
+> **Note**: The `Paramore.Darker.SimpleInjector` and `Paramore.Darker.LightInject` integration packages were removed in V5 (see [ADR 0006](0006-remove-third-party-di-packages.md)). Users of third-party DI containers should use their container's MS DI adapter with the ASP.NET Core integration, or implement the factory/registry interfaces directly.
 
 ## Consequences
 

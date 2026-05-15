@@ -30,7 +30,7 @@
 - Divide into responsibilities based on optionality. Required behaviors should exist in Paramore.Darker.
   - Other assemblies should add optional behaviors, allowing users to only take dependencies on the resulting NuGet packages if they require that functionality.
   - There is a balance here. We want you to load as few dependencies as possible, without bringing in too many behaviors you do not need.
-  - As we support multiple DI containers (ASP.NET Core, SimpleInjector, LightInject), these should always use their own assembly.
+  - DI container integrations should use their own assembly (e.g. ASP.NET Core integration).
   - As we support optional decorators (policies, logging), these should use their own assembly.
 - Default to a class per source file approach, unless one class clearly exists as the details of another.
 

@@ -113,7 +113,7 @@ Each DI container integration provides its own builder.
 
 **Rejected because**:
 - Duplicates builder logic across packages
-- DI container integrations work better as extension methods on the existing builder interfaces (which is what `Paramore.Darker.SimpleInjector` and `Paramore.Darker.AspNetCore` do)
+- DI container integrations work better as extension methods on the existing builder interfaces (which is what `Paramore.Darker.AspNetCore` does)
 
 ## References
 
