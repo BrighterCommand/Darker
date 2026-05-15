@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
@@ -8,28 +9,26 @@ using Xunit;
 
 namespace Paramore.Darker.Tests.Integrations
 {
-    public class AspNetTests
+    public class AsyncConsumerDIResolutionTests
     {
         [Fact]
-        public void HandlersGetWiredWithServiceCollection()
+        public async Task When_async_consumer_resolves_IQueryProcessorAsync_from_DI_should_execute_query()
         {
+            // Arrange
             var services = new ServiceCollection();
-
-            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                //builder.AddConsole();
-                //builder.AddDebug();
-            });
-
+            var loggerFactory = LoggerFactory.Create(builder => { });
             services.AddSingleton<ILoggerFactory>(loggerFactory);
-
             services.AddDarker().AddHandlersFromAssemblies(typeof(TestQueryHandler).Assembly);
 
-            var queryProcessor = services.BuildServiceProvider().GetService<IQueryProcessor>();
-            queryProcessor.ShouldNotBeNull();
-
+            var provider = services.BuildServiceProvider();
             var id = Guid.NewGuid();
-            var result = queryProcessor.Execute(new TestQueryA(id));
+
+            // Act
+            var queryProcessor = provider.GetService<IQueryProcessorAsync>();
+            queryProcessor.ShouldNotBeNull();
+            var result = await queryProcessor.ExecuteAsync(new TestQueryA(id));
+
+            // Assert
             result.ShouldBe(id);
         }
     }
