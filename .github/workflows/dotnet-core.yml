@@ -26,13 +26,13 @@ jobs:
 
     steps:
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.0.x
             9.0.x
       - run: dotnet --info
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/cache@v5
@@ -46,7 +46,7 @@ jobs:
       - name: Core Tests
         run: dotnet test Darker.Filter.slnf -c Release --no-restore --no-build --verbosity d
       - name: Upload packages as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nuget packages
           path: "**/*.nupkg"
@@ -64,7 +64,7 @@ jobs:
     timeout-minutes: 5
     needs: [build]
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: nuget packages
       - name: Push generated package to NuGet
