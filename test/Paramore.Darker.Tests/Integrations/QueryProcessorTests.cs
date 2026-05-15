@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Paramore.Darker.Tests.Integrations
 {
-    public class AspNetTests
+    public class QueryProcessorTests
     {
         [Fact]
         public void HandlersGetWiredWithServiceCollection()

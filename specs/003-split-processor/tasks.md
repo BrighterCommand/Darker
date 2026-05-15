@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-- [ ] **STRUCTURAL: Split IQueryProcessor into two interface files**
+- [x] **STRUCTURAL: Split IQueryProcessor into two interface files**
   - This is a tidy-first structural change — no behavior changes
   - **USE COMMAND**: `/tidy-first split IQueryProcessor.cs into IQueryProcessor (sync-only) and IQueryProcessorAsync (new file)`
   - Current: `src/Paramore.Darker/IQueryProcessor.cs` has both `Execute` and `ExecuteAsync`
@@ -18,7 +18,7 @@
 
 ## Core Behavior
 
-- [ ] **TEST + IMPLEMENT: Async consumer can resolve and use IQueryProcessorAsync from DI**
+- [x] **TEST + IMPLEMENT: Async consumer can resolve and use IQueryProcessorAsync from DI**
   - **USE COMMAND**: `/test-first when async consumer resolves IQueryProcessorAsync from DI should execute query through async pipeline`
   - Test location: "test/Paramore.Darker.Tests/Integrations"
   - Test file: `When_async_consumer_resolves_IQueryProcessorAsync_from_DI_should_execute_query.cs`
@@ -31,7 +31,7 @@
     - Add forwarding registration for `IQueryProcessorAsync` that resolves via `QueryProcessor`
     - Keep existing `IQueryProcessor` registration forwarding to the same `QueryProcessor` instance
 
-- [ ] **TEST + IMPLEMENT: Sync consumer can resolve and use IQueryProcessor from DI**
+- [x] **TEST + IMPLEMENT: Sync consumer can resolve and use IQueryProcessor from DI** (covered by existing AspNetTests.HandlersGetWiredWithServiceCollection)
   - **USE COMMAND**: `/test-first when sync consumer resolves IQueryProcessor from DI should execute query through sync pipeline`
   - Test location: "test/Paramore.Darker.Tests/Integrations"
   - Test file: `When_sync_consumer_resolves_IQueryProcessor_from_DI_should_execute_query.cs`
@@ -43,7 +43,7 @@
     - Verify the existing `IQueryProcessor` forwarding registration works after the structural split
     - This may already pass after the structural change + first task's DI registration changes
 
-- [ ] **TEST + IMPLEMENT: Both interfaces resolve to the same QueryProcessor instance per scope**
+- [x] **TEST + IMPLEMENT: Both interfaces resolve to the same QueryProcessor instance per scope**
   - **USE COMMAND**: `/test-first when both IQueryProcessor and IQueryProcessorAsync resolved in same scope should be same instance`
   - Test location: "test/Paramore.Darker.Tests/Integrations"
   - Test file: `When_both_interfaces_resolved_in_same_scope_should_be_same_instance.cs`
@@ -55,7 +55,7 @@
 
 ## Consumer Updates
 
-- [ ] **TEST + IMPLEMENT: FakeQueryProcessor implements both interfaces for testing**
+- [x] **TEST + IMPLEMENT: FakeQueryProcessor implements both interfaces for testing**
   - **USE COMMAND**: `/test-first when FakeQueryProcessor used as IQueryProcessorAsync should execute async queries`
   - Test location: "test/Paramore.Darker.Tests"
   - Test file: `When_FakeQueryProcessor_used_as_IQueryProcessorAsync_should_execute_async_queries.cs`
@@ -69,30 +69,30 @@
 
 ## Existing Consumer Migration
 
-- [ ] **Update SampleMinimalApi to use IQueryProcessorAsync**
+- [x] **Update SampleMinimalApi to use IQueryProcessorAsync** (done in structural refactor)
   - `samples/SampleMinimalApi/Program.cs` injects `IQueryProcessor` but only calls `ExecuteAsync`
   - Change injection from `IQueryProcessor` to `IQueryProcessorAsync`
   - Verify the sample builds and runs: `dotnet run --project samples/SampleMinimalApi/SampleMinimalApi.csproj`
 
-- [ ] **Update SampleMauiTestApp to use IQueryProcessorAsync**
+- [x] **Update SampleMauiTestApp to use IQueryProcessorAsync** (done in structural refactor)
   - `SampleMauiTestApp/MainPage.xaml.cs` injects `IQueryProcessor` but only calls `ExecuteAsync`
   - Change injection from `IQueryProcessor` to `IQueryProcessorAsync`
 
-- [ ] **Update async test classes to use IQueryProcessorAsync**
+- [x] **Update async test classes to use IQueryProcessorAsync** (done in structural refactor)
   - `test/Paramore.Darker.Tests/QueryProcessorAsyncTests.cs`: change `_queryProcessor` type from `IQueryProcessor` to `IQueryProcessorAsync`
   - `test/Paramore.Darker.Tests.AOT/QueryProcessor/AOTQueryProcessorTests.cs`: the `QueryProcessor` property uses `IQueryProcessor` but tests call `ExecuteAsync` — split into separate properties or update to `IQueryProcessorAsync` for async tests
   - `test/Paramore.Darker.Benchmarks/Benchmark.cs`: the `_queryProcessor` field uses `IQueryProcessor` but `BasicAsyncQuery` calls `ExecuteAsync` — needs both interfaces or two fields
 
-- [ ] **Update PipelineBuilderExceptionTests to use correct interface per test**
+- [x] **Update PipelineBuilderExceptionTests to use correct interface per test** (done in structural refactor)
   - `test/Paramore.Darker.Tests/PipelineBuilderExceptionTests.cs`: change `_queryProcessor` type based on which tests use sync vs async, or keep as `QueryProcessor` concrete type since tests exercise both paths
 
 ## Verification
 
-- [ ] **All tests pass**
+- [x] **All tests pass**
   - Run: `dotnet test Darker.Filter.slnf -c Release`
   - All existing tests pass (with interface type updates)
   - New integration tests pass
 
-- [ ] **Solution builds clean**
+- [x] **Solution builds clean**
   - Run: `dotnet build Darker.Filter.slnf -c Release`
   - No warnings related to the interface changes
