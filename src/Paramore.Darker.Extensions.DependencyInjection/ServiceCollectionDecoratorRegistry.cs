@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Paramore.Darker.Decorators;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     public class ServiceCollectionDecoratorRegistry : IQueryHandlerDecoratorRegistry
     {

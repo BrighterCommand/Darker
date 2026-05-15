@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Paramore.Darker.Builder;
 
-namespace Paramore.Darker.AspNetCore
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     internal class ServiceCollectionDarkerHandlerBuilder : IDarkerHandlerBuilder
     {

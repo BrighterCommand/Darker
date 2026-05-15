@@ -28,7 +28,7 @@
     <File Path="Set-Version.psm1" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src\Paramore.Darker.AspNetCore\Paramore.Darker.AspNetCore.csproj">
+    <Project Path="src\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj">
       <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
       <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
       <Configuration Solution="Release|x64" Project="Release|Any CPU" />

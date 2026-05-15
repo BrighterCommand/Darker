@@ -3,7 +3,7 @@ using Paramore.Darker.Testing.Ports;
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using Paramore.Test.Helpers.Loggers;
