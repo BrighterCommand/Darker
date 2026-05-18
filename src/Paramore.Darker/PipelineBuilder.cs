@@ -58,6 +58,8 @@ namespace Paramore.Darker
             _handler.Context = queryContext;
 
             var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType) as MethodInfo;
+            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
+                "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, TResult>>
@@ -105,6 +107,9 @@ namespace Paramore.Darker
             if (executeAsyncMethodInfo == null)
                 throw new ConfigurationException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
 
+            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(QueryHandlerAttribute),
+                "Async handler has sync attribute(s) on ExecuteAsync. Use async attributes (e.g. QueryHandlerAttributeAsync) for async handlers, or switch to a sync handler with Execute.");
+
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
             var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
@@ -146,6 +151,13 @@ namespace Paramore.Darker
         private static MethodInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
         {
             return handlerType.GetMethod(ExecuteAsyncMethodName);
+        }
+
+        private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, Type wrongAttributeType, string message)
+        {
+            var mismatchedAttributes = methodInfo.GetCustomAttributes(wrongAttributeType, true);
+            if (mismatchedAttributes.Length > 0)
+                throw new ConfigurationException(message);
         }
 
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType)

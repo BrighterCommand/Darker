@@ -216,7 +216,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `PipelineBuilderExceptionTests.cs`: migrate handler-not-found tests to use `ConfigurationException`
 
 ### Task 10: ConfigurationException thrown when decorator attribute mismatches execution path
-- [ ] **TEST + IMPLEMENT: ConfigurationException thrown when decorator attribute does not match handler execution path**
+- [x] **TEST + IMPLEMENT: ConfigurationException thrown when decorator attribute does not match handler execution path**
   - **USE COMMAND**: `/test-first when a sync attribute is placed on an async handler method then ConfigurationException is thrown at pipeline build time`
   - FR8c, FR16a, AC5b
   - Test location: `test/Paramore.Darker.Tests`
