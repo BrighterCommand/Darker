@@ -4,14 +4,14 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="BenchmarkDotNet" Version="0.15.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Polly" Version="8.5.2" />
@@ -27,7 +27,7 @@
     </PackageVersion>
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="MinVer" Version="6.0.0" />
-    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <GlobalPackageReference Include="MinVer" Version="7.0.0" />
+    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
   </ItemGroup>
 </Project>
