@@ -89,10 +89,13 @@ This ensures the mandatory approval step is never skipped and tests are reviewed
 
 ## Test Doubles
 
-- Use fakes or mocks for I/O for testing core libraries such as Paramore.Darker
-  - Consider writing in-memory replacements for I/O, that could be used in a production system, over a fake or mock.
-  - Use the naming convention InMemory for your own in-memory implementations.
-  - Paramore.Darker.Testing provides test doubles and test queries/handlers for this purpose.
+- **Prefer real or Simple/InMemory implementations over mocks**. The preference order is:
+  1. **Real instances** (e.g. `QueryHandlerRegistry`, `InMemoryQueryContextFactory`) — use when they don't create dependency issues
+  2. **Simple implementations** (e.g. `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory`) — delegate-based, lightweight, in `src/Paramore.Darker/`. Follow Brighter's `SimpleHandlerFactory` pattern.
+  3. **InMemory implementations** (e.g. `InMemoryDecoratorRegistry`) — in-memory state, suitable for testing and lightweight production use
+  4. **Mocks (Moq)** — last resort, only for I/O boundaries or verifying interactions that cannot be observed through behavior
+- **Test doubles directory**: Place test-specific handler, query, and decorator doubles in `test/Paramore.Darker.Tests/TestDoubles/` following Brighter's `tests/Paramore.Brighter.Core.Tests/CommandProcessors/TestDoubles/` convention. Use the namespace `Paramore.Darker.Tests.TestDoubles`.
+- Shared test doubles (used across test projects) belong in `test/Paramore.Darker.Testing.Ports/`.
 - Do NOT use fakes or mocks for isolating a class.
   - We use developer tests: isolation is to the most recent edit, not a class.
   - Do not inject dependencies into a constructor or property for test isolation

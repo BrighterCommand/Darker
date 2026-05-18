@@ -168,15 +168,29 @@ services.AddDarker(options => {
 
 Test projects use:
 - **xunit** for test framework
-- **Moq** for mocking
 - **Shouldly** for assertions
-- **Paramore.Darker.Testing.Ports**: Test doubles and test queries/handlers
+- **Moq** for mocking (last resort — prefer real/Simple/InMemory implementations)
+- **Paramore.Darker.Testing.Ports**: Shared test doubles and test queries/handlers
 
-When testing QueryProcessor:
-1. Create `QueryHandlerRegistry` and register query -> handler mappings
-2. Mock `IQueryHandlerFactory` to return handler instances
-3. Mock decorator factory/registry if not testing decorators
-4. Create `QueryProcessor` with `HandlerConfiguration` and `InMemoryQueryContextFactory`
+### Test Double Preference (Real > Simple > InMemory > Mock)
+
+Prefer real or lightweight implementations over mocks, following Brighter's patterns:
+- `QueryHandlerRegistry` / `QueryHandlerRegistryAsync` — real registries
+- `SimpleHandlerFactory` — delegate-based handler factory (implements both sync and async)
+- `SimpleHandlerDecoratorFactory` — delegate-based decorator factory (implements both sync and async)
+- `InMemoryDecoratorRegistry` — stores registered types in a list (implements both sync and async)
+- `InMemoryQueryContextFactory` — real context factory
+
+### Test Doubles Directory
+
+Place test-specific handlers, queries, and decorators in `test/Paramore.Darker.Tests/TestDoubles/` (namespace: `Paramore.Darker.Tests.TestDoubles`), following Brighter's `TestDoubles/` convention.
+
+### When Testing QueryProcessor
+1. Create `QueryHandlerRegistry` (and `QueryHandlerRegistryAsync` for async) and register query -> handler mappings
+2. Create `SimpleHandlerFactory` with a lambda that returns handler instances
+3. Create `SimpleHandlerDecoratorFactory` with a lambda that returns decorator instances (if testing decorators)
+4. Create `InMemoryDecoratorRegistry`
+5. Create `QueryProcessor` with `HandlerConfiguration` and `InMemoryQueryContextFactory`
 
 ## Build & CI
 
