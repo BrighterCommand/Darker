@@ -161,7 +161,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
 ## Behavioral Tasks (TDD)
 
 ### Task 7: Sync pipeline resolves from sync registry and builds sync decorator chain
-- [ ] **TEST + IMPLEMENT: Sync pipeline builds correctly with split interfaces**
+- [x] **TEST + IMPLEMENT: Sync pipeline builds correctly with split interfaces**
   - **USE COMMAND**: `/test-first when sync query is executed the sync pipeline resolves handler from sync registry and builds sync decorator chain`
   - FR12, AC7
   - Test location: `test/Paramore.Darker.Tests`
