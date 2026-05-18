@@ -181,7 +181,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `Decorators/FallbackPolicyTests.cs` to use sync-only decorator interface
 
 ### Task 8: Async pipeline resolves from async registry and builds async decorator chain
-- [ ] **TEST + IMPLEMENT: Async pipeline builds correctly with split interfaces**
+- [x] **TEST + IMPLEMENT: Async pipeline builds correctly with split interfaces**
   - **USE COMMAND**: `/test-first when async query is executed the async pipeline resolves handler from async registry and builds async decorator chain`
   - FR13, AC7
   - Test location: `test/Paramore.Darker.Tests`
