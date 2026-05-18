@@ -67,6 +67,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+		<PackageReference Include="Polly" />
 	</ItemGroup>
 
 	<ItemGroup>
