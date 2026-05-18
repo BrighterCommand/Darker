@@ -18,6 +18,11 @@ namespace Paramore.Darker
         private readonly IQueryContextFactory _queryContextFactory;
         private readonly IQueryHandlerFactory _handlerFactory;
         private readonly IQueryHandlerDecoratorFactory _decoratorFactory;
+
+        private readonly IQueryHandlerRegistryAsync _handlerRegistryAsync;
+        private readonly IQueryHandlerFactoryAsync _handlerFactoryAsync;
+        private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
+
         private readonly IReadOnlyDictionary<string, object> _contextBagData;
 
         public QueryProcessor(
@@ -31,6 +36,10 @@ namespace Paramore.Darker
             _handlerRegistry = handlerConfiguration.HandlerRegistry ?? throw new ArgumentException($"{nameof(handlerConfiguration.HandlerRegistry)} must not be null", nameof(handlerConfiguration));
             _handlerFactory = handlerConfiguration.HandlerFactory ?? throw new ArgumentException($"{nameof(handlerConfiguration.HandlerFactory)} must not be null", nameof(handlerConfiguration));
             _decoratorFactory = handlerConfiguration.DecoratorFactory ?? throw new ArgumentException($"{nameof(handlerConfiguration.DecoratorFactory)} must not be null", nameof(handlerConfiguration));
+
+            _handlerRegistryAsync = handlerConfiguration.HandlerRegistryAsync;
+            _handlerFactoryAsync = handlerConfiguration.HandlerFactoryAsync;
+            _decoratorFactoryAsync = handlerConfiguration.DecoratorFactoryAsync;
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _contextBagData = contextBagData ?? new Dictionary<string, object>();
@@ -62,7 +71,9 @@ namespace Paramore.Darker
 
         public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
+            using (var pipelineBuilder = new PipelineBuilder<TResult>(
+                _handlerRegistry, _handlerFactory, _decoratorFactory,
+                _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync))
             {
                 var queryContext = CreateQueryContext();
                 var entryPoint = pipelineBuilder.BuildAsync(query, queryContext);

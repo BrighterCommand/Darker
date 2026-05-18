@@ -29,10 +29,6 @@ namespace Paramore.Darker.Tests
             {
                 throw new InvalidOperationException("Test exception from Execute");
             }
-            public override Task<ExceptionQuery.Result> ExecuteAsync(ExceptionQuery query, CancellationToken cancellationToken = default)
-            {
-                throw new ArgumentException("Test exception from ExecuteAsync");
-            }
         }
 
         // Query and handler for fallback exception scenario
@@ -85,16 +81,9 @@ namespace Paramore.Darker.Tests
             {
                 throw new InvalidOperationException("Test exception from decorator");
             }
-
-            public Task<TResult> ExecuteAsync(TQuery query, Func<TQuery, CancellationToken, Task<TResult>> next, Func<TQuery, CancellationToken, Task<TResult>> fallback,
-                CancellationToken cancellationToken = default(CancellationToken))
-            {
-                throw new InvalidOperationException("Test exception from async decorator");
-            }
-            
         }
-        
-        
+
+
         [AttributeUsage(AttributeTargets.Method)]
         public sealed class DecoratorExceptionAttribute : QueryHandlerAttribute
         {
@@ -149,21 +138,6 @@ namespace Paramore.Darker.Tests
         }
 
         [Fact]
-        public async Task ShouldPreserveOriginalExceptionWhenHandlerThrowsExceptionAsync()
-        {
-            // Arrange
-            _handlerRegistry.Register<ExceptionQuery, ExceptionQuery.Result, ExceptionQueryHandler>();
-            _handlerFactory.Setup(x => x.Create(typeof(ExceptionQueryHandler))).Returns(new ExceptionQueryHandler());
-            var query = new ExceptionQuery();
-
-            // Act & Assert
-            var exception = await Should.ThrowAsync<ArgumentException>(async () =>
-                await _queryProcessor.ExecuteAsync(query));
-            exception.Message.ShouldBe("Test exception from ExecuteAsync");
-            _handlerFactory.Verify(x => x.Release(It.IsAny<ExceptionQueryHandler>()), Times.Once);
-        }
-
-        [Fact]
         public void ShouldThrowNullReferenceExceptionWhenInnerExceptionIsNull()
         {
             // Arrange
@@ -179,7 +153,7 @@ namespace Paramore.Darker.Tests
         [Fact]
         public void ShouldThrowExceptionWhenFallbackThrowsException()
         {
-           
+
             // Arrange
             var decorator = new FallbackPolicyDecorator<IQuery<FallbackExceptionQuery.Result>, FallbackExceptionQuery.Result>();
             _handlerRegistry.Register<FallbackExceptionQuery, FallbackExceptionQuery.Result, FallbackExceptionQueryHandler>();
@@ -206,8 +180,8 @@ namespace Paramore.Darker.Tests
                 x.Create<IQueryHandlerDecorator<IQuery<DecoratorExceptionQuery.Result>, DecoratorExceptionQuery.Result>>(
                     decoratorType)).Returns(decorator);
             var query = new DecoratorExceptionQuery();
-            
-            
+
+
             // Act & Assert
             var exception = Should.Throw<InvalidOperationException>(() => _queryProcessor.Execute(query));
             exception.Message.ShouldBe("Test exception from decorator");

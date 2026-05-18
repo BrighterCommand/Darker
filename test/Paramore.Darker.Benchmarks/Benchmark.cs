@@ -13,7 +13,7 @@ namespace Paramore.Darker.Benchmarks
         {
             var handlerRegistry = new QueryHandlerRegistry();
             handlerRegistry.Register<BasicSyncQuery, bool, BasicSyncQueryHandler>();
-            handlerRegistry.Register<BasicAsyncQuery, bool, BasicAsyncQueryHandler>();
+            handlerRegistry.Register(typeof(BasicAsyncQuery), typeof(bool), typeof(BasicAsyncQueryHandler));
 
             _queryProcessor = QueryProcessorBuilder.With()
                 .Handlers(handlerRegistry, t => (IQueryHandler)Activator.CreateInstance(t), t => {}, t => (IQueryHandlerDecorator)Activator.CreateInstance(t))
