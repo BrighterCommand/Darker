@@ -139,6 +139,23 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - `FakeQueryProcessorTests.cs` → updated in Task 11
     - `Decorators/FallbackPolicyTests.cs` → updated in Task 7
 
+### Task 6a: Add Simple and InMemory factory/registry implementations
+- [x] **TIDY: Create public lightweight factory and registry implementations following Brighter's patterns**
+  - ADR: [0009-simple-and-inmemory-factory-implementations](../../docs/adr/0009-simple-and-inmemory-factory-implementations.md)
+  - In `src/Paramore.Darker/SimpleHandlerFactory.cs`:
+    - Public class implementing `IQueryHandlerFactory` and `IQueryHandlerFactoryAsync`
+    - Primary constructor taking `Func<Type, IQueryHandler>` delegate
+    - `Create` delegates to the func; `Release` disposes if `IDisposable`
+  - In `src/Paramore.Darker/SimpleHandlerDecoratorFactory.cs`:
+    - Public class implementing `IQueryHandlerDecoratorFactory` and `IQueryHandlerDecoratorFactoryAsync`
+    - Primary constructor taking `Func<Type, IQueryHandlerDecorator>` delegate
+    - `Create<T>` delegates to the func and casts; `Release<T>` disposes if `IDisposable`
+  - In `src/Paramore.Darker/InMemoryDecoratorRegistry.cs`:
+    - Public class implementing `IQueryHandlerDecoratorRegistry` and `IQueryHandlerDecoratorRegistryAsync`
+    - Stores registered types in a list; exposes `IReadOnlyList<Type> RegisteredTypes`
+  - **Build verification**: `dotnet build Darker.Filter.slnf` must compile, all existing tests must pass
+  - **Note**: Existing tests are NOT updated here — each behavioral task (7+) will use the new types when writing new tests
+
 ---
 
 ## Behavioral Tasks (TDD)
