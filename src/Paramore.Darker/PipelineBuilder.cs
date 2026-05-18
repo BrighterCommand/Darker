@@ -103,7 +103,7 @@ namespace Paramore.Darker
 
             var executeAsyncMethodInfo = GetExecuteAsyncMethodInfo(handlerType, queryType);
             if (executeAsyncMethodInfo == null)
-                throw new MissingHandlerException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
+                throw new ConfigurationException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
@@ -153,14 +153,14 @@ namespace Paramore.Darker
             _logger.LogDebug("Looking up handler type in handler registry...");
             var handlerType = _handlerRegistry.Get(queryType);
             if (handlerType == null)
-                throw new MissingHandlerException($"No handler registered for query: {queryType.FullName}");
+                throw new ConfigurationException($"No sync handler registered for query: {queryType.FullName}. If you have an async handler, use ExecuteAsync instead.");
 
             _logger.LogDebug("Found handler type for {QueryType} in handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
             _logger.LogDebug("Resolving handler instance...");
             var handler = _handlerFactory.Create(handlerType);
             if (handler == null)
-                throw new MissingHandlerException($"Handler could not be created for type: {handlerType.FullName}");
+                throw new ConfigurationException($"Handler could not be created for type: {handlerType.FullName}");
 
             return (handlerType, handler);
         }
@@ -172,14 +172,14 @@ namespace Paramore.Darker
                 _logger.LogDebug("Looking up handler type in async handler registry...");
                 var handlerType = _handlerRegistryAsync.Get(queryType);
                 if (handlerType == null)
-                    throw new MissingHandlerException($"No async handler registered for query: {queryType.FullName}");
+                    throw new ConfigurationException($"No async handler registered for query: {queryType.FullName}. If you have a sync handler, use Execute instead.");
 
                 _logger.LogDebug("Found handler type for {QueryType} in async handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
                 _logger.LogDebug("Resolving async handler instance...");
                 var handler = _handlerFactoryAsync.Create(handlerType);
                 if (handler == null)
-                    throw new MissingHandlerException($"Async handler could not be created for type: {handlerType.FullName}");
+                    throw new ConfigurationException($"Async handler could not be created for type: {handlerType.FullName}");
 
                 return (handlerType, handler);
             }

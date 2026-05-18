@@ -199,7 +199,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update existing `QueryProcessorAsyncTests.cs` to use split interfaces
 
 ### Task 9: ConfigurationException thrown when handler not found for execution path
-- [ ] **TEST + IMPLEMENT: ConfigurationException thrown when no handler registered for query execution path**
+- [x] **TEST + IMPLEMENT: ConfigurationException thrown when no handler registered for query execution path**
   - **USE COMMAND**: `/test-first when Execute is called for a query with only an async handler registered then ConfigurationException is thrown with helpful message`
   - FR15, FR16, AC8
   - Test location: `test/Paramore.Darker.Tests`
