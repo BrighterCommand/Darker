@@ -15,11 +15,11 @@ builder.Services.AddDarker()
 var app = builder.Build();
 
 app.MapGet("/people",
-    async (IQueryProcessorAsync queryProcessor) => await queryProcessor.ExecuteAsync(new GetPeopleQuery()));
+    async (IQueryProcessor queryProcessor) => await queryProcessor.ExecuteAsync(new GetPeopleQuery()));
 
 
 app.MapGet("/people/{id:int}",
-    async (IQueryProcessorAsync queryProcessor, int id) => await queryProcessor.ExecuteAsync(new GetPersonNameQuery(id)));
+    async (IQueryProcessor queryProcessor, int id) => await queryProcessor.ExecuteAsync(new GetPersonNameQuery(id)));
 
 
 app.Run();

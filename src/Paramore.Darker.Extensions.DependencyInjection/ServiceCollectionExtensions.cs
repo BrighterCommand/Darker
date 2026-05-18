@@ -25,9 +25,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             var contextBag = new DarkerContextBag();
             
-            services.TryAdd(new ServiceDescriptor(typeof(QueryProcessor), provider => BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => provider.GetRequiredService<QueryProcessor>(), options.QueryProcessorLifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessorAsync), provider => provider.GetRequiredService<QueryProcessor>(), options.QueryProcessorLifetime));
+            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
+            
 
             return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, decoratorRegistry, contextBag);
         }

@@ -5,8 +5,8 @@ namespace SampleMauiTestApp
 {
     public partial class MainPage : ContentPage
     {
-        private readonly IQueryProcessorAsync _queryProcessor;
-        public MainPage(IQueryProcessorAsync queryProcessor)
+        private readonly IQueryProcessor _queryProcessor;
+        public MainPage(IQueryProcessor queryProcessor)
         {
             InitializeComponent();
             this._queryProcessor = queryProcessor;

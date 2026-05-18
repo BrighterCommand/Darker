@@ -12,7 +12,7 @@ namespace Paramore.Darker.Tests
     {
         private readonly Mock<IQueryHandlerFactory> _handlerFactory;
         private readonly IQueryHandlerRegistry _handlerRegistry;
-        private readonly IQueryProcessorAsync _queryProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
         public QueryProcessorAsyncTests()
         {
