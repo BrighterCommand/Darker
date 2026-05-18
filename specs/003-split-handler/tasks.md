@@ -233,7 +233,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `PipelineBuilderExceptionTests.cs`: migrate decorator exception tests to use split interfaces
 
 ### Task 11: HandlerConfiguration and QueryProcessor use dual-path infrastructure
-- [ ] **TEST + IMPLEMENT: QueryProcessor dispatches to correct pipeline based on Execute vs ExecuteAsync**
+- [x] **TEST + IMPLEMENT: QueryProcessor dispatches to correct pipeline based on Execute vs ExecuteAsync**
   - **USE COMMAND**: `/test-first when QueryProcessor has both sync and async handlers registered it dispatches each query to the correct pipeline`
   - FR14, AC7
   - Test location: `test/Paramore.Darker.Tests`
