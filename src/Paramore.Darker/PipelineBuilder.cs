@@ -217,7 +217,7 @@ namespace Paramore.Darker
                 _logger.LogDebug("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType);
                 if (decorator == null)
-                    throw new MissingHandlerDecoratorException($"Handler decorator could not be created for type: {decoratorType.FullName}");
+                    throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
                 decorator.Context = queryContext;
 
@@ -253,7 +253,7 @@ namespace Paramore.Darker
                 _logger.LogDebug("Resolving async decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactoryAsync.Create<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>(decoratorType);
                 if (decorator == null)
-                    throw new MissingHandlerDecoratorException($"Async handler decorator could not be created for type: {decoratorType.FullName}");
+                    throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
                 decorator.Context = queryContext;
 
