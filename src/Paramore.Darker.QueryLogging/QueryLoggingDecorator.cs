@@ -1,7 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Decorators;
 using Paramore.Darker.Exceptions;
@@ -35,27 +33,6 @@ namespace Paramore.Darker.QueryLogging
                 : string.Empty;
 
             Logger.LogInformation("Execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
-
-            return result;
-        }
-
-        public async Task<TResult> ExecuteAsync(TQuery query,
-            Func<TQuery, CancellationToken, Task<TResult>> next,
-            Func<TQuery, CancellationToken, Task<TResult>> fallback,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var sw = Stopwatch.StartNew();
-
-            var queryName = query.GetType().Name;
-            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
-
-            var result = await next(query, cancellationToken).ConfigureAwait(false);
-
-            var withFallback = Context.Bag.ContainsKey(FallbackPolicyDecorator<TQuery, TResult>.CauseOfFallbackException)
-                ? " (with fallback)"
-                : string.Empty;
-
-            Logger.LogInformation("Async execution of query {QueryName} completed in {Elapsed}ms" + withFallback, queryName, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }

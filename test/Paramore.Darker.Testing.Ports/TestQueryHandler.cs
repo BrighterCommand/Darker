@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Paramore.Darker.Testing.Ports
 {
@@ -15,17 +13,6 @@ namespace Paramore.Darker.Testing.Ports
         }
 
         public Guid Fallback(TestQueryA query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Guid> ExecuteAsync(TestQueryA query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            Context.Bag.Add("id", query.Id);
-            return Task.FromResult(query.Id);
-        }
-
-        public Task<Guid> FallbackAsync(TestQueryA query, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }

@@ -5,7 +5,7 @@ using Paramore.Darker.Decorators;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
-    public class ServiceCollectionDecoratorRegistry : IQueryHandlerDecoratorRegistry
+    public class ServiceCollectionDecoratorRegistry : IQueryHandlerDecoratorRegistry, IQueryHandlerDecoratorRegistryAsync
     {
         private readonly ServiceLifetime _optionsHandlerLifetime;
         private readonly IServiceCollection _services;
@@ -24,6 +24,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public void RegisterDefaultDecorators()
         {
             Register(typeof(FallbackPolicyDecorator<,>));
+            Register(typeof(FallbackPolicyDecoratorAsync<,>));
         }
     }
 }

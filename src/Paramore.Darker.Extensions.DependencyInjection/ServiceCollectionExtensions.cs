@@ -19,26 +19,38 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             configure?.Invoke(options);
 
             var handlerRegistry = new ServiceCollectionHandlerRegistry(services, options.HandlerLifetime);
+            var handlerRegistryAsync = new ServiceCollectionHandlerRegistryAsync(services, options.HandlerLifetime);
 
             var decoratorRegistry = new ServiceCollectionDecoratorRegistry(services, options.HandlerLifetime);
             decoratorRegistry.RegisterDefaultDecorators();
 
             var contextBag = new DarkerContextBag();
-            
-            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider =>  BuildQueryProcessor(handlerRegistry, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
-            
 
-            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, decoratorRegistry, contextBag);
+            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
+
+
+            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry, contextBag);
         }
 
-        private static QueryProcessor BuildQueryProcessor(IQueryHandlerRegistry handlerRegistry, IServiceProvider provider, IQueryHandlerDecoratorRegistry decoratorRegistry, DarkerOptions options, DarkerContextBag contextBag)
+        private static QueryProcessor BuildQueryProcessor(
+            IQueryHandlerRegistry handlerRegistry,
+            IQueryHandlerRegistryAsync handlerRegistryAsync,
+            IServiceProvider provider,
+            ServiceCollectionDecoratorRegistry decoratorRegistry,
+            DarkerOptions options,
+            DarkerContextBag contextBag)
         {
             var loggerFactory = provider.GetService<ILoggerFactory>();
             ApplicationLogging.LoggerFactory = loggerFactory;
 
+            var handlerFactory = new ServiceProviderHandlerFactory(provider);
+            var decoratorFactory = new ServiceProviderHandlerDecoratorFactory(provider);
+
             return new QueryProcessor(
-                new HandlerConfiguration(handlerRegistry, new ServiceProviderHandlerFactory(provider), decoratorRegistry,
-                    new ServiceProviderHandlerDecoratorFactory(provider)), options.QueryContextFactory, contextBag);
+                new HandlerConfiguration(
+                    handlerRegistry, handlerFactory, decoratorRegistry, decoratorFactory,
+                    handlerRegistryAsync, handlerFactory, decoratorRegistry, decoratorFactory),
+                options.QueryContextFactory, contextBag);
         }
     }
 }

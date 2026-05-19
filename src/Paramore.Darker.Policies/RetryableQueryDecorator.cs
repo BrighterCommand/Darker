@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
@@ -31,19 +29,6 @@ namespace Paramore.Darker.Policies
             _logger.LogInformation("Executing query with policy: {PolicyName}", _policyName);
 
             return GetPolicyRegistry().Get<ISyncPolicy>(_policyName).Execute(() => next(query));
-        }
-
-        
-        public async Task<TResult> ExecuteAsync(TQuery query,
-            Func<TQuery, CancellationToken, Task<TResult>> next,
-            Func<TQuery, CancellationToken, Task<TResult>> fallback,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            _logger.LogInformation("Executing async query with policy: {PolicyName}", _policyName);
-
-            return await GetPolicyRegistry().Get<IAsyncPolicy>(_policyName)
-                .ExecuteAsync(ct => next(query, ct), cancellationToken, false)
-                .ConfigureAwait(false);
         }
 
         private IPolicyRegistry<string> GetPolicyRegistry()

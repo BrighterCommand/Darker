@@ -2,7 +2,7 @@ using System;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
-    internal sealed class ServiceProviderHandlerFactory : IQueryHandlerFactory
+    internal sealed class ServiceProviderHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -17,6 +17,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         void IQueryHandlerFactory.Release(IQueryHandler handler)
+        {
+            var disposal = handler as IDisposable;
+            disposal?.Dispose();
+        }
+
+        IQueryHandler IQueryHandlerFactoryAsync.Create(Type handlerType)
+        {
+            return (IQueryHandler) _serviceProvider.GetService(handlerType);
+        }
+
+        void IQueryHandlerFactoryAsync.Release(IQueryHandler handler)
         {
             var disposal = handler as IDisposable;
             disposal?.Dispose();

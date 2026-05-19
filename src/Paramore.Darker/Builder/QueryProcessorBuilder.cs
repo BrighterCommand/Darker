@@ -89,6 +89,7 @@ namespace Paramore.Darker.Builder
         public IQueryProcessorExtensionBuilder RegisterDecorator(Type decoratorType)
         {
             _handlerConfiguration.DecoratorRegistry.Register(decoratorType);
+            _handlerConfiguration.DecoratorRegistryAsync?.Register(decoratorType);
             return this;
         }
 
@@ -100,7 +101,8 @@ namespace Paramore.Darker.Builder
 
         private void RegisterDefaultDecorators()
         {
-            RegisterDecorator(typeof(FallbackPolicyDecorator<,>));
+            _handlerConfiguration.DecoratorRegistry.Register(typeof(FallbackPolicyDecorator<,>));
+            _handlerConfiguration.DecoratorRegistryAsync?.Register(typeof(FallbackPolicyDecoratorAsync<,>));
         }
     }
 }

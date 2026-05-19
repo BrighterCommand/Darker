@@ -29,6 +29,7 @@ namespace Paramore.Darker.QueryLogging
             }
 
             builder.RegisterDecorator(typeof(QueryLoggingDecorator<,>));
+            builder.RegisterDecorator(typeof(QueryLoggingDecoratorAsync<,>));
             builder.AddContextBagItem(Constants.ContextBagKey, new NewtonsoftJsonSerializer(serializerSettings));
 
             return builder;
