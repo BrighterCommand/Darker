@@ -9,11 +9,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         private readonly DarkerContextBag _contextBag;
         private readonly ServiceCollectionDecoratorRegistry _decoratorRegistry;
         private readonly ServiceCollectionHandlerRegistry _registry;
+        private readonly ServiceCollectionHandlerRegistryAsync _registryAsync;
 
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
+            ServiceCollectionHandlerRegistryAsync registryAsync,
             ServiceCollectionDecoratorRegistry decoratorRegistry, DarkerContextBag contextContextBag)
         {
             _registry = registry;
+            _registryAsync = registryAsync;
             _decoratorRegistry = decoratorRegistry;
             _contextBag = contextContextBag;
         }
@@ -23,6 +26,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
 
             _registry.RegisterFromAssemblies(assemblies);
+            _registryAsync.RegisterFromAssemblies(assemblies);
 
             return this;
         }

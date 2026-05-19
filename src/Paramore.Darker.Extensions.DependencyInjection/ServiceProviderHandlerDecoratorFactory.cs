@@ -2,7 +2,7 @@ using System;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
-    internal sealed class ServiceProviderHandlerDecoratorFactory : IQueryHandlerDecoratorFactory
+    internal sealed class ServiceProviderHandlerDecoratorFactory : IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
     {
         private readonly IServiceProvider _serviceProvider;
 
