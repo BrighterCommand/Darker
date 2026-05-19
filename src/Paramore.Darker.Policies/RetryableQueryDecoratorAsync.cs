@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
@@ -7,10 +9,10 @@ using Polly.Registry;
 
 namespace Paramore.Darker.Policies
 {
-    public class RetryableQueryDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
+    public class RetryableQueryDecoratorAsync<TQuery, TResult> : IQueryHandlerDecoratorAsync<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
-        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<RetryableQueryDecorator<TQuery, TResult>>();
+        private static readonly ILogger _logger = ApplicationLogging.CreateLogger<RetryableQueryDecoratorAsync<TQuery, TResult>>();
 
         private string _policyName;
 
@@ -24,11 +26,16 @@ namespace Paramore.Darker.Policies
                 throw new ConfigurationException($"Policy does not exist in policy registry: {_policyName}");
         }
 
-        public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
+        public async Task<TResult> ExecuteAsync(TQuery query,
+            Func<TQuery, CancellationToken, Task<TResult>> next,
+            Func<TQuery, CancellationToken, Task<TResult>> fallback,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation("Executing query with policy: {PolicyName}", _policyName);
+            _logger.LogInformation("Executing async query with policy: {PolicyName}", _policyName);
 
-            return GetPolicyRegistry().Get<ISyncPolicy>(_policyName).Execute(() => next(query));
+            return await GetPolicyRegistry().Get<IAsyncPolicy>(_policyName)
+                .ExecuteAsync(ct => next(query, ct), cancellationToken, false)
+                .ConfigureAwait(false);
         }
 
         private IPolicyRegistry<string> GetPolicyRegistry()

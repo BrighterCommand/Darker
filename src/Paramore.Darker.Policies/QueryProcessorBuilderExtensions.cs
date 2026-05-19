@@ -32,6 +32,7 @@ namespace Paramore.Darker.Policies
                 throw new ConfigurationException($"The policy registry is missing the {Constants.CircuitBreakerPolicyName} policy which is required");
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
             builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
 
             return builder;
@@ -71,6 +72,7 @@ namespace Paramore.Darker.Policies
             };
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
             builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
 
             return builder;
