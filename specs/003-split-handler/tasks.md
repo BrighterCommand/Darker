@@ -253,7 +253,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `FakeQueryProcessorTests.cs` to use split interfaces
 
 ### Task 12: Retire `MissingHandlerException` and `MissingHandlerDecoratorException`
-- [ ] **CLEANUP: Remove retired exception types and migrate remaining call sites**
+- [x] **CLEANUP: Remove retired exception types and migrate remaining call sites**
   - Depends on: Tasks 9, 10, 12a (all usages replaced with `ConfigurationException`)
   - Known reference sites to verify are migrated:
     - `src/Paramore.Darker/PipelineBuilder.cs` — `MissingHandlerException` (ResolveHandler), `MissingHandlerDecoratorException` (GetDecorators)
@@ -263,7 +263,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
   - Verification: `dotnet build Darker.Filter.slnf -c Release` compiles, `dotnet test Darker.Filter.slnf -c Release --no-build` passes
 
 ### Task 12a: Decorator-not-found migrates from `MissingHandlerDecoratorException` to `ConfigurationException`
-- [ ] **TEST + IMPLEMENT: ConfigurationException thrown when decorator factory cannot create a decorator**
+- [x] **TEST + IMPLEMENT: ConfigurationException thrown when decorator factory cannot create a decorator**
   - **USE COMMAND**: `/test-first when decorator factory cannot create a decorator for a given type then ConfigurationException is thrown`
   - FR16b
   - Test location: `test/Paramore.Darker.Tests`
@@ -279,7 +279,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Error message: "Decorator could not be created for type: {type}. Ensure it is registered in the decorator registry."
 
 ### Task 13: DI registration wires both sync and async paths
-- [ ] **TEST + IMPLEMENT: AddDarker and AddHandlersFromAssemblies wire both sync and async registries**
+- [x] **TEST + IMPLEMENT: AddDarker and AddHandlersFromAssemblies wire both sync and async registries**
   - **USE COMMAND**: `/test-first when AddHandlersFromAssemblies scans an assembly it registers sync handlers in the sync registry and async handlers in the async registry`
   - FR17, AC6
   - Test location: `test/Paramore.Darker.Tests/Integrations`
@@ -301,7 +301,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Rename `Integrations/AspNetTests.cs` → `Integrations/QueryProcessorIntegrationTests.cs` and update for split interfaces (AspNet is a misnomer — there is no ASP.NET dependency in this solution)
 
 ### Task 14: Split Policies package decorators and attributes into sync and async variants
-- [ ] **TEST + IMPLEMENT: RetryableQuery decorator works in both sync and async pipelines**
+- [x] **TEST + IMPLEMENT: RetryableQuery decorator works in both sync and async pipelines**
   - **USE COMMAND**: `/test-first when a retryable query attribute is used on sync and async handlers the correct decorator variant is applied`
   - FR8, FR8b, AC5, AC5a
   - Test location: `test/Paramore.Darker.Tests/Decorators`
@@ -319,7 +319,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `QueryProcessorBuilderExtensions.AddDefaultPolicies()` to register both sync and async decorator types
 
 ### Task 15: Split QueryLogging package decorators and attributes into sync and async variants
-- [ ] **TEST + IMPLEMENT: QueryLogging decorator works in both sync and async pipelines**
+- [x] **TEST + IMPLEMENT: QueryLogging decorator works in both sync and async pipelines**
   - **USE COMMAND**: `/test-first when a query logging attribute is used on sync and async handlers the correct logging decorator variant is applied`
   - FR8, FR8b, AC5, AC5a
   - Test location: `test/Paramore.Darker.Tests/Decorators`
@@ -337,7 +337,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `QueryProcessorBuilderExtensions.AddJsonQueryLogging()` to register both sync and async decorator types
 
 ### Task 16: Update Builder for dual-path configuration
-- [ ] **TEST + IMPLEMENT: QueryProcessorBuilder creates processor with both sync and async infrastructure**
+- [x] **TEST + IMPLEMENT: QueryProcessorBuilder creates processor with both sync and async infrastructure**
   - **USE COMMAND**: `/test-first when QueryProcessorBuilder builds a processor it configures both sync and async handler infrastructure`
   - FR18, AC11
   - Test location: `test/Paramore.Darker.Tests`
@@ -356,7 +356,7 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
     - Update `RegisterDefaultDecorators()` to register `FallbackPolicyDecoratorAsync<,>`
 
 ### Task 17: Sample application builds and runs with split interfaces
-- [ ] **TEST + IMPLEMENT: SampleMinimalApi builds and runs correctly with split interfaces**
+- [x] **TEST + IMPLEMENT: SampleMinimalApi builds and runs correctly with split interfaces**
   - **USE COMMAND**: `/test-first when sample minimal API is configured with AddDarker it resolves and executes async query handlers correctly`
   - AC10
   - Test location: `test/Paramore.Darker.Tests/Integrations`
@@ -376,11 +376,11 @@ Tasks are ordered tidy-first: structural changes (interface splits, new types) b
 ## Verification
 
 After all tasks complete:
-- [ ] `dotnet build Darker.Filter.slnf -c Release` — clean build
-- [ ] `dotnet test Darker.Filter.slnf -c Release --no-build` — all tests pass
-- [ ] `dotnet run --project samples/SampleMinimalApi/SampleMinimalApi.csproj` — sample runs
-- [ ] No `NotImplementedException` in handler base classes (AC3)
-- [ ] No references to `MissingHandlerException` or `MissingHandlerDecoratorException`
+- [x] `dotnet build Darker.Filter.slnf -c Release` — clean build
+- [x] `dotnet test Darker.Filter.slnf -c Release --no-build` — all tests pass
+- [x] `dotnet run --project samples/SampleMinimalApi/SampleMinimalApi.csproj` — sample runs
+- [x] No `NotImplementedException` in handler base classes (AC3)
+- [x] No references to `MissingHandlerException` or `MissingHandlerDecoratorException`
 
 ## FR-to-Task Coverage
 
