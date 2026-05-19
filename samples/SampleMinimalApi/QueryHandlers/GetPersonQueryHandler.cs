@@ -18,9 +18,9 @@ public sealed class GetPersonNameQuery : IQuery<string>
 
 public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery, string>
 {
-    [QueryLogging(1)]
-    [FallbackPolicy(2)]
-    [RetryableQuery(3, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
+    [QueryLoggingAttributeAsync(1)]
+    [FallbackPolicyAttributeAsync(2)]
+    [RetryableQueryAttributeAsync(3, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
     public override async Task<string> ExecuteAsync(GetPersonNameQuery query,
         CancellationToken cancellationToken = default)
     {

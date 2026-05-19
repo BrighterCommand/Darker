@@ -24,6 +24,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public void RegisterDefaultDecorators()
         {
             Register(typeof(FallbackPolicyDecorator<,>));
+            Register(typeof(FallbackPolicyDecoratorAsync<,>));
         }
     }
 }
