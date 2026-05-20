@@ -5,7 +5,7 @@ namespace Paramore.Darker
 {
     public sealed class QueryContext : IQueryContext
     {
-        public IDictionary<string, object> Bag { get; set; }
+        public IDictionary<string, object> Bag { get; set; } = new Dictionary<string, object>();
         public IPolicyRegistry<string> Policies { get; set; }
     }
 }

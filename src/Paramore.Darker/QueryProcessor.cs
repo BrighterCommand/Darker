@@ -45,11 +45,12 @@ namespace Paramore.Darker
             _contextBagData = contextBagData ?? new Dictionary<string, object>();
         }
 
-        public TResult Execute<TResult>(IQuery<TResult> query)
+        public TResult Execute<TResult>(IQuery<TResult> query, IQueryContext queryContext = null)
         {
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
-                var queryContext = CreateQueryContext();
+                if (queryContext == null)
+                    queryContext = _queryContextFactory.Create();
                 var entryPoint = pipelineBuilder.Build(query, queryContext);
 
                 try

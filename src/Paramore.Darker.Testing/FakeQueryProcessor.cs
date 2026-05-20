@@ -23,7 +23,7 @@ namespace Paramore.Darker.Testing
 
         public IEnumerable<T> GetExecutedQueries<T>() => _executedQueries.Where(q => q is T).Cast<T>();
 
-        public TResponse Execute<TResponse>(IQuery<TResponse> query)
+        public TResponse Execute<TResponse>(IQuery<TResponse> query, IQueryContext queryContext = null)
         {
             _executedQueries.Add(query);
 
