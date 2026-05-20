@@ -1,5 +1,6 @@
 using System;
 using Paramore.Darker.Policies;
+using Paramore.Darker.Tests.TestDoubles;
 using Polly;
 using Polly.Registry;
 using Shouldly;
@@ -14,14 +15,14 @@ namespace Paramore.Darker.Tests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var handler = new RetryTestQueryHandler();
+            var handler = new RetryableQueryHandler();
 
             var syncRegistry = new QueryHandlerRegistry();
-            syncRegistry.Register<RetryTestQuery, RetryTestQuery.Result, RetryTestQueryHandler>();
+            syncRegistry.Register<SyncTestQuery, SyncTestQuery.Result, RetryableQueryHandler>();
 
             var handlerFactory = new SimpleHandlerFactory(type => handler);
             var decoratorFactory = new SimpleHandlerDecoratorFactory(
-                type => new RetryableQueryDecorator<IQuery<RetryTestQuery.Result>, RetryTestQuery.Result>());
+                type => new RetryableQueryDecorator<IQuery<SyncTestQuery.Result>, SyncTestQuery.Result>());
             var decoratorRegistry = new InMemoryDecoratorRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(
@@ -40,30 +41,11 @@ namespace Paramore.Darker.Tests
                 policyRegistry: policyRegistry);
 
             // Act
-            var result = queryProcessor.Execute(new RetryTestQuery(id));
+            var result = queryProcessor.Execute(new SyncTestQuery(id));
 
             // Assert
             result.ShouldNotBeNull();
             result.Value.ShouldBe(id);
-        }
-
-        public class RetryTestQuery : IQuery<RetryTestQuery.Result>
-        {
-            public Guid Id { get; }
-
-            public RetryTestQuery(Guid id) => Id = id;
-
-            public class Result
-            {
-                public Guid Value { get; set; }
-            }
-        }
-
-        public class RetryTestQueryHandler : QueryHandler<RetryTestQuery, RetryTestQuery.Result>
-        {
-            [RetryableQuery(1, Constants.RetryPolicyName)]
-            public override RetryTestQuery.Result Execute(RetryTestQuery query)
-                => new RetryTestQuery.Result { Value = query.Id };
         }
     }
 }

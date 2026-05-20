@@ -1,6 +1,7 @@
 using System;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Policies;
+using Paramore.Darker.Tests.TestDoubles;
 using Shouldly;
 using Xunit;
 
@@ -13,14 +14,14 @@ namespace Paramore.Darker.Tests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var handler = new NoPoliciesRetryHandler();
+            var handler = new RetryableQueryHandler();
 
             var syncRegistry = new QueryHandlerRegistry();
-            syncRegistry.Register<NoPoliciesRetryQuery, NoPoliciesRetryQuery.Result, NoPoliciesRetryHandler>();
+            syncRegistry.Register<SyncTestQuery, SyncTestQuery.Result, RetryableQueryHandler>();
 
             var handlerFactory = new SimpleHandlerFactory(type => handler);
             var decoratorFactory = new SimpleHandlerDecoratorFactory(
-                type => new RetryableQueryDecorator<IQuery<NoPoliciesRetryQuery.Result>, NoPoliciesRetryQuery.Result>());
+                type => new RetryableQueryDecorator<IQuery<SyncTestQuery.Result>, SyncTestQuery.Result>());
             var decoratorRegistry = new InMemoryDecoratorRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(
@@ -33,26 +34,7 @@ namespace Paramore.Darker.Tests
 
             // Act & Assert — decorator must throw ConfigurationException when Context.Policies is null
             Should.Throw<ConfigurationException>(() =>
-                queryProcessor.Execute(new NoPoliciesRetryQuery(id)));
-        }
-
-        public class NoPoliciesRetryQuery : IQuery<NoPoliciesRetryQuery.Result>
-        {
-            public Guid Id { get; }
-
-            public NoPoliciesRetryQuery(Guid id) => Id = id;
-
-            public class Result
-            {
-                public Guid Value { get; set; }
-            }
-        }
-
-        public class NoPoliciesRetryHandler : QueryHandler<NoPoliciesRetryQuery, NoPoliciesRetryQuery.Result>
-        {
-            [RetryableQuery(1, Constants.RetryPolicyName)]
-            public override NoPoliciesRetryQuery.Result Execute(NoPoliciesRetryQuery query)
-                => new NoPoliciesRetryQuery.Result { Value = query.Id };
+                queryProcessor.Execute(new SyncTestQuery(id)));
         }
     }
 }
