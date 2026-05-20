@@ -161,7 +161,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Do NOT remove `Constants.ContextBagKey` yet — the builder extension methods still reference it (removed in Phase 4)
   - Covers: FR6b, AC14
 
-- [ ] **TEST + IMPLEMENT: Policy decorator throws ConfigurationException when Policies is null**
+- [x] **TEST + IMPLEMENT: Policy decorator throws ConfigurationException when Policies is null**
   - **USE COMMAND**: `/test-first when policy decorator executes without policies configured should throw ConfigurationException`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests`
@@ -175,7 +175,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Already handled by the `?? throw new ConfigurationException(...)` — this test validates the error path
   - Covers: FR6a (decorator error), AC11
 
-- [ ] **TEST + IMPLEMENT: Logging decorator uses constructor-injected JsonSerializerSettings**
+- [x] **TEST + IMPLEMENT: Logging decorator uses constructor-injected JsonSerializerSettings**
   - **USE COMMAND**: `/test-first when logging decorator executes should use constructor-injected serializer settings`
   - Depends on: Phase 2 complete
   - Test location: `test/Paramore.Darker.Tests`
@@ -192,7 +192,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Do NOT remove `Constants.ContextBagKey` yet — the builder extension methods (`AddJsonQueryLogging<TBuilder>`) still reference it (removed in Phase 4)
   - Covers: FR7, AC12
 
-- [ ] **TEST + IMPLEMENT: Logging decorator throws ConfigurationException when settings null**
+- [x] **TEST + IMPLEMENT: Logging decorator throws ConfigurationException when settings null**
   - **USE COMMAND**: `/test-first when logging decorator executes without serializer settings should throw ConfigurationException`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests`

@@ -37,7 +37,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, Serialize(query));
 
             var result = await next(query, cancellationToken).ConfigureAwait(false);
 
@@ -50,9 +50,11 @@ namespace Paramore.Darker.QueryLogging
             return result;
         }
 
-        private NewtonsoftJsonSerializer GetSerializer()
-            => _serializerSettings != null
-                ? new NewtonsoftJsonSerializer(_serializerSettings)
-                : throw new ConfigurationException("No serializer settings are configured. Pass JsonSerializerSettings to the QueryLoggingDecoratorAsync constructor.");
+        private string Serialize<T>(T value)
+        {
+            if (_serializerSettings == null)
+                throw new ConfigurationException("No serializer settings are configured. Pass JsonSerializerSettings to the QueryLoggingDecoratorAsync constructor.");
+            return JsonConvert.SerializeObject(value, _serializerSettings);
+        }
     }
 }
