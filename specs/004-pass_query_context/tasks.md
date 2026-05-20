@@ -21,14 +21,14 @@ Dependencies are noted per task. Each behavioral task uses `/test-first` with ma
 
 These are additive changes that don't alter existing behavior. Existing tests must pass before and after.
 
-- [ ] **TIDY: Add Polly package reference to core Paramore.Darker**
+- [x] **TIDY: Add Polly package reference to core Paramore.Darker**
   - Add `<PackageReference Include="Polly" />` to `src/Paramore.Darker/Paramore.Darker.csproj`
   - Version is already managed centrally in `Directory.Packages.props` (Polly 8.6.6)
   - Verify: `dotnet build Darker.Filter.slnf -c Release` still succeeds
   - Covers: ADR section 4 note, FR6a package dependency
   - No behavioral change — existing tests must still pass
 
-- [ ] **TIDY: Add typed `Policies` property to `IQueryContext` and `QueryContext`**
+- [x] **TIDY: Add typed `Policies` property to `IQueryContext` and `QueryContext`**
   - Depends on: Polly package reference added to core
   - Add `IPolicyRegistry<string>? Policies { get; set; }` to `IQueryContext` interface
   - Add `public IPolicyRegistry<string>? Policies { get; set; }` to `QueryContext` class
@@ -42,7 +42,7 @@ These are additive changes that don't alter existing behavior. Existing tests mu
 
 These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use external context. Note: `CreateQueryContext()` is kept alive until both sync and async paths are updated, then removed in a tidy task at the end.
 
-- [ ] **TEST + IMPLEMENT: QueryProcessor.Execute creates context via factory when no context provided**
+- [x] **TEST + IMPLEMENT: QueryProcessor.Execute creates context via factory when no context provided**
   - **USE COMMAND**: `/test-first when executing query without context should create context via factory`
   - Depends on: Phase 1 complete
   - Test location: `test/Paramore.Darker.Tests`
@@ -58,7 +58,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Do NOT remove `CreateQueryContext()` yet — `ExecuteAsync` still uses it
   - Covers: FR1, FR3, AC1
 
-- [ ] **TEST + IMPLEMENT: QueryProcessor.Execute uses caller-provided context**
+- [x] **TEST + IMPLEMENT: QueryProcessor.Execute uses caller-provided context**
   - **USE COMMAND**: `/test-first when executing query with provided context should use that context`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests`
@@ -73,7 +73,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Already handled by the `queryContext ??= ...` logic — this test validates the non-null path
   - Covers: FR4, AC3, AC5
 
-- [ ] **TEST + IMPLEMENT: QueryProcessor.ExecuteAsync creates context via factory when no context provided**
+- [x] **TEST + IMPLEMENT: QueryProcessor.ExecuteAsync creates context via factory when no context provided**
   - **USE COMMAND**: `/test-first when executing async query without context should create context via factory`
   - Depends on: Execute sync tasks complete
   - Test location: `test/Paramore.Darker.Tests`
@@ -88,7 +88,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Update `QueryProcessor.ExecuteAsync`: if `queryContext` is null, call `_queryContextFactory.Create()` (inline)
   - Covers: FR2, FR3, AC2
 
-- [ ] **TEST + IMPLEMENT: QueryProcessor.ExecuteAsync uses caller-provided context**
+- [x] **TEST + IMPLEMENT: QueryProcessor.ExecuteAsync uses caller-provided context**
   - **USE COMMAND**: `/test-first when executing async query with provided context should use that context`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests`
@@ -103,13 +103,13 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Already handled by the `queryContext ??= ...` logic — this test validates the non-null async path
   - Covers: FR4, AC4, AC5
 
-- [ ] **TIDY: Remove dead `CreateQueryContext()` method from QueryProcessor**
+- [x] **TIDY: Remove dead `CreateQueryContext()` method from QueryProcessor**
   - Depends on: Both sync and async Execute paths updated above
   - Remove `CreateQueryContext()` private method (no longer called)
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds, existing tests pass
   - Covers: FR9 (partial — removes the method; field removal in Phase 4)
 
-- [ ] **TEST + IMPLEMENT: InitQueryContext sets Policies from constructor when context has no policies**
+- [x] **TEST + IMPLEMENT: InitQueryContext sets Policies from constructor when context has no policies**
   - **USE COMMAND**: `/test-first when query context has no policies should set policies from processor constructor`
   - Depends on: CreateQueryContext removed
   - Test location: `test/Paramore.Darker.Tests`
@@ -126,7 +126,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Call `InitQueryContext(queryContext)` after context creation/assignment in both `Execute` and `ExecuteAsync`
   - Covers: FR5, FR6a, AC10a
 
-- [ ] **TEST + IMPLEMENT: InitQueryContext preserves caller-supplied policies**
+- [x] **TEST + IMPLEMENT: InitQueryContext preserves caller-supplied policies**
   - **USE COMMAND**: `/test-first when caller provides context with policies should preserve caller policies`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests`
@@ -145,7 +145,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
 
 ## Phase 3: Decorator Behavior Changes
 
-- [ ] **TEST + IMPLEMENT: Policy decorator reads from typed Context.Policies property**
+- [x] **TEST + IMPLEMENT: Policy decorator reads from typed Context.Policies property**
   - **USE COMMAND**: `/test-first when retryable query decorator executes should read policy from context policies property`
   - Depends on: Phase 2 complete
   - Test location: `test/Paramore.Darker.Tests`
