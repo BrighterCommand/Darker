@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
+using Polly.Registry;
 using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
@@ -23,11 +24,13 @@ namespace Paramore.Darker
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
         private readonly IReadOnlyDictionary<string, object> _contextBagData;
+        private readonly IPolicyRegistry<string> _policyRegistry;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IQueryContextFactory queryContextFactory,
-            IReadOnlyDictionary<string, object> contextBagData = null)
+            IReadOnlyDictionary<string, object> contextBagData = null,
+            IPolicyRegistry<string> policyRegistry = null)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -42,6 +45,7 @@ namespace Paramore.Darker
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _contextBagData = contextBagData ?? new Dictionary<string, object>();
+            _policyRegistry = policyRegistry;
         }
 
         public TResult Execute<TResult>(IQuery<TResult> query, IQueryContext queryContext = null)
@@ -50,6 +54,7 @@ namespace Paramore.Darker
             {
                 if (queryContext == null)
                     queryContext = _queryContextFactory.Create();
+                InitQueryContext(queryContext);
                 var entryPoint = pipelineBuilder.Build(query, queryContext);
 
                 try
@@ -77,6 +82,7 @@ namespace Paramore.Darker
             {
                 if (queryContext == null)
                     queryContext = _queryContextFactory.Create();
+                InitQueryContext(queryContext);
                 var entryPoint = pipelineBuilder.BuildAsync(query, queryContext);
 
                 try
@@ -97,5 +103,10 @@ namespace Paramore.Darker
             }
         }
 
+        private void InitQueryContext(IQueryContext queryContext)
+        {
+            if (queryContext.Policies == null)
+                queryContext.Policies = _policyRegistry;
+        }
     }
 }
