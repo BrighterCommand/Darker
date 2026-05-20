@@ -70,13 +70,14 @@ namespace Paramore.Darker
             }
         }
 
-        public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var pipelineBuilder = new PipelineBuilder<TResult>(
                 _handlerRegistry, _handlerFactory, _decoratorFactory,
                 _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync))
             {
-                var queryContext = CreateQueryContext();
+                if (queryContext == null)
+                    queryContext = _queryContextFactory.Create();
                 var entryPoint = pipelineBuilder.BuildAsync(query, queryContext);
 
                 try

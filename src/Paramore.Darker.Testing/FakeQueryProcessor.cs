@@ -45,9 +45,9 @@ namespace Paramore.Darker.Testing
             return (TResponse)result(query);
         }
 
-        public Task<TResponse> ExecuteAsync<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TResponse> ExecuteAsync<TResponse>(IQuery<TResponse> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(Execute(query));
+            return Task.FromResult(Execute(query, queryContext));
         }
 
         public void SetupResultFor<TQuery>(Predicate<TQuery> predicate, object result)
