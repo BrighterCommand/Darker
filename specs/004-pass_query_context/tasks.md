@@ -206,7 +206,7 @@ These tasks change `IQueryProcessor` and `QueryProcessor` to accept and use exte
     - Already handled by null check at execution time — this test validates the error path
   - Covers: FR7, AC13
 
-- [ ] **TIDY: Remove `NewtonsoftJsonSerializer` wrapper class**
+- [x] **TIDY: Remove `NewtonsoftJsonSerializer` wrapper class**
   - Depends on: Logging decorator tasks complete (no more usages)
   - Delete `src/Paramore.Darker.QueryLogging/NewtonsoftJsonSerializer.cs`
   - Verify: no references remain (`grep -r NewtonsoftJsonSerializer src/`)
