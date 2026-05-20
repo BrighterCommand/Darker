@@ -26,7 +26,7 @@ In `QueryProcessor`'s implementation:
 
 For `ExecuteAsync`, the `QueryContext` parameter should be the second parameter (before `CancellationToken`), following C# conventions where optional/defaulted parameters come last and `CancellationToken` is always the final parameter.
 
-The `QueryProcessor` constructor takes the policy registry as a parameter (easily injected by DI). The `InitQueryContext` method then sets it on the context's `Bag`, so policy decorators continue to read from `Context.Bag` as they do today.
+The `QueryProcessor` constructor takes the policy registry as a parameter (easily injected by DI). The `InitQueryContext` method sets it on the context's typed `Policies` property (following Brighter's `RequestContext.Policies`), so policy decorators read from `Context.Policies` instead of the untyped `Context.Bag`. The `Bag` remains available for arbitrary user data.
 
 The serializer is a decorator-only concern — `QueryProcessor` has no reason to know about it. `QueryLoggingDecorator`/`QueryLoggingDecoratorAsync` receive `JsonSerializerSettings` via constructor injection from DI and new up their own `JsonSerializer`. This makes the future migration to `System.Text.Json` straightforward.
 
@@ -37,8 +37,10 @@ The serializer is a decorator-only concern — `QueryProcessor` has no reason to
 - FR2: `IQueryProcessor.ExecuteAsync` accepts an optional `IQueryContext` parameter as the second parameter, before `CancellationToken` (default null)
 - FR3: When `queryContext` is null, `QueryProcessor` creates the context via `IQueryContextFactory.Create()`
 - FR4: When `queryContext` is not null, `QueryProcessor` uses the provided context directly without calling `IQueryContextFactory`
-- FR5: In both cases, `QueryProcessor` calls `InitQueryContext` to inject global references (policy registry) into the context's `Bag` before pipeline execution. `InitQueryContext` adds entries to the existing `Bag` dictionary instance (not replacing the dictionary reference) only if the key is not already present — caller-supplied Bag entries take precedence over processor-level defaults. These globals have the same lifetime as the `QueryProcessor` instance. This follows Brighter's `InitRequestContext` pattern.
-- FR6: `QueryProcessor` takes `IPolicyRegistry<string>?` as a nullable constructor parameter (injected via DI, default null). `InitQueryContext` sets it on `Context.Bag` if non-null. If a decorator requires the policy registry but it was not configured, the decorator throws `ConfigurationException` (existing behavior preserved). Note: this introduces a Polly dependency to the core `Paramore.Darker` package. This is acceptable because Policies and Logging packages will be merged into the core package in a later V5 step (see Brighter's `src/Paramore.Brighter/Policies` and `src/Paramore.Brighter/Logging` for precedent). See #321 for the merge.
+- FR5: In both cases, `QueryProcessor` calls `InitQueryContext` to inject global references (policy registry) into the context's typed properties before pipeline execution. `InitQueryContext` sets typed properties (e.g. `context.Policies ??= _policyRegistry`) only if the property is currently null — caller-supplied values take precedence over processor-level defaults. These globals have the same lifetime as the `QueryProcessor` instance. This follows Brighter's `InitRequestContext` pattern where typed properties (`Policies`, `FeatureSwitches`) are set with null-check semantics.
+- FR6: `IQueryContext` gains a typed `IPolicyRegistry<string>? Policies` property (following Brighter's `RequestContext.Policies`). `QueryContext` implements it as a simple nullable auto-property. This replaces the stringly-typed `Context.Bag` lookup for the policy registry with a compile-time-safe typed property. The `Bag` remains available for arbitrary user data.
+- FR6a: `QueryProcessor` takes `IPolicyRegistry<string>?` as a nullable constructor parameter (injected via DI, default null). `InitQueryContext` sets `context.Policies` if it is currently null (caller wins). If a decorator requires the policy registry but it was not configured, the decorator throws `ConfigurationException` (existing behavior preserved). Note: this introduces a Polly dependency to the core `Paramore.Darker` package (requires adding `<PackageReference Include="Polly" />` to `Paramore.Darker.csproj`, version managed centrally in `Directory.Packages.props`). This is acceptable because Policies and Logging packages will be merged into the core package in a later V5 step (see Brighter's `src/Paramore.Brighter/Policies` and `src/Paramore.Brighter/Logging` for precedent). See #321 for the merge.
+- FR6b: Policy decorators (`RetryableQueryDecorator`, `RetryableQueryDecoratorAsync`) change from `Context.Bag[Constants.ContextBagKey]` cast-based lookup to reading the typed `Context.Policies` property. The `Constants.ContextBagKey` in the Policies package is no longer needed. `FallbackPolicyDecorator` and `FallbackPolicyDecoratorAsync` are unchanged — they use `Context.Bag` for the fallback exception key, which is unrelated to the policy registry.
 - FR7: `QueryLoggingDecorator` and `QueryLoggingDecoratorAsync` take `JsonSerializerSettings` via constructor injection (resolved from DI by the decorator factory) instead of looking up a serializer from `Context.Bag`. Each decorator creates its own `JsonSerializer` from the settings. The serializer is a decorator-only concern and does not belong on `QueryProcessor`. The `JsonSerializerSettings` constructor parameter is nullable; if null (not registered in DI), the decorator throws `ConfigurationException` at execution time with context about the missing setup. Note: the fluent builder path (`SimpleHandlerDecoratorFactory`) does not support parameterized construction — this is an accepted limitation of the lightweight test/manual path. This approach makes the future migration to `System.Text.Json` straightforward — swap `JsonSerializerSettings` for `JsonSerializerOptions`.
 - FR8: Remove the `IReadOnlyDictionary<string, object> contextBagData` constructor parameter from `QueryProcessor`. This was a workaround for the inability to pass context from outside. Callers who need to set additional bag data should now populate `IQueryContext.Bag` before passing it to `Execute`/`ExecuteAsync`.
 - FR9: Remove the `_contextBagData` field and the old `Bag` population logic from `CreateQueryContext()` (replaced by `InitQueryContext`)
@@ -56,22 +58,22 @@ The serializer is a decorator-only concern — `QueryProcessor` has no reason to
 - NFR2: This is a V5 release with intentional breaking changes. Callers using positional `CancellationToken` in `ExecuteAsync(query, cancellationToken)` will need to update to named parameter syntax `ExecuteAsync(query, cancellationToken: cancellationToken)` or pass null explicitly `ExecuteAsync(query, null, cancellationToken)`
 
 ### Constraints and Assumptions
-- This is a V5 release with intentional breaking changes across the `IQueryProcessor` interface, builder APIs, and caller sites using positional `CancellationToken`
-- Existing implementors of `IQueryProcessor` will need to update their implementations
+- This is a V5 release with intentional breaking changes across the `IQueryProcessor` interface, `IQueryContext` interface (new `Policies` property), builder APIs, policy decorator `Context.Bag` access patterns, and caller sites using positional `CancellationToken`
+- Existing implementors of `IQueryProcessor` and `IQueryContext` will need to update their implementations
 - The parameter type is `IQueryContext` (the interface, not the concrete class) for extensibility
 - Assumes the caller is responsible for creating and configuring the `IQueryContext` when passing one in
 - Removing `contextBagData` and `AddContextBagItem` is a breaking change for the builder API and for any code that used `AddContextBagItem` or `DarkerContextBag` directly
-- Policy decorators continue to read from `Context.Bag` — no changes to decorator code for accessing the policy registry
+- Policy decorators (`RetryableQueryDecorator`, `RetryableQueryDecoratorAsync`) change from `Context.Bag` lookup to typed `Context.Policies` property access. `FallbackPolicyDecorator` and `FallbackPolicyDecoratorAsync` are unchanged (they use `Context.Bag` for fallback exception tracking, not for policy registry access)
 - Logging decorators change from `Context.Bag` lookup to constructor injection for the serializer (DI path only; fluent builder path has accepted limitations)
 - Introducing Polly dependency to core `Paramore.Darker` is acceptable; Policies and Logging will be merged into the core package in a later V5 step (#321)
-- `InitQueryContext` uses additive (non-overwriting) semantics for all contexts, including factory-created ones. This is a behavioral change from the current full-replacement approach, documented as part of V5. In practice this has no effect since no existing `IQueryContextFactory` implementation pre-populates the Bag
+- `InitQueryContext` uses null-check semantics (`??=`) for typed properties on all contexts, including factory-created ones. This is a behavioral change from the current full-replacement approach on `Bag`, documented as part of V5. In practice this has no effect since no existing `IQueryContextFactory` implementation pre-populates context properties
 - The builder implementation (`QueryProcessorBuilder`) moves from `Paramore.Darker` to `Paramore.Darker.Extensions.DependencyInjection`; only the interface definition stays in `Paramore.Darker`. The Policies/Logging merge (#321) should happen first to simplify this, as the Policies and QueryLogging extension methods currently cast to `QueryProcessorBuilder`
 
 ### Out of Scope
-- Changing `IQueryContext` or `QueryContext` type definitions
 - Adding OpenTelemetry integration (this feature enables it but does not implement it)
 - Removing `IQueryContextFactory` (it is still used for the default path)
 - Changes to handler signatures
+- Note: `IQueryContext` and `QueryContext` type changes are now **in scope** (FR6) — adding a typed `Policies` property following Brighter's `RequestContext.Policies` pattern. This was originally listed as out of scope but the design review identified that typed properties are the correct approach, consistent with Brighter.
 
 ## Acceptance Criteria
 
@@ -79,22 +81,23 @@ The serializer is a decorator-only concern — `QueryProcessor` has no reason to
 - AC2: Calling `ExecuteAsync(query, cancellationToken: cancellationToken)` creates a context via `IQueryContextFactory`, injects globals via `InitQueryContext`, and executes the pipeline returning the expected result. Note: callers using positional `ExecuteAsync(query, ct)` must update — this is an intentional V5 breaking change.
 - AC3: Calling `Execute(query, myContext)` with a provided `IQueryContext` uses that context in the pipeline
 - AC4: Calling `ExecuteAsync(query, myContext, cancellationToken)` with a provided `IQueryContext` uses that context in the pipeline
-- AC5: When a context is provided, handlers and decorators in the pipeline receive the caller-provided context (with globals added by `InitQueryContext`)
-- AC6: When a caller-provided context already has a key that `InitQueryContext` would set, the caller's value is preserved (caller wins)
+- AC5: When a context is provided, handlers and decorators in the pipeline receive the caller-provided context (with typed properties set by `InitQueryContext`)
+- AC6: When a caller-provided context already has `Policies` set, `InitQueryContext` preserves the caller's value (caller wins via `??=` semantics)
 - AC7: `QueryProcessor` no longer accepts `contextBagData` in its constructor
 - AC8: `AddContextBagItem` is removed from builder interfaces and implementations
 - AC9: `DarkerContextBag` class is removed
-- AC10: `QueryProcessor` accepts `IPolicyRegistry<string>?` as a nullable constructor parameter; when non-null, `InitQueryContext` sets it on the context's Bag
-- AC11: When policy registry is null but a decorator requires it, `ConfigurationException` is thrown (existing decorator behavior preserved)
+- AC10: `IQueryContext` has a typed `IPolicyRegistry<string>? Policies` property; `QueryContext` implements it as a nullable auto-property
+- AC10a: `QueryProcessor` accepts `IPolicyRegistry<string>?` as a nullable constructor parameter; when non-null, `InitQueryContext` sets `context.Policies` if currently null
+- AC11: When `Context.Policies` is null but a decorator requires it, `ConfigurationException` is thrown (existing decorator behavior preserved)
 - AC12: `QueryLoggingDecorator`/`QueryLoggingDecoratorAsync` receive `JsonSerializerSettings` via constructor injection and create their own `JsonSerializer`, not from `Context.Bag`
 - AC13: When `JsonSerializerSettings` is not registered in DI, the logging decorator receives null and throws `ConfigurationException` at execution time with context about the missing setup
-- AC14: Policy decorators (`RetryableQueryDecorator`, etc.) continue to read from `Context.Bag` — no changes to policy decorator lookup code
+- AC14: Policy decorators (`RetryableQueryDecorator`, `RetryableQueryDecoratorAsync`) read from the typed `Context.Policies` property instead of `Context.Bag[Constants.ContextBagKey]`. `FallbackPolicyDecorator` and `FallbackPolicyDecoratorAsync` are unchanged (they use `Context.Bag` only for fallback exception tracking)
 - AC15: `AddDefaultPolicies` registers `IPolicyRegistry<string>` in DI
 - AC16: `AddJsonQueryLogging` registers `JsonSerializerSettings` in DI
 - AC17: `QueryProcessorBuilder` fluent builder and its extension methods (`Policies()`, `DefaultPolicies()`) pass the policy registry to the `QueryProcessor` constructor
 - AC18: All first-party projects compile correctly after all breaking changes: sample applications, Testing package (`FakeQueryProcessor`), and Benchmarks
 - AC19: `FakeQueryProcessor` accepts the optional `IQueryContext` parameter and stores it for test assertions
-- AC20: Existing code that implements `IQueryProcessor` or used `contextBagData`/`AddContextBagItem` receives clear compiler errors (intentional V5 breaking changes)
+- AC20: Existing code that implements `IQueryProcessor`, `IQueryContext`, or used `contextBagData`/`AddContextBagItem`/`Context.Bag[Constants.ContextBagKey]` for policy registry receives clear compiler errors (intentional V5 breaking changes)
 
 ## Additional Context
 
