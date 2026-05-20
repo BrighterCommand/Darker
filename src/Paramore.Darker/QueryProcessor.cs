@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,13 +22,11 @@ namespace Paramore.Darker
         private readonly IQueryHandlerFactoryAsync _handlerFactoryAsync;
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
-        private readonly IReadOnlyDictionary<string, object> _contextBagData;
         private readonly IPolicyRegistry<string> _policyRegistry;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IQueryContextFactory queryContextFactory,
-            IReadOnlyDictionary<string, object> contextBagData = null,
             IPolicyRegistry<string> policyRegistry = null)
         {
             if (handlerConfiguration == null)
@@ -44,7 +41,6 @@ namespace Paramore.Darker
             _decoratorFactoryAsync = handlerConfiguration.DecoratorFactoryAsync;
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
-            _contextBagData = contextBagData ?? new Dictionary<string, object>();
             _policyRegistry = policyRegistry;
         }
 

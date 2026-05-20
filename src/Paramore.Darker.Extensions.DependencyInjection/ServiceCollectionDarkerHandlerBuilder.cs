@@ -6,19 +6,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 {
     internal class ServiceCollectionDarkerHandlerBuilder : IDarkerHandlerBuilder
     {
-        private readonly DarkerContextBag _contextBag;
         private readonly ServiceCollectionDecoratorRegistry _decoratorRegistry;
         private readonly ServiceCollectionHandlerRegistry _registry;
         private readonly ServiceCollectionHandlerRegistryAsync _registryAsync;
 
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
             ServiceCollectionHandlerRegistryAsync registryAsync,
-            ServiceCollectionDecoratorRegistry decoratorRegistry, DarkerContextBag contextContextBag)
+            ServiceCollectionDecoratorRegistry decoratorRegistry)
         {
             _registry = registry;
             _registryAsync = registryAsync;
             _decoratorRegistry = decoratorRegistry;
-            _contextBag = contextContextBag;
         }
 
         public IDarkerHandlerBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)
