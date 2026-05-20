@@ -15,9 +15,9 @@ namespace Paramore.Darker.QueryLogging
     {
         private static readonly ILogger Logger = ApplicationLogging.CreateLogger<QueryLoggingDecoratorAsync<TQuery, TResult>>();
 
-        private readonly JsonSerializerSettings? _serializerSettings;
+        private readonly JsonSerializerSettings _serializerSettings;
 
-        public QueryLoggingDecoratorAsync(JsonSerializerSettings? serializerSettings = null)
+        public QueryLoggingDecoratorAsync(JsonSerializerSettings serializerSettings = null)
         {
             _serializerSettings = serializerSettings;
         }

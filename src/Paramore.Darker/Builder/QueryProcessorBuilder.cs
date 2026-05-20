@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Paramore.Darker.Decorators;
+using Polly.Registry;
 
 namespace Paramore.Darker.Builder
 {
@@ -10,6 +11,8 @@ namespace Paramore.Darker.Builder
 
         private IHandlerConfiguration _handlerConfiguration;
         private IQueryContextFactory _queryContextFactory;
+
+        public IPolicyRegistry<string> PolicyRegistry { get; set; }
 
         private QueryProcessorBuilder()
         {
