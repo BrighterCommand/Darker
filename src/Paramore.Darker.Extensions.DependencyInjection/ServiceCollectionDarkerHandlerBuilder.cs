@@ -41,16 +41,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return this;
         }
 
-        public IQueryProcessorExtensionBuilder AddContextBagItem(string key, object item)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (item == null) throw new ArgumentNullException(nameof(item));
-
-            _contextBag.Add(key, item);
-
-            return this;
-        }
-
         public IQueryProcessorExtensionBuilder RegisterDecorator(Type decoratorType)
         {
             if (decoratorType == null) throw new ArgumentNullException(nameof(decoratorType));

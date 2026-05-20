@@ -83,12 +83,6 @@ namespace Paramore.Darker.Builder
             return this;
         }
 
-        public IQueryProcessorExtensionBuilder AddContextBagItem(string key, object item)
-        {
-            _contextBagData.Add(key, item);
-            return this;
-        }
-
         public IQueryProcessorExtensionBuilder RegisterDecorator(Type decoratorType)
         {
             _handlerConfiguration.DecoratorRegistry.Register(decoratorType);
