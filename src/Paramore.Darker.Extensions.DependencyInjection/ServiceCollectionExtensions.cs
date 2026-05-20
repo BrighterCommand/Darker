@@ -26,7 +26,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, provider, decoratorRegistry, options), options.QueryProcessorLifetime));
 
-            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry);
+            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry, services);
         }
 
         private static QueryProcessor BuildQueryProcessor(

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Builder;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -10,13 +11,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         private readonly ServiceCollectionHandlerRegistry _registry;
         private readonly ServiceCollectionHandlerRegistryAsync _registryAsync;
 
+        public IServiceCollection Services { get; }
+
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
             ServiceCollectionHandlerRegistryAsync registryAsync,
-            ServiceCollectionDecoratorRegistry decoratorRegistry)
+            ServiceCollectionDecoratorRegistry decoratorRegistry,
+            IServiceCollection services)
         {
             _registry = registry;
             _registryAsync = registryAsync;
             _decoratorRegistry = decoratorRegistry;
+            Services = services;
         }
 
         public IDarkerHandlerBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)
@@ -35,6 +40,16 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(registerHandlers));
 
             registerHandlers(_registry);
+
+            return this;
+        }
+
+        public IDarkerHandlerBuilder AddAsyncHandlers(Action<IQueryHandlerRegistryAsync> registerHandlers)
+        {
+            if (registerHandlers == null)
+                throw new ArgumentNullException(nameof(registerHandlers));
+
+            registerHandlers(_registryAsync);
 
             return this;
         }
