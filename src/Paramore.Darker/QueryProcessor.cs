@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,16 +97,5 @@ namespace Paramore.Darker
             }
         }
 
-        private IQueryContext CreateQueryContext()
-        {
-            _logger.LogDebug("Creating query context...");
-
-            var queryContext = _queryContextFactory.Create();
-
-            // todo: no need for IQueryContext i think. just use dictionary
-            queryContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
-
-            return queryContext;
-        }
     }
 }
