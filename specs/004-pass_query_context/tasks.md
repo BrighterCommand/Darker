@@ -313,7 +313,7 @@ This separation is clean: the generic methods handle decorator registration only
 
 ## Phase 5: Consumer Updates
 
-- [ ] **TEST + IMPLEMENT: FakeQueryProcessor accepts and stores provided context**
+- [x] **TEST + IMPLEMENT: FakeQueryProcessor accepts and stores provided context**
   - **USE COMMAND**: `/test-first when FakeQueryProcessor called with context should store provided context`
   - Depends on: Phase 2 complete (IQueryProcessor signature changed)
   - Test location: `test/Paramore.Darker.Tests`
@@ -331,7 +331,7 @@ This separation is clean: the generic methods handle decorator registration only
     - Store `queryContext` in both methods
   - Covers: FR17, AC19
 
-- [ ] **TIDY: Update sample app and benchmarks for new API**
+- [x] **TIDY: Update sample app and benchmarks for new API**
   - Depends on: All previous phases complete
   - Update `samples/SampleMinimalApi/Program.cs`: verify `.AddPolicies(...)` still works with new DI registration path
   - Update `test/Paramore.Darker.Benchmarks/Benchmark.cs`: update `QueryProcessor` construction if needed (builder no longer passes `contextBagData`); update any `ExecuteAsync` calls to use named `cancellationToken:` parameter if using positional syntax
