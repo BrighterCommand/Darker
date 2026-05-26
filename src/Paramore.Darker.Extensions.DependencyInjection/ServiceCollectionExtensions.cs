@@ -24,12 +24,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var decoratorRegistry = new ServiceCollectionDecoratorRegistry(services, options.HandlerLifetime);
             decoratorRegistry.RegisterDefaultDecorators();
 
-            var contextBag = new DarkerContextBag();
+            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, provider, decoratorRegistry, options), options.QueryProcessorLifetime));
 
-            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, provider, decoratorRegistry, options, contextBag), options.QueryProcessorLifetime));
-
-
-            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry, contextBag);
+            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry, services);
         }
 
         private static QueryProcessor BuildQueryProcessor(
@@ -37,20 +34,20 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             IQueryHandlerRegistryAsync handlerRegistryAsync,
             IServiceProvider provider,
             ServiceCollectionDecoratorRegistry decoratorRegistry,
-            DarkerOptions options,
-            DarkerContextBag contextBag)
+            DarkerOptions options)
         {
             var loggerFactory = provider.GetService<ILoggerFactory>();
             ApplicationLogging.LoggerFactory = loggerFactory;
 
             var handlerFactory = new ServiceProviderHandlerFactory(provider);
             var decoratorFactory = new ServiceProviderHandlerDecoratorFactory(provider);
+            var policyRegistry = provider.GetService<Polly.Registry.IPolicyRegistry<string>>();
 
             return new QueryProcessor(
                 new HandlerConfiguration(
                     handlerRegistry, handlerFactory, decoratorRegistry, decoratorFactory,
                     handlerRegistryAsync, handlerFactory, decoratorRegistry, decoratorFactory),
-                options.QueryContextFactory, contextBag);
+                options.QueryContextFactory, policyRegistry);
         }
     }
 }

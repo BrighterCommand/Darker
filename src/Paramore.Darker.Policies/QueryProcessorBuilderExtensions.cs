@@ -15,6 +15,7 @@ namespace Paramore.Darker.Policies
                 throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
 
             AddPolicies(queryProcessorBuilder, policyRegistry);
+            queryProcessorBuilder.PolicyRegistry = policyRegistry;
 
             return queryProcessorBuilder;
         }
@@ -33,20 +34,32 @@ namespace Paramore.Darker.Policies
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
-            builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
 
             return builder;
         }
 
         public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor builder)
         {
-            var queryProcessorBuilder = builder as QueryProcessorBuilder;
-            if (queryProcessorBuilder == null)
-                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+            var defaultRetryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromMilliseconds(50),
+                    TimeSpan.FromMilliseconds(100),
+                    TimeSpan.FromMilliseconds(150)
+                });
 
-            AddDefaultPolicies(queryProcessorBuilder);
+            var circuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
 
-            return queryProcessorBuilder;
+            var policyRegistry = new PolicyRegistry
+            {
+                { Constants.RetryPolicyName, defaultRetryPolicy },
+                { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
+            };
+
+            return Policies(builder, policyRegistry);
         }
 
         public static TBuilder AddDefaultPolicies<TBuilder>(this TBuilder builder)
@@ -67,13 +80,12 @@ namespace Paramore.Darker.Policies
 
             var policyRegistry = new PolicyRegistry
             {
-                {Constants.RetryPolicyName, defaultRetryPolicy},
-                {Constants.CircuitBreakerPolicyName, circuitBreakerPolicy}
+                { Constants.RetryPolicyName, defaultRetryPolicy },
+                { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
             };
 
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
-            builder.AddContextBagItem(Constants.ContextBagKey, policyRegistry);
 
             return builder;
         }

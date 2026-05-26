@@ -1,24 +1,27 @@
 using System;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Builder;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
     internal class ServiceCollectionDarkerHandlerBuilder : IDarkerHandlerBuilder
     {
-        private readonly DarkerContextBag _contextBag;
         private readonly ServiceCollectionDecoratorRegistry _decoratorRegistry;
         private readonly ServiceCollectionHandlerRegistry _registry;
         private readonly ServiceCollectionHandlerRegistryAsync _registryAsync;
 
+        public IServiceCollection Services { get; }
+
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
             ServiceCollectionHandlerRegistryAsync registryAsync,
-            ServiceCollectionDecoratorRegistry decoratorRegistry, DarkerContextBag contextContextBag)
+            ServiceCollectionDecoratorRegistry decoratorRegistry,
+            IServiceCollection services)
         {
             _registry = registry;
             _registryAsync = registryAsync;
             _decoratorRegistry = decoratorRegistry;
-            _contextBag = contextContextBag;
+            Services = services;
         }
 
         public IDarkerHandlerBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)
@@ -41,12 +44,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return this;
         }
 
-        public IQueryProcessorExtensionBuilder AddContextBagItem(string key, object item)
+        public IDarkerHandlerBuilder AddAsyncHandlers(Action<IQueryHandlerRegistryAsync> registerHandlers)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (item == null) throw new ArgumentNullException(nameof(item));
+            if (registerHandlers == null)
+                throw new ArgumentNullException(nameof(registerHandlers));
 
-            _contextBag.Add(key, item);
+            registerHandlers(_registryAsync);
 
             return this;
         }
