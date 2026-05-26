@@ -19,12 +19,16 @@ namespace Paramore.Darker.Testing
             _exceptions = new Dictionary<Type, IDictionary<Predicate<IQuery>, Exception>>();
         }
 
+        /// <summary>Gets the query context supplied by the most recent <see cref="Execute{TResponse}"/> or <see cref="ExecuteAsync{TResponse}"/> call, or null if none was provided.</summary>
+        public IQueryContext LastProvidedContext { get; private set; }
+
         public IEnumerable<IQuery> GetExecutedQueries() => _executedQueries;
 
         public IEnumerable<T> GetExecutedQueries<T>() => _executedQueries.Where(q => q is T).Cast<T>();
 
-        public TResponse Execute<TResponse>(IQuery<TResponse> query)
+        public TResponse Execute<TResponse>(IQuery<TResponse> query, IQueryContext queryContext = null)
         {
+            LastProvidedContext = queryContext;
             _executedQueries.Add(query);
 
             var queryType = query.GetType();
@@ -45,9 +49,9 @@ namespace Paramore.Darker.Testing
             return (TResponse)result(query);
         }
 
-        public Task<TResponse> ExecuteAsync<TResponse>(IQuery<TResponse> query, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<TResponse> ExecuteAsync<TResponse>(IQuery<TResponse> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(Execute(query));
+            return Task.FromResult(Execute(query, queryContext));
         }
 
         public void SetupResultFor<TQuery>(Predicate<TQuery> predicate, object result)

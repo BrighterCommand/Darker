@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
 using Paramore.Darker.Decorators;
+using Polly.Registry;
 
 namespace Paramore.Darker.Builder
 {
     public sealed class QueryProcessorBuilder : INeedHandlers, INeedAQueryContext, IBuildTheQueryProcessor, IQueryProcessorExtensionBuilder
     {
-        private readonly Dictionary<string, object> _contextBagData = new Dictionary<string, object>();
-
         private IHandlerConfiguration _handlerConfiguration;
         private IQueryContextFactory _queryContextFactory;
+
+        public IPolicyRegistry<string> PolicyRegistry { get; set; }
 
         private QueryProcessorBuilder()
         {
@@ -80,12 +80,6 @@ namespace Paramore.Darker.Builder
             return this;
         }
 
-        public IQueryProcessorExtensionBuilder AddContextBagItem(string key, object item)
-        {
-            _contextBagData.Add(key, item);
-            return this;
-        }
-
         public IQueryProcessorExtensionBuilder RegisterDecorator(Type decoratorType)
         {
             _handlerConfiguration.DecoratorRegistry.Register(decoratorType);
@@ -96,7 +90,7 @@ namespace Paramore.Darker.Builder
         public IQueryProcessor Build()
         {
             RegisterDefaultDecorators();
-            return new QueryProcessor(_handlerConfiguration, _queryContextFactory, _contextBagData);
+            return new QueryProcessor(_handlerConfiguration, _queryContextFactory, policyRegistry: PolicyRegistry);
         }
 
         private void RegisterDefaultDecorators()

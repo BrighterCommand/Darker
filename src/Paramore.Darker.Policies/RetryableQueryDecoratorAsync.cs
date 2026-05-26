@@ -39,15 +39,6 @@ namespace Paramore.Darker.Policies
         }
 
         private IPolicyRegistry<string> GetPolicyRegistry()
-        {
-            if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
-                throw new ConfigurationException($"Policy registry does not exist in context bag with key {Constants.ContextBagKey}.");
-
-            var policyRegistry = Context.Bag[Constants.ContextBagKey] as IPolicyRegistry<string>;
-            if (policyRegistry == null)
-                throw new ConfigurationException($"The policy registry in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(IPolicyRegistry<string>)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
-
-            return policyRegistry;
-        }
+            => Context.Policies ?? throw new ConfigurationException("No policy registry is configured. Set a policy registry on the query context or pass one to the QueryProcessor constructor.");
     }
 }
