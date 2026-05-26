@@ -20,17 +20,8 @@ namespace Paramore.Darker.QueryLogging
         public static TBuilder AddJsonQueryLogging<TBuilder>(this TBuilder builder, Action<JsonSerializerSettings> settings = null)
             where TBuilder : IQueryProcessorExtensionBuilder
         {
-            JsonSerializerSettings serializerSettings = null;
-
-            if (settings != null)
-            {
-                serializerSettings = new JsonSerializerSettings();
-                settings(serializerSettings);
-            }
-
             builder.RegisterDecorator(typeof(QueryLoggingDecorator<,>));
             builder.RegisterDecorator(typeof(QueryLoggingDecoratorAsync<,>));
-            builder.AddContextBagItem(Constants.ContextBagKey, new NewtonsoftJsonSerializer(serializerSettings));
 
             return builder;
         }

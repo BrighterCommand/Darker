@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Paramore.Darker.Decorators;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
@@ -13,6 +14,13 @@ namespace Paramore.Darker.QueryLogging
         where TQuery : IQuery<TResult>
     {
         private static readonly ILogger Logger = ApplicationLogging.CreateLogger<QueryLoggingDecoratorAsync<TQuery, TResult>>();
+
+        private readonly JsonSerializerSettings _serializerSettings;
+
+        public QueryLoggingDecoratorAsync(JsonSerializerSettings serializerSettings = null)
+        {
+            _serializerSettings = serializerSettings;
+        }
 
         public IQueryContext Context { get; set; }
 
@@ -29,7 +37,7 @@ namespace Paramore.Darker.QueryLogging
             var sw = Stopwatch.StartNew();
 
             var queryName = query.GetType().Name;
-            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, GetSerializer().Serialize(query));
+            Logger.LogInformation("Executing async query {QueryName}: {Query}", queryName, Serialize(query));
 
             var result = await next(query, cancellationToken).ConfigureAwait(false);
 
@@ -42,16 +50,11 @@ namespace Paramore.Darker.QueryLogging
             return result;
         }
 
-        private NewtonsoftJsonSerializer GetSerializer()
+        private string Serialize<T>(T value)
         {
-            if (!Context.Bag.ContainsKey(Constants.ContextBagKey))
-                throw new ConfigurationException($"Serializer does not exist in context bag with key {Constants.ContextBagKey}.");
-
-            var serializer = Context.Bag[Constants.ContextBagKey] as NewtonsoftJsonSerializer;
-            if (serializer == null)
-                throw new ConfigurationException($"The serializer in the context bag (with key {Constants.ContextBagKey}) must be of type {nameof(NewtonsoftJsonSerializer)}, but is {Context.Bag[Constants.ContextBagKey].GetType()}.");
-
-            return serializer;
+            if (_serializerSettings == null)
+                throw new ConfigurationException("No serializer settings are configured. Pass JsonSerializerSettings to the QueryLoggingDecoratorAsync constructor.");
+            return JsonConvert.SerializeObject(value, _serializerSettings);
         }
     }
 }

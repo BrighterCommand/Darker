@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
+using Polly.Registry;
 using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
@@ -23,12 +22,12 @@ namespace Paramore.Darker
         private readonly IQueryHandlerFactoryAsync _handlerFactoryAsync;
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
-        private readonly IReadOnlyDictionary<string, object> _contextBagData;
+        private readonly IPolicyRegistry<string> _policyRegistry;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IQueryContextFactory queryContextFactory,
-            IReadOnlyDictionary<string, object> contextBagData = null)
+            IPolicyRegistry<string> policyRegistry = null)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -42,14 +41,16 @@ namespace Paramore.Darker
             _decoratorFactoryAsync = handlerConfiguration.DecoratorFactoryAsync;
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
-            _contextBagData = contextBagData ?? new Dictionary<string, object>();
+            _policyRegistry = policyRegistry;
         }
 
-        public TResult Execute<TResult>(IQuery<TResult> query)
+        public TResult Execute<TResult>(IQuery<TResult> query, IQueryContext queryContext = null)
         {
             using (var pipelineBuilder = new PipelineBuilder<TResult>(_handlerRegistry, _handlerFactory, _decoratorFactory))
             {
-                var queryContext = CreateQueryContext();
+                if (queryContext == null)
+                    queryContext = _queryContextFactory.Create();
+                InitQueryContext(queryContext);
                 var entryPoint = pipelineBuilder.Build(query, queryContext);
 
                 try
@@ -69,13 +70,15 @@ namespace Paramore.Darker
             }
         }
 
-        public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var pipelineBuilder = new PipelineBuilder<TResult>(
                 _handlerRegistry, _handlerFactory, _decoratorFactory,
                 _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync))
             {
-                var queryContext = CreateQueryContext();
+                if (queryContext == null)
+                    queryContext = _queryContextFactory.Create();
+                InitQueryContext(queryContext);
                 var entryPoint = pipelineBuilder.BuildAsync(query, queryContext);
 
                 try
@@ -96,16 +99,10 @@ namespace Paramore.Darker
             }
         }
 
-        private IQueryContext CreateQueryContext()
+        private void InitQueryContext(IQueryContext queryContext)
         {
-            _logger.LogDebug("Creating query context...");
-
-            var queryContext = _queryContextFactory.Create();
-
-            // todo: no need for IQueryContext i think. just use dictionary
-            queryContext.Bag = _contextBagData.ToDictionary(d => d.Key, d => d.Value); // shallow copy
-
-            return queryContext;
+            if (queryContext.Policies == null)
+                queryContext.Policies = _policyRegistry;
         }
     }
 }
