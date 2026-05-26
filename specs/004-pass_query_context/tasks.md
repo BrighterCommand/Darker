@@ -342,7 +342,7 @@ This separation is clean: the generic methods handle decorator registration only
 
 ## Phase 6: Compile and Verify
 
-- [ ] **VERIFY: All first-party projects compile and existing tests pass**
+- [x] **VERIFY: All first-party projects compile and existing tests pass**
   - Depends on: All previous phases complete
   - Run `dotnet build Darker.Filter.slnf -c Release`
   - Run `dotnet test Darker.Filter.slnf -c Release --no-build`
