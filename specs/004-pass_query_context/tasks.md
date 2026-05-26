@@ -233,7 +233,7 @@ There are two sets of extension methods for both Policies and QueryLogging:
 
 This separation is clean: the generic methods handle decorator registration only, while DI handles typed service registration. The `AddContextBagItem` call is simply removed from the generic methods — no replacement needed because DI handles what it previously did.
 
-- [ ] **TIDY: Update ALL AddContextBagItem call sites in Policies and QueryLogging packages**
+- [x] **TIDY: Update ALL AddContextBagItem call sites in Policies and QueryLogging packages**
   - Depends on: Phase 3 complete
   - **Non-generic methods** in `src/Paramore.Darker.Policies/QueryProcessorBuilderExtensions.cs`:
     - Add public `IPolicyRegistry<string>? PolicyRegistry` property to `QueryProcessorBuilder` (public because the extension methods in a separate assembly need to set it)
@@ -250,7 +250,7 @@ This separation is clean: the generic methods handle decorator registration only
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds — `AddContextBagItem` still exists on the interface but is no longer called
   - Covers: FR15
 
-- [ ] **TIDY: Remove `AddContextBagItem` from interfaces and implementations**
+- [x] **TIDY: Remove `AddContextBagItem` from interfaces and implementations**
   - Depends on: All `AddContextBagItem` call sites removed above
   - Remove `AddContextBagItem` from `IQueryProcessorExtensionBuilder` interface
   - Remove `AddContextBagItem` from `QueryProcessorBuilder`
@@ -259,7 +259,7 @@ This separation is clean: the generic methods handle decorator registration only
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds, no remaining `AddContextBagItem` references
   - Covers: FR10, AC8
 
-- [ ] **TEST + IMPLEMENT: QueryProcessorBuilder passes policy registry to QueryProcessor constructor**
+- [x] **TEST + IMPLEMENT: QueryProcessorBuilder passes policy registry to QueryProcessor constructor**
   - **USE COMMAND**: `/test-first when query processor built with policy registry should set policies on context`
   - Depends on: AddContextBagItem removed
   - Test location: `test/Paramore.Darker.Tests`
@@ -278,7 +278,7 @@ This separation is clean: the generic methods handle decorator registration only
     - **Both call sites updated in the same task as the constructor change** — build stays green
   - Covers: FR8, FR9, FR14, AC7, AC17
 
-- [ ] **TEST + IMPLEMENT: AddDefaultPolicies/AddPolicies registers IPolicyRegistry in DI**
+- [x] **TEST + IMPLEMENT: AddDefaultPolicies/AddPolicies registers IPolicyRegistry in DI**
   - **USE COMMAND**: `/test-first when AddDefaultPolicies called should register policy registry in service collection`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests/Integrations`
@@ -295,7 +295,7 @@ This separation is clean: the generic methods handle decorator registration only
     - Delete `DarkerContextBag.cs`
   - Covers: FR11, FR12, AC9, AC15
 
-- [ ] **TEST + IMPLEMENT: AddJsonQueryLogging registers JsonSerializerSettings in DI**
+- [x] **TEST + IMPLEMENT: AddJsonQueryLogging registers JsonSerializerSettings in DI**
   - **USE COMMAND**: `/test-first when AddJsonQueryLogging called should register serializer settings in service collection`
   - Depends on: previous task
   - Test location: `test/Paramore.Darker.Tests/Integrations`
