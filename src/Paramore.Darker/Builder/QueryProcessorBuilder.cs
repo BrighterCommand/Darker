@@ -1,5 +1,5 @@
 using System;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Handlers;
 using Polly.Registry;
 
 namespace Paramore.Darker.Builder

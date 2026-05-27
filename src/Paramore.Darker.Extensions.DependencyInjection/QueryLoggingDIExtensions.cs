@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Logging;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {

@@ -1,6 +1,6 @@
 using Paramore.Darker;
-using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Logging.Attributes;
+using Paramore.Darker.Policies.Attributes;
 using SampleMinimalApi.Domain;
 
 namespace SampleMinimalApi.QueryHandlers;

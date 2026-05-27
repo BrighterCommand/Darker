@@ -45,6 +45,9 @@ namespace Paramore.Darker
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
         {
+            // IMPORTANT: ExportedTypes is load-bearing — see ADR 0011 §9-10.
+            // It ring-fences the scan to public types only so that internal
+            // TestDoubles in test assemblies are not registered as handlers.
             var subscribers =
                 from t in assemblies.SelectMany(a => a.ExportedTypes)
                 let ti = t.GetTypeInfo()

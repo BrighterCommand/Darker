@@ -1,0 +1,94 @@
+using System;
+using Paramore.Darker.Builder;
+using Paramore.Darker.Exceptions;
+using Paramore.Darker.Policies.Handlers;
+using Polly;
+using Polly.Registry;
+
+namespace Paramore.Darker.Policies
+{
+    public static class QueryProcessorBuilderExtensions
+    {
+        public static IBuildTheQueryProcessor Policies(this IBuildTheQueryProcessor builder, IPolicyRegistry<string> policyRegistry)
+        {
+            var queryProcessorBuilder = builder as QueryProcessorBuilder;
+            if (queryProcessorBuilder == null)
+                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+
+            AddPolicies(queryProcessorBuilder, policyRegistry);
+            queryProcessorBuilder.PolicyRegistry = policyRegistry;
+
+            return queryProcessorBuilder;
+        }
+
+        public static TBuilder AddPolicies<TBuilder>(this TBuilder builder, IPolicyRegistry<string> policyRegistry)
+            where TBuilder : IQueryProcessorExtensionBuilder
+        {
+            if (policyRegistry == null)
+                throw new ArgumentNullException(nameof(policyRegistry));
+
+            if (!policyRegistry.ContainsKey(Constants.RetryPolicyName))
+                throw new ConfigurationException($"The policy registry is missing the {Constants.RetryPolicyName} policy which is required");
+
+            if (!policyRegistry.ContainsKey(Constants.CircuitBreakerPolicyName))
+                throw new ConfigurationException($"The policy registry is missing the {Constants.CircuitBreakerPolicyName} policy which is required");
+
+            builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
+
+            return builder;
+        }
+
+        public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor builder)
+        {
+            var defaultRetryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromMilliseconds(50),
+                    TimeSpan.FromMilliseconds(100),
+                    TimeSpan.FromMilliseconds(150)
+                });
+
+            var circuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
+
+            var policyRegistry = new PolicyRegistry
+            {
+                { Constants.RetryPolicyName, defaultRetryPolicy },
+                { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
+            };
+
+            return Policies(builder, policyRegistry);
+        }
+
+        public static TBuilder AddDefaultPolicies<TBuilder>(this TBuilder builder)
+            where TBuilder : IQueryProcessorExtensionBuilder
+        {
+            var defaultRetryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromMilliseconds(50),
+                    TimeSpan.FromMilliseconds(100),
+                    TimeSpan.FromMilliseconds(150)
+                });
+
+            var circuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
+
+            var policyRegistry = new PolicyRegistry
+            {
+                { Constants.RetryPolicyName, defaultRetryPolicy },
+                { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
+            };
+
+            builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
+            builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
+
+            return builder;
+        }
+    }
+}

@@ -6,11 +6,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
-    <ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Testing\Paramore.Darker.Testing.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />
-    <ProjectReference Include="..\Paramore.Darker.Testing.Ports\Paramore.Darker.Testing.Ports.csproj" />
+    <ProjectReference Include="..\Paramore.Darker.Core.Tests\Paramore.Darker.Core.Tests.csproj">
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
     <ProjectReference Include="..\Paramore.Test.Helpers\Paramore.Test.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
