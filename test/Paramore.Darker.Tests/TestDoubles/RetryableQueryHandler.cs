@@ -3,7 +3,7 @@ using Paramore.Darker.Policies.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class RetryableQueryHandler : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
+    internal class RetryableQueryHandler : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
     {
         [RetryableQuery(1, Constants.RetryPolicyName)]
         public override SyncTestQuery.Result Execute(SyncTestQuery query)

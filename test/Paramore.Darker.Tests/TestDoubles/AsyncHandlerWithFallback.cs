@@ -5,7 +5,7 @@ using Paramore.Darker.Policies.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class AsyncHandlerWithFallback : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
+    internal class AsyncHandlerWithFallback : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
     {
         [FallbackPolicyAttributeAsync(1)]
         public override Task<AsyncTestQuery.Result> ExecuteAsync(AsyncTestQuery query,

@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using Paramore.Darker.Testing.Ports;
+using Paramore.Darker.Core.Tests.Exported;
 using Shouldly;
 using Xunit;
 

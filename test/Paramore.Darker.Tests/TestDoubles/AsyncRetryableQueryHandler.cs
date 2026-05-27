@@ -5,7 +5,7 @@ using Paramore.Darker.Policies.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class AsyncRetryableQueryHandler : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
+    internal class AsyncRetryableQueryHandler : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
     {
         [RetryableQueryAttributeAsync(1, Constants.RetryPolicyName)]
         public override Task<AsyncTestQuery.Result> ExecuteAsync(AsyncTestQuery query,

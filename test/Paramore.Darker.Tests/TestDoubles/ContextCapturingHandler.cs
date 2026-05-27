@@ -1,6 +1,6 @@
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class ContextCapturingHandler : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
+    internal class ContextCapturingHandler : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
     {
         public IQueryContext CapturedContext { get; private set; }
 

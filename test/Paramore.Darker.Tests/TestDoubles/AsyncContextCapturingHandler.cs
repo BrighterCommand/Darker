@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class AsyncContextCapturingHandler : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
+    internal class AsyncContextCapturingHandler : QueryHandlerAsync<AsyncTestQuery, AsyncTestQuery.Result>
     {
         public IQueryContext CapturedContext { get; private set; }
 

@@ -102,12 +102,12 @@ namespace Paramore.Darker.Tests.Decorators
             _decoratorFactory.Verify(x => x.Release<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decorator), Times.Once);
         }
 
-        public class TestQuery : IQuery<TestQuery.Result>
+        internal class TestQuery : IQuery<TestQuery.Result>
         {
-            public class Result { }
+            internal class Result { }
         }
 
-        public class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Result>
+        internal class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1)]
             public override TestQuery.Result Execute(TestQuery query)
@@ -123,7 +123,7 @@ namespace Paramore.Darker.Tests.Decorators
             }
         }
 
-        public class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
+        internal class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1, typeof(ArithmeticException), typeof(FormatException))]
             public override TestQuery.Result Execute(TestQuery query)
@@ -139,7 +139,7 @@ namespace Paramore.Darker.Tests.Decorators
             }
         }
 
-        public class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
+        internal class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
         {
             [FallbackPolicy(1, typeof(ArithmeticException))]
             public override TestQuery.Result Execute(TestQuery query)

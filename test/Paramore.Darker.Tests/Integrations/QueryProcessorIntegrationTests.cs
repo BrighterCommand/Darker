@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
-using Paramore.Darker.Testing.Ports;
+using Paramore.Darker.Core.Tests.Exported;
 using Shouldly;
 using Xunit;
 

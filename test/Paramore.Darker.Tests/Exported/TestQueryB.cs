@@ -1,4 +1,4 @@
-﻿namespace Paramore.Darker.Testing.Ports
+﻿namespace Paramore.Darker.Core.Tests.Exported
 {
     public class TestQueryB : IQuery<int>
     {

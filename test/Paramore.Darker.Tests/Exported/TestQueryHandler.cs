@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Paramore.Darker.Testing.Ports
+namespace Paramore.Darker.Core.Tests.Exported
 {
     public class TestQueryHandler : IQueryHandler<TestQueryA, Guid>
     {

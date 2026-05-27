@@ -7,7 +7,7 @@ namespace Paramore.Darker.Tests.TestDoubles
     /// A sync handler that incorrectly uses an async attribute on Execute.
     /// This should cause a ConfigurationException at pipeline build time.
     /// </summary>
-    public class SyncHandlerWithAsyncAttribute : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
+    internal class SyncHandlerWithAsyncAttribute : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
     {
         [FallbackPolicyAttributeAsync(1)]
         public override SyncTestQuery.Result Execute(SyncTestQuery query)

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Paramore.Darker.Builder;
-using Paramore.Darker.Testing.Ports;
+using Paramore.Darker.Core.Tests.Exported;
 using Shouldly;
 using Xunit;
 

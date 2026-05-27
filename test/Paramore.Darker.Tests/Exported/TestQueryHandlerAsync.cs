@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Paramore.Darker.Testing.Ports
+namespace Paramore.Darker.Core.Tests.Exported
 {
     public class TestQueryHandlerAsync : IQueryHandlerAsync<TestQueryA, Guid>
     {

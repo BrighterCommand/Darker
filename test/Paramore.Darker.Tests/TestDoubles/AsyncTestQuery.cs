@@ -2,7 +2,7 @@ using System;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class AsyncTestQuery : IQuery<AsyncTestQuery.Result>
+    internal class AsyncTestQuery : IQuery<AsyncTestQuery.Result>
     {
         public Guid Id { get; }
 
@@ -11,7 +11,7 @@ namespace Paramore.Darker.Tests.TestDoubles
             Id = id;
         }
 
-        public class Result
+        internal class Result
         {
             public Guid Value { get; set; }
         }

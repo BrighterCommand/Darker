@@ -3,7 +3,7 @@ using Paramore.Darker.Policies.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class SyncHandlerWithFallback : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
+    internal class SyncHandlerWithFallback : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
     {
         [FallbackPolicy(1)]
         public override SyncTestQuery.Result Execute(SyncTestQuery query)

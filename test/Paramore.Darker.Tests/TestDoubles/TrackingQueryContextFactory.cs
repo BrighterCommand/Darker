@@ -1,6 +1,6 @@
 namespace Paramore.Darker.Tests.TestDoubles
 {
-    public class TrackingQueryContextFactory : IQueryContextFactory
+    internal class TrackingQueryContextFactory : IQueryContextFactory
     {
         public int CreateCallCount { get; private set; }
 

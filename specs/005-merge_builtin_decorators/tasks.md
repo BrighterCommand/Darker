@@ -105,7 +105,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 7: Merge `Paramore.Darker.Testing.Ports` into the test project's `Exported/` folder
 
-- [ ] **STRUCTURAL: Fold `Paramore.Darker.Testing.Ports` into `test/Paramore.Darker.Tests/Exported/`; flip local TestDoubles to `internal`; retarget AOT csproj with `<PrivateAssets>all</PrivateAssets>`**
+- [x] **STRUCTURAL: Fold `Paramore.Darker.Testing.Ports` into `test/Paramore.Darker.Tests/Exported/`; flip local TestDoubles to `internal`; retarget AOT csproj with `<PrivateAssets>all</PrivateAssets>`**
   - **USE COMMAND**: `/tidy-first merge Paramore.Darker.Testing.Ports into Paramore.Darker.Tests Exported folder with visibility split`
   - Move the 5 source files from `test/Paramore.Darker.Testing.Ports/` to `test/Paramore.Darker.Tests/Exported/`:
     - `TestQueryA.cs`, `TestQueryB.cs`, `TestQueryC.cs`, `TestQueryHandler.cs`, `TestQueryHandlerAsync.cs`
