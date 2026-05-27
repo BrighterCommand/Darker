@@ -96,7 +96,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 6: Move `SampleMauiTestApp/` under `samples/`
 
-- [ ] **STRUCTURAL: Relocate `SampleMauiTestApp/` to `samples/SampleMauiTestApp/`**
+- [x] **STRUCTURAL: Relocate `SampleMauiTestApp/` to `samples/SampleMauiTestApp/`**
   - **USE COMMAND**: `/tidy-first move SampleMauiTestApp under samples directory`
   - Move the entire folder: `SampleMauiTestApp/` → `samples/SampleMauiTestApp/`.
   - Update `Darker.slnx`: change the `Path` attribute on the `<Project>` element for SampleMauiTestApp. **Preserve verbatim** the `Type="Classic C#"` attribute and the nested `<Configuration>` mappings — a one-line replacement that drops the `Type` attribute will silently change IDE behaviour for the project.
