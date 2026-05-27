@@ -1,15 +1,15 @@
 using System;
 using System.Linq;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Handlers;
 
-namespace Paramore.Darker.Attributes
+namespace Paramore.Darker.Policies.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class FallbackPolicyAttribute : QueryHandlerAttribute
+    public sealed class FallbackPolicyAttributeAsync : QueryHandlerAttributeAsync
     {
         private readonly Type[] _exceptions;
 
-        public FallbackPolicyAttribute(int step, params Type[] exceptions) : base(step)
+        public FallbackPolicyAttributeAsync(int step, params Type[] exceptions) : base(step)
         {
             _exceptions = exceptions;
         }
@@ -21,7 +21,7 @@ namespace Paramore.Darker.Attributes
 
         public override Type GetDecoratorType()
         {
-            return typeof(FallbackPolicyDecorator<,>);
+            return typeof(FallbackPolicyDecoratorAsync<,>);
         }
     }
 }

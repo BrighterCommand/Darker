@@ -1,5 +1,4 @@
 using System;
-using Paramore.Darker.Attributes;
 
 namespace Paramore.Darker.Policies
 {

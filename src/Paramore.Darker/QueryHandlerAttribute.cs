@@ -1,13 +1,13 @@
 using System;
 
-namespace Paramore.Darker.Attributes
+namespace Paramore.Darker
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public abstract class QueryHandlerAttributeAsync : Attribute
+    public abstract class QueryHandlerAttribute : Attribute
     {
         public int Step { get; private set; }
 
-        protected QueryHandlerAttributeAsync(int step)
+        protected QueryHandlerAttribute(int step)
         {
             Step = step;
         }

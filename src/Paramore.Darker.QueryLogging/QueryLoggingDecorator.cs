@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Handlers;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
 

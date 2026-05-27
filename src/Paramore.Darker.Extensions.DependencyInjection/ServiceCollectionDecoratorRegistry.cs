@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Handlers;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {

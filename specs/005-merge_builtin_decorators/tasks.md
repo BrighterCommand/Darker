@@ -13,7 +13,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ## Pre-flight
 
-- [ ] **STRUCTURAL: First ADR commit on `merge-decorators`**
+- [x] **STRUCTURAL: First ADR commit on `merge-decorators`**
   - Branch `merge-decorators` is currently 0 commits ahead of `master` (per PROMPT.md).
   - First commit is `docs/adr/0011-merge-builtin-decorators.md` (already on Accepted status) plus the `specs/005-merge_builtin_decorators/` directory.
   - Commit message: `docs: add ADR 0011 — merge builtin decorators (#321)`
@@ -23,7 +23,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 1: Relocate existing-core `FallbackPolicy*` and `QueryHandlerAttribute*`
 
-- [ ] **STRUCTURAL: Move `QueryHandlerAttribute*` to root namespace; move `FallbackPolicy*` into `Policies/{Attributes,Handlers}/`**
+- [x] **STRUCTURAL: Move `QueryHandlerAttribute*` to root namespace; move `FallbackPolicy*` into `Policies/{Attributes,Handlers}/`**
   - **USE COMMAND**: `/tidy-first move QueryHandlerAttribute to root and FallbackPolicy into Policies feature-folder`
   - Move files:
     - `src/Paramore.Darker/Attributes/QueryHandlerAttribute.cs` → `src/Paramore.Darker/QueryHandlerAttribute.cs` (namespace `Paramore.Darker`)

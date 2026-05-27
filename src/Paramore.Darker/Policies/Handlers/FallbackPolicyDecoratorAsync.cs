@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Paramore.Darker.Decorators
+namespace Paramore.Darker.Policies.Handlers
 {
     public class FallbackPolicyDecoratorAsync<TQuery, TResult> : IQueryHandlerDecoratorAsync<TQuery, TResult>
         where TQuery : IQuery<TResult>
