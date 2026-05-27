@@ -2,11 +2,10 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Paramore.Darker.Policies.Handlers;
 using Paramore.Darker.Exceptions;
-using Paramore.Darker.Logging;
+using Paramore.Darker.Policies.Handlers;
 
-namespace Paramore.Darker.QueryLogging
+namespace Paramore.Darker.Logging.Handlers
 {
     public class QueryLoggingDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>

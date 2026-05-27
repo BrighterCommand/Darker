@@ -64,7 +64,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 4: Move QueryLogging side-package sources into core
 
-- [ ] **STRUCTURAL: Move `Paramore.Darker.QueryLogging/` sources into `src/Paramore.Darker/Logging/`**
+- [x] **STRUCTURAL: Move `Paramore.Darker.QueryLogging/` sources into `src/Paramore.Darker/Logging/`**
   - **USE COMMAND**: `/tidy-first move Paramore.Darker.QueryLogging sources into core Logging feature-folder`
   - Move files:
     - `src/Paramore.Darker.QueryLogging/QueryLoggingAttribute.cs` → `src/Paramore.Darker/Logging/Attributes/QueryLoggingAttribute.cs` (namespace `Paramore.Darker.Logging.Attributes`)

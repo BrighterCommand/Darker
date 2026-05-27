@@ -1,8 +1,9 @@
 using System;
 using Newtonsoft.Json;
 using Paramore.Darker.Builder;
+using Paramore.Darker.Logging.Handlers;
 
-namespace Paramore.Darker.QueryLogging
+namespace Paramore.Darker.Logging
 {
    public static class QueryProcessorBuilderExtensions
     {

@@ -1,6 +1,7 @@
 using System;
+using Paramore.Darker.Logging.Handlers;
 
-namespace Paramore.Darker.QueryLogging
+namespace Paramore.Darker.Logging.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class QueryLoggingAttribute : QueryHandlerAttribute

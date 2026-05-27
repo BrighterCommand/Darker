@@ -1,4 +1,4 @@
-namespace Paramore.Darker.QueryLogging
+namespace Paramore.Darker.Logging
 {
     public static class Constants
     {
