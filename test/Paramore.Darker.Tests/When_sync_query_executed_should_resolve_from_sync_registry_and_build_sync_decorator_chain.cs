@@ -1,5 +1,5 @@
 using System;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Handlers;
 using Paramore.Darker.Tests.TestDoubles;
 using Shouldly;
 using Xunit;

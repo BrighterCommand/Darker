@@ -79,7 +79,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 5: Update remaining `using` statements across DI extensions, samples, AOT, tests
 
-- [ ] **STRUCTURAL: Sweep `using`s for moved namespaces across all consumers**
+- [x] **STRUCTURAL: Sweep `using`s for moved namespaces across all consumers**
   - **USE COMMAND**: `/tidy-first update using statements for Policies and Logging namespace moves across consumers`
   - Per requirements FR8 inventory, update `using`s in:
     - `Paramore.Darker.Extensions.DependencyInjection`: `PolicyDIExtensions.cs`, `QueryLoggingDIExtensions.cs`, `ServiceCollectionDecoratorRegistry.cs` (latter already touched in Step 1 — recheck).

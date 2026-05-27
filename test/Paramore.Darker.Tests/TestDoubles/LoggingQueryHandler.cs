@@ -1,4 +1,4 @@
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Logging.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {

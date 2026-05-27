@@ -1,6 +1,6 @@
 using System;
 using Paramore.Darker.Exceptions;
-using Paramore.Darker.Policies;
+using Paramore.Darker.Policies.Handlers;
 using Paramore.Darker.Tests.TestDoubles;
 using Shouldly;
 using Xunit;

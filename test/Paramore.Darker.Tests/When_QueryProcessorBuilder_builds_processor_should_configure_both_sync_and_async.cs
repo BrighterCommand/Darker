@@ -94,8 +94,8 @@ namespace Paramore.Darker.Tests
                 .Build();
 
             // Assert
-            syncDecoratorRegistry.RegisteredTypes.ShouldContain(typeof(Paramore.Darker.Decorators.FallbackPolicyDecorator<,>));
-            asyncDecoratorRegistry.RegisteredTypes.ShouldContain(typeof(Paramore.Darker.Decorators.FallbackPolicyDecoratorAsync<,>));
+            syncDecoratorRegistry.RegisteredTypes.ShouldContain(typeof(Paramore.Darker.Policies.Handlers.FallbackPolicyDecorator<,>));
+            asyncDecoratorRegistry.RegisteredTypes.ShouldContain(typeof(Paramore.Darker.Policies.Handlers.FallbackPolicyDecoratorAsync<,>));
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
-using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
 using SampleMauiTestApp.QueryHandlers;
 
 namespace SampleMauiTestApp

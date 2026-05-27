@@ -1,7 +1,5 @@
 using Paramore.Darker;
 using Paramore.Darker.Extensions.DependencyInjection;
-using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
 using SampleMinimalApi;
 using SampleMinimalApi.QueryHandlers;
 

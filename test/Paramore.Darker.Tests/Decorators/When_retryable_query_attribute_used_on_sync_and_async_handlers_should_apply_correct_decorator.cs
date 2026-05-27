@@ -1,7 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Paramore.Darker.Policies;
+using Paramore.Darker.Policies.Attributes;
+using Paramore.Darker.Policies.Handlers;
 using Shouldly;
 using Xunit;
 

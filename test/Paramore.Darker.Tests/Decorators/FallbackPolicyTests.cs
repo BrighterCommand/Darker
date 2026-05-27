@@ -1,7 +1,7 @@
 using System;
 using Moq;
-using Paramore.Darker.Attributes;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Attributes;
+using Paramore.Darker.Policies.Handlers;
 using Shouldly;
 using Xunit;
 

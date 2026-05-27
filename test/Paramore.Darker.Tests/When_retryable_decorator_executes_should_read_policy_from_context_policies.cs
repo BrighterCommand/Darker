@@ -1,5 +1,6 @@
 using System;
 using Paramore.Darker.Policies;
+using Paramore.Darker.Policies.Handlers;
 using Paramore.Darker.Tests.TestDoubles;
 using Polly;
 using Polly.Registry;

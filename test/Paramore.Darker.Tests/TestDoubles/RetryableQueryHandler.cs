@@ -1,4 +1,5 @@
 using Paramore.Darker.Policies;
+using Paramore.Darker.Policies.Attributes;
 
 namespace Paramore.Darker.Tests.TestDoubles
 {

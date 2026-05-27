@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Paramore.Darker.Extensions.DependencyInjection;
-using Paramore.Darker.QueryLogging;
 using Paramore.Darker.Tests.TestDoubles;
 using Shouldly;
 using Xunit;

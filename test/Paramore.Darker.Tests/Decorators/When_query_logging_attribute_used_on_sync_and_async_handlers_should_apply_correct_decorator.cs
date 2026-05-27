@@ -1,5 +1,6 @@
 using System;
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Logging.Attributes;
+using Paramore.Darker.Logging.Handlers;
 using Shouldly;
 using Xunit;
 

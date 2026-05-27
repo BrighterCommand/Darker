@@ -6,8 +6,8 @@ using System.Reflection;
 using Moq;
 using Shouldly;
 using Xunit;
-using Paramore.Darker.Attributes;
-using Paramore.Darker.Decorators;
+using Paramore.Darker.Policies.Attributes;
+using Paramore.Darker.Policies.Handlers;
 
 namespace Paramore.Darker.Tests
 {
