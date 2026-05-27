@@ -57,7 +57,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 3: Add `Newtonsoft.Json` to core csproj
 
-- [ ] **STRUCTURAL: Add `Newtonsoft.Json` as a direct dependency of `Paramore.Darker.csproj`**
+- [x] **STRUCTURAL: Add `Newtonsoft.Json` as a direct dependency of `Paramore.Darker.csproj`**
   - **USE COMMAND**: `/tidy-first add Newtonsoft.Json direct dependency to Paramore.Darker.csproj`
   - Add `<PackageReference Include="Newtonsoft.Json" />` to `src/Paramore.Darker/Paramore.Darker.csproj` (no version attribute — CPM in `Directory.Packages.props` pins `13.0.4`).
   - Verify: `dotnet build src/Paramore.Darker/Paramore.Darker.csproj -c Release` succeeds.
