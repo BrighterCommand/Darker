@@ -1,13 +1,14 @@
 using System;
+using Paramore.Darker.Policies.Handlers;
 
-namespace Paramore.Darker.Policies
+namespace Paramore.Darker.Policies.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class RetryableQueryAttribute : QueryHandlerAttribute
+    public sealed class RetryableQueryAttributeAsync : QueryHandlerAttributeAsync
     {
         private readonly string _policyName;
 
-        public RetryableQueryAttribute(int step, string policyName = Constants.RetryPolicyName)
+        public RetryableQueryAttributeAsync(int step, string policyName = Constants.RetryPolicyName)
             : base(step)
         {
             _policyName = policyName;
@@ -20,7 +21,7 @@ namespace Paramore.Darker.Policies
 
         public override Type GetDecoratorType()
         {
-            return typeof(RetryableQueryDecorator<,>);
+            return typeof(RetryableQueryDecoratorAsync<,>);
         }
     }
 }

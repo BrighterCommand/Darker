@@ -43,7 +43,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 2: Move Policies side-package sources into core
 
-- [ ] **STRUCTURAL: Move `Paramore.Darker.Policies/` sources into `src/Paramore.Darker/Policies/`**
+- [x] **STRUCTURAL: Move `Paramore.Darker.Policies/` sources into `src/Paramore.Darker/Policies/`**
   - **USE COMMAND**: `/tidy-first move Paramore.Darker.Policies sources into core Policies feature-folder`
   - Move files:
     - `src/Paramore.Darker.Policies/RetryableQueryAttribute.cs` → `src/Paramore.Darker/Policies/Attributes/RetryableQueryAttribute.cs` (namespace `Paramore.Darker.Policies.Attributes`)

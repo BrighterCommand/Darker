@@ -7,7 +7,7 @@ using Paramore.Darker.Logging;
 using Polly;
 using Polly.Registry;
 
-namespace Paramore.Darker.Policies
+namespace Paramore.Darker.Policies.Handlers
 {
     public class RetryableQueryDecoratorAsync<TQuery, TResult> : IQueryHandlerDecoratorAsync<TQuery, TResult>
         where TQuery : IQuery<TResult>

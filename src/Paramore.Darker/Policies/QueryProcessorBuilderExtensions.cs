@@ -1,6 +1,7 @@
 using System;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Exceptions;
+using Paramore.Darker.Policies.Handlers;
 using Polly;
 using Polly.Registry;
 
