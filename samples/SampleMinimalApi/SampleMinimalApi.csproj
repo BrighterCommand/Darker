@@ -8,8 +8,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj" />
-		<ProjectReference Include="..\..\src\Paramore.Darker.Policies\Paramore.Darker.Policies.csproj" />
-		<ProjectReference Include="..\..\src\Paramore.Darker.QueryLogging\Paramore.Darker.QueryLogging.csproj" />
 	</ItemGroup>
 
 </Project>

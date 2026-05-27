@@ -141,7 +141,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 9: Delete removed projects and empty folders; final solution-file cleanup
 
-- [ ] **STRUCTURAL: Delete `Paramore.Darker.Policies/`, `Paramore.Darker.QueryLogging/`, `Paramore.Darker.Testing.Ports/` folders + empty `Attributes/`/`Decorators/`; remove slnx/slnf entries; grep safety net**
+- [x] **STRUCTURAL: Delete `Paramore.Darker.Policies/`, `Paramore.Darker.QueryLogging/`, `Paramore.Darker.Testing.Ports/` folders + empty `Attributes/`/`Decorators/`; remove slnx/slnf entries; grep safety net**
   - **USE COMMAND**: `/tidy-first delete merged side-package folders and prune solution files`
   - Delete entire directories (folders + csproj + `bin/` + `obj/`):
     - `src/Paramore.Darker.Policies/`
