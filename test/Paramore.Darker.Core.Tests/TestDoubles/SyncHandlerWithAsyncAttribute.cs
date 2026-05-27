@@ -1,0 +1,18 @@
+using System;
+using Paramore.Darker.Policies.Attributes;
+
+namespace Paramore.Darker.Core.Tests.TestDoubles
+{
+    /// <summary>
+    /// A sync handler that incorrectly uses an async attribute on Execute.
+    /// This should cause a ConfigurationException at pipeline build time.
+    /// </summary>
+    internal class SyncHandlerWithAsyncAttribute : QueryHandler<SyncTestQuery, SyncTestQuery.Result>
+    {
+        [FallbackPolicyAttributeAsync(1)]
+        public override SyncTestQuery.Result Execute(SyncTestQuery query)
+        {
+            return new SyncTestQuery.Result { Value = query.Id };
+        }
+    }
+}

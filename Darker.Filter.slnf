@@ -11,7 +11,8 @@
       "test\\Paramore.Darker.Benchmarks\\Paramore.Darker.Benchmarks.csproj",
       "test\\Paramore.Darker.Testing.Ports\\Paramore.Darker.Testing.Ports.csproj",
       "test\\Paramore.Darker.Tests.AOT\\Paramore.Darker.Tests.AOT.csproj",
-      "test\\Paramore.Darker.Tests\\Paramore.Darker.Tests.csproj",
+      "test\\Paramore.Darker.Core.Tests\\Paramore.Darker.Core.Tests.csproj",
+      "test\\Paramore.Darker.Extensions.Tests\\Paramore.Darker.Extensions.Tests.csproj",
       "test\\Paramore.Test.Helpers\\Paramore.Test.Helpers.csproj"
     ]
   }

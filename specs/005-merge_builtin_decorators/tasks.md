@@ -119,7 +119,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 8: Split `Paramore.Darker.Tests` into `Paramore.Darker.Core.Tests` + `Paramore.Darker.Extensions.Tests`
 
-- [ ] **STRUCTURAL: Rename test project to `Paramore.Darker.Core.Tests`; create new `Paramore.Darker.Extensions.Tests`; move 4 `Integrations/` files**
+- [x] **STRUCTURAL: Rename test project to `Paramore.Darker.Core.Tests`; create new `Paramore.Darker.Extensions.Tests`; move 4 `Integrations/` files**
   - **USE COMMAND**: `/tidy-first split Paramore.Darker.Tests into Core.Tests and Extensions.Tests mirroring Brighter`
   - Rename `test/Paramore.Darker.Tests/` → `test/Paramore.Darker.Core.Tests/`:
     - Folder name, csproj filename, `<AssemblyName>`, `<RootNamespace>` MSBuild properties.
