@@ -173,7 +173,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ## Final validation
 
-- [ ] **VERIFY: All acceptance criteria pass**
+- [x] **VERIFY: All acceptance criteria pass**
   - **AC1** — Build: `dotnet build Darker.Filter.slnf -c Release` succeeds.
   - **AC2** — Tests: `dotnet test Darker.Filter.slnf -c Release --no-build` passes (Core.Tests + Extensions.Tests).
   - **AC3** — AOT tests: `dotnet test test/Paramore.Darker.Tests.AOT/` passes on `net8.0` and `net9.0`; the test count is AOT-only (not AOT + Core.Tests).
