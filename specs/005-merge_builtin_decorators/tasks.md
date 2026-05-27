@@ -157,7 +157,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 10: Run full test suite
 
-- [ ] **STRUCTURAL: Run all three test projects and confirm green**
+- [x] **STRUCTURAL: Run all three test projects and confirm green**
   - **USE COMMAND**: `/tidy-first verify full test suite passes after merge`
   - `dotnet test Darker.Filter.slnf -c Release --no-build` — Core.Tests + Extensions.Tests should pass.
   - `dotnet test test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release` — AOT project should pass on both `net8.0` and `net9.0`.
@@ -165,7 +165,7 @@ Use `/tidy-first <change>` for each task — these are structural moves, not beh
 
 ### Step 11: Update `<Description>` on core csproj
 
-- [ ] **STRUCTURAL: Update `Paramore.Darker.csproj` `<Description>` to reflect the merged scope**
+- [x] **STRUCTURAL: Update `Paramore.Darker.csproj` `<Description>` to reflect the merged scope**
   - **USE COMMAND**: `/tidy-first update Paramore.Darker.csproj Description for merged scope`
   - Replace the current `<Description>Darker Query Processor</Description>` (or equivalent) in `src/Paramore.Darker/Paramore.Darker.csproj` with:
     > Darker is the query-side counterpart to Brighter, implementing the Query pattern (CQRS read-side) with a pipeline architecture for cross-cutting concerns including retry, fallback, and request logging.

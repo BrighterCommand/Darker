@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
-    <Description>Darker Query Processor</Description>
+    <Description>Darker is the query-side counterpart to Brighter, implementing the Query pattern (CQRS read-side) with a pipeline architecture for cross-cutting concerns including retry, fallback, and request logging.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" />
