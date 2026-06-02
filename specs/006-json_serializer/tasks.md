@@ -282,7 +282,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 7: Rewrite the existing core decorator test and delete the obsolete `ConfigurationException` test (FR10)
 
-- [ ] **TEST + IMPLEMENT: Core decorator test rewrite — assert STJ output via captured log (FR10)**
+- [x] **TEST + IMPLEMENT: Core decorator test rewrite — assert STJ output via captured log (FR10)** — satisfied by the Step 4 sync test `Logging/When_sync_logging_decorator_executes_should_log_query_body_as_System_Text_Json_output.cs`, which IS the FR10 rewrite: decorator constructor takes no serialiser parameter, and it captures the `LogInformation` call and asserts the `{Query}` arg equals `JsonSerializer.Serialize(query, QueryLoggingJsonOptions.Options)` for `CoreLoggingTestQuery` (the behavioural strengthening review finding #7 asked for). The obsolete `…use_injected_serializer_settings.cs` was deleted in Step 4. A separate `should_use_json_options.cs` would be a pure duplicate, so not added.
   - **USE COMMAND**: `/test-first when logging decorator executes should use QueryLoggingJsonOptions to serialise body`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_logging_decorator_executes_should_use_json_options.cs` (renamed/rewritten from the existing `When_logging_decorator_executes_should_use_injected_serializer_settings.cs` per FR10)
@@ -297,7 +297,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
     - **Delete** the previous test file `test/Paramore.Darker.Core.Tests/When_logging_decorator_executes_should_use_injected_serializer_settings.cs` as part of landing the rewrite.
     - No new production code — the decorator changes were landed in Steps 4 & 5; this task pins the FR10 rewrite.
 
-- [ ] **STRUCTURAL: Delete the obsolete `ConfigurationException` decorator test (FR10)**
+- [x] **STRUCTURAL: Delete the obsolete `ConfigurationException` decorator test (FR10)** — done in Step 4 (`When_logging_decorator_executes_without_settings_should_throw_ConfigurationException.cs` deleted; it blocked the decorator rewrite build). The `ConfigurationException` type is retained (still thrown in `PipelineBuilder`, `QueryHandlerRegistry`, etc.).
   - **USE COMMAND**: `/tidy-first delete obsolete ConfigurationException decorator test after FR8 removal`
   - Delete `test/Paramore.Darker.Core.Tests/When_logging_decorator_executes_without_settings_should_throw_ConfigurationException.cs` per FR10.
   - The `ConfigurationException` *type* is retained — it is still thrown elsewhere (`PipelineBuilder.cs`, `QueryHandlerRegistry.cs`, `RetryableQueryDecorator.cs`, `Policies/QueryProcessorBuilderExtensions.cs`). Do not delete the type.
@@ -307,7 +307,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 This step can only run **after** Steps 4–7 have removed every `using Newtonsoft.Json;` and `JsonSerializerSettings` reference from production code and tests. If the build fails after dropping the package, a `using` was missed — fix the using rather than re-adding the package.
 
-- [ ] **STRUCTURAL: Drop `Newtonsoft.Json` from `Paramore.Darker.csproj` and `Directory.Packages.props` (FR5)**
+- [x] **STRUCTURAL: Drop `Newtonsoft.Json` from `Paramore.Darker.csproj` and `Directory.Packages.props` (FR5)** — removed both the `PackageReference` and the `PackageVersion`. `dotnet build Darker.Filter.slnf` green on all TFMs; `dotnet list package --include-transitive` shows **no** Newtonsoft for `Paramore.Darker` or the sample (AC1). No `.cs` references remained (only explanatory comments).
   - **USE COMMAND**: `/tidy-first remove Newtonsoft.Json from Paramore.Darker dependencies`
   - Remove `<PackageReference Include="Newtonsoft.Json" />` from `src/Paramore.Darker/Paramore.Darker.csproj`.
   - Remove `<PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />` from `Directory.Packages.props`.
