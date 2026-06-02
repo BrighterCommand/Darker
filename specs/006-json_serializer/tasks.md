@@ -178,7 +178,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 4: Rewrite the sync query logging decorator (FR1, FR8, FR9, FR13)
 
-- [ ] **TEST + IMPLEMENT: Sync decorator serialises the query with `QueryLoggingJsonOptions.Options` (FR1, FR9)**
+- [x] **TEST + IMPLEMENT: Sync decorator serialises the query with `QueryLoggingJsonOptions.Options` (FR1, FR9)** — test approved (RED→GREEN). Rewrote `QueryLoggingDecorator.cs`: dropped ctor param + `Newtonsoft` + `ConfigurationException` path; preserved templates and `+ withFallback` concat; FR13 `IL2026`/`IL3050` suppressions on `Serialize<T>`, guarded `#if NET8_0_OR_GREATER` (the attribute is `internal` in the netstandard2.0 BCL and the warnings only fire under the net8/net9 analysers). **Runtime-type deviation (user-approved, ADR amended)**: `JsonSerializer.Serialize(value, value.GetType(), Options)` — the pipeline closes the decorator over `IQuery<TResult>` (`PipelineBuilder.cs:214`), so the pinned generic one-arg call would emit `{}`. Test uses **throwaway-instance isolation** (user-approved) instead of in-place mutation, to avoid the serialize-lock leaking across tests. Also deleted the two obsolete tests (`…use_injected_serializer_settings`, `…without_settings_should_throw_ConfigurationException`) early — they reference the removed ctor and blocked the build (Step 7 was to delete them anyway).
   - **USE COMMAND**: `/test-first when sync logging decorator executes should log query body as System Text Json output`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_sync_logging_decorator_executes_should_log_query_body_as_System_Text_Json_output.cs`
@@ -201,7 +201,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
     - Add the FR13 `UnconditionalSuppressMessage` pair (`IL2026`, `IL3050`) on the `Serialize<T>` method with the justifications pinned in FR13 / the ADR.
     - **Caller-propagation contingency (ADR Decision step 3)**: if AOT publish in Step 9 surfaces `IL2026` / `IL3050` warnings at the *caller* of `Serialize<T>` (i.e. inside `Execute<TQuery>`), expand the suppressions to `Execute<TQuery>` with the same `Justification`. This is implementation-time discovery, not a spec violation — the FR13 allow-list expands to match. Do not pre-emptively add the attributes; only add them if the analyser warns.
 
-- [ ] **TEST + IMPLEMENT: Sync decorator emits the with-fallback completion template when fallback fired (FR9)**
+- [x] **TEST + IMPLEMENT: Sync decorator emits the with-fallback completion template when fallback fired (FR9)** — GREEN-on-arrival pin (no production code): added `CoreLoggingFallbackQueryHandler` (`[QueryLogging(1)]` outer + `[FallbackPolicy(2)]` inner — verified lowest step = outermost via `PipelineBuilder` `OrderByDescending(Step)` + wrap loop). Asserts the captured `{OriginalFormat}` template equals `"Execution of query {QueryName} completed in {Elapsed}ms (with fallback)"`.
   - **USE COMMAND**: `/test-first when sync logging decorator completes after fallback should append with fallback suffix`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_sync_logging_decorator_completes_after_fallback_should_append_with_fallback_suffix.cs`
