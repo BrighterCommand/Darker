@@ -153,7 +153,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 3: Add `LoggerCaptureFixture` infrastructure (FR10 mechanism)
 
-- [ ] **STRUCTURAL: Add `LoggerCaptureFixture` + `CapturingLoggerProvider` for FR10 / FR11 log-capture**
+- [x] **STRUCTURAL: Add `LoggerCaptureFixture` + `CapturingLoggerProvider` for FR10 / FR11 log-capture** — **API deviation (implementation-time discovery)**: xunit.v3 3.2.2 has **no `IAssemblyFixture<T>` interface**; assembly-scoped fixtures use `[assembly: AssemblyFixture(typeof(LoggerCaptureFixture))]` + constructor injection. The attribute's documented contract — "initialized before any test in the assembly are run" — is the exact (and stronger) equivalent of FR10's install-before-touch requirement. Added Core fixture (`test/Paramore.Darker.Core.Tests/Logging/LoggerCaptureFixture.cs`) with `CapturingLoggerProvider`/`CapturingLogger`/`CapturedLogEntry` (LogLevel, MessageTemplate=`{OriginalFormat}`, RenderedMessage, StructuredArguments KVPs, Exception), `Clear()`, and `CapturedLogs` (tests call `.ShouldNotBeEmpty()` as the install-before-touch guard). Added the Extensions.Tests mirror. Full suite green.
   - **USE COMMAND**: `/tidy-first add LoggerCaptureFixture and CapturingLoggerProvider for query logging tests`
   - Add `test/Paramore.Darker.Core.Tests/Logging/LoggerCaptureFixture.cs` implementing `IAssemblyFixture<LoggerCaptureFixture>` per FR10:
     - Constructor saves `var previous = ApplicationLogging.LoggerFactory;` and replaces it with `new LoggerFactory(new[] { new CapturingLoggerProvider(buffer) })`.
@@ -169,7 +169,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
   - Add an `Extensions.Tests` mirror: `test/Paramore.Darker.Extensions.Tests/Logging/LoggerCaptureFixture.cs` and supporting types. The two fixtures live in disjoint assemblies and serve disjoint closed generics per FR10's cross-assembly discipline.
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds.
 
-- [ ] **STRUCTURAL: Add disjoint test query types `CoreLoggingTestQuery` and `ExtensionsLoggingTestQuery` (FR10 discipline)**
+- [x] **STRUCTURAL: Add disjoint test query types `CoreLoggingTestQuery` and `ExtensionsLoggingTestQuery` (FR10 discipline)** — added both queries (`Guid Id`, `string Name`, nested `Result`) with sync + async handlers (`[QueryLogging(1)]` / `[QueryLoggingAttributeAsync(1)]` — note the async attribute keeps its full name, matching the repo's `[RetryableQueryAttributeAsync]` convention). Disjoint closed generics serve as separate cache cells across the two assemblies. Build green.
   - **USE COMMAND**: `/tidy-first add disjoint logging test query types per FR10 cross-assembly discipline`
   - Add `test/Paramore.Darker.Core.Tests/TestDoubles/CoreLoggingTestQuery.cs` — minimal `internal sealed class CoreLoggingTestQuery : IQuery<CoreLoggingTestQuery.Result>` with a couple of public properties (`Guid Id`, `string Name`) so STJ output is observable; nested `Result` class.
   - Add a matching `CoreLoggingTestQueryHandler` (async + sync as needed) in `test/Paramore.Darker.Core.Tests/TestDoubles/`.

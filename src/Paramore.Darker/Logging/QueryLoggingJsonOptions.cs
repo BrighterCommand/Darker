@@ -16,7 +16,7 @@ namespace Paramore.Darker.Logging
     /// </remarks>
     public static class QueryLoggingJsonOptions
     {
-        private static JsonSerializerOptions _options = new()
+        private static JsonSerializerOptions _options = new JsonSerializerOptions
         {
             ReferenceHandler = ReferenceHandler.IgnoreCycles
         };
