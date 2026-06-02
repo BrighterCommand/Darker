@@ -216,7 +216,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 5: Rewrite the async query logging decorator (FR1, FR8, FR9, FR13)
 
-- [ ] **TEST + IMPLEMENT: Async decorator serialises the query with `QueryLoggingJsonOptions.Options` (FR1, FR9)**
+- [x] **TEST + IMPLEMENT: Async decorator serialises the query with `QueryLoggingJsonOptions.Options` (FR1, FR9)** — test approved (RED→GREEN). Mirror of the sync rewrite on `QueryLoggingDecoratorAsync.cs`: dropped ctor param + Newtonsoft + ConfigurationException; STJ runtime-type `Serialize(value, value.GetType(), Options)`; FR13 suppressions guarded `#if NET8_0_OR_GREATER`; async templates + fallback concat preserved.
   - **USE COMMAND**: `/test-first when async logging decorator executes should log query body as System Text Json output`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_async_logging_decorator_executes_should_log_query_body_as_System_Text_Json_output.cs`
@@ -232,7 +232,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
       - Preserve async templates and the `" (with fallback)"` runtime-concatenation behaviour.
       - **Caller-propagation contingency (ADR Decision step 3)**: if AOT publish in Step 9 surfaces `IL2026` / `IL3050` warnings at `ExecuteAsync<TQuery>`, expand the suppressions to `ExecuteAsync<TQuery>` with the same `Justification` — same rule as the sync decorator.
 
-- [ ] **TEST + IMPLEMENT: Async decorator emits the with-fallback completion template when fallback fired (FR9)**
+- [x] **TEST + IMPLEMENT: Async decorator emits the with-fallback completion template when fallback fired (FR9)** — GREEN-on-arrival pin (no production code): `CoreLoggingFallbackQueryHandlerAsync` (`[QueryLoggingAttributeAsync(1)]` outer + `[FallbackPolicyAttributeAsync(2)]` inner); asserts `{OriginalFormat}` == `"Async execution of query {QueryName} completed in {Elapsed}ms (with fallback)"`.
   - **USE COMMAND**: `/test-first when async logging decorator completes after fallback should append with fallback suffix`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_async_logging_decorator_completes_after_fallback_should_append_with_fallback_suffix.cs`
