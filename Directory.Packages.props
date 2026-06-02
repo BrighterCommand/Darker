@@ -16,6 +16,7 @@
     <PackageVersion Include="Polly" Version="8.6.6" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.8" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.analyzers" Version="1.27.0">
       <PrivateAssets>all</PrivateAssets>

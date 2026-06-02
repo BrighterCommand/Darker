@@ -103,13 +103,13 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 2: Add `System.Text.Json` package and `QueryLoggingJsonOptions` (FR2, FR3, FR6, FR14)
 
-- [ ] **STRUCTURAL: Add `System.Text.Json` `PackageReference` and `PackageVersion` (FR6)**
+- [x] **STRUCTURAL: Add `System.Text.Json` `PackageReference` and `PackageVersion` (FR6)** — `System.Text.Json 10.0.8` pinned in CPM (aligned with `Microsoft.Extensions.*` family) and referenced in `Paramore.Darker.csproj`; builds on `netstandard2.0;net8.0;net9.0`.
   - **USE COMMAND**: `/tidy-first add System.Text.Json direct dependency to Paramore.Darker.csproj`
   - Add `<PackageVersion Include="System.Text.Json" Version="10.0.8" />` to `Directory.Packages.props`, aligned with the existing `Microsoft.Extensions.*` 10.0.8 family.
   - Add `<PackageReference Include="System.Text.Json" />` (no version attribute — CPM) to `src/Paramore.Darker/Paramore.Darker.csproj`. Apply uniformly across all TFMs (`netstandard2.0;net8.0;net9.0`).
   - Verify: `dotnet build src/Paramore.Darker/Paramore.Darker.csproj -c Release` succeeds for all TFMs.
 
-- [ ] **TEST + IMPLEMENT: `QueryLoggingJsonOptions.Options` default is non-null and has `ReferenceHandler.IgnoreCycles` (FR3, FR14)**
+- [x] **TEST + IMPLEMENT: `QueryLoggingJsonOptions.Options` default is non-null and has `ReferenceHandler.IgnoreCycles` (FR3, FR14)** — test approved (RED→GREEN); created `src/Paramore.Darker/Logging/QueryLoggingJsonOptions.cs` (default instance with `IgnoreCycles`, no `Serialize` in class-init). Added `[CollectionDefinition("QueryLoggingJsonOptions", DisableParallelization = true)]`. Setter left as auto-property here; null-guard driven by the next test.
   - **USE COMMAND**: `/test-first when QueryLoggingJsonOptions accessed without configuration should expose default options with ReferenceHandler IgnoreCycles`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_QueryLoggingJsonOptions_accessed_without_configuration_should_expose_default_options_with_ReferenceHandler_IgnoreCycles.cs`
@@ -123,7 +123,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
     - Create `src/Paramore.Darker/Logging/QueryLoggingJsonOptions.cs` with the shape pinned in ADR §"Key Components" (`public static class`, backing field initialised to `new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles }`, settable `Options` property).
     - No call to `JsonSerializer.Serialize` in the class initialiser (FR14 — class-init must not lock).
 
-- [ ] **TEST + IMPLEMENT: `QueryLoggingJsonOptions.Options` setter throws `ArgumentNullException` on `null` (FR2)**
+- [x] **TEST + IMPLEMENT: `QueryLoggingJsonOptions.Options` setter throws `ArgumentNullException` on `null` (FR2)** — test approved (RED→GREEN); replaced the auto-property with backing field + `value ?? throw new ArgumentNullException(nameof(value))`. `ParamName == "value"`; prior instance survives a failed set.
   - **USE COMMAND**: `/test-first when QueryLoggingJsonOptions Options setter receives null should throw ArgumentNullException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_QueryLoggingJsonOptions_Options_setter_receives_null_should_throw_ArgumentNullException.cs`
@@ -136,7 +136,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
   - Implementation should:
     - In `src/Paramore.Darker/Logging/QueryLoggingJsonOptions.cs`, the `Options` setter throws `new ArgumentNullException(nameof(value))` when assigned `null`.
 
-- [ ] **TEST + IMPLEMENT: Direct assignment to `QueryLoggingJsonOptions.Options` replaces the instance and drops `IgnoreCycles` (ADR Decision step 7)**
+- [x] **TEST + IMPLEMENT: Direct assignment to `QueryLoggingJsonOptions.Options` replaces the instance and drops `IgnoreCycles` (ADR Decision step 7)** — GREEN-on-arrival contract guard (no production code, per spec): `ShouldBeSameAs(fresh)` + `ReferenceHandler.ShouldBeNull()`. Protects against a future defensive setter that auto-applies `IgnoreCycles`.
   - **USE COMMAND**: `/test-first when QueryLoggingJsonOptions Options directly assigned a new instance should return that instance and drop ReferenceHandler default`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_QueryLoggingJsonOptions_Options_directly_assigned_should_replace_instance_and_drop_IgnoreCycles_default.cs`
