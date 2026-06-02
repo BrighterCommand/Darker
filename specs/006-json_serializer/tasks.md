@@ -245,7 +245,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
 
 ### Step 6: Update extension methods — callback signature, single call-site, no DI singleton (FR4, FR5, FR8)
 
-- [ ] **TEST + IMPLEMENT: `AddJsonQueryLogging` callback mutates `QueryLoggingJsonOptions.Options` (FR4) — rewrite of the existing extensions test**
+- [x] **TEST + IMPLEMENT: `AddJsonQueryLogging` callback mutates `QueryLoggingJsonOptions.Options` (FR4) — rewrite of the existing extensions test** — test approved (RED→GREEN). Both extension methods now take `Action<JsonSerializerOptions>`; canonical generic `AddJsonQueryLogging<TBuilder>` invokes `configure?.Invoke(QueryLoggingJsonOptions.Options)` + registers decorators; DI extension is a thin forwarder (no `AddSingleton`); Newtonsoft usings dropped. Deleted the old `…register_serializer_settings.cs`. New test (config + STJ smoke). **Discovery**: `AddDarker` resets `ApplicationLogging.LoggerFactory` from the container's `ILoggerFactory` (`ServiceCollectionExtensions.cs:40`), so the smoke test routes DI logging through the fixture's capturing provider; and `AddDarker`-bootstrapping tests race on that global, so the smoke test runs in `[CollectionDefinition("DarkerHostBootstrap", DisableParallelization = true)]` (the C6 mitigation).
   - **USE COMMAND**: `/test-first when AddJsonQueryLogging called should configure JsonSerializerOptions on QueryLoggingJsonOptions`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `Logging/When_AddJsonQueryLogging_called_should_configure_json_options.cs` (renamed/rewritten from the existing `When_AddJsonQueryLogging_called_should_register_serializer_settings.cs` per FR10)
@@ -267,7 +267,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
       - Body: forward to `Paramore.Darker.Logging.QueryProcessorBuilderExtensions.AddJsonQueryLogging<IDarkerHandlerBuilder>(builder, configure)`. No decorator registration here; no `services.AddSingleton(settings)` (FR8).
       - Remove `using Newtonsoft.Json;` and any `JsonSerializerSettings` references.
 
-- [ ] **TEST + IMPLEMENT: `JsonQueryLogging(IBuildTheQueryProcessor, …)` throws `NotSupportedException` for custom builders (ADR Decision step 5)**
+- [x] **TEST + IMPLEMENT: `JsonQueryLogging(IBuildTheQueryProcessor, …)` throws `NotSupportedException` for custom builders (ADR Decision step 5)** — GREEN-on-arrival pin (the `NotSupportedException` cast was preserved in the rewrite). Added `CustomQueryProcessorBuilder` double; asserts the message references `QueryProcessorBuilder`.
   - **USE COMMAND**: `/test-first when JsonQueryLogging called on custom IBuildTheQueryProcessor implementation should throw NotSupportedException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `Logging/When_JsonQueryLogging_called_on_custom_builder_should_throw_NotSupportedException.cs`

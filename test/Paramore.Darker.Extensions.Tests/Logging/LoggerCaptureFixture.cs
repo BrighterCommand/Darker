@@ -34,6 +34,13 @@ namespace Paramore.Darker.Extensions.Tests.Logging
         /// <summary>A snapshot of the log entries captured so far.</summary>
         public IReadOnlyList<CapturedLogEntry> CapturedLogs => _provider.Snapshot();
 
+        /// <summary>
+        /// The capturing provider, exposed so DI-based tests can register it into the container's
+        /// logging — <c>AddDarker</c> overwrites <see cref="ApplicationLogging.LoggerFactory"/> from
+        /// the container's <see cref="ILoggerFactory"/>, so the capture must flow through DI there.
+        /// </summary>
+        public ILoggerProvider Provider => _provider;
+
         /// <summary>Clears the captured buffer so a single test asserts in isolation.</summary>
         public void Clear() => _provider.Clear();
 
