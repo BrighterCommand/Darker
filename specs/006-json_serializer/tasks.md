@@ -318,58 +318,58 @@ This step can only run **after** Steps 4–7 have removed every `using Newtonsof
 
 ### Step 9: AOT coverage with content assertions (FR11, AC4)
 
-- [ ] **STRUCTURAL: Enable AOT publish on the AOT test csproj and AOT-compat on core (prerequisite for the FR11 tests below)**
-  - **USE COMMAND**: `/tidy-first enable PublishAot and IsAotCompatible so AOT analyser actually runs against Paramore.Darker.Logging`
-  - **Critical**: today `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj` does **not** set `<PublishAot>true</PublishAot>` — `dotnet publish` produces a normal IL publish and the AOT analyser never runs. Without this task, the FR11 tests below and the AC4 warning enforcement are vacuous.
-  - In `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj` add:
-    - `<PublishAot>true</PublishAot>`
-    - `<IsAotCompatible>true</IsAotCompatible>` (project-level acknowledgement; surfaces consumer-side AOT warnings at build time, not only at publish time)
-    - `<TrimMode>full</TrimMode>` (so the trim analyser also runs — AC4's allow-list covers both IL2xxx and IL3xxx, which means trim warnings as well as AOT warnings)
-  - In `src/Paramore.Darker/Paramore.Darker.csproj` add `<IsAotCompatible>true</IsAotCompatible>` (so AOT/trim warnings under `src/Paramore.Darker/Logging/` surface at build time of the core library, not just at AOT publish time of the test project — this lets the FR13 suppressions catch their warnings at the same site they're declared).
+> **Harness change — ADR 0012 amendment (2026-06-02).** The AOT proof is a **plain native-AOT console application**, not an xunit test host. Rationale (see the ADR's "Implementation-time correction (AOT verification harness)"): FR11/AC4 require that *a consumer of `Paramore.Darker`* publishes cleanly under native AOT and behaves correctly at runtime — the consumer need not be an xunit host, and the xunit.v3 host cannot be AOT-published here (its test-exe references trigger `NETSDK1150`). The former `Paramore.Darker.Tests.AOT` xunit project is converted to a console app; `Paramore.Test.Helpers` (referenced only by that host) is removed and its one meta-test relocates to `Paramore.Darker.Core.Tests`.
+
+- [ ] **STRUCTURAL: Convert the AOT project to a native-AOT console harness + remove Test.Helpers + keep core AOT-compat (prerequisite for the FR11 checks below)**
+  - **USE COMMAND**: `/tidy-first convert AOT test project to a PublishAot console harness referencing only product libraries`
+  - In `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj`:
+    - Set `<OutputType>Exe</OutputType>`, `<PublishAot>true</PublishAot>`, `<TrimMode>full</TrimMode>`; keep `<TargetFrameworks>net8.0;net9.0</TargetFrameworks>`.
+    - Remove the xunit / `Microsoft.NET.Test.Sdk` / `xunit.runner.visualstudio` / `Shouldly` package references and the `ProjectReference`s to `Paramore.Darker.Core.Tests` and `Paramore.Test.Helpers`. Keep only the product `ProjectReference`s (`Paramore.Darker`, `Paramore.Darker.Extensions.DependencyInjection`, `Paramore.Darker.Testing`) plus `Microsoft.Extensions.Logging.*` as needed for the inline capturing provider.
+    - Delete the now-unused `Base/AOTTestClassBase.cs` and `QueryProcessor/AOTQueryProcessorTests.cs` (they depended on the removed test-exe types).
+  - **Remove `Paramore.Test.Helpers` entirely**: delete `test/Paramore.Test.Helpers/` (all of it — `TestClassBase` / `ITestClassBase`, the loggers, the TestOutput helpers, and the FR12-item-6 meta-test `When_TestClassBase_XunitTest_accessed_under_xunit_v3_should_return_non_null_IXunitTest`) and drop it from `Darker.slnx` and `Darker.Filter.slnf`. The meta-test is **dropped, not relocated**: its only subject, `TestClassBase`, existed solely to bootstrap the deleted AOT xunit host. FR12 item 6's hazard (v2 private-field reflection regressing AOT-test log naming under v3) cannot occur once nothing uses `TestClassBase`, so the requirement is satisfied vacuously; no AC (AC1–AC5) depends on it. (Confirmed: Core.Tests' test classes use no base type, so there is nothing to re-target.)
+  - In `src/Paramore.Darker/Paramore.Darker.csproj` keep `<IsAotCompatible>true</IsAotCompatible>` (validates the FR13 suppressions at the library's own build). Enabling it also surfaces ~28 **pre-existing** trim/AOT warnings outside `src/Paramore.Darker/Logging/` (`PipelineBuilder`, `QueryHandlerRegistry*`) — warnings-only, build succeeds, out of AC4 scope. Record them for the Step 12 known-limitation note; do **not** add `<NoWarn>`.
   - Verify:
-    - `dotnet build src/Paramore.Darker/Paramore.Darker.csproj -c Release` succeeds on all TFMs with at most the FR13 allow-listed warnings (`IL2026` / `IL3050` on `QueryLoggingDecorator<,>.Serialize` and `QueryLoggingDecoratorAsync<,>.Serialize`, possibly also on their callers per Decision step 3 caller-propagation note).
-    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0` succeeds and emits `ILC` (IL compiler) output — confirming AOT is actually engaged. Same for `-f net9.0`. If publish does NOT emit ILC output, `<PublishAot>` did not take effect — investigate before continuing.
+    - `dotnet build src/Paramore.Darker/Paramore.Darker.csproj -c Release` succeeds on all TFMs with at most the FR13 allow-listed warnings (`IL2026` / `IL3050` on `QueryLoggingDecorator<,>.Serialize` and `QueryLoggingDecoratorAsync<,>.Serialize`, possibly also their callers per Decision step 3) under `Logging/`.
+    - `dotnet build Darker.Filter.slnf -c Release` succeeds (Test.Helpers removed cleanly; its meta-test now runs under Core.Tests).
+    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0 -r <rid>` and `-f net9.0 -r <rid>` succeed and emit `ILC` (IL compiler) output — confirming AOT is actually engaged. If publish does NOT emit ILC output, `<PublishAot>` did not take effect — investigate before continuing.
 
 - [ ] **TEST + IMPLEMENT: AOT — property-bearing `[QueryLogging]` handler emits exact source-generated JSON (FR11 case 1)**
   - **USE COMMAND**: `/test-first when AOT published query with QueryLogging executes should log expected source generated JSON for property bearing query`
-  - Test location: `test/Paramore.Darker.Tests.AOT`
-  - Test file: `Logging/LoggingQueryHandlerAOTTests.cs` (contains both FR11 subtests)
-  - Test should verify:
+  - Harness: the `test/Paramore.Darker.Tests.AOT` console app. The "test" is a console-app assertion routine that prints a diff and exits non-zero on mismatch (no xunit). The TDD gate still applies — write the asserting routine first so the published binary fails on the expected line, **STOP for IDE approval**, then implement.
+  - Should verify:
     - Defines `record AotLoggedQuery(Guid Id, string Name) : IQuery<AotLoggedQuery.Result>` with nested `Result`, plus a `[QueryLogging]`-decorated handler.
-    - Defines `[JsonSerializable(typeof(AotLoggedQuery))]`-decorated `internal partial class AotTestJsonContext : JsonSerializerContext { }`.
-    - Arrange: install the source-generated resolver: `QueryLoggingJsonOptions.Options.TypeInfoResolver = AotTestJsonContext.Default;`; install AOT-compatible log capture (the existing `LoggerCaptureFixture` mechanism if it runs under AOT; otherwise an AOT-safe equivalent — verify at design time).
+    - Defines `[JsonSerializable(typeof(AotLoggedQuery))] internal partial class AotTestJsonContext : JsonSerializerContext { }`.
+    - Arrange: install the source-generated resolver `QueryLoggingJsonOptions.Options.TypeInfoResolver = AotTestJsonContext.Default;`; register a small **inline** capturing `ILoggerProvider` (AOT-safe — no reflection) into the Darker host so the `{Query}` argument can be read back.
     - Act: `Execute` / `ExecuteAsync` the query with a known `Guid` and `Name` value.
-    - Assert: the captured `{Query}` arg equals the **exact** expected string `{"Id":"<lowercase-hyphenated-Guid>","Name":"<name>"}` (STJ defaults Guid format to `D`). Confirms FR11 case 1.
-    - Save-and-restore `TypeInfoResolver` and any other `Options` mutations in try/finally.
+    - Assert: the captured `{Query}` argument equals the **exact** string `{"Id":"<lowercase-hyphenated-Guid>","Name":"<name>"}` (STJ defaults Guid format to `D`); on mismatch, print the expected/actual diff and exit non-zero. Confirms FR11 case 1.
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should:
-    - Add `Logging/LoggingQueryHandlerAOTTests.cs` (or split into two files if cleaner — the spec is agnostic).
-    - Add the source-generated context type.
-    - `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj` has `<PublishAot>true</PublishAot>` set in the previous task — verify this is still in place. The decorator's FR13 suppressions cover the `IL2026` / `IL3050` warnings on the `Serialize<T>` methods (and possibly their `Execute<TQuery>` / `ExecuteAsync<TQuery>` callers per Decision step 3 caller-propagation contingency); **no other** `IL2xxx` / `IL3xxx` warning under `src/Paramore.Darker/Logging/` is permitted per AC4.
+    - Add the harness scenario file(s), the source-generated `AotTestJsonContext`, and the inline capturing `ILoggerProvider`.
+    - The decorator's FR13 suppressions cover the `IL2026` / `IL3050` warnings on the `Serialize<T>` methods (and possibly their `Execute<TQuery>` / `ExecuteAsync<TQuery>` callers per Decision step 3 caller-propagation contingency); **no other** `IL2xxx` / `IL3xxx` warning under `src/Paramore.Darker/Logging/` is permitted per AC4.
 
 - [ ] **TEST + IMPLEMENT: AOT — cycle-bearing `[QueryLogging]` handler does not throw (FR11 case 2)**
   - **USE COMMAND**: `/test-first when AOT published query with QueryLogging executes cycle bearing query should not throw because of IgnoreCycles default`
-  - Test location: `test/Paramore.Darker.Tests.AOT`
-  - Test file: `Logging/LoggingQueryHandlerAOTTests.cs` (second `[Fact]` in the same file, or a sibling file)
-  - Test should verify:
-    - Defines a query whose result/parameter graph contains a `Parent { Child[] }` / `Child { Parent }` cycle.
-    - Adds the cycle-bearing type to `AotTestJsonContext` via `[JsonSerializable]`.
-    - Acts via `Execute` / `ExecuteAsync` and asserts no exception is thrown — this verifies that the FR3 `ReferenceHandler.IgnoreCycles` default applies under AOT as it does under JIT.
+  - Harness: same console app; a second scenario routine.
+  - Should verify:
+    - Defines a query whose result/parameter graph contains a `Parent { Child[] }` / `Child { Parent }` cycle; adds the cycle-bearing type to `AotTestJsonContext` via `[JsonSerializable]`.
+    - Acts via `Execute` / `ExecuteAsync` and asserts no exception is thrown (FR3 `ReferenceHandler.IgnoreCycles` default applies under AOT as under JIT) — exits non-zero if it throws.
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should:
-    - Add the cycle-bearing query + handler to the AOT test fixture.
+    - Add the cycle-bearing query + handler to the harness.
     - No new production code — verifying the FR3 default already implemented in Step 2.
 
-- [ ] **STRUCTURAL: Add AOT-warning enforcement check to verification routine (AC4)**
-  - **USE COMMAND**: `/tidy-first verify AOT publish emits no IL2xxx or IL3xxx warnings outside FR13 allow-list`
-  - Manually run on the design-time machine (depends on `<PublishAot>true</PublishAot>` having been set in the Step 9 prerequisite task above):
-    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0`
-    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net9.0`
-  - For each: confirm any `IL2xxx` / `IL3xxx` warning emitted from compilation units under `src/Paramore.Darker/Logging/` falls into the FR13 allow-list:
+- [ ] **STRUCTURAL: Add AOT-warning enforcement + run the published harness to the verification routine (AC4)**
+  - **USE COMMAND**: `/tidy-first verify AOT publish emits no IL2xxx or IL3xxx warnings outside FR13 allow-list and the harness runs green`
+  - Manually run on the design-time machine (and wire the same commands into CI):
+    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0 -r <rid>`
+    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net9.0 -r <rid>`
+    - Run each published binary; both FR11 scenarios must exit `0` (AC4 runtime proof).
+  - For each publish: confirm any `IL2xxx` / `IL3xxx` warning emitted from compilation units under `src/Paramore.Darker/Logging/` falls into the FR13 allow-list:
     - **Always allowed**: `IL2026` and `IL3050` on `QueryLoggingDecorator<,>.Serialize` and `QueryLoggingDecoratorAsync<,>.Serialize`.
     - **Conditionally allowed via caller-propagation expansion** (per ADR Decision step 3): `IL2026` and `IL3050` on `QueryLoggingDecorator<,>.Execute` / `QueryLoggingDecoratorAsync<,>.ExecuteAsync` IF — and only if — the analyser surfaces them at those caller sites. The ADR explicitly classifies this as "implementation-time discovery, not a defect in this ADR". When discovered, expand the `UnconditionalSuppressMessage` attributes onto the calling methods with the same `Justification`, then mark this task complete.
     - **Anything else** under `src/Paramore.Darker/Logging/` is a FAIL — debug (likely a missing `UnconditionalSuppressMessage` site, a new BCL warning category, or a regression in the suppression placement).
-  - Verify: both publish commands succeed; the published binaries run the FR11 AOT tests to green when invoked; the allow-list is empirically pinned (record in this checkbox the exact list of `[file:line]` sites carrying `UnconditionalSuppressMessage` after the task completes).
+  - **Out of AC4 scope**: the ~28 pre-existing trim/AOT warnings outside `src/Paramore.Darker/Logging/` (pipeline/registry reflection) are documented in Step 12, not suppressed.
+  - Verify: both publish commands succeed; both published binaries run green (exit `0`); the allow-list is empirically pinned (record in this checkbox the exact list of `[file:line]` sites carrying `UnconditionalSuppressMessage` after the task completes).
 
 ### Step 10: FR14 lock-after-use ordering test (AC3)
 
@@ -419,7 +419,8 @@ This step is **documentation authoring** — it is neither a code refactor (so `
     - Recommended migration snippet (preserves `ReferenceHandler.IgnoreCycles`) — copy from requirements DoD lines 277–281.
     - Direct-assignment migration snippet (warning: drops `IgnoreCycles` unless re-applied) — copy from requirements DoD lines 283–289.
     - "How to swap serialiser entirely" → custom decorator (per ADR Alternative 1 dismissal).
-    - AOT note covering `IL2026` / `IL3050` suppression policy + `TypeInfoResolver` opt-in path.
+    - AOT note covering `IL2026` / `IL3050` suppression policy + `TypeInfoResolver` opt-in path. Note the logging path is AOT-clean (FR13 allow-list only) and is verified by a native-AOT console harness.
+    - **Known AOT limitation** — enabling AOT/trim analysis surfaces ~28 **pre-existing** trim/AOT warnings in Darker's reflection pipeline (`PipelineBuilder`, `QueryHandlerRegistry*`), outside the logging path. These are not introduced by this change, are not suppressed, and remain a follow-up; consumers AOT-publishing an app that resolves Darker handlers may see them.
     - Known limitation — parallel `WebApplicationFactory` integration tests; recommend `[CollectionDefinition("DarkerHostBootstrap", DisableParallelization = true)]` per C6.
     - **Builder-surface limitation** (ADR Decision step 5, per Step 6 `NotSupportedException` test): the `IBuildTheQueryProcessor.JsonQueryLogging(...)` overload only works for the in-box `QueryProcessorBuilder`; custom `IBuildTheQueryProcessor` implementations throw `NotSupportedException`. Consumers using a custom builder must use the DI extension (`IDarkerHandlerBuilder.AddJsonQueryLogging(...)`) instead, or call the canonical `AddJsonQueryLogging<TBuilder>(...)` generic directly.
     - **Do not** list the xunit v2 → v3 upgrade as a consumer-facing break — `Paramore.Darker.Testing` has no xunit dependency, so the upgrade is invisible to consumers.
@@ -432,8 +433,8 @@ This step is **documentation authoring** — it is neither a code refactor (so `
   - Run, in this order, and confirm each passes:
     - `dotnet build Darker.Filter.slnf -c Release` (AC1 — `net8.0` + `net9.0`).
     - `dotnet test Darker.Filter.slnf -c Release --no-build` (AC2 — full suite green; AC3 — rewritten extension test passes; AC3 — FR14 ordering test passes; AC3 — rewritten core decorator test passes).
-    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0` and `… -f net9.0` (AC4 — succeeds with no `IL2xxx` / `IL3xxx` warnings under `src/Paramore.Darker/Logging/` outside the FR13 allow-list).
-    - Run the published AOT binary — both FR11 subtests pass (AC4).
+    - `dotnet publish test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj -c Release -f net8.0 -r <rid>` and `… -f net9.0 -r <rid>` (AC4 — the native-AOT console harness publishes with no `IL2xxx` / `IL3xxx` warnings under `src/Paramore.Darker/Logging/` outside the FR13 allow-list).
+    - Run each published AOT binary — both FR11 scenarios exit `0` (AC4).
     - `dotnet list src/Paramore.Darker/Paramore.Darker.csproj package --include-transitive` — no `Newtonsoft.Json` for any TFM (AC1).
     - `dotnet list samples/SampleMinimalApi/SampleMinimalApi.csproj package --include-transitive` — no `Newtonsoft.Json` on `net8.0` or `net9.0` (AC1).
     - `Directory.Packages.props` — `System.Text.Json 10.0.8` pinned, `xunit.v3` pinned, **no** `xunit` 2.x, **no** `Newtonsoft.Json` (AC1).
@@ -458,8 +459,9 @@ This step is **documentation authoring** — it is neither a code refactor (so `
 - Step 3 (capture fixture + disjoint queries) must complete before Steps 4–7 (behavioural tests use it).
 - Steps 4–7 must complete before Step 8 (drop Newtonsoft) — every `using Newtonsoft.Json;` must be gone before the package is removed.
 - Step 8 must complete before Step 11 (sample-app verification depends on the dependency removal landing).
-- **Step 9's `<PublishAot>true</PublishAot>` prerequisite sub-task must complete BEFORE the two AOT TEST + IMPLEMENT tasks and the AOT-warning enforcement task** — without it the AOT analyser is not engaged and the FR11 / AC4 verifications are vacuous (finding #1 of `review-tasks.md`).
-- Step 9 AOT tests depend on Step 8 having succeeded (no transient Newtonsoft surface).
+- **Step 9's console-harness conversion sub-task (sets `<PublishAot>true</PublishAot>`, `<OutputType>Exe</OutputType>`, removes the test-exe references, removes `Paramore.Test.Helpers`) must complete BEFORE the two AOT TEST + IMPLEMENT tasks and the AOT-warning enforcement task** — without `PublishAot` engaged the AOT analyser does not run and the FR11 / AC4 verifications are vacuous (finding #1 of `review-tasks.md`); without the test-exe references dropped the harness cannot AOT-publish at all (`NETSDK1150`). See the ADR 0012 AOT-harness amendment.
+- Step 9's `Paramore.Test.Helpers` removal **drops** the FR12-item-6 meta-test (it pinned `TestClassBase`, whose only consumer was the deleted AOT host — FR12 item 6 is satisfied vacuously, no AC depends on it); the full `Darker.Filter.slnf` build/test must stay green after the removal.
+- Step 9 AOT scenarios depend on Step 8 having succeeded (no transient Newtonsoft surface).
 - Step 10's ordering test must run in its own xUnit collection — sequencing it after Step 9 keeps the lock-after-use mutation contained.
 - Step 12 produces `specs/006-json_serializer/release-notes-draft.md` as a committed artefact; Step 13's final-validation explicitly checks for it.
 - Step 13 is the gate before considering the spec done.
