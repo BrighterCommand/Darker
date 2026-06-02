@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Test.Helpers.Extensions;
 using Paramore.Test.Helpers.TestOutput;
-using Xunit.Abstractions;
+using Xunit;
+using Xunit.v3;
 
 namespace Paramore.Test.Helpers.Base
 {
@@ -46,10 +45,10 @@ namespace Paramore.Test.Helpers.Base
         public ICoreTestOutputHelper TestOutputHelper { get; }
 
         /// <inheritdoc />
-        public ITest? XunitTest => (ITest?)GetTestField(TestOutputHelper.WrappedTestOutputHelper)?.GetValue(TestOutputHelper.WrappedTestOutputHelper);
+        public IXunitTest? XunitTest => TestContext.Current.Test as IXunitTest;
 
         /// <inheritdoc />
-        public string TestQualifiedName => XunitTest?.DisplayName ?? typeof(T).GetLoggerCategoryName();
+        public string TestQualifiedName => XunitTest?.TestDisplayName ?? typeof(T).GetLoggerCategoryName();
 
         /// <inheritdoc />
         public string TestDisplayName => TestQualifiedName.RemoveNamespace();
@@ -85,28 +84,6 @@ namespace Paramore.Test.Helpers.Base
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Retrieves the private field named 'test' from the specified <see cref="ITestOutputHelper"/> instance.
-        /// </summary>
-        /// <param name="testOutputHelper">
-        /// An instance of <see cref="ITestOutputHelper"/> from which the private field is to be retrieved.
-        /// </param>
-        /// <returns>
-        /// A <see cref="FieldInfo"/> object representing the 'test' field if it exists; otherwise, <c>null</c>.
-        /// </returns>
-        /// <remarks>
-        /// This method uses reflection to access a private field named 'test' within the provided 
-        /// <see cref="ITestOutputHelper"/> instance. The field is expected to exist in the implementation.
-        /// </remarks>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if the <paramref name="testOutputHelper"/> parameter is <c>null</c>.
-        /// </exception>
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075", Justification = "The field 'test' is known to exist in the ITestOutputHelper implementation.")]
-        private static FieldInfo? GetTestField(ITestOutputHelper testOutputHelper)
-        {
-            return testOutputHelper.GetType().GetField("test", BindingFlags.Instance | BindingFlags.NonPublic);
         }
     }
 }

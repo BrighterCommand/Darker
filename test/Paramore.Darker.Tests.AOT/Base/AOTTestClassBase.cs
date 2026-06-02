@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Test.Helpers.Loggers;
 using Paramore.Test.Helpers.TestOutput;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Paramore.Test.Helpers.Base
 {

@@ -6,7 +6,6 @@ using System;
 using System.Threading.Tasks;
 using Paramore.Test.Helpers.Base;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Paramore.Darker.Tests.AOT.QueryProcessor
 {

@@ -17,7 +17,7 @@ Use `/tidy-first <change>` for structural-only tasks (xunit upgrade, package add
 
 ## Pre-flight
 
-- [ ] **STRUCTURAL: First ADR commit on `feature/json-serializer`**
+- [x] **STRUCTURAL: First ADR commit on `feature/json-serializer`** — done in commit `87e123e` (ADR 0012 + full spec dir staged with explicit paths; `specs/006-json_serializer/README.md` also included to keep the spec dir complete; `git log --oneline master..feature/json-serializer` shows it as the only commit; tree clean except untracked `docs/.DS_Store`).
   - At the time this task is run, `feature/json-serializer` is 0 commits ahead of `master` (verify with `git log --oneline master..feature/json-serializer` returns empty). All spec artefacts are currently untracked.
   - Stage and commit the **post-design-review** ADR (status `Accepted` at `docs/adr/0012-json-serializer-swap.md`, with the Decision-step amendments from the design review applied) plus the complete spec directory. Enumerate explicitly:
     - `docs/adr/0012-json-serializer-swap.md`
@@ -41,7 +41,7 @@ Use `/tidy-first <change>` for structural-only tasks (xunit upgrade, package add
 
 This step is **structural-only** — the test code's behaviour is unchanged, only the framework reference, namespace usings, and one piece of reflection are touched. The behavioural-test work in later steps assumes `IAssemblyFixture<T>` is available, which is what this step unlocks.
 
-- [ ] **STRUCTURAL: Replace `xunit` 2.9.3 pin with `xunit.v3` in `Directory.Packages.props`**
+- [x] **STRUCTURAL: Replace `xunit` 2.9.3 pin with `xunit.v3` in `Directory.Packages.props`** — Chosen: `xunit.v3 3.2.2` (highest stable from `dotnet package search`, no pre/rc/alpha/beta). `xunit.analyzers` bump decision: **not bumped** — `dotnet restore Darker.Filter.slnf` succeeded with 1.27.0, no `NU1605`/`NU1107`/v3-compat warning.
   - **USE COMMAND**: `/tidy-first replace xunit 2.x pin with xunit.v3 in central package management`
   - **Pin the `xunit.v3` version at task-execution time** (not at spec-authoring time — the spec was written 2026-06-01; by the time the task runs the latest stable may differ): run `dotnet package search xunit.v3 --exact-match --source https://api.nuget.org/v3/index.json` (or `dotnet nuget list versions xunit.v3 --source https://api.nuget.org/v3/index.json` with the CLI in use), pick the highest stable version without `-pre`/`-rc`/`-alpha`/`-beta` suffix, and **record the chosen version in this checkbox before commit** (e.g. "Chosen: `xunit.v3 1.2.3`").
   - Replace `<PackageVersion Include="xunit" Version="2.9.3" />` with `<PackageVersion Include="xunit.v3" Version="<recorded version>" />` in `Directory.Packages.props`.
@@ -49,7 +49,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
   - **`xunit.analyzers` bump criterion**: leave the existing `xunit.analyzers` pin in place. Bump only if `dotnet restore Darker.Filter.slnf` reports an analyzer-vs-xunit.v3 incompatibility error (`NU1605`, `NU1107`, or `xunit.analyzers` warns of an unsupported runtime). "Required" = `restore` fails or the analyzer surfaces a v3-compat warning; nothing else. Record the bump decision in this checkbox.
   - Verify: `dotnet restore Darker.Filter.slnf` succeeds with no missing-package errors; no other package id changes in `Directory.Packages.props`.
 
-- [ ] **STRUCTURAL: Repoint the four xunit-referencing test csprojs to `xunit.v3`**
+- [x] **STRUCTURAL: Repoint the four xunit-referencing test csprojs to `xunit.v3`** — all four updated (Core.Tests, Extensions.Tests, Tests.AOT, Test.Helpers); Benchmarks untouched; `dotnet restore Darker.Filter.slnf` clean.
   - **USE COMMAND**: `/tidy-first repoint test csprojs from xunit to xunit.v3`
   - Update `<PackageReference Include="xunit" />` to `<PackageReference Include="xunit.v3" />` in exactly:
     - `test/Paramore.Darker.Core.Tests/Paramore.Darker.Core.Tests.csproj`
@@ -59,7 +59,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
   - `test/Paramore.Darker.Benchmarks/Paramore.Darker.Benchmarks.csproj` is **not** touched (no xunit reference).
   - Verify: `dotnet restore Darker.Filter.slnf` succeeds with no missing-package errors.
 
-- [ ] **STRUCTURAL: Drop `using Xunit.Abstractions;` (v3 moves `ITestOutputHelper` into `Xunit`)**
+- [x] **STRUCTURAL: Drop `using Xunit.Abstractions;` (v3 moves `ITestOutputHelper` into `Xunit`)** — 4 pure-`ITestOutputHelper` files updated here (AOTQueryProcessorTests, AOTTestClassBase, CoreTestOutputHelper, ICoreTestOutputHelper); the 2 `ITest`-bearing files (`TestClassBase.cs`, `ITestClassBase.cs`) had their using swap folded into the `IXunitTest` rework sub-task below (their `ITest` reference is inseparable from it). Build green.
   - **USE COMMAND**: `/tidy-first drop Xunit.Abstractions usings after xunit.v3 upgrade`
   - Per FR12 item 1, remove `using Xunit.Abstractions;` and ensure each file has `using Xunit;` in exactly these 6 files:
     - `test/Paramore.Test.Helpers/TestOutput/ICoreTestOutputHelper.cs`
@@ -70,13 +70,13 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
     - `test/Paramore.Darker.Tests.AOT/QueryProcessor/AOTQueryProcessorTests.cs`
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds (no `CS0234` for `Xunit.Abstractions`).
 
-- [ ] **STRUCTURAL: Update `IAsyncLifetime` return types to `ValueTask` (if any usages exist)**
+- [x] **STRUCTURAL: Update `IAsyncLifetime` return types to `ValueTask` (if any usages exist)** — no usages (`grep -rn IAsyncLifetime test/` → empty); vacuously satisfied.
   - **USE COMMAND**: `/tidy-first update IAsyncLifetime return types to ValueTask for xunit.v3`
   - Per FR12 item 2: grep for `IAsyncLifetime` across `test/**`; for each implementer, change `InitializeAsync()` / `DisposeAsync()` return types from `Task` to `ValueTask`.
   - If grep returns no hits, mark this task complete with the note "no usages — task vacuously satisfied".
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds.
 
-- [ ] **TEST + IMPLEMENT: Replace `TestOutputHelper` private-`test`-field reflection in `TestClassBase.cs` (FR12 item 6)**
+- [x] **TEST + IMPLEMENT: Replace `TestOutputHelper` private-`test`-field reflection in `TestClassBase.cs` (FR12 item 6)** — **Option (a)** chosen and pinned: `TestContext.Current.Test` is available inside the running test, so `XunitTest` returns a non-null `Xunit.v3.IXunitTest` and `TestQualifiedName` uses `IXunitTest.TestDisplayName` (the v2 `.DisplayName` member is gone). Test approved in IDE (RED→GREEN); private-field reflection + its `IL2075` suppression removed; new test passes on net8.0 & net9.0.
   - **USE COMMAND**: `/test-first when TestClassBase XunitTest accessed under xunit v3 should return non null IXunitTest from TestContext`
   - Test location: `test/Paramore.Test.Helpers/Tests/` (create if it does not exist — this is a behavioural pin on `TestClassBase`'s public surface)
   - Test file: `When_TestClassBase_XunitTest_accessed_under_xunit_v3_should_return_non_null_IXunitTest.cs`
@@ -92,7 +92,7 @@ This step is **structural-only** — the test code's behaviour is unchanged, onl
     - If option (b) is chosen, leave the property null-coalescing through to the type-name fallback and pin the trade-off with a one-line comment as described in the test.
   - Verify: `dotnet test test/Paramore.Darker.Tests.AOT/ -c Release --no-build` passes; the new behavioural test passes; no other test in the helpers test project regresses.
 
-- [ ] **STRUCTURAL: Full test-suite green on xunit.v3 (no behaviour-change baseline) + FR12 items 3/4/5 audit**
+- [x] **STRUCTURAL: Full test-suite green on xunit.v3 (no behaviour-change baseline) + FR12 items 3/4/5 audit** — `dotnet build Darker.Filter.slnf -c Release` succeeds; `dotnet test` green on net8.0 & net9.0 (Core 69, Extensions 8, AOT 6, Test.Helpers 1 — the +1 is the new FR12-item-6 test; no other count delta). Audit re-run: item 3 = 58 public test classes (was 57; +1 from the new test class — left `public`, migration out of scope); item 4 = 0 `[Theory]`/`[InlineData]` (vacuous); item 5 = 0 `Xunit.Sdk` references (vacuous).
   - **USE COMMAND**: `/tidy-first verify full test-suite green on xunit.v3 and audit FR12 items 3 4 5 as no action required`
   - Verify: `dotnet build Darker.Filter.slnf -c Release` succeeds. `dotnet test Darker.Filter.slnf -c Release --no-build` passes with the same test count as on `master` (modulo the xunit.v3 discovery changes — investigate any count delta before continuing).
   - **FR12 items 3, 4, 5 audit** — explicitly mark each as no-action-required for this PR, with current evidence (verified 2026-06-01 against `master`-equivalent state; re-run before commit to confirm):

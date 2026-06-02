@@ -1,6 +1,6 @@
 ﻿using System;
 using Paramore.Test.Helpers.TestOutput;
-using Xunit.Abstractions;
+using Xunit.v3;
 
 namespace Paramore.Test.Helpers.Base
 {
@@ -30,14 +30,14 @@ namespace Paramore.Test.Helpers.Base
         /// Gets the current xUnit test instance associated with the test execution.
         /// </summary>
         /// <value>
-        /// An instance of <see cref="Xunit.Abstractions.ITest"/> representing the current test,
+        /// An instance of <see cref="Xunit.v3.IXunitTest"/> representing the current test,
         /// or <c>null</c> if no test is associated.
         /// </value>
         /// <remarks>
         /// This property provides access to the xUnit test metadata, such as the test's display name
         /// and other related information. It may return <c>null</c> if the test context is not initialized.
         /// </remarks>
-        ITest? XunitTest { get; }
+        IXunitTest? XunitTest { get; }
 
         /// <summary>
         /// Gets the fully qualified name of the test, including its namespace and class name.
