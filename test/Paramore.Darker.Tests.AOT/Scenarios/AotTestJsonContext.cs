@@ -12,6 +12,7 @@ namespace Paramore.Darker.Tests.AOT.Scenarios
     /// it, native AOT disables reflection-based serialization and the decorator throws.
     /// </summary>
     [JsonSerializable(typeof(AotLoggedQuery))]
+    [JsonSerializable(typeof(AotCycleQuery))]
     internal partial class AotTestJsonContext : JsonSerializerContext
     {
     }

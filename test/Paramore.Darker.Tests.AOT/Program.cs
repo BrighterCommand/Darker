@@ -10,4 +10,8 @@
 
 using Paramore.Darker.Tests.AOT.Scenarios;
 
-return await Case1PropertyBearingJson.RunAsync();
+var case1 = await Case1PropertyBearingJson.RunAsync();
+if (case1 != 0)
+    return case1;
+
+return await Case2CycleBearingNoThrow.RunAsync();
