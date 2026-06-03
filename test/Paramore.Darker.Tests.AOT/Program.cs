@@ -4,8 +4,10 @@
 // published under PublishAot=true while referencing only the product libraries
 // — see ADR 0012's "Implementation-time correction (AOT verification harness)".
 //
-// The FR11 scenario routines (property-bearing source-generated JSON; cycle-bearing
-// IgnoreCycles) are added by the behavioural TEST + IMPLEMENT tasks of Step 9. Until
-// then this entry point is an intentional placeholder so the project compiles and
-// AOT-publishes, confirming the NETSDK1150 blocker is resolved.
-return 0;
+// Each FR11 scenario routine returns 0 on success and non-zero (printing a diff)
+// on failure; the process exits with the first non-zero result so a failed
+// scenario fails the AOT verification.
+
+using Paramore.Darker.Tests.AOT.Scenarios;
+
+return await Case1PropertyBearingJson.RunAsync();
