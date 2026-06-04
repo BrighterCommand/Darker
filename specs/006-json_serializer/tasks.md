@@ -373,7 +373,7 @@ This step can only run **after** Steps 4–7 have removed every `using Newtonsof
 
 ### Step 10: FR14 lock-after-use ordering test (AC3)
 
-- [ ] **STRUCTURAL: Add `OrderingTestQuery` test double in a dedicated xUnit collection**
+- [x] **STRUCTURAL: Add `OrderingTestQuery` test double in a dedicated xUnit collection** — added `test/Paramore.Darker.Core.Tests/TestDoubles/OrderingTestQuery.cs` with the exact AC3 shape (`public sealed class OrderingTestQuery : IQuery<OrderingTestQuery.Result>`, `public string Marker { get; init; } = "x"`, nested `public sealed class Result`) plus a single sync `OrderingTestQueryHandler` (`[QueryLogging(1)]`) reserved for the ordering test — its closed generic is a disjoint cache cell no other test touches. Added `test/Paramore.Darker.Core.Tests/Logging/QueryLoggingJsonOptionsOrderingCollection.cs` declaring `[CollectionDefinition("QueryLoggingJsonOptionsOrdering", DisableParallelization = true)]` (distinct from the save-and-restore `QueryLoggingJsonOptions` collection). `Darker.Filter.slnf` build green (0 errors); Core.Tests 75 pass on net8.0 + net9.0 (count unchanged — additions inert until the FR14 test references them).
   - **USE COMMAND**: `/tidy-first add OrderingTestQuery test double for FR14 lock after use ordering test`
   - Add `test/Paramore.Darker.Core.Tests/TestDoubles/OrderingTestQuery.cs` containing the exact shape pinned by AC3: `public sealed class OrderingTestQuery : IQuery<OrderingTestQuery.Result> { public string Marker { get; init; } = "x"; public sealed class Result { } }` (plus the matching `OrderingTestQueryHandler`).
   - Add a `[CollectionDefinition("QueryLoggingJsonOptionsOrdering", DisableParallelization = true)]` declaration in a small file so the FR14 ordering test can pin its collection.
