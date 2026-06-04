@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
+#if NET8_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Paramore.Darker.Exceptions;
 using Paramore.Darker.Policies.Handlers;
 
 namespace Paramore.Darker.Logging.Handlers
@@ -11,13 +13,6 @@ namespace Paramore.Darker.Logging.Handlers
         where TQuery : IQuery<TResult>
     {
         private static readonly ILogger Logger = ApplicationLogging.CreateLogger<QueryLoggingDecorator<TQuery, TResult>>();
-
-        private readonly JsonSerializerSettings _serializerSettings;
-
-        public QueryLoggingDecorator(JsonSerializerSettings serializerSettings = null)
-        {
-            _serializerSettings = serializerSettings;
-        }
 
         public IQueryContext Context { get; set; }
 
@@ -44,11 +39,20 @@ namespace Paramore.Darker.Logging.Handlers
             return result;
         }
 
-        private string Serialize<T>(T value)
-        {
-            if (_serializerSettings == null)
-                throw new ConfigurationException("No serializer settings are configured. Pass JsonSerializerSettings to the QueryLoggingDecorator constructor.");
-            return JsonConvert.SerializeObject(value, _serializerSettings);
-        }
+        // The pipeline closes this decorator over IQuery<TResult> (PipelineBuilder closes the open
+        // generic with typeof(IQuery<TResult>)), so the runtime-type overload is required: the generic
+        // Serialize<T>(value, options) overload would serialise the bare IQuery<TResult> interface and
+        // emit "{}". value.GetType() restores Newtonsoft's runtime-type behaviour and composes with a
+        // source-generated TypeInfoResolver under AOT.
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage(
+            "Trimming", "IL2026:RequiresUnreferencedCodeAttribute",
+            Justification = "Consumers supply their own JsonSerializerOptions. AOT/trim-safe usage is documented as the consumer responsibility (NFR2). Source-gen TypeInfoResolver is the supported escape hatch.")]
+        [UnconditionalSuppressMessage(
+            "AOT", "IL3050:RequiresDynamicCodeAttribute",
+            Justification = "Same as IL2026 — call site is unavoidable without erasing the public Serialize API. Consumers supply source-gen TypeInfoResolver for full AOT safety.")]
+#endif
+        private string Serialize<T>(T value) =>
+            JsonSerializer.Serialize(value, value.GetType(), QueryLoggingJsonOptions.Options);
     }
 }
