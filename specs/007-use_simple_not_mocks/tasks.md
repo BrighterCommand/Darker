@@ -233,7 +233,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 7 — Migrate `QueryProcessorAsyncTests.cs` off Moq (FR2, FR7, FR10) — behaviour-preserving rewire
 
-- [ ] **STRUCTURAL (test-rewire): replace all Moq in QueryProcessorAsyncTests with async doubles, result-first**
+- [x] **STRUCTURAL (test-rewire): replace all Moq in QueryProcessorAsyncTests with async doubles, result-first**
   - **USE**: `/tidy-first migrate QueryProcessorAsyncTests off Moq to recording doubles`
   - Constructor: replace the mocks as follows. **CRITICAL — two distinct handler-factory
     instances, not one.** The async `ExecutesQueries` `Release ... Times.Never`
