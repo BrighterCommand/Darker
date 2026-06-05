@@ -337,7 +337,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 11 — Final acceptance verification (AC1–AC14)
 
-- [ ] **VERIFY: run the full acceptance-criteria checklist and record the result**
+- [x] **VERIFY: run the full acceptance-criteria checklist and record the result**
   - Build + full test run green at the **AC11 baseline** count, zero failures (AC12, NFR2).
   - `grep -rl 'Mock<' test/Paramore.Darker.Core.Tests/` → empty;
     `grep -rl 'using Moq' test/Paramore.Darker.Core.Tests/` → empty (AC1).

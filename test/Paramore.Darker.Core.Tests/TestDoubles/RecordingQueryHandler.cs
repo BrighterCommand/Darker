@@ -4,7 +4,7 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
 {
     /// <summary>
     /// A query handler double that runs a supplied delegate as its body and records
-    /// how it was invoked. Replaces Moq interaction verification with state the test
+    /// how it was invoked. Replaces interaction verification with state the test
     /// can assert on (ExecuteCount/FallbackCount/LastQuery), while still preferring the
     /// returned result as the primary evidence the handler ran (ADR 0013, Decision 3).
     /// The delegate may throw, to exercise exception paths.
