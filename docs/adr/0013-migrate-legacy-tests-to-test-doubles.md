@@ -139,6 +139,20 @@ internal class RecordingHandlerFactory(Func<Type, IQueryHandler> create)
 
 `_handlerFactory.Verify(x => x.Release(handlerA), Times.Once)` → `factory.ReleaseCount(handlerA).ShouldBe(1)`; `Times.Never` → `ShouldBe(0)`.
 
+> **Addendum (2026-06-05, from tasks review):** `FallbackPolicyTests` also asserts the
+> **decorator** factory's `Release` — `_decoratorFactory.Verify(x => x.Release<…>(decorator), Times.Once)`
+> (×3, `FallbackPolicyTests.cs:51,77,102`). `SimpleHandlerDecoratorFactory.Release<T>`
+> disposes but records nothing (`SimpleHandlerDecoratorFactory.cs:50-54`), so by the
+> exact same reasoning as the handler factory above, a sibling **recording
+> decorator-factory** double (`RecordingDecoratorFactory`, implementing both
+> `IQueryHandlerDecoratorFactory` and `IQueryHandlerDecoratorFactoryAsync`) is added to
+> `TestDoubles/`, exposing `ReleaseCount(decorator)`. The original Decision 4 named only
+> the *handler* factory; this addendum extends the same pattern to the decorator factory
+> to keep the `Release` assertions faithful (NFR1). Confirmed with the user that these
+> decorator-`Release` assertions are **preserved as state**, not dropped.
+> `PipelineBuilderExceptionTests` has **no** decorator-`Release` assertion and continues
+> to use the plain `SimpleHandlerDecoratorFactory`.
+
 Note an asymmetry to preserve faithfully (NFR1): the sync `ExecutesQueries` asserts `Release ... Times.Once` (`QueryProcessorTests.cs:43`), but the **async** `ExecutesQueries` asserts `Release ... Times.Never` (`QueryProcessorAsyncTests.cs:53`). The async case therefore migrates to `ReleaseCount(handler).ShouldBe(0)`, not `1` — do not "tidy" the two into matching expectations.
 
 ### Architecture Overview
