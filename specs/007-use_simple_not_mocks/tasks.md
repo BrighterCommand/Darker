@@ -273,7 +273,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 8 — Migrate `FallbackPolicyTests.cs` off Moq (FR3 factory swap) — behaviour-preserving rewire
 
-- [ ] **STRUCTURAL (test-rewire): swap FallbackPolicyTests factory/registry mocks for Simple\*/InMemory\***
+- [x] **STRUCTURAL (test-rewire): swap FallbackPolicyTests factory/registry mocks for Simple\*/InMemory\***
   - **USE**: `/tidy-first migrate FallbackPolicyTests factories off Moq`
   - **Depends on Task 5** (`RecordingHandlerFactory` + `RecordingDecoratorFactory`) and
     Task 2 (extracted doubles).
