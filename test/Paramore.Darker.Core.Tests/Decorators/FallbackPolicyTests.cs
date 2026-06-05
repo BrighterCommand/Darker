@@ -1,5 +1,6 @@
 using System;
 using Moq;
+using Paramore.Darker.Core.Tests.TestDoubles;
 using Paramore.Darker.Policies.Attributes;
 using Paramore.Darker.Policies.Handlers;
 using Shouldly;
@@ -100,59 +101,6 @@ namespace Paramore.Darker.Core.Tests.Decorators
             handler.Context.Bag.ShouldNotContainKey("Check2");
             _handlerFactory.Verify(x => x.Release(handler), Times.Once);
             _decoratorFactory.Verify(x => x.Release<IQueryHandlerDecorator<IQuery<TestQuery.Result>, TestQuery.Result>>(decorator), Times.Once);
-        }
-
-        internal class TestQuery : IQuery<TestQuery.Result>
-        {
-            internal class Result { }
-        }
-
-        internal class TestQueryHandlerWithCatchAllFallback : QueryHandler<TestQuery, TestQuery.Result>
-        {
-            [FallbackPolicy(1)]
-            public override TestQuery.Result Execute(TestQuery query)
-            {
-                Context.Bag.Add("Check1", true);
-                throw new FormatException();
-            }
-
-            public override TestQuery.Result Fallback(TestQuery query)
-            {
-                Context.Bag.Add("Check2", true);
-                return new TestQuery.Result();
-            }
-        }
-
-        internal class TestQueryHandlerWithFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
-        {
-            [FallbackPolicy(1, typeof(ArithmeticException), typeof(FormatException))]
-            public override TestQuery.Result Execute(TestQuery query)
-            {
-                Context.Bag.Add("Check1", true);
-                throw new FormatException();
-            }
-
-            public override TestQuery.Result Fallback(TestQuery query)
-            {
-                Context.Bag.Add("Check2", true);
-                return new TestQuery.Result();
-            }
-        }
-
-        internal class TestQueryHandlerWithoutFormatExceptionFallback : QueryHandler<TestQuery, TestQuery.Result>
-        {
-            [FallbackPolicy(1, typeof(ArithmeticException))]
-            public override TestQuery.Result Execute(TestQuery query)
-            {
-                Context.Bag.Add("Check1", true);
-                throw new FormatException();
-            }
-
-            public override TestQuery.Result Fallback(TestQuery query)
-            {
-                Context.Bag.Add("Check2", true);
-                return new TestQuery.Result();
-            }
         }
     }
 }

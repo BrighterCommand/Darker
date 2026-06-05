@@ -57,7 +57,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 1 — Document the `Exported/` directory role (FR9) — structural
 
-- [ ] **STRUCTURAL: add `Exported/README.md` explaining the scanning role**
+- [x] **STRUCTURAL: add `Exported/README.md` explaining the scanning role**
   - Create `test/Paramore.Darker.Core.Tests/Exported/README.md`.
   - Content must state: this directory holds the **public** test doubles that exist
     to be discovered by assembly/handler **scanning** (e.g. `AddHandlersFromAssemblies`);
