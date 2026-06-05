@@ -297,7 +297,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 9 — Migrate `PipelineBuilderExceptionTests.cs` off Moq (FR4 factory swap) — behaviour-preserving rewire
 
-- [ ] **STRUCTURAL (test-rewire): swap PipelineBuilderExceptionTests factory/registry mocks for Simple\*/InMemory\***
+- [x] **STRUCTURAL (test-rewire): swap PipelineBuilderExceptionTests factory/registry mocks for Simple\*/InMemory\***
   - **USE**: `/tidy-first migrate PipelineBuilderExceptionTests factories off Moq`
   - Replace `Mock<IQueryHandlerFactory>` → `RecordingHandlerFactory` (the
     `ShouldPreserveOriginalException...` test asserts
