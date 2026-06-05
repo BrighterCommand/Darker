@@ -1,0 +1,19 @@
+# Green-suite baseline (Task 0, AC11) — captured 2026-06-05
+#
+# Command: dotnet test Darker.Filter.slnf -c Release --no-build
+# Build: dotnet build Darker.Filter.slnf -c Release  → 0 errors
+#
+# Per target framework (net8.0 and net9.0 each):
+Paramore.Darker.Core.Tests   = 76 passing, 0 failed, 0 skipped
+Paramore.Darker.Extensions.Tests = 8 passing, 0 failed, 0 skipped
+#
+# Full filtered solution (per TFM) = 84 passing
+# (across both TFMs: 168 test executions, 0 failures)
+#
+# AC12 compares against these numbers after each migration step.
+#
+# Moq footprint (pre-migration, AC11 assumption — exactly 4 files):
+#   test/Paramore.Darker.Core.Tests/QueryProcessorTests.cs
+#   test/Paramore.Darker.Core.Tests/QueryProcessorAsyncTests.cs
+#   test/Paramore.Darker.Core.Tests/PipelineBuilderExceptionTests.cs
+#   test/Paramore.Darker.Core.Tests/Decorators/FallbackPolicyTests.cs

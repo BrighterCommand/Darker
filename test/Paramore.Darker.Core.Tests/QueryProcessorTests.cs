@@ -1,6 +1,6 @@
 using System;
-using Moq;
-using Paramore.Darker.Core.Tests.Exported;
+using System.Collections.Generic;
+using Paramore.Darker.Core.Tests.TestDoubles;
 using Shouldly;
 using Xunit;
 
@@ -8,18 +8,19 @@ namespace Paramore.Darker.Core.Tests
 {
     public class QueryProcessorTests
     {
-        private readonly Mock<IQueryHandlerFactory> _handlerFactory;
+        private readonly Dictionary<Type, IQueryHandler> _handlers = new Dictionary<Type, IQueryHandler>();
+        private readonly RecordingHandlerFactory _handlerFactory;
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryProcessor _queryProcessor;
 
         public QueryProcessorTests()
         {
             _handlerRegistry = new QueryHandlerRegistry();
-            _handlerFactory = new Mock<IQueryHandlerFactory>();
-            var decoratorFactory = new Mock<IQueryHandlerDecoratorFactory>();
-            var decoratorRegistry = new Mock<IQueryHandlerDecoratorRegistry>();
+            _handlerFactory = new RecordingHandlerFactory(handlerType => _handlers[handlerType]);
+            var decoratorFactory = new SimpleHandlerDecoratorFactory(_ => throw new NotImplementedException());
+            var decoratorRegistry = new InMemoryDecoratorRegistry();
 
-            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory.Object, decoratorRegistry.Object, decoratorFactory.Object);
+            var handlerConfiguration = new HandlerConfiguration(_handlerRegistry, _handlerFactory, decoratorRegistry, decoratorFactory);
             _queryProcessor = new QueryProcessor(handlerConfiguration, new InMemoryQueryContextFactory());
         }
 
@@ -28,19 +29,19 @@ namespace Paramore.Darker.Core.Tests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var handler = new TestQueryHandler();
+            var handler = new ProcessorQueryHandler();
 
-            _handlerRegistry.Register<TestQueryA, Guid, TestQueryHandler>();
-            _handlerFactory.Setup(x => x.Create(typeof(TestQueryHandler))).Returns(handler);
+            _handlerRegistry.Register<ProcessorQuery, Guid, ProcessorQueryHandler>();
+            _handlers[typeof(ProcessorQueryHandler)] = handler;
 
             // Act
-            var result = _queryProcessor.Execute(new TestQueryA(id));
+            var result = _queryProcessor.Execute(new ProcessorQuery(id));
 
             // Assert
             result.ShouldBe(id);
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag.ShouldContainKeyAndValue("id", id);
-            _handlerFactory.Verify(x => x.Release(handler), Times.Once);
+            _handlerFactory.ReleaseCount(handler).ShouldBe(1);
         }
 
         [Fact]
@@ -49,25 +50,25 @@ namespace Paramore.Darker.Core.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, Guid>>();
-            var handlerB = new Mock<IQueryHandler<TestQueryB, int>>();
+            var handlerA = new RecordingQueryHandler<ProcessorQuery, Guid>(query => query.Id);
+            var handlerB = new RecordingQueryHandler<ProcessorIntQuery, int>(_ => 0);
 
-            _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
-            _handlerRegistry.Register<TestQueryB, int, IQueryHandler<TestQueryB, int>>();
+            _handlerRegistry.Register<ProcessorQuery, Guid, RecordingQueryHandler<ProcessorQuery, Guid>>();
+            _handlerRegistry.Register<ProcessorIntQuery, int, RecordingQueryHandler<ProcessorIntQuery, int>>();
 
-            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
-            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryB, int>))).Returns(handlerB.Object);
+            _handlers[typeof(RecordingQueryHandler<ProcessorQuery, Guid>)] = handlerA;
+            _handlers[typeof(RecordingQueryHandler<ProcessorIntQuery, int>)] = handlerB;
 
             // Act
-            _queryProcessor.Execute(new TestQueryA(id));
+            var result = _queryProcessor.Execute(new ProcessorQuery(id));
 
             // Assert
-            handlerA.Verify(x => x.Execute(It.Is<TestQueryA>(q => q.Id == id)), Times.Once);
-            handlerA.Verify(x => x.Fallback(It.IsAny<TestQueryA>()), Times.Never);
-            handlerB.Verify(x => x.Execute(It.IsAny<TestQueryB>()), Times.Never);
-            handlerB.Verify(x => x.Fallback(It.IsAny<TestQueryB>()), Times.Never);
-            _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
-            _handlerFactory.Verify(x => x.Release(handlerB.Object), Times.Never);
+            result.ShouldBe(id);                            // matching handler ran with the expected query
+            handlerA.FallbackCount.ShouldBe(0);
+            handlerB.ExecuteCount.ShouldBe(0);              // non-matching handler did not run
+            handlerB.FallbackCount.ShouldBe(0);
+            _handlerFactory.ReleaseCount(handlerA).ShouldBe(1);
+            _handlerFactory.ReleaseCount(handlerB).ShouldBe(0);
         }
 
         [Fact]
@@ -76,19 +77,17 @@ namespace Paramore.Darker.Core.Tests
             // Arrange
             var id = Guid.NewGuid();
 
-            var handlerA = new Mock<IQueryHandler<TestQueryA, Guid>>();
-            handlerA.Setup(x => x.Execute(It.Is<TestQueryA>(q => q.Id == id))).Throws<FormatException>();
+            var handlerA = new RecordingQueryHandler<ProcessorQuery, Guid>(_ => throw new FormatException());
 
-            _handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
-
-            _handlerFactory.Setup(x => x.Create(typeof(IQueryHandler<TestQueryA, Guid>))).Returns(handlerA.Object);
+            _handlerRegistry.Register<ProcessorQuery, Guid, RecordingQueryHandler<ProcessorQuery, Guid>>();
+            _handlers[typeof(RecordingQueryHandler<ProcessorQuery, Guid>)] = handlerA;
 
             // Act
-            Assert.Throws<FormatException>(() => _queryProcessor.Execute(new TestQueryA(id)));
+            Assert.Throws<FormatException>(() => _queryProcessor.Execute(new ProcessorQuery(id)));
 
             // Assert
-            handlerA.Verify(x => x.Fallback(It.IsAny<TestQueryA>()), Times.Never);
-            _handlerFactory.Verify(x => x.Release(handlerA.Object), Times.Once);
+            handlerA.FallbackCount.ShouldBe(0);
+            _handlerFactory.ReleaseCount(handlerA).ShouldBe(1);
         }
     }
 }
