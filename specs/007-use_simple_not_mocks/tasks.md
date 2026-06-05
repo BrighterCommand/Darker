@@ -148,7 +148,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 5 — Add the recording handler-factory, recording decorator-factory + distinct query/handler doubles (FR10 D4, FR6) — structural
 
-- [ ] **STRUCTURAL: add `RecordingHandlerFactory`, `RecordingDecoratorFactory`, and the renamed QueryProcessor query/handler doubles**
+- [x] **STRUCTURAL: add `RecordingHandlerFactory`, `RecordingDecoratorFactory`, and the renamed QueryProcessor query/handler doubles**
   - **USE**: `/tidy-first add RecordingHandlerFactory, RecordingDecoratorFactory and distinct QueryProcessor doubles`
   - Add to `TestDoubles/`:
     - `RecordingHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync`
