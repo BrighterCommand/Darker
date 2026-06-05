@@ -71,7 +71,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 2 — Extract `FallbackPolicyTests` nested doubles to `TestDoubles/` (FR3) — structural
 
-- [ ] **STRUCTURAL: move FallbackPolicyTests inline doubles into `TestDoubles/`**
+- [x] **STRUCTURAL: move FallbackPolicyTests inline doubles into `TestDoubles/`**
   - **USE**: `/tidy-first extract FallbackPolicyTests nested doubles to TestDoubles`
   - Move **verbatim** (closed list, FR3) — one file each, namespace
     `Paramore.Darker.Core.Tests.TestDoubles`:
@@ -94,7 +94,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 3 — Extract `PipelineBuilderExceptionTests` nested doubles to `TestDoubles/` (FR4) — structural
 
-- [ ] **STRUCTURAL: move PipelineBuilderExceptionTests inline doubles into `TestDoubles/`**
+- [x] **STRUCTURAL: move PipelineBuilderExceptionTests inline doubles into `TestDoubles/`**
   - **USE**: `/tidy-first extract PipelineBuilderExceptionTests nested doubles to TestDoubles`
   - Move **verbatim** (closed list, FR4) — each `Result` moves with its owning query:
     - `ExceptionQuery` (+ `Result`), `ExceptionQueryHandler`

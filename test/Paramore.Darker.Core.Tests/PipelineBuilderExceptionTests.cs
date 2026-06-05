@@ -6,6 +6,7 @@ using System.Reflection;
 using Moq;
 using Shouldly;
 using Xunit;
+using Paramore.Darker.Core.Tests.TestDoubles;
 using Paramore.Darker.Policies.Attributes;
 using Paramore.Darker.Policies.Handlers;
 
@@ -17,91 +18,6 @@ namespace Paramore.Darker.Core.Tests
         private readonly IQueryHandlerRegistry _handlerRegistry;
         private readonly IQueryProcessor _queryProcessor;
         private readonly Mock<IQueryHandlerDecoratorFactory> _decoratorFactory;
-
-        // Query and handler for normal exception scenario
-        private class ExceptionQuery : IQuery<ExceptionQuery.Result>
-        {
-            public class Result { }
-        }
-        private class ExceptionQueryHandler : QueryHandler<ExceptionQuery, ExceptionQuery.Result>
-        {
-            public override ExceptionQuery.Result Execute(ExceptionQuery query)
-            {
-                throw new InvalidOperationException("Test exception from Execute");
-            }
-        }
-
-        // Query and handler for fallback exception scenario
-        private class FallbackExceptionQuery : IQuery<FallbackExceptionQuery.Result>
-        {
-            public class Result { }
-        }
-        private class FallbackExceptionQueryHandler : QueryHandler<FallbackExceptionQuery, FallbackExceptionQuery.Result>
-        {
-            [FallbackPolicy(step: 1, typeof(InvalidOperationException))]
-            public override FallbackExceptionQuery.Result Execute(FallbackExceptionQuery query)
-            {
-                throw new InvalidOperationException("Test exception from Execute");
-            }
-            public override FallbackExceptionQuery.Result Fallback(FallbackExceptionQuery query)
-            {
-                throw new NotSupportedException("Test exception from Fallback");
-            }
-        }
-
-        // Query and handler for null inner exception scenario
-        private class NullInnerExceptionQuery : IQuery<string> { }
-        private class NullInnerExceptionQueryHandler : QueryHandler<NullInnerExceptionQuery, string>
-        {
-            public override string Execute(NullInnerExceptionQuery query)
-            {
-                throw new TargetInvocationException(null);
-            }
-        }
-
-        // Query and handler for decorator exception scenario
-        private class DecoratorExceptionQuery : IQuery<DecoratorExceptionQuery.Result>
-        {
-            public class Result { }
-        }
-        private class DecoratorExceptionQueryHandler : QueryHandler<DecoratorExceptionQuery, DecoratorExceptionQuery.Result>
-        {
-            [DecoratorException(step: 1)]
-            public override DecoratorExceptionQuery.Result Execute(DecoratorExceptionQuery query)
-            {
-                return new DecoratorExceptionQuery.Result();
-            }
-        }
-        private class TestExceptionDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
-            where TQuery : IQuery<TResult>
-        {
-            public IQueryContext Context { get; set; }
-            public void InitializeFromAttributeParams(object[] attributeParams) { }
-            public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
-            {
-                throw new InvalidOperationException("Test exception from decorator");
-            }
-        }
-
-
-        [AttributeUsage(AttributeTargets.Method)]
-        public sealed class DecoratorExceptionAttribute : QueryHandlerAttribute
-        {
-
-            public DecoratorExceptionAttribute(int step) : base(step)
-            {
-            }
-
-            public override object[] GetAttributeParams()
-            {
-                return [];
-            }
-
-            public override Type GetDecoratorType()
-            {
-                return typeof(TestExceptionDecorator<,>);
-            }
-        }
 
         public PipelineBuilderExceptionTests()
         {
