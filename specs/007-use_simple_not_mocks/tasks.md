@@ -323,7 +323,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 10 — Remove the dead Moq dependency (FR8) — structural
 
-- [ ] **STRUCTURAL: delete Moq package references now that no test uses it**
+- [x] **STRUCTURAL: delete Moq package references now that no test uses it**
   - **USE**: `/tidy-first remove Moq package references`
   - Delete `<PackageReference Include="Moq" />` from
     `test/Paramore.Darker.Core.Tests/Paramore.Darker.Core.Tests.csproj` (line ~22).
