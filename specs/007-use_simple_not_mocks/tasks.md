@@ -41,7 +41,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 0 — Record the green-suite baseline (AC11)
 
-- [ ] **STRUCTURAL PRE-STEP: capture the passing-test baseline before any change**
+- [x] **STRUCTURAL PRE-STEP: capture the passing-test baseline before any change**
   - Run `dotnet build Darker.Filter.slnf -c Release` then
     `dotnet test Darker.Filter.slnf -c Release`.
   - Record the **passing test count** for `Paramore.Darker.Core.Tests` and for the
