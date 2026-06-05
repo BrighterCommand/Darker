@@ -200,7 +200,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 6 — Migrate `QueryProcessorTests.cs` off Moq (FR1, FR7, FR10) — behaviour-preserving rewire
 
-- [ ] **STRUCTURAL (test-rewire): replace all Moq in QueryProcessorTests with doubles, result-first**
+- [x] **STRUCTURAL (test-rewire): replace all Moq in QueryProcessorTests with doubles, result-first**
   - **USE**: `/tidy-first migrate QueryProcessorTests off Moq to recording doubles`
   - Constructor: replace `Mock<IQueryHandlerFactory>` → `RecordingHandlerFactory`
     (delegate returns the per-test handler); `Mock<IQueryHandlerDecoratorFactory>` →
