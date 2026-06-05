@@ -117,7 +117,7 @@ dotnet test  Darker.Filter.slnf -c Release
 
 ## Task 4 — Add the recording handler doubles to `TestDoubles/` (FR10, Decision 3) — structural
 
-- [ ] **STRUCTURAL: add generic recording query-handler doubles (sync + async)**
+- [x] **STRUCTURAL: add generic recording query-handler doubles (sync + async)**
   - **USE**: `/tidy-first add RecordingQueryHandler sync and async test doubles`
   - Add to `TestDoubles/` (illustrative names per ADR 0013 Decision 3 — final names
     are an implementation detail, but must not collide with `Exported/` simple names):
