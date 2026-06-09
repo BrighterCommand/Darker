@@ -33,14 +33,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// <see cref="IServiceScopeFactory"/>, which yields a correctly-rooted scope even when the
     /// captured provider is the root container (the default Singleton <c>QueryProcessor</c>).
     /// </summary>
-    internal sealed class ServiceProviderLifetimeScope : IDisposable
+    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IDisposable
     {
-        private readonly IServiceScope _scope;
-
-        public ServiceProviderLifetimeScope(IServiceProvider serviceProvider)
-        {
-            _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        }
+        private readonly IServiceScope _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
         public object Resolve(Type componentType) => _scope.ServiceProvider.GetService(componentType);
 

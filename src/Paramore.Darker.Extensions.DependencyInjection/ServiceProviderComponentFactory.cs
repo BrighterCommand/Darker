@@ -33,25 +33,18 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// both a handler and a decorator share one singleton cache, and lets handler and decorator
     /// read the same per-query child scope (owned by the <see cref="IAmALifetime"/>).
     /// </summary>
-    internal sealed class ServiceProviderComponentFactory :
-        IQueryHandlerFactory, IQueryHandlerFactoryAsync,
-        IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
+    internal sealed class ServiceProviderComponentFactory(
+        IServiceProvider serviceProvider,
+        ServiceLifetime handlerLifetime)
+        :
+            IQueryHandlerFactory, IQueryHandlerFactoryAsync,
+            IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ServiceLifetime _handlerLifetime;
-
         // Keyed on the per-query lifetime token so all Create calls of one execution (handler and
         // its decorators) share a single child scope — without holding per-query state in a mutable
         // field on this shared singleton factory. Weak keys let the table entry be collected once the
         // token is gone; the scope itself is disposed by the token (via IAmALifetime.Add), not here.
-        private readonly ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope> _scopes =
-            new ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope>();
-
-        public ServiceProviderComponentFactory(IServiceProvider serviceProvider, ServiceLifetime handlerLifetime)
-        {
-            _serviceProvider = serviceProvider;
-            _handlerLifetime = handlerLifetime;
-        }
+        private readonly ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope> _scopes = new();
 
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime)
         {
@@ -77,8 +70,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private object Resolve(Type componentType, IAmALifetime lifetime)
         {
-            if (_handlerLifetime == ServiceLifetime.Singleton)
-                return _serviceProvider.GetService(componentType);
+            if (handlerLifetime == ServiceLifetime.Singleton)
+                return serviceProvider.GetService(componentType);
 
             var scope = _scopes.GetValue(lifetime, CreateScope);
             return scope.Resolve(componentType);
@@ -86,7 +79,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private ServiceProviderLifetimeScope CreateScope(IAmALifetime lifetime)
         {
-            var scope = new ServiceProviderLifetimeScope(_serviceProvider);
+            var scope = new ServiceProviderLifetimeScope(serviceProvider);
             lifetime.Add(scope);
             return scope;
         }
