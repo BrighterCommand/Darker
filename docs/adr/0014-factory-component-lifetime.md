@@ -195,20 +195,30 @@ collapse the two DI *implementations* into a **single class** implementing all f
 interfaces, and `BuildQueryProcessor` passes that one instance for all four slots of
 `HandlerConfiguration`.
 
-This collapse contributes to correctness in two ways:
+Why merge — and why it is **not** a singleton-correctness requirement:
 
 1. **Scoped sharing (AC4)** is guaranteed by the child scope living on the shared
    `IAmALifetime` (Decision 1) — handler and decorators read the same scope from the same
-   token, independent of how many factory objects exist. (This part does not strictly
-   require the merge.)
-2. **Singleton sharing (B1 / AC1 / AC4)** *does* require a single cache: a type registered
-   `Singleton` and injected into **both** a handler and a decorator must resolve to **one**
-   instance (`ReferenceEquals`, construction counter == 1). Decision 3 places the singleton
-   cache on the factory; with two separate factory classes there would be **two** caches and
-   the shared-Singleton dependency could be constructed twice, violating B1. One class →
-   one cache → one instance. The merge is therefore a **correctness contributor** for the
-   shared-Singleton case, not merely a tidiness choice (it also removes duplicated lifetime
-   logic).
+   token, independent of how many factory objects exist. The merge does **not** strictly
+   require this, but it makes the shared path self-evident.
+2. **Singleton sharing needs no merge — MS DI already guarantees it.** A type registered
+   `Singleton` is **container-managed**: the root `ServiceProvider` constructs it once and
+   injects that same instance into every constructor that asks for it, regardless of which
+   provider resolves the consumer or how many Darker factory caches exist (the same semantics
+   Decision 3 relies on for "never disposed by Darker"). The factory's singleton cache
+   (Decision 3) caches the **component** (the handler/decorator object), **not** the
+   component's injected dependencies; a handler type and a decorator type are distinct types,
+   each constructed at most once per pipeline anyway. So a Singleton dependency injected into
+   **both** a handler and a decorator resolves to **one** instance (`ReferenceEquals`,
+   construction counter == 1) *with or without* the merge — there is no double-construction to
+   fix. *(An earlier draft of this ADR claimed the merge was a shared-Singleton **correctness**
+   contributor; that was incorrect and is retracted here, reconciling this decision with
+   Decision 3.)*
+3. **Tidiness / consolidation (the actual reason).** Two classes duplicate the identical
+   lifetime-resolution logic and each carry a redundant singleton cache. One class removes the
+   duplication, keeps a single cache, and gives handler and decorator one obvious shared
+   resolution path. This is a **structural** improvement (Tidy First), not a behavioural one —
+   which is why it is sequenced into the structural phase of implementation.
 
 Because the merged class creates **both** handlers and decorators, it is renamed from the
 handler-only `ServiceProviderHandlerFactory` to **`ServiceProviderComponentFactory`**
@@ -291,13 +301,19 @@ Following Tidy First, separate structural from behavioural changes:
 1. **Structural**: add `IAmALifetime` + `QueryLifetimeScope`; widen the four factory
    interfaces with the lifetime parameter; update *all* implementors (DI, Simple, InMemory,
    testing ports) and `PipelineBuilder` call sites to pass the lifetime — keeping behaviour
-   identical (token created and threaded, but DI factory still naive). Tests stay green.
-2. **Behavioural** (TDD, `/test-first` per AC): make the DI factory lifetime-aware —
-   singleton cache + never-dispose (AC1, AC2); scoped/transient via child scope (AC3–AC5);
-   concurrency isolation (AC6); failure-path disposal (AC7); decorator parity (AC8);
-   default-path regression guard (AC9); sync/async parity (AC10).
-3. Merge the two DI factories into one (Decision 4) and wire `BuildQueryProcessor`
-   (Decisions 4 & 6).
+   identical (token created and threaded, but DI factory still naive). **Also merge the two DI
+   factories into one `ServiceProviderComponentFactory` and wire `BuildQueryProcessor`
+   (Decisions 4 & 6)** while still naive — the merge is a pure structural restructuring (no
+   behaviour change), so Tidy First places it here, *before* the behavioural step, letting the
+   behavioural tests target the final class with no rework. Tests stay green.
+2. **Behavioural** (TDD, `/test-first` per AC): make the (already-merged) DI factory
+   lifetime-aware — singleton cache + never-dispose (AC1, AC2); scoped/transient via child
+   scope (AC3–AC5); concurrency isolation (AC6); failure-path disposal (AC7); decorator parity
+   (AC8); default-path regression guard (AC9); sync/async parity (AC10).
+
+*(Note: an earlier draft sequenced the merge as a separate step 3 **after** the behavioural
+work. Because the merge is structural, Tidy First requires it in the structural step; it has
+been moved into step 1 above. All six numbered Decisions are unchanged.)*
 
 ## Consequences
 

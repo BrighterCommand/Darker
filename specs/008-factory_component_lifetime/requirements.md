@@ -118,8 +118,11 @@ moving definition:
   execution of a single query pipeline. **Transient is deliberately resolved via this
   per-execution child scope (not the root container)** so that a Transient component, and
   any disposables it captures, are disposed deterministically when the execution completes
-  (baseline B3). The externally observable disposal outcome for the default Transient path
-  must remain equivalent to today's behaviour (see NFR2 / AC9).
+  (baseline B3). For the default Transient path, the component itself continues to be created
+  fresh per query and disposed after use (preserving today's behaviour for the handler/decorator
+  object); the change introduced here is that **injected** transient disposables are now disposed
+  **deterministically at pipeline completion** via the child scope, whereas today they are
+  root-resolved and retained until the root provider is disposed (see NFR2 / AC9).
 - **FR5 — Scoped dependency correctness under Singleton processor.** A Scoped dependency
   consumed by a handler/decorator (e.g. EF Core `DbContext`) must resolve and dispose
   correctly even when `QueryProcessorLifetime = Singleton`.
@@ -145,11 +148,14 @@ moving definition:
   semantics B1–B3 defined in *Key Terms and Observability* above (Singleton never disposed;
   Scoped one-scope-per-execution; Transient new-instance-per-resolution disposed via the
   per-execution scope), so users moving between the two libraries get consistent results.
-- **NFR2 — No silent behaviour change for existing default users.** Users on the default
-  `Transient` lifetime must continue to get a fresh, disposed-after-use instance. This is
-  pinned as a regression guard by **AC9**: with no lifetime configured (the default), the
-  observable create-once-per-query and dispose-after-pipeline behaviour is unchanged from
-  the current implementation.
+- **NFR2 — No regression on the default path.** Users on the default `Transient` lifetime must
+  continue to get a fresh handler/decorator per query that is disposed after use; nothing existing
+  is silently dropped. The one deliberate, documented change is an **improvement**: disposal becomes
+  deterministic and complete — injected transient disposables consumed by the component are now
+  disposed at pipeline completion (via the per-execution child scope, FR4/B3), whereas the current
+  implementation root-resolves them and retains them until the root provider is disposed. This is
+  pinned by **AC9**: with no lifetime configured, the component is created once per query and the
+  injected `ITrackedDependency` is disposed after the pipeline completes.
 - **NFR3 — Thread safety.** Scope bookkeeping must be safe under concurrent pipeline
   execution.
 - **NFR4 — Test coverage.** All three lifetimes × {handlers, decorators} × {sync, async}
@@ -234,11 +240,16 @@ Terms and Observability*.
   (`OperationCanceledException`). Covers FR9.
 - **AC8 — Decorators follow the same rules.** AC1–AC7 hold for decorators as well as
   handlers (using a decorator with an injected `ITrackedDependency`).
-- **AC9 — Default-path regression guard.** With **no** lifetime configured (default
-  `Transient`, default Singleton `QueryProcessor`), the preserved invariant is exactly:
-  the injected `ITrackedDependency` construction counter increments by **1 per query**, and
-  its `IsDisposed == true` after the pipeline completes — identical to AC3. This is the
-  observable create/dispose behaviour of the current implementation, and pins NFR2.
+- **AC9 — Default-path guard.** With **no** lifetime configured (default `Transient`, default
+  Singleton `QueryProcessor`), the invariant pinned is exactly: the injected `ITrackedDependency`
+  construction counter increments by **1 per query** (fresh per query) and its `IsDisposed == true`
+  after the pipeline completes — the same assertion as AC3. **Note:** fresh-per-query construction
+  and disposal of the handler/decorator object are *preserved* from the current implementation; the
+  *injected* transient dependency being disposed per-query is the **intended new
+  deterministic-disposal behaviour** (FR4/B3), **not** a property of the current implementation
+  (which root-resolves and retains transient dependencies until root teardown). AC9 thus guards the
+  fresh-per-query + disposal invariant against regression while documenting this deliberate change.
+  Pins NFR2.
 - **AC10 — Sync and async parity.** AC1–AC9 hold for both the sync (`Execute`) and async
   (`ExecuteAsync`) factory paths.
 
