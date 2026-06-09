@@ -200,7 +200,14 @@
     - The shared single factory instance + the scope-on-the-lifetime guarantee handler and
       decorator read the **same** scope (ADR Decision 4 §1).
 
-- [ ] **B4 — TEST + IMPLEMENT: Scoped dependency resolves and disposes under a Singleton QueryProcessor (AC5 / FR5) — fixes defect 2**
+- [x] **B4 — TEST + IMPLEMENT: Scoped dependency resolves and disposes under a Singleton QueryProcessor (AC5 / FR5) — fixes defect 2**
+  - **Outcome (acceptance lock, no production change):** green on this branch — the
+    `IServiceScopeFactory`-rooted child scope from **B1** already fixes defect 2. Verified the
+    lock has **teeth**: temporarily reverting `Resolve`'s non-Singleton branch to master-like root
+    resolution (`_serviceProvider.GetService(...)`) makes both variants fail with
+    `InvalidOperationException: Cannot resolve scoped service ... from root provider` under
+    `ValidateScopes = true`; restoring the child-scope resolution makes them pass. So the test is a
+    genuine AC5/FR5 acceptance lock (red-on-master, green-now), not a no-op. Test-only commit.
   - **USE COMMAND**: `/test-first when query processor is singleton and dependency is scoped should resolve from per-query scope and dispose after pipeline`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_query_processor_is_singleton_and_dependency_is_scoped_should_resolve_and_dispose.cs`
