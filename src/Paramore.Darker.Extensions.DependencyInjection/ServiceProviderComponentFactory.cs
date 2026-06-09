@@ -22,6 +22,7 @@ THE SOFTWARE. */
 #endregion
 
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -38,6 +39,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ServiceLifetime _handlerLifetime;
+
+        // Keyed on the per-query lifetime token so all Create calls of one execution (handler and
+        // its decorators) share a single child scope — without holding per-query state in a mutable
+        // field on this shared singleton factory. Weak keys let the table entry be collected once the
+        // token is gone; the scope itself is disposed by the token (via IAmALifetime.Add), not here.
+        private readonly ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope> _scopes =
+            new ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope>();
 
         public ServiceProviderComponentFactory(IServiceProvider serviceProvider, ServiceLifetime handlerLifetime)
         {
@@ -72,9 +80,15 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (_handlerLifetime == ServiceLifetime.Singleton)
                 return _serviceProvider.GetService(componentType);
 
+            var scope = _scopes.GetValue(lifetime, CreateScope);
+            return scope.Resolve(componentType);
+        }
+
+        private ServiceProviderLifetimeScope CreateScope(IAmALifetime lifetime)
+        {
             var scope = new ServiceProviderLifetimeScope(_serviceProvider);
             lifetime.Add(scope);
-            return scope.Resolve(componentType);
+            return scope;
         }
     }
 }

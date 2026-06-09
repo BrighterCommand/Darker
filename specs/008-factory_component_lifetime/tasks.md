@@ -177,7 +177,14 @@
       factory (`ConcurrentDictionary<Type, …>` with `Lazy<>`), shared across queries (NFR3).
     - Singletons are **never** disposed by `Release` (B1/AC2).
 
-- [ ] **B3 — TEST + IMPLEMENT: Scoped dependency is shared across handler and decorator in one execution and disposed after (AC4 / FR4)**
+- [x] **B3 — TEST + IMPLEMENT: Scoped dependency is shared across handler and decorator in one execution and disposed after (AC4 / FR4)**
+  - **Outcome:** red→green. Red reason: `Resolve` created a *new* child scope per `Create`, so
+    handler and decorator got distinct scoped instances (`ConstructionCount == 2`). Fix:
+    `ServiceProviderComponentFactory` now get-or-creates **one** `ServiceProviderLifetimeScope`
+    per execution, keyed on the `IAmALifetime` token via a
+    `ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope>` (weak keys, no per-query
+    mutable field on the shared factory; scope attached to the token via `Add` and disposed once
+    by `PipelineBuilder.Dispose()`). Singleton branch unchanged. Both `Execute` and `ExecuteAsync`.
   - **USE COMMAND**: `/test-first when handler lifetime is scoped should share one scoped dependency across handler and decorator then dispose after pipeline`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs`
