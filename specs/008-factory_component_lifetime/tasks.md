@@ -87,7 +87,7 @@
       lifetime arg.
   - Behaviour identical: the lifetime owns no scope yet, so disposing it is a no-op. Suite green.
 
-- [ ] **S5 — Merge the two DI factories into `ServiceProviderComponentFactory` (still naive)**
+- [x] **S5 — Merge the two DI factories into `ServiceProviderComponentFactory` (still naive)**
   - ADR Decision 4. New file
     `src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderComponentFactory.cs`:
     `internal sealed class ServiceProviderComponentFactory : IQueryHandlerFactory,
