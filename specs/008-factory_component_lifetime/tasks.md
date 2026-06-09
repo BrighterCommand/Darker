@@ -315,7 +315,18 @@
       covers decorators, no further production code is needed and the test stands as the acceptance
       lock for AC8/FR7/FR8; if a decorator path diverges, this test drives the fix.
 
-- [ ] **B8 — TEST + IMPLEMENT: Default-path guard — no lifetime configured creates fresh per query and deterministically disposes the dependency (AC9 / NFR2)**
+- [x] **B8 — TEST + IMPLEMENT: Default-path guard — no lifetime configured creates fresh per query and deterministically disposes the dependency (AC9 / NFR2)**
+  - **Outcome (acceptance lock, no production change):** green on this branch — the default-config
+    wiring routes through B1's per-query child-scope disposal. Added test-infra
+    `TrackedDependencyScenario.BuildWithDefaultLifetime(dependencyLifetime)` which calls `AddDarker()`
+    **without** setting `HandlerLifetime`, so it exercises the *default* value (`Transient`,
+    `DarkerOptions.cs:8`) rather than an explicit setting; extracted a private `BuildCore(configure, …)`
+    so both builders share registration. Default Singleton `QueryProcessor` unchanged. Test asserts
+    (sync + async) `ConstructionCount == 2` over two queries (fresh per query) and `IsDisposed == true`
+    after each pipeline — the AC3 invariant through the default path. Verified **teeth**: master-like
+    root resolution leaves the dependency undisposed → both tests fail; restored → green. Unlike B7's
+    Singleton case, the default path *is* the Transient branch, so the teeth bite directly. Test +
+    test-infra only.
   - **USE COMMAND**: `/test-first when no lifetime configured should create dependency once per query and dispose it after pipeline`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs`
@@ -423,7 +434,7 @@ B9 (parity audit) depends on B1–B8 ─► F1 ─► F2 ─► F3 ─► F4
 | AC6 | FR6/NFR3 | B5 | `When_two_queries_run_concurrently_should_isolate_scopes.cs` | ⬜ |
 | AC7 | FR9 | B6 | `When_pipeline_fails_should_dispose_dependency.cs` | ⬜ |
 | AC8 | FR7/FR8 | B7 | `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs` | ✅ |
-| AC9 | NFR2 | B8 | `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs` | ⬜ |
+| AC9 | NFR2 | B8 | `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs` | ✅ |
 | AC10 | FR7 | B9 | (sync+async variants across B1–B8) | ⬜ |
 </content>
 </invoke>

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,6 +18,22 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
             ServiceLifetime handlerLifetime,
             ServiceLifetime dependencyLifetime,
             bool validateScopes = false)
+            => BuildCore(options => options.HandlerLifetime = handlerLifetime, dependencyLifetime, validateScopes);
+
+        /// <summary>
+        /// Builds the same scenario but leaves <c>HandlerLifetime</c> unset, so it exercises the
+        /// <em>default configuration path</em> (default <see cref="ServiceLifetime.Transient"/>)
+        /// rather than an explicit setting — used by the AC9/NFR2 default-path guard.
+        /// </summary>
+        public static ServiceProvider BuildWithDefaultLifetime(
+            ServiceLifetime dependencyLifetime,
+            bool validateScopes = false)
+            => BuildCore(configure: null, dependencyLifetime, validateScopes);
+
+        private static ServiceProvider BuildCore(
+            Action<DarkerOptions> configure,
+            ServiceLifetime dependencyLifetime,
+            bool validateScopes)
         {
             IServiceCollection services = new ServiceCollection();
 
@@ -25,7 +42,7 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
             services.Add(new ServiceDescriptor(typeof(ITrackedDependency), typeof(TrackedDependency), dependencyLifetime));
 
             var builder = services
-                .AddDarker(options => options.HandlerLifetime = handlerLifetime)
+                .AddDarker(configure)
                 .AddHandlers(registry =>
                 {
                     registry.Register<TrackedQuery, TrackedQuery.Result, TrackedQueryHandler>();
