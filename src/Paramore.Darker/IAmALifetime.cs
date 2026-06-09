@@ -26,30 +26,17 @@ using System;
 namespace Paramore.Darker
 {
     /// <summary>
-    /// A simple handler factory that creates a handler for a given query type.
-    /// Intended for use with tests and lightweight scenarios where a full DI container is not needed.
+    /// Owns the lifetime of objects created for a single query pipeline execution.
+    /// Disposed by the <see cref="PipelineBuilder{TResult}"/> when the pipeline completes,
+    /// including when it completes by throwing or being cancelled.
     /// </summary>
-    public class SimpleHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
+    public interface IAmALifetime : IDisposable
     {
-        private readonly Func<Type, IQueryHandler> _factory;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleHandlerFactory"/> class.
+        /// Tracks a per-query disposable (for example a child service scope) so that it is
+        /// disposed when the pipeline completes.
         /// </summary>
-        /// <param name="factory">A function that creates a handler instance for a given handler type.</param>
-        public SimpleHandlerFactory(Func<Type, IQueryHandler> factory)
-        {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        }
-
-        /// <inheritdoc />
-        public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
-
-        /// <inheritdoc />
-        public void Release(IQueryHandler handler, IAmALifetime lifetime)
-        {
-            if (handler is IDisposable disposable)
-                disposable.Dispose();
-        }
+        /// <param name="disposable">The disposable to track for the lifetime of the pipeline execution.</param>
+        void Add(IDisposable disposable);
     }
 }

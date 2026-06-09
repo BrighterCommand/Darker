@@ -29,9 +29,9 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         /// <summary>How many times the given handler instance was released (reference equality).</summary>
         public int ReleaseCount(IQueryHandler handler) => _released.Count(r => ReferenceEquals(r, handler));
 
-        public IQueryHandler Create(Type handlerType) => _create(handlerType);
+        public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _create(handlerType);
 
-        public void Release(IQueryHandler handler)
+        public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
             _released.Add(handler);
             if (handler is IDisposable disposable)

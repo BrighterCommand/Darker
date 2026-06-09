@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <Company>Brighter Command</Company>
     <Authors>Daniel Stockhammer, Toby Henderson</Authors>

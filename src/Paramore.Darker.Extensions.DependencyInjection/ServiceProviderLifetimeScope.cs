@@ -22,34 +22,23 @@ THE SOFTWARE. */
 #endregion
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Paramore.Darker
+namespace Paramore.Darker.Extensions.DependencyInjection
 {
     /// <summary>
-    /// A simple handler factory that creates a handler for a given query type.
-    /// Intended for use with tests and lightweight scenarios where a full DI container is not needed.
+    /// Owns a single per-query child <see cref="IServiceScope"/> from which Scoped and Transient
+    /// components are resolved, so that those components and their disposable dependencies are torn
+    /// down when the scope is disposed. The scope is created from the captured provider's
+    /// <see cref="IServiceScopeFactory"/>, which yields a correctly-rooted scope even when the
+    /// captured provider is the root container (the default Singleton <c>QueryProcessor</c>).
     /// </summary>
-    public class SimpleHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
+    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IDisposable
     {
-        private readonly Func<Type, IQueryHandler> _factory;
+        private readonly IServiceScope _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleHandlerFactory"/> class.
-        /// </summary>
-        /// <param name="factory">A function that creates a handler instance for a given handler type.</param>
-        public SimpleHandlerFactory(Func<Type, IQueryHandler> factory)
-        {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        }
+        public object Resolve(Type componentType) => _scope.ServiceProvider.GetService(componentType);
 
-        /// <inheritdoc />
-        public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
-
-        /// <inheritdoc />
-        public void Release(IQueryHandler handler, IAmALifetime lifetime)
-        {
-            if (handler is IDisposable disposable)
-                disposable.Dispose();
-        }
+        public void Dispose() => _scope.Dispose();
     }
 }

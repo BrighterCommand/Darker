@@ -30,10 +30,10 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         /// <summary>How many times the given decorator instance was released (reference equality).</summary>
         public int ReleaseCount(IQueryHandlerDecorator decorator) => _released.Count(r => ReferenceEquals(r, decorator));
 
-        public T Create<T>(Type decoratorType) where T : IQueryHandlerDecorator
+        public T Create<T>(Type decoratorType, IAmALifetime lifetime) where T : IQueryHandlerDecorator
             => (T)_create(decoratorType);
 
-        public void Release<T>(T handler) where T : IQueryHandlerDecorator
+        public void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
             _released.Add(handler);
             if (handler is IDisposable disposable)

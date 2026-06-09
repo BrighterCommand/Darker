@@ -29,6 +29,7 @@ namespace Paramore.Darker
         private IQueryHandler _handler;
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> _decorators;
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
+        private IAmALifetime _lifetime;
 
         public PipelineBuilder(
             IQueryHandlerRegistry handlerRegistry,
@@ -48,6 +49,10 @@ namespace Paramore.Darker
 
         public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext)
         {
+            // Create the per-query lifetime before any Create call so a partial build still has an
+            // owner for any resources (e.g. a child service scope) attached during resolution.
+            _lifetime = new QueryLifetimeScope();
+
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
 
@@ -94,6 +99,10 @@ namespace Paramore.Darker
 
         public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
         {
+            // Create the per-query lifetime before any Create call so a partial build still has an
+            // owner for any resources (e.g. a child service scope) attached during resolution.
+            _lifetime = new QueryLifetimeScope();
+
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
 
@@ -169,7 +178,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found handler type for {QueryType} in handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
             _logger.LogDebug("Resolving handler instance...");
-            var handler = _handlerFactory.Create(handlerType);
+            var handler = _handlerFactory.Create(handlerType, _lifetime);
             if (handler == null)
                 throw new ConfigurationException($"Handler could not be created for type: {handlerType.FullName}");
 
@@ -188,7 +197,7 @@ namespace Paramore.Darker
                 _logger.LogDebug("Found handler type for {QueryType} in async handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
                 _logger.LogDebug("Resolving async handler instance...");
-                var handler = _handlerFactoryAsync.Create(handlerType);
+                var handler = _handlerFactoryAsync.Create(handlerType, _lifetime);
                 if (handler == null)
                     throw new ConfigurationException($"Async handler could not be created for type: {handlerType.FullName}");
 
@@ -214,7 +223,7 @@ namespace Paramore.Darker
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
 
                 _logger.LogDebug("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
-                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType);
+                var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType, _lifetime);
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
@@ -250,7 +259,7 @@ namespace Paramore.Darker
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
 
                 _logger.LogDebug("Resolving async decorator instance of type {DecoratorType}...", decoratorType.Name);
-                var decorator = _decoratorFactoryAsync.Create<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>(decoratorType);
+                var decorator = _decoratorFactoryAsync.Create<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>(decoratorType, _lifetime);
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
@@ -271,13 +280,13 @@ namespace Paramore.Darker
         {
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
-            _handlerFactory?.Release(_handler);
+            _handlerFactory?.Release(_handler, _lifetime);
 
             if (_decorators != null && _decorators.Any())
             {
                 foreach (var decorator in _decorators)
                 {
-                    _decoratorFactory.Release(decorator);
+                    _decoratorFactory.Release(decorator, _lifetime);
                 }
             }
 
@@ -285,9 +294,13 @@ namespace Paramore.Darker
             {
                 foreach (var decorator in _asyncDecorators)
                 {
-                    _decoratorFactoryAsync?.Release(decorator);
+                    _decoratorFactoryAsync?.Release(decorator, _lifetime);
                 }
             }
+
+            // Dispose the per-query lifetime last, after releasing the handler and decorators, so
+            // any resources it owns (e.g. a child service scope) are torn down once per query.
+            _lifetime?.Dispose();
         }
     }
 }

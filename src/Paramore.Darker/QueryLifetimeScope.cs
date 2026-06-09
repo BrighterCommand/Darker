@@ -22,34 +22,41 @@ THE SOFTWARE. */
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Paramore.Darker
 {
     /// <summary>
-    /// A simple handler factory that creates a handler for a given query type.
-    /// Intended for use with tests and lightweight scenarios where a full DI container is not needed.
+    /// The default <see cref="IAmALifetime"/> implementation. Tracks the disposables created for a
+    /// single query pipeline execution (for example a child service scope) and disposes them, in
+    /// reverse order of registration, exactly once when the pipeline completes.
     /// </summary>
-    public class SimpleHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
+    internal sealed class QueryLifetimeScope : IAmALifetime
     {
-        private readonly Func<Type, IQueryHandler> _factory;
+        private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
+        private bool _disposed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleHandlerFactory"/> class.
-        /// </summary>
-        /// <param name="factory">A function that creates a handler instance for a given handler type.</param>
-        public SimpleHandlerFactory(Func<Type, IQueryHandler> factory)
+        /// <inheritdoc />
+        public void Add(IDisposable disposable)
         {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            if (disposable == null)
+                throw new ArgumentNullException(nameof(disposable));
+
+            _trackedDisposables.Add(disposable);
         }
 
         /// <inheritdoc />
-        public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
-
-        /// <inheritdoc />
-        public void Release(IQueryHandler handler, IAmALifetime lifetime)
+        public void Dispose()
         {
-            if (handler is IDisposable disposable)
-                disposable.Dispose();
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
+                _trackedDisposables[i].Dispose();
+
+            _trackedDisposables.Clear();
         }
     }
 }
