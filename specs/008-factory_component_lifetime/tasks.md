@@ -377,15 +377,24 @@
 
 ## Phase 3 — Finalisation
 
-- [ ] **F1 — Full build and test on CI target frameworks**
+- [x] **F1 — Full build and test on CI target frameworks**
+  - **Done:** `dotnet build Darker.Filter.slnf -c Release` → 0 errors;
+    `dotnet test Darker.Filter.slnf -c Release --no-build` → 212 passing (Core 76 + Extensions 30,
+    each on net8.0 and net9.0), 0 failed, 0 skipped.
   - `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release`
     (net8.0 + net9.0). All green.
 
-- [ ] **F2 — Coverage audit against NFR4 and the AC map**
+- [x] **F2 — Coverage audit against NFR4 and the AC map**
+  - **Done:** coverage matrix verified — all three lifetimes × {handlers, decorators} ×
+    {sync, async} covered, plus singleton-reuse (AC1/B2) and scoped-dependency (AC5/B4). AC→test
+    map (below) and the matrix in `acceptance-verification.md` filled.
   - Verify all three lifetimes × {handlers, decorators} × {sync, async} are covered, plus the
     singleton-reuse (AC1) and scoped-dependency (AC5) scenarios. Fill the mapping table below.
 
-- [ ] **F3 — Record acceptance verification**
+- [x] **F3 — Record acceptance verification**
+  - **Done:** `specs/008-factory_component_lifetime/acceptance-verification.md` records AC1–AC10 →
+    passing test files + the NFR4 coverage matrix (mirrors spec 007). Issue #329 validation comment:
+    see Housekeeping (posted on user confirmation).
   - Add an `acceptance.md` (or equivalent) noting each AC1–AC10 → passing test file, mirroring how
     spec 007 recorded AC verification. Update issue #329 with a validation comment.
 
