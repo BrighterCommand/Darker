@@ -360,7 +360,14 @@
 > (Singleton decorator reused/never-disposed). The merge (S5) is justified structurally (one cache,
 > no duplicated logic), not as a singleton-correctness fix — see ADR Decision 4 (corrected).
 
-- [ ] **B9 — Sync/async parity audit (AC10 / FR7)**
+- [x] **B9 — Sync/async parity audit (AC10 / FR7)**
+  - **Outcome (audit, no new behaviour, no gaps found):** every behavioural test file pairs a
+    `void` (`Execute`) variant with an `async Task` (`ExecuteAsync`) variant —
+    B1 transient, B2 singleton, B3 scoped-sharing, B4 scoped-under-singleton-processor,
+    B5 concurrent-isolation, B7 decorator (singleton + transient), B8 default-path all have both.
+    B6 (failure path) covers throw-sync, throw-async **and** cancel-async; sync cancellation has no
+    `CancellationToken` on the sync path, so async-only cancellation is the complete coverage (noted
+    in B6's Outcome). No missing variant ⇒ no `/test-first` task needed. AC→test map below filled.
   - *Verification task, not new behaviour.* Confirm every behavioural test (B1–B8) exercises
     **both** `Execute` and `ExecuteAsync`. Add any missing async/sync variant as a `/test-first`
     task (STOP for approval) if a gap is found. Document the AC→test mapping at the bottom of this
@@ -426,15 +433,13 @@ B9 (parity audit) depends on B1–B8 ─► F1 ─► F2 ─► F3 ─► F4
 
 | AC | Requirement | Task | Test file | Status |
 |----|-------------|------|-----------|--------|
-| AC1 | FR3 | B2 | `When_handler_lifetime_is_singleton_should_reuse_dependency_and_not_dispose.cs` | ⬜ |
-| AC2 | FR2/FR3 | B2 | ↑ | ⬜ |
-| AC3 | FR1/FR2 | B1 | `When_handler_lifetime_is_transient_should_create_fresh_and_dispose_after_pipeline.cs` | ⬜ |
-| AC4 | FR4 | B3 | `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs` | ⬜ |
-| AC5 | FR5 | B4 | `When_query_processor_is_singleton_and_dependency_is_scoped_should_resolve_and_dispose.cs` | ⬜ |
-| AC6 | FR6/NFR3 | B5 | `When_two_queries_run_concurrently_should_isolate_scopes.cs` | ⬜ |
-| AC7 | FR9 | B6 | `When_pipeline_fails_should_dispose_dependency.cs` | ⬜ |
+| AC1 | FR3 | B2 | `When_handler_lifetime_is_singleton_should_reuse_dependency_and_not_dispose.cs` | ✅ |
+| AC2 | FR2/FR3 | B2 | ↑ | ✅ |
+| AC3 | FR1/FR2 | B1 | `When_handler_lifetime_is_transient_should_create_fresh_and_dispose_after_pipeline.cs` | ✅ |
+| AC4 | FR4 | B3 | `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs` | ✅ |
+| AC5 | FR5 | B4 | `When_query_processor_is_singleton_and_dependency_is_scoped_should_resolve_and_dispose.cs` | ✅ |
+| AC6 | FR6/NFR3 | B5 | `When_two_queries_run_concurrently_should_isolate_scopes.cs` | ✅ |
+| AC7 | FR9 | B6 | `When_pipeline_fails_should_dispose_dependency.cs` | ✅ |
 | AC8 | FR7/FR8 | B7 | `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs` | ✅ |
 | AC9 | NFR2 | B8 | `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs` | ✅ |
-| AC10 | FR7 | B9 | (sync+async variants across B1–B8) | ⬜ |
-</content>
-</invoke>
+| AC10 | FR7 | B9 | (sync+async variants across B1–B8) | ✅ |
