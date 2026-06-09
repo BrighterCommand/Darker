@@ -43,10 +43,10 @@ namespace Paramore.Darker
         }
 
         /// <inheritdoc />
-        public IQueryHandler Create(Type handlerType) => _factory(handlerType);
+        public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
 
         /// <inheritdoc />
-        public void Release(IQueryHandler handler)
+        public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
             if (handler is IDisposable disposable)
                 disposable.Dispose();

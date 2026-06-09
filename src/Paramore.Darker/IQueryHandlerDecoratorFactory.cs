@@ -4,7 +4,7 @@ namespace Paramore.Darker
 {
     public interface IQueryHandlerDecoratorFactory
     {
-        T Create<T>(Type decoratorType) where T : IQueryHandlerDecorator;
-        void Release<T>(T handler) where T : IQueryHandlerDecorator;
+        T Create<T>(Type decoratorType, IAmALifetime lifetime) where T : IQueryHandlerDecorator;
+        void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator;
     }
 }

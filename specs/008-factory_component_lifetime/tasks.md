@@ -47,7 +47,7 @@
   - Include the MIT licence header block (match `SimpleHandlerFactory.cs`).
   - No call sites yet → suite stays green.
 
-- [ ] **S2 — Widen the four public factory interfaces with an `IAmALifetime` parameter** (ADR Decision 2)
+- [x] **S2 — Widen the four public factory interfaces with an `IAmALifetime` parameter** (ADR Decision 2)
   - `src/Paramore.Darker/IQueryHandlerFactory.cs`:
     `IQueryHandler Create(Type handlerType, IAmALifetime lifetime);` and
     `void Release(IQueryHandler handler, IAmALifetime lifetime);`
@@ -59,7 +59,7 @@
   - This won't compile until S3/S4 update the implementors and call sites — land S2+S3+S4 together
     as one structural commit, or in immediate succession, so the build is green at the commit.
 
-- [ ] **S3 — Update every factory implementor to the new signatures (token ignored)**
+- [x] **S3 — Update every factory implementor to the new signatures (token ignored)**
   - Core production doubles (ignore the token; behaviour unchanged):
     - `src/Paramore.Darker/SimpleHandlerFactory.cs`
     - `src/Paramore.Darker/SimpleHandlerDecoratorFactory.cs`
@@ -72,7 +72,7 @@
     signatures, still ignoring the token, so the solution compiles green before the merge.
   - ADR Decision 6 (non-DI factories ignore the token). No behaviour change.
 
-- [ ] **S4 — `PipelineBuilder` creates, threads, and disposes the lifetime**
+- [x] **S4 — `PipelineBuilder` creates, threads, and disposes the lifetime**
   - `src/Paramore.Darker/PipelineBuilder.cs`:
     - Add a `private IAmALifetime _lifetime;` field; create one `QueryLifetimeScope` at the
       **start** of `Build` (`:49`) and `BuildAsync` (`:95`), **before** any `Create` call (ADR
