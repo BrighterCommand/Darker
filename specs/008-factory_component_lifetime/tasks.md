@@ -115,7 +115,7 @@
 > cache. Each task below drives the next slice of that logic. **STOP for IDE approval after each
 > test.** All identity/disposal assertions use the `ITrackedDependency` probe.
 
-- [ ] **B0 — Test infrastructure: the `ITrackedDependency` probe and tracked components**
+- [x] **B0 — Test infrastructure: the `ITrackedDependency` probe and tracked components**
   - *Structural test-support, not a behaviour change — no `/test-first` gate, but write no
     production code.* Create in `test/Paramore.Darker.Extensions.Tests/TestDoubles/`:
     - `ITrackedDependency` + `TrackedDependency` — increments a shared/injected construction
