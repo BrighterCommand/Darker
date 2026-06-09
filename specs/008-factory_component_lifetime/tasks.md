@@ -229,7 +229,16 @@
       already satisfies this scenario, no further production code is needed and the test stands as
       the acceptance lock for AC5/FR5 (defect 2) — do not delete it; if a gap remains, it drives the fix.
 
-- [ ] **B5 — TEST + IMPLEMENT: Concurrent pipelines get isolated scopes and don't dispose each other (AC6 / FR6, NFR3)**
+- [x] **B5 — TEST + IMPLEMENT: Concurrent pipelines get isolated scopes and don't dispose each other (AC6 / FR6, NFR3)**
+  - **Outcome (acceptance lock, no production change):** green on this branch — each execution owns
+    its own `IAmALifetime` (created per `Build`/`BuildAsync`) and thus its own child scope via the
+    `ConditionalWeakTable`, so two concurrent pipelines are isolated. New barrier-aware test double
+    `ConcurrentTrackedQuery` (records its scoped dependency, signals `Started`, then parks on a
+    release gate) holds both pipelines provably in flight; the test asserts distinct scoped
+    dependencies and that completing A disposes A's scope while B's stays alive. Verified **teeth**:
+    temporarily resolving the non-Singleton branch from the captured root provider makes both
+    variants fail (the two queries share one root-scoped dependency → isolation breaks); the
+    child-scope resolution passes. Test + test-infra only.
   - **USE COMMAND**: `/test-first when two queries run concurrently through one singleton processor should use isolated scopes and not dispose each others dependencies`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_two_queries_run_concurrently_should_isolate_scopes.cs`
