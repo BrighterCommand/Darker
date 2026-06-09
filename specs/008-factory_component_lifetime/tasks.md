@@ -284,7 +284,19 @@
       `Build`/`BuildAsync` threw mid-way (partial build — lifetime created first, S4). Add code
       only if a leak is found.
 
-- [ ] **B7 — TEST + IMPLEMENT: Decorators follow the same lifetime rules as handlers (AC8 / FR7, FR8)**
+- [x] **B7 — TEST + IMPLEMENT: Decorators follow the same lifetime rules as handlers (AC8 / FR7, FR8)**
+  - **Outcome (acceptance lock, no production change):** green on this branch — the single merged
+    `ServiceProviderComponentFactory` applies identical logic to the decorator `Create<T>`/`Release<T>`
+    paths it does for handlers, so B1's per-query child-scope disposal and S5's no-op `Release` already
+    cover decorators. Test asserts on the **decorator's** injected `ITrackedDependency` (via
+    `DecoratedTrackedQuery`/`TrackedDecorator`): Singleton → constructed once, same instance reused,
+    `IsDisposed == false` (mirrors B2/AC1+AC2); Transient → fresh per query, `IsDisposed == true`
+    (mirrors B1/AC3). 4 methods (Singleton + Transient × sync + async), 8 cases × 2 TFMs. The
+    task-text-predicted `ObjectDisposedException` on the Singleton case does **not** occur here (S5
+    neutralised that defect). Verified **teeth** on the Transient case: master-like root resolution
+    (`return _serviceProvider.GetService(componentType);` as first line of `Resolve`) leaves the
+    decorator dependency undisposed → both Transient tests fail; restored → all 4 green. The Singleton
+    guard is the no-op `Release` (teeth-verified in B2; same factory serves decorators). Test-only.
   - **USE COMMAND**: `/test-first when decorator has a configured lifetime should create reuse and dispose its dependency like a handler`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs`
@@ -410,7 +422,7 @@ B9 (parity audit) depends on B1–B8 ─► F1 ─► F2 ─► F3 ─► F4
 | AC5 | FR5 | B4 | `When_query_processor_is_singleton_and_dependency_is_scoped_should_resolve_and_dispose.cs` | ⬜ |
 | AC6 | FR6/NFR3 | B5 | `When_two_queries_run_concurrently_should_isolate_scopes.cs` | ⬜ |
 | AC7 | FR9 | B6 | `When_pipeline_fails_should_dispose_dependency.cs` | ⬜ |
-| AC8 | FR7/FR8 | B7 | `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs` | ⬜ |
+| AC8 | FR7/FR8 | B7 | `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs` | ✅ |
 | AC9 | NFR2 | B8 | `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs` | ⬜ |
 | AC10 | FR7 | B9 | (sync+async variants across B1–B8) | ⬜ |
 </content>
