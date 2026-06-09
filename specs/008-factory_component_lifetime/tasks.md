@@ -149,7 +149,19 @@
       `PipelineBuilder.Dispose()` → `IAmALifetime.Dispose()` → `IServiceScope.Dispose()`); keep
       `Release` null-tolerant on both component and lifetime (ADR Decision 5).
 
-- [ ] **B2 — TEST + IMPLEMENT: Singleton handler dependency is reused across queries and never disposed by Darker (AC1 + AC2 / FR3, FR2)**
+- [x] **B2 — TEST + IMPLEMENT: Singleton handler dependency is reused across queries and never disposed by Darker (AC1 + AC2 / FR3, FR2)**
+  - **Outcome (acceptance lock, no production change):** the test passes green against the
+    current branch with **no new production code**. Defect 1 was already neutralised
+    *structurally* in **S5** (`a4ec2d6`): the merged `ServiceProviderComponentFactory.Release`
+    is a **no-op**, and a `HandlerLifetime = Singleton` handler is a container-managed singleton
+    (`ServiceCollectionHandlerRegistry.cs:20`), so `GetService` returns the same instance and
+    nothing disposes it. The ADR-mandated thread-safe singleton **cache** (Decision 3) produces
+    **no observable behavioural difference** for a container-managed singleton — the ADR itself
+    states this in **Decision 4 §2** ("Singleton sharing needs no merge — MS DI already
+    guarantees it… there is no double-construction to fix"). Per the mandatory TDD rule (no code
+    without a red test) and "no scope creep", the cache was **not** added; the B2 test stands as
+    the **AC1/AC2 acceptance lock** — exactly the pattern tasks.md anticipates for B4/B5/B7/B8.
+    User approved this approach. Test-only commit.
   - **USE COMMAND**: `/test-first when handler lifetime is singleton should reuse same dependency across queries and not dispose it`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_handler_lifetime_is_singleton_should_reuse_dependency_and_not_dispose.cs`
