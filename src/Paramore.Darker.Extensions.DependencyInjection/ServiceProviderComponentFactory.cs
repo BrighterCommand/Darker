@@ -47,24 +47,34 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime)
         {
-            return (IQueryHandler) _serviceProvider.GetService(handlerType);
+            return (IQueryHandler) Resolve(handlerType, lifetime);
         }
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
-            var disposal = handler as IDisposable;
-            disposal?.Dispose();
+            // Scoped/Transient teardown is owned by the lifetime's child scope; Singletons are
+            // never disposed by Darker. Nothing to do here.
         }
 
         public T Create<T>(Type decoratorType, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
-            return (T) _serviceProvider.GetService(decoratorType);
+            return (T) Resolve(decoratorType, lifetime);
         }
 
         public void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
-            var disposal = handler as IDisposable;
-            disposal?.Dispose();
+            // Scoped/Transient teardown is owned by the lifetime's child scope; Singletons are
+            // never disposed by Darker. Nothing to do here.
+        }
+
+        private object Resolve(Type componentType, IAmALifetime lifetime)
+        {
+            if (_handlerLifetime == ServiceLifetime.Singleton)
+                return _serviceProvider.GetService(componentType);
+
+            var scope = new ServiceProviderLifetimeScope(_serviceProvider);
+            lifetime.Add(scope);
+            return scope.Resolve(componentType);
         }
     }
 }

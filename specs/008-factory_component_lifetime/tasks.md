@@ -129,7 +129,7 @@
       InMemory > Mock).
   - Counter must support concurrency (AC6) — use `Interlocked`/per-test fresh instance.
 
-- [ ] **B1 — TEST + IMPLEMENT: Transient handler dependency is created fresh and disposed after the pipeline (AC3 / FR1, FR2)**
+- [x] **B1 — TEST + IMPLEMENT: Transient handler dependency is created fresh and disposed after the pipeline (AC3 / FR1, FR2)**
   - **USE COMMAND**: `/test-first when handler lifetime is transient should create fresh dependency per query and dispose it after pipeline completes`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_handler_lifetime_is_transient_should_create_fresh_and_dispose_after_pipeline.cs`

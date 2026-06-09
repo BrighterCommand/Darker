@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Paramore.Darker.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.Tests.TestDoubles
@@ -18,6 +20,7 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
         {
             IServiceCollection services = new ServiceCollection();
 
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<DependencyTracker>();
             services.Add(new ServiceDescriptor(typeof(ITrackedDependency), typeof(TrackedDependency), dependencyLifetime));
 
