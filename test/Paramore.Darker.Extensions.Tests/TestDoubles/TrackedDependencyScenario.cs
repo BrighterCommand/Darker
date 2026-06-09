@@ -31,12 +31,15 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
                     registry.Register<TrackedQuery, TrackedQuery.Result, TrackedQueryHandler>();
                     registry.Register<DecoratedTrackedQuery, DecoratedTrackedQuery.Result, DecoratedTrackedQueryHandler>();
                     registry.Register<ConcurrentTrackedQuery, ConcurrentTrackedQuery.Result, ConcurrentTrackedQueryHandler>();
+                    registry.Register<ThrowingTrackedQuery, ThrowingTrackedQuery.Result, ThrowingTrackedQueryHandler>();
                 })
                 .AddAsyncHandlers(registry =>
                 {
                     registry.Register<TrackedQuery, TrackedQuery.Result, TrackedQueryHandlerAsync>();
                     registry.Register<DecoratedTrackedQuery, DecoratedTrackedQuery.Result, DecoratedTrackedQueryHandlerAsync>();
                     registry.Register<ConcurrentTrackedQuery, ConcurrentTrackedQuery.Result, ConcurrentTrackedQueryHandlerAsync>();
+                    registry.Register<ThrowingTrackedQuery, ThrowingTrackedQuery.Result, ThrowingTrackedQueryHandlerAsync>();
+                    registry.Register<CancellingTrackedQuery, CancellingTrackedQuery.Result, CancellingTrackedQueryHandlerAsync>();
                 });
 
             builder.RegisterDecorator(typeof(TrackedDecorator<,>));

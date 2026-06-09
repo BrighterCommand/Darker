@@ -260,7 +260,15 @@
       AC6/FR6/NFR3; if the singleton cache is not thread-safe, this test (or a focused variant)
       drives that fix.
 
-- [ ] **B6 — TEST + IMPLEMENT: Per-query scope is disposed on the failure path — throw and cancellation (AC7 / FR9)**
+- [x] **B6 — TEST + IMPLEMENT: Per-query scope is disposed on the failure path — throw and cancellation (AC7 / FR9)**
+  - **Outcome (acceptance lock, no production change):** green on this branch — `PipelineBuilder` is
+    disposed in `QueryProcessor`'s `using` *finally* (S4), so the per-query lifetime (and its child
+    scope) is disposed even when the handler throws or the async pipeline is cancelled. New doubles
+    `ThrowingTrackedQuery` (sync + async handlers that record the dependency then throw) and
+    `CancellingTrackedQuery` (async handler that records then observes a cancelled token). `[Theory]`
+    over `Transient` **and** `Scoped`; covers throw-sync, throw-async, cancel-async (6 cases ×
+    2 TFMs). Verified **teeth**: master-like root resolution leaves the dependency undisposed on the
+    failure path → all 6 fail; child-scope resolution passes. Test + test-infra only.
   - **USE COMMAND**: `/test-first when handler throws or async is cancelled should still dispose the per-query dependency`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_pipeline_fails_should_dispose_dependency.cs`
