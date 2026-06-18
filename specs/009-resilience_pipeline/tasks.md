@@ -27,7 +27,7 @@
 
 ## Phase 0 — Structural (Tidy First, no behaviour change)
 
-- [ ] **S1 — STRUCTURAL: Add resilience members to `IQueryContext` and `QueryContext`**
+- [x] **S1 — STRUCTURAL: Add resilience members to `IQueryContext` and `QueryContext`**
   - **USE COMMAND**: `/tidy-first add ResiliencePipeline provider and ResilienceContext members to IQueryContext`
   - Add to `src/Paramore.Darker/IQueryContext.cs`:
     - `ResiliencePipelineProvider<string> ResiliencePipeline { get; set; }` (FR1/RD1 — narrow **provider**, not the registry)
