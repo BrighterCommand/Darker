@@ -70,7 +70,7 @@
 
 ## Phase 2 — Attributes (behavioural)
 
-- [ ] **B2 — TEST + IMPLEMENT: `[UseResiliencePipeline]` / `[UseResiliencePipelineAsync]` carry the key + type-scope flag and resolve the decorator type**
+- [x] **B2 — TEST + IMPLEMENT: `[UseResiliencePipeline]` / `[UseResiliencePipelineAsync]` carry the key + type-scope flag and resolve the decorator type**
   - **USE COMMAND**: `/test-first when use resilience pipeline attribute used should return policy and useTypePipeline params and the matching decorator type`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_use_resilience_pipeline_attribute_used_should_return_params_and_decorator_type.cs`
