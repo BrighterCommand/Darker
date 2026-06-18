@@ -34,6 +34,9 @@ namespace Paramore.Darker.Policies.Handlers
     public class UseResiliencePipelineHandler<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
+        private string _policy;
+        private bool _useTypePipeline;
+
         /// <summary>
         /// The ambient query context, supplying the resilience pipeline provider and context.
         /// </summary>
@@ -45,7 +48,8 @@ namespace Paramore.Darker.Policies.Handlers
         /// <param name="attributeParams">The parameters supplied by the attribute.</param>
         public void InitializeFromAttributeParams(object[] attributeParams)
         {
-            throw new NotImplementedException();
+            _policy = (string)attributeParams[0];
+            _useTypePipeline = (bool)attributeParams[1];
         }
 
         /// <summary>
@@ -57,7 +61,7 @@ namespace Paramore.Darker.Policies.Handlers
         /// <returns>The result of executing the query through the pipeline.</returns>
         public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
-            throw new NotImplementedException();
+            return Context.ResiliencePipeline.GetPipeline(_policy).Execute(() => next(query));
         }
     }
 }

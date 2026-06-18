@@ -90,7 +90,7 @@
 
 ## Phase 3 — Sync decorator (behavioural)
 
-- [ ] **B3 — TEST + IMPLEMENT: Sync decorator executes `next` through the named (shared) pipeline (AC1, sync)**
+- [x] **B3 — TEST + IMPLEMENT: Sync decorator executes `next` through the named (shared) pipeline (AC1, sync)**
   - **USE COMMAND**: `/test-first when sync resilience pipeline decorator executes should run next through the named pipeline from the context provider`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_sync_resilience_pipeline_decorator_executes_should_run_next_through_named_pipeline.cs`
