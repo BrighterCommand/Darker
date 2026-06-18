@@ -104,7 +104,7 @@
     - `Execute`: `Context.ResiliencePipeline.GetPipeline(_policy).Execute(() => next(query))` (type-scoped branch added in B10)
   - Depends on: S1, B2 (B2 created the handler shell).
 
-- [ ] **B4 — TEST + IMPLEMENT: Sync decorator validates configuration at build time (AC5, sync)**
+- [x] **B4 — TEST + IMPLEMENT: Sync decorator validates configuration at build time (AC5, sync)**
   - **USE COMMAND**: `/test-first when sync resilience pipeline decorator initialized with missing provider or unregistered key should throw ConfigurationException`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_sync_resilience_pipeline_decorator_misconfigured_should_throw_ConfigurationException.cs`
