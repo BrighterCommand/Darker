@@ -37,7 +37,7 @@
   - No behaviour: nothing reads the members yet. **Verify legacy tests stay green** (`dotnet test Darker.Filter.slnf -c Release`).
   - Depends on: none.
 
-- [ ] **S2 — STRUCTURAL: Add resilience-pipeline default-key constants**
+- [x] **S2 — STRUCTURAL: Add resilience-pipeline default-key constants**
   - **USE COMMAND**: `/tidy-first add RetryPipelineName and CircuitBreakerPipelineName constants`
   - In `src/Paramore.Darker/Policies/Constants.cs` add two constants distinct from the legacy
     `RetryPolicyName` / `CircuitBreakerPolicyName` (RD4), e.g. `RetryPipelineName = "Darker.RetryPipeline"`
