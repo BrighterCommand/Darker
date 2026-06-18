@@ -120,7 +120,7 @@
 
 ## Phase 4 — Async decorator + context propagation (behavioural)
 
-- [ ] **B5 — TEST + IMPLEMENT: Async decorator runs `next` through the pipeline and honours the caller's token when no `ResilienceContext` (AC1 async, AC7)**
+- [x] **B5 — TEST + IMPLEMENT: Async decorator runs `next` through the pipeline and honours the caller's token when no `ResilienceContext` (AC1 async, AC7)**
   - **USE COMMAND**: `/test-first when async resilience pipeline decorator executes without a resilience context should run next through the pipeline and honour the cancellation token`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_async_resilience_pipeline_decorator_executes_without_context_should_honour_cancellation_token.cs`

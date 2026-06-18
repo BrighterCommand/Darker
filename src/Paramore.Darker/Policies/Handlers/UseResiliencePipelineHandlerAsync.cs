@@ -24,6 +24,7 @@ THE SOFTWARE. */
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly;
 
 namespace Paramore.Darker.Policies.Handlers
 {
@@ -36,6 +37,9 @@ namespace Paramore.Darker.Policies.Handlers
     public class UseResiliencePipelineHandlerAsync<TQuery, TResult> : IQueryHandlerDecoratorAsync<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {
+        private string _policy;
+        private bool _useTypePipeline;
+
         /// <summary>
         /// The ambient query context, supplying the resilience pipeline provider and context.
         /// </summary>
@@ -47,7 +51,8 @@ namespace Paramore.Darker.Policies.Handlers
         /// <param name="attributeParams">The parameters supplied by the attribute.</param>
         public void InitializeFromAttributeParams(object[] attributeParams)
         {
-            throw new NotImplementedException();
+            _policy = (string)attributeParams[0];
+            _useTypePipeline = (bool)attributeParams[1];
         }
 
         /// <summary>
@@ -58,12 +63,16 @@ namespace Paramore.Darker.Policies.Handlers
         /// <param name="fallback">The fallback step in the pipeline.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>The result of executing the query through the pipeline.</returns>
-        public Task<TResult> ExecuteAsync(TQuery query,
+        public async Task<TResult> ExecuteAsync(TQuery query,
             Func<TQuery, CancellationToken, Task<TResult>> next,
             Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var pipeline = Context.ResiliencePipeline.GetPipeline(_policy);
+
+            return await pipeline
+                .ExecuteAsync(ct => new ValueTask<TResult>(next(query, ct)), cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }
