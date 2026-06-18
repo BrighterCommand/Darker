@@ -23,11 +23,13 @@ namespace Paramore.Darker
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
         private readonly IPolicyRegistry<string> _policyRegistry;
+        private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider;
 
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IQueryContextFactory queryContextFactory,
-            IPolicyRegistry<string> policyRegistry = null)
+            IPolicyRegistry<string> policyRegistry = null,
+            ResiliencePipelineProvider<string> resiliencePipelineProvider = null)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -42,6 +44,7 @@ namespace Paramore.Darker
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _policyRegistry = policyRegistry;
+            _resiliencePipelineProvider = resiliencePipelineProvider;
         }
 
         public TResult Execute<TResult>(IQuery<TResult> query, IQueryContext queryContext = null)
@@ -103,6 +106,8 @@ namespace Paramore.Darker
         {
             if (queryContext.Policies == null)
                 queryContext.Policies = _policyRegistry;
+            if (queryContext.ResiliencePipeline == null)
+                queryContext.ResiliencePipeline = _resiliencePipelineProvider;
         }
     }
 }

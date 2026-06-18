@@ -49,7 +49,7 @@
 
 ## Phase 1 — Processor populates the context (behavioural)
 
-- [ ] **B1 — TEST + IMPLEMENT: QueryProcessor sets the resilience provider on the context when absent, preserves a caller-supplied one**
+- [x] **B1 — TEST + IMPLEMENT: QueryProcessor sets the resilience provider on the context when absent, preserves a caller-supplied one**
   - **USE COMMAND**: `/test-first when query processor built with a resilience pipeline registry should set the provider on the query context fill-if-absent`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test files (mirror the legacy pair `When_query_context_has_no_policies_should_set_policies_from_processor.cs` and `When_caller_provides_context_with_policies_should_preserve_caller_policies.cs`):
