@@ -171,7 +171,7 @@
   - Implementation should: require no new production code beyond B3/B5 if those are correct; if a gap surfaces, fix the decorator. Use a counting test-double handler in `TestDoubles/`.
   - Depends on: B3, B5.
 
-- [ ] **B9 — TEST + IMPLEMENT: A circuit-breaker pipeline opens after the configured failures, sync and async (AC3)**
+- [x] **B9 — TEST + IMPLEMENT: A circuit-breaker pipeline opens after the configured failures, sync and async (AC3)**
   - **USE COMMAND**: `/test-first when a circuit breaker resilience pipeline reaches its failure threshold should open the circuit`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test files:
