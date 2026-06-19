@@ -70,6 +70,14 @@ namespace Paramore.Darker.Policies.Handlers
         {
             var pipeline = Context.ResiliencePipeline.GetPipeline(_policy);
 
+            var resilienceContext = Context.ResilienceContext;
+            if (resilienceContext != null)
+            {
+                return await pipeline
+                    .ExecuteAsync(ctx => new ValueTask<TResult>(next(query, ctx.CancellationToken)), resilienceContext)
+                    .ConfigureAwait(false);
+            }
+
             return await pipeline
                 .ExecuteAsync(ct => new ValueTask<TResult>(next(query, ct)), cancellationToken)
                 .ConfigureAwait(false);

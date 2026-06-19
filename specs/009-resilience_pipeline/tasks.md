@@ -134,7 +134,7 @@
     - Same build-time validation as B4 (provider null + unregistered key via `TryGetPipeline`)
   - Depends on: S1, B2 (B2 created the handler shell).
 
-- [ ] **B6 — TEST + IMPLEMENT: Async decorator executes through a caller-supplied `ResilienceContext` (AC8)**
+- [x] **B6 — TEST + IMPLEMENT: Async decorator executes through a caller-supplied `ResilienceContext` (AC8)**
   - **USE COMMAND**: `/test-first when async resilience pipeline decorator executes with a resilience context should pass it to the pipeline and use its cancellation token`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_async_resilience_pipeline_decorator_executes_with_context_should_use_supplied_context.cs`
