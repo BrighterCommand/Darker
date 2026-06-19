@@ -159,7 +159,7 @@
 
 ## Phase 5 — Real resilience behaviours (behavioural)
 
-- [ ] **B8 — TEST + IMPLEMENT: A retry pipeline retries a transiently-failing handler to success, sync and async (AC2)**
+- [x] **B8 — TEST + IMPLEMENT: A retry pipeline retries a transiently-failing handler to success, sync and async (AC2)**
   - **USE COMMAND**: `/test-first when a retry resilience pipeline wraps a transiently failing handler should retry and ultimately succeed`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test files:
