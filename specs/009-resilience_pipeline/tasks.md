@@ -146,7 +146,7 @@
     - Non-null-context branch: execute the `ResilienceContext` overload of `ExecuteAsync`, passing the supplied context; mirror Brighter's `ResilienceExceptionPolicyHandlerAsync` branch on `Context?.ResilienceContext != null`
   - Depends on: B5.
 
-- [ ] **B7 — TEST + IMPLEMENT: Async decorator build-time validation (AC5, async)**
+- [x] **B7 — TEST + IMPLEMENT: Async decorator build-time validation (AC5, async)**
   - **USE COMMAND**: `/test-first when async resilience pipeline decorator initialized with missing provider or unregistered key should throw ConfigurationException`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_async_resilience_pipeline_decorator_misconfigured_should_throw_ConfigurationException.cs`

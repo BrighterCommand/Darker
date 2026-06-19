@@ -24,6 +24,7 @@ THE SOFTWARE. */
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Paramore.Darker.Exceptions;
 using Polly;
 
 namespace Paramore.Darker.Policies.Handlers
@@ -53,6 +54,12 @@ namespace Paramore.Darker.Policies.Handlers
         {
             _policy = (string)attributeParams[0];
             _useTypePipeline = (bool)attributeParams[1];
+
+            var provider = Context.ResiliencePipeline ?? throw new ConfigurationException(
+                "No resilience pipeline provider is configured. Set a resilience pipeline registry on the query context or pass one to the QueryProcessor constructor.");
+
+            if (!provider.TryGetPipeline(_policy, out _))
+                throw new ConfigurationException($"Resilience pipeline does not exist in the registry: {_policy}");
         }
 
         /// <summary>
