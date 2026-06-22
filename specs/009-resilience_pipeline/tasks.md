@@ -187,7 +187,7 @@
 
 ## Phase 6 — Type-scoped pipelines (behavioural)
 
-- [ ] **B10 — TEST + IMPLEMENT: `UseTypePipeline` gives independent breaker state per result type and shared state within a result type (AC4, FR8)**
+- [x] **B10 — TEST + IMPLEMENT: `UseTypePipeline` gives independent breaker state per result type and shared state within a result type (AC4, FR8)**
   - **USE COMMAND**: `/test-first when useTypePipeline is set should resolve a pipeline per result type giving independent state across result types and shared state within one`
   - Test location: `test/Paramore.Darker.Core.Tests/Decorators`
   - Test file: `When_use_type_pipeline_set_should_isolate_breaker_state_per_result_type.cs`

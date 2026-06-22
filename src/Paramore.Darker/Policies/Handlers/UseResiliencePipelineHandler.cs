@@ -55,7 +55,11 @@ namespace Paramore.Darker.Policies.Handlers
             var provider = Context.ResiliencePipeline ?? throw new ConfigurationException(
                 "No resilience pipeline provider is configured. Set a resilience pipeline registry on the query context or pass one to the QueryProcessor constructor.");
 
-            if (!provider.TryGetPipeline(_policy, out _))
+            var resolved = _useTypePipeline
+                ? provider.TryGetPipeline<TResult>(_policy, out _)
+                : provider.TryGetPipeline(_policy, out _);
+
+            if (!resolved)
                 throw new ConfigurationException($"Resilience pipeline does not exist in the registry: {_policy}");
         }
 
@@ -68,7 +72,9 @@ namespace Paramore.Darker.Policies.Handlers
         /// <returns>The result of executing the query through the pipeline.</returns>
         public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
         {
-            return Context.ResiliencePipeline.GetPipeline(_policy).Execute(() => next(query));
+            return _useTypePipeline
+                ? Context.ResiliencePipeline.GetPipeline<TResult>(_policy).Execute(() => next(query))
+                : Context.ResiliencePipeline.GetPipeline(_policy).Execute(() => next(query));
         }
     }
 }

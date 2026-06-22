@@ -58,7 +58,11 @@ namespace Paramore.Darker.Policies.Handlers
             var provider = Context.ResiliencePipeline ?? throw new ConfigurationException(
                 "No resilience pipeline provider is configured. Set a resilience pipeline registry on the query context or pass one to the QueryProcessor constructor.");
 
-            if (!provider.TryGetPipeline(_policy, out _))
+            var resolved = _useTypePipeline
+                ? provider.TryGetPipeline<TResult>(_policy, out _)
+                : provider.TryGetPipeline(_policy, out _);
+
+            if (!resolved)
                 throw new ConfigurationException($"Resilience pipeline does not exist in the registry: {_policy}");
         }
 
@@ -75,9 +79,24 @@ namespace Paramore.Darker.Policies.Handlers
             Func<TQuery, CancellationToken, Task<TResult>> fallback,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var pipeline = Context.ResiliencePipeline.GetPipeline(_policy);
-
             var resilienceContext = Context.ResilienceContext;
+
+            if (_useTypePipeline)
+            {
+                var typedPipeline = Context.ResiliencePipeline.GetPipeline<TResult>(_policy);
+                if (resilienceContext != null)
+                {
+                    return await typedPipeline
+                        .ExecuteAsync(ctx => new ValueTask<TResult>(next(query, ctx.CancellationToken)), resilienceContext)
+                        .ConfigureAwait(false);
+                }
+
+                return await typedPipeline
+                    .ExecuteAsync(ct => new ValueTask<TResult>(next(query, ct)), cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            var pipeline = Context.ResiliencePipeline.GetPipeline(_policy);
             if (resilienceContext != null)
             {
                 return await pipeline
