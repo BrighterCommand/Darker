@@ -217,7 +217,7 @@
     - Add `ResiliencePipelines(this IBuildTheQueryProcessor, ResiliencePipelineRegistry<string>)` and `AddResiliencePipelines<TBuilder>(...)` to `src/Paramore.Darker/Policies/QueryProcessorBuilderExtensions.cs` (mirror `Policies(...)` / `AddPolicies(...)`); register `UseResiliencePipelineHandler<,>` + `…HandlerAsync<,>`; set `ResiliencePipelineRegistry`; guard null with `ArgumentNullException`; **omit** the `Constants` content check (FR4)
   - Depends on: B1, B3, B5.
 
-- [ ] **B12 — TEST + IMPLEMENT: `DefaultResiliencePipelines()` registers a default retry + circuit-breaker pipeline under the new keys, resolvable and executable (AC6, builder side)**
+- [x] **B12 — TEST + IMPLEMENT: `DefaultResiliencePipelines()` registers a default retry + circuit-breaker pipeline under the new keys, resolvable and executable (AC6, builder side)**
   - **USE COMMAND**: `/test-first when DefaultResiliencePipelines is called should register default retry and circuit breaker pipelines under their well-known keys`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_DefaultResiliencePipelines_called_should_register_resolvable_default_pipelines.cs`
