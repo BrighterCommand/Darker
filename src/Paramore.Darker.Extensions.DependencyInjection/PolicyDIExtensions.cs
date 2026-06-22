@@ -15,6 +15,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return builder;
         }
 
+        public static IDarkerHandlerBuilder AddResiliencePipelines(this IDarkerHandlerBuilder builder, ResiliencePipelineRegistry<string> resiliencePipelineRegistry)
+        {
+            QueryProcessorBuilderExtensions.AddResiliencePipelines(builder, resiliencePipelineRegistry);
+            builder.Services.AddSingleton<ResiliencePipelineProvider<string>>(resiliencePipelineRegistry);
+            return builder;
+        }
+
         public static IDarkerHandlerBuilder AddDefaultPolicies(this IDarkerHandlerBuilder builder)
         {
             var defaultRetryPolicy = Policy

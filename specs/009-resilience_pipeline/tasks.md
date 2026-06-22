@@ -234,7 +234,7 @@
 
 ## Phase 8 — DI registration + defaults (behavioural)
 
-- [ ] **B13 — TEST + IMPLEMENT: DI `AddResiliencePipelines(registry)` wires the registry + decorators and executes; `null` throws (AC11)**
+- [x] **B13 — TEST + IMPLEMENT: DI `AddResiliencePipelines(registry)` wires the registry + decorators and executes; `null` throws (AC11)**
   - **USE COMMAND**: `/test-first when AddResiliencePipelines is called should register the provider and decorators and reject a null registry`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_AddResiliencePipelines_called_should_register_provider_and_decorators.cs`
