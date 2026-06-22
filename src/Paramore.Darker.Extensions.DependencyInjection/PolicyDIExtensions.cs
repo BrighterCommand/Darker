@@ -22,6 +22,11 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return builder;
         }
 
+        public static IDarkerHandlerBuilder AddDefaultResiliencePipelines(this IDarkerHandlerBuilder builder)
+        {
+            return AddResiliencePipelines(builder, QueryProcessorBuilderExtensions.DefaultResiliencePipelineRegistry());
+        }
+
         public static IDarkerHandlerBuilder AddDefaultPolicies(this IDarkerHandlerBuilder builder)
         {
             var defaultRetryPolicy = Policy

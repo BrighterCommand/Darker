@@ -248,7 +248,7 @@
     - **CRITICAL (Finding 1 of review-tasks.md): thread the provider into the processor.** The DI path constructs `QueryProcessor` in `ServiceCollectionExtensions.BuildQueryProcessor` (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs:43-49`), which resolves `IPolicyRegistry<string>` from the provider (`:43`) and passes it to the constructor (`:45-49`). Resolve `ResiliencePipelineProvider<string>` there the **same way** (`provider.GetService<ResiliencePipelineProvider<string>>()`) and pass it as the new `QueryProcessor` ctor parameter. Without this, `InitQueryContext` fills `Context.ResiliencePipeline` from a null field and the decorator's build-time validation throws "no provider configured" — AC11 would fail despite the service being registered.
   - Depends on: B11, B1 (B1 added the `QueryProcessor` ctor parameter this step feeds on the DI path).
 
-- [ ] **B14 — TEST + IMPLEMENT: DI `AddDefaultResiliencePipelines()` registers resolvable default pipelines (AC6, DI side)**
+- [x] **B14 — TEST + IMPLEMENT: DI `AddDefaultResiliencePipelines()` registers resolvable default pipelines (AC6, DI side)**
   - **USE COMMAND**: `/test-first when AddDefaultResiliencePipelines is called should register resolvable default retry and circuit breaker pipelines`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_AddDefaultResiliencePipelines_called_should_register_resolvable_default_pipelines.cs`
