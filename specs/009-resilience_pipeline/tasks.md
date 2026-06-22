@@ -204,7 +204,7 @@
 
 ## Phase 7 — Builder registration + defaults (behavioural)
 
-- [ ] **B11 — TEST + IMPLEMENT: Builder `ResiliencePipelines(registry)` wires the decorators and executes; `null` throws (AC10)**
+- [x] **B11 — TEST + IMPLEMENT: Builder `ResiliencePipelines(registry)` wires the decorators and executes; `null` throws (AC10)**
   - **USE COMMAND**: `/test-first when query processor builder configured with a resilience pipeline registry should register the decorators and reject a null registry`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_builder_configured_with_resilience_pipeline_registry_should_register_decorators.cs`

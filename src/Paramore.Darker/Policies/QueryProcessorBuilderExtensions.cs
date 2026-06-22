@@ -39,6 +39,30 @@ namespace Paramore.Darker.Policies
             return builder;
         }
 
+        public static IBuildTheQueryProcessor ResiliencePipelines(this IBuildTheQueryProcessor builder, ResiliencePipelineRegistry<string> resiliencePipelineRegistry)
+        {
+            var queryProcessorBuilder = builder as QueryProcessorBuilder;
+            if (queryProcessorBuilder == null)
+                throw new NotSupportedException($"This extension method only supports the default {nameof(QueryProcessorBuilder)}.");
+
+            AddResiliencePipelines(queryProcessorBuilder, resiliencePipelineRegistry);
+            queryProcessorBuilder.ResiliencePipelineRegistry = resiliencePipelineRegistry;
+
+            return queryProcessorBuilder;
+        }
+
+        public static TBuilder AddResiliencePipelines<TBuilder>(this TBuilder builder, ResiliencePipelineRegistry<string> resiliencePipelineRegistry)
+            where TBuilder : IQueryProcessorExtensionBuilder
+        {
+            if (resiliencePipelineRegistry == null)
+                throw new ArgumentNullException(nameof(resiliencePipelineRegistry));
+
+            builder.RegisterDecorator(typeof(UseResiliencePipelineHandler<,>));
+            builder.RegisterDecorator(typeof(UseResiliencePipelineHandlerAsync<,>));
+
+            return builder;
+        }
+
         public static IBuildTheQueryProcessor DefaultPolicies(this IBuildTheQueryProcessor builder)
         {
             var defaultRetryPolicy = Policy
