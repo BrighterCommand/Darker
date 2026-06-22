@@ -261,7 +261,7 @@
 
 ## Phase 9 — Regression, parity, and docs (verification)
 
-- [ ] **B15 — VERIFY: Legacy path unchanged + sync/async parity + DoD**
+- [x] **B15 — VERIFY: Legacy path unchanged + sync/async parity + DoD**
   - Not a `/test-first` task — a verification gate over the completed work.
   - Verify:
     - All pre-existing legacy-policy tests (`When_retryable_decorator_*`, `*_policies_*`, `FallbackPolicyTests`, `When_AddDefaultPolicies_*`) pass **unchanged** (AC9 / NFR1) — no edits to legacy files

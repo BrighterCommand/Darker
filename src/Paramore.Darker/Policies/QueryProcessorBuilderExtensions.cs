@@ -41,6 +41,13 @@ namespace Paramore.Darker.Policies
             return builder;
         }
 
+        /// <summary>
+        /// Registers the resilience pipeline decorators and sets the supplied registry on the builder so
+        /// it is threaded onto the query context as the resilience pipeline provider.
+        /// </summary>
+        /// <param name="builder">The query processor builder.</param>
+        /// <param name="resiliencePipelineRegistry">The registry of named resilience pipelines.</param>
+        /// <returns>The builder, for chaining.</returns>
         public static IBuildTheQueryProcessor ResiliencePipelines(this IBuildTheQueryProcessor builder, ResiliencePipelineRegistry<string> resiliencePipelineRegistry)
         {
             var queryProcessorBuilder = builder as QueryProcessorBuilder;
@@ -53,6 +60,15 @@ namespace Paramore.Darker.Policies
             return queryProcessorBuilder;
         }
 
+        /// <summary>
+        /// Registers the synchronous and asynchronous resilience pipeline decorators on the builder.
+        /// Unlike the legacy policy registration, no registry content check is performed (FR4).
+        /// </summary>
+        /// <typeparam name="TBuilder">The extension builder type.</typeparam>
+        /// <param name="builder">The extension builder.</param>
+        /// <param name="resiliencePipelineRegistry">The registry of named resilience pipelines; must not be null.</param>
+        /// <returns>The builder, for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="resiliencePipelineRegistry"/> is null.</exception>
         public static TBuilder AddResiliencePipelines<TBuilder>(this TBuilder builder, ResiliencePipelineRegistry<string> resiliencePipelineRegistry)
             where TBuilder : IQueryProcessorExtensionBuilder
         {
@@ -65,11 +81,24 @@ namespace Paramore.Darker.Policies
             return builder;
         }
 
+        /// <summary>
+        /// Registers the resilience pipeline decorators with a built-in default retry and circuit-breaker
+        /// pipeline under their well-known keys.
+        /// </summary>
+        /// <param name="builder">The query processor builder.</param>
+        /// <returns>The builder, for chaining.</returns>
         public static IBuildTheQueryProcessor DefaultResiliencePipelines(this IBuildTheQueryProcessor builder)
         {
             return ResiliencePipelines(builder, DefaultResiliencePipelineRegistry());
         }
 
+        /// <summary>
+        /// Registers the resilience pipeline decorators with a built-in default retry and circuit-breaker
+        /// pipeline under their well-known keys.
+        /// </summary>
+        /// <typeparam name="TBuilder">The extension builder type.</typeparam>
+        /// <param name="builder">The extension builder.</param>
+        /// <returns>The builder, for chaining.</returns>
         public static TBuilder AddDefaultResiliencePipelines<TBuilder>(this TBuilder builder)
             where TBuilder : IQueryProcessorExtensionBuilder
         {
