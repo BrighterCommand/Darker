@@ -10,6 +10,7 @@ namespace Paramore.Darker.Builder
         private IQueryContextFactory _queryContextFactory;
 
         public IPolicyRegistry<string> PolicyRegistry { get; set; }
+        public ResiliencePipelineRegistry<string> ResiliencePipelineRegistry { get; set; }
 
         private QueryProcessorBuilder()
         {
@@ -90,7 +91,7 @@ namespace Paramore.Darker.Builder
         public IQueryProcessor Build()
         {
             RegisterDefaultDecorators();
-            return new QueryProcessor(_handlerConfiguration, _queryContextFactory, policyRegistry: PolicyRegistry);
+            return new QueryProcessor(_handlerConfiguration, _queryContextFactory, policyRegistry: PolicyRegistry, resiliencePipelineProvider: ResiliencePipelineRegistry);
         }
 
         private void RegisterDefaultDecorators()
