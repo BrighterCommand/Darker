@@ -41,12 +41,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             var componentFactory = new ServiceProviderComponentFactory(provider, options.HandlerLifetime);
             var policyRegistry = provider.GetService<Polly.Registry.IPolicyRegistry<string>>();
+            var resiliencePipelineProvider = provider.GetService<Polly.Registry.ResiliencePipelineProvider<string>>();
 
             return new QueryProcessor(
                 new HandlerConfiguration(
                     handlerRegistry, componentFactory, decoratorRegistry, componentFactory,
                     handlerRegistryAsync, componentFactory, decoratorRegistry, componentFactory),
-                options.QueryContextFactory, policyRegistry);
+                options.QueryContextFactory, policyRegistry, resiliencePipelineProvider);
         }
     }
 }
