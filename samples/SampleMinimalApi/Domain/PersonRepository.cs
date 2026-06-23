@@ -34,9 +34,5 @@ public sealed class PersonRepository
 
         // fake some io-bound activity
         await Task.Delay(random.Next(50, 150), cancellationToken);
-
-        // there is a 10% chance that something goes terribly wrong
-        if (random.NextDouble() < 0.10)
-            throw new SomethingWentTerriblyWrongException();
     }
 }
