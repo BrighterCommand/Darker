@@ -19,7 +19,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 {
     [QueryLoggingAttributeAsync(1)]
     [FallbackPolicyAttributeAsync(2)]
-    [RetryableQueryAttributeAsync(3, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
+    [UseResiliencePipelineAttributeAsync(3, DarkerSettings.GeneralPipelineName)]
     public override async Task<string> ExecuteAsync(GetPersonNameQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -29,7 +29,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 
     public override Task<string> FallbackAsync(GetPersonNameQuery query, CancellationToken cancellationToken = default)
     {
-        // this will happen when the circuit is broken or when the id doesn't exist
+        // this will happen when the id doesn't exist
         return Task.FromResult("Linus Torvalds");
     }
 }

@@ -12,7 +12,7 @@ public sealed class GetPeopleQuery : IQuery<IReadOnlyDictionary<int, string>>
 public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IReadOnlyDictionary<int, string>>
 {
     [QueryLoggingAttributeAsync(1)]
-    [RetryableQueryAttributeAsync(2, DarkerSettings.SomethingWentTerriblyWrongCircuitBreakerName)]
+    [UseResiliencePipelineAttributeAsync(2, DarkerSettings.GeneralPipelineName)]
     public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(GetPeopleQuery query,
         CancellationToken cancellationToken = default)
     {
