@@ -32,7 +32,7 @@ jobs:
             8.0.x
             9.0.x
       - run: dotnet --info
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/cache@v5
