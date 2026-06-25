@@ -112,7 +112,7 @@ Because the handler's `Execute` method is invoked via `MethodInfo.Invoke()`, exc
 
 ### Negative
 
-- **Reflection cost**: Pipeline is built via reflection on every query execution (no caching of the pipeline structure)
+- **Reflection cost**: Pipeline is built via reflection on every query execution. Decorator *instances* are still resolved per query, but the cost of *discovering and ordering the decorator attributes* is now paid once per handler `Type` and memoised — see [ADR 0016](0016-pipeline-attribute-memoization.md). (Originally this read "no caching of the pipeline structure".)
 - **Runtime discovery**: Decorator configuration errors (missing registrations, wrong types) surface at runtime, not compile time
 - **Step number management**: Developers must manually coordinate step numbers; there is no compile-time check for conflicts or gaps
 
