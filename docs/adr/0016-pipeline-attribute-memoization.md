@@ -89,22 +89,30 @@ isolation.
   └──────────────────────────────────────────────────────────────────────────────┘
 
   Build(query)                              BuildAsync(query)
-    ResolveHandler                            ResolveHandlerAsync
+    (handlerType, handler) = ResolveHandler   (handlerType, handler) = ResolveHandlerAsync   ← live registered Type
     ValidateNoMismatchedAttributes  ← stays OUTSIDE the cache (runs every execution, throws on misconfig)
-    GetDecorators(executeMethod) ─┐           GetDecoratorsAsync(executeMethod) ─┐
+    GetDecorators(handlerType, method) ─┐     GetDecoratorsAsync(handlerType, method) ─┐
                                   │                                              │
        ┌──────────────────────────┘              ┌──────────────────────────────┘
        ▼  cache MISS                              ▼  cache HIT
-  GetCustomAttributes + OrderByDescending     return cached ordered attributes (no reflection)
+  GetCustomAttributes + OrderByDescending     return cached ordered attributes (no GetCustomAttributes reflection)
   TryAdd(handlerType, ordered)                       │
        │                                             │
        └─────────────► for each attribute: create fresh decorator instance,
                        set Context, InitializeFromAttributeParams(attr.GetAttributeParams())
 ```
 
+The cache key is the **live registered `handlerType`** returned by
+`ResolveHandler`/`ResolveHandlerAsync` (`PipelineBuilder.cs:59` / `:109`) — the concrete type
+the registry maps the query to, equivalent to Brighter's `implicitHandler.GetType()`. It is
+threaded into `GetDecorators`/`GetDecoratorsAsync`. It is **not** derived from
+`MethodInfo.DeclaringType`: when a handler inherits an attributed `Execute`/`ExecuteAsync`
+from a base class, `DeclaringType` is the *base* type, so two distinct derived handlers would
+collide on one cache slot — the #4192 defect by another route (see Alternatives).
+
 First execution for a handler `Type`: cache miss → reflect and order exactly as today →
-`TryAdd`. Subsequent executions: cache hit → reuse ordered attributes → skip
-`GetCustomAttributes` + sort. Either way, fresh decorator instances are built per query
+`TryAdd`. Subsequent executions: cache hit → reuse the cached ordered attributes → skip the
+`GetCustomAttributes` reflection. Either way, fresh decorator instances are built per query
 from the (cached or freshly read) attributes.
 
 ### Key Components
@@ -127,63 +135,91 @@ from the (cached or freshly read) attributes.
   first-write via `TryAdd`. Matches Brighter's choice. Concurrent first-time builds of the
   same type either both compute and one `TryAdd` wins (the loser's identical value is
   discarded) — no corruption, no exception.
-- **`Type` key** (not `Type.Name`, not `FullName`) — the regression fix for Brighter #4192;
-  also avoids `FullName` nullability/cross-assembly edge cases.
+- **Live registered `Type` as the key** (not `MethodInfo.DeclaringType`, not `Type.Name`, not
+  `FullName`) — the concrete handler type from the registry. This is the regression fix for
+  Brighter #4192 and matches Brighter's `implicitHandler.GetType()`. `DeclaringType` is
+  rejected because inherited Execute methods would key derived handlers by their shared base
+  (a fresh collision); `Type.Name`/`FullName` are rejected for the original #4192 collision
+  and `FullName` nullability/cross-assembly edge cases.
 - **`IOrderedEnumerable<…>` as the cached value** — mirrors Brighter's memento type exactly
   (`s_preAttributesMemento` / `s_postAttributesMemento` are
   `ConcurrentDictionary<Type, IOrderedEnumerable<RequestHandlerAttribute>>`). The cached
   value is the result of `GetCustomAttributes(...).Cast<…>().OrderByDescending(attr => attr.Step)`
-  stored directly — without the trailing `.ToList()`. This keeps the two codebases'
-  pipeline caches structurally identical. The per-query instance loop enumerates the cached
-  `IOrderedEnumerable` once per build, exactly as Brighter does.
+  stored directly — without the trailing `.ToList()` — keeping the two codebases' pipeline
+  caches structurally identical. **Note the saving this delivers**: `OrderByDescending`
+  returns a *deferred* query whose source is the already-materialised `GetCustomAttributes`
+  array captured at miss time. On a cache hit the expensive **`GetCustomAttributes`
+  reflection is elided** (the array is not re-read); enumerating the cached
+  `IOrderedEnumerable` per build does re-run the in-memory `OrderByDescending` over that small
+  captured array. Per issue #289 the reflection is the dominant cost, so eliding it is the
+  point; the per-build re-sort of a handful of attributes is negligible and is exactly
+  Brighter's behaviour. (If profiling ever shows the re-sort matters, materialising with
+  `.ToList()`/`.ToArray()` is a drop-in change — see Alternatives.)
 
 ### Implementation Approach
 
 1. Add two private static fields to `PipelineBuilder<TResult>`:
    - `s_syncAttributesMemento : ConcurrentDictionary<Type, IOrderedEnumerable<QueryHandlerAttribute>>`
    - `s_asyncAttributesMemento : ConcurrentDictionary<Type, IOrderedEnumerable<QueryHandlerAttributeAsync>>`
-2. In `GetDecorators` / `GetDecoratorsAsync`, derive `handlerType` from
-   `executeMethod.DeclaringType` (or thread the already-resolved `handlerType` in), then
-   `TryGetValue`; on miss, run the existing
+2. Change the signatures of `GetDecorators` / `GetDecoratorsAsync` to take the already-resolved
+   `handlerType` (returned by `ResolveHandler`/`ResolveHandlerAsync`) and pass it from
+   `Build`/`BuildAsync`. Use it as the cache key. Do **not** derive the key from
+   `executeMethod.DeclaringType`.
+3. In each method, `TryGetValue(handlerType, out var ordered)`; on miss run the existing
    `GetCustomAttributes(...).Cast<…>().OrderByDescending(attr => attr.Step)` (dropping the
-   current trailing `.ToList()`) and `TryAdd` the `IOrderedEnumerable`. The per-query
-   instance-creation loop that follows is unchanged.
-3. Add `public static void ClearPipelineCache()` clearing both dictionaries.
-4. Update ADR 0002's "reflection cost" negative (line 115) to cross-reference this ADR.
-5. Behaviour tests (collision guard for #4192 across both paths, concurrent first-build)
-   written test-first per the TDD workflow.
+   current trailing `.ToList()`) and `TryAdd(handlerType, ordered)`. This cache lookup/populate
+   sits at the **top** of the method — for the async path it is **above** the existing
+   `_decoratorFactoryAsync == null` early-return (`PipelineBuilder.cs:254`), so the attribute
+   memento is identical whether or not an async decorator factory is configured, and the
+   early-return still yields an empty decorator list. The per-query instance-creation loop that
+   follows is unchanged.
+4. Add `public static void ClearPipelineCache()` clearing both dictionaries.
+5. Update ADR 0002's "reflection cost" negative (line 115) to cross-reference this ADR.
+6. Behaviour tests (collision guard for #4192 across both paths — including a variant where
+   the two same-named handlers inherit a shared attributed Execute, guarding the `DeclaringType`
+   trap; concurrent first-build) written test-first per the TDD workflow.
 
 ## Consequences
 
 ### Positive
 
-- Repeated executions of the same handler type skip `GetCustomAttributes` and the attribute
-  sort — the per-query reflection cost named in issue #289 is eliminated.
+- Repeated executions of the same handler type skip the `GetCustomAttributes` reflection —
+  the per-query reflection cost named in issue #289 is eliminated. (The cached
+  `IOrderedEnumerable` is re-enumerated per build, so the in-memory sort of the small attribute
+  set still runs; this is negligible against the reflection it replaces, and matches Brighter.
+  See Technology Choices.)
 - No public API change for callers; `ClearPipelineCache()` is purely additive.
 - Conceptual parity with Brighter's `PipelineBuilder`, easing cross-codebase reasoning.
-- The Brighter #4192 defect is avoided by construction (key by `Type` from day one).
+- The Brighter #4192 defect is avoided by construction (key by the live registered `Type`,
+  never `Type.Name` or `MethodInfo.DeclaringType`, from day one).
 
 ### Negative
 
 - Introduces process-wide mutable static state (the caches). Mitigated by the determinism
   argument: content is invariant per `Type`, so the state cannot become "wrong".
-- A small amount of long-lived memory per distinct handler `Type` (one ordered attribute
-  list each). Bounded by the number of handler types, which is fixed at startup.
+- A small amount of long-lived memory per distinct handler `Type` (one ordered attribute set
+  each). Bounded by the number of handler types, which is fixed at startup.
 - Two parallel near-identical cache-and-discover code paths (sync/async) — an existing
   duplication in `PipelineBuilder` that this change slightly deepens.
 
 ### Risks and Mitigations
 
-- **Risk: simple-name cache collision (Brighter #4192).** Two handlers with the same simple
-  name in different namespaces collide and silently run the wrong decorators.
-  - **Mitigation**: key strictly by `Type`. A behaviour test registers two same-simple-name
-    handlers in different namespaces with different attributes and asserts each runs its own
+- **Risk: cache-key collision across distinct handlers (Brighter #4192 class).** Two handlers
+  collapsing to one cache slot silently run each other's decorators. Two routes: same simple
+  name in different namespaces (`Type.Name`), or two derived handlers sharing an inherited
+  attributed Execute (`MethodInfo.DeclaringType`).
+  - **Mitigation**: key strictly by the live registered handler `Type` — neither `Type.Name`
+    nor `DeclaringType`. Behaviour tests cover both routes: (a) two same-simple-name handlers in
+    different namespaces with different attributes; (b) two derived handlers inheriting a shared
+    attributed Execute with different attributes — each asserts each handler runs its own
     decorators (both sync and async).
 - **Risk: poisoned cache from a failed build.** A configuration error gets cached and masks
   the real fix.
   - **Mitigation**: only successful discoveries are cached (`TryAdd` runs after a successful
-    ordered read); `ValidateNoMismatchedAttributes` stays outside the cached region and
-    throws on every execution for a misconfigured handler.
+    ordered read). Every pre-discovery throw stays outside the cached region and re-surfaces on
+    every execution: missing handler registration / uncreatable handler (`ResolveHandler*`,
+    `PipelineBuilder.cs:176,183,195,202`), missing `ExecuteAsync` (`:115-116`), and mismatched
+    sync/async attributes (`ValidateNoMismatchedAttributes`, `:65` / `:118`).
 - **Risk: concurrency corruption on first-time population.**
   - **Mitigation**: `ConcurrentDictionary` with `TryAdd`; cached values are deterministic so
     a race merely recomputes identical data. A concurrency test exercises first-time
@@ -196,6 +232,11 @@ from the (cached or freshly read) attributes.
 
 - **Cache by `Type.Name` (Brighter's original form).** Rejected — this is exactly the
   Brighter #4192 defect: namespace collisions silently apply the wrong decorators.
+- **Key by `MethodInfo.DeclaringType` of the resolved Execute/ExecuteAsync.** Rejected — when a
+  handler inherits an attributed Execute from a base class, `DeclaringType` is the base, so two
+  distinct derived handlers collide on one slot: a fresh instance of the #4192 class of bug.
+  The live registered handler `Type` (already resolved by `ResolveHandler*`) is the correct,
+  collision-free key and matches Brighter's `implicitHandler.GetType()`.
 - **Cache by `Type.FullName` (string).** Rejected — introduces nullability (`FullName` can be
   null for some constructed types) and cross-assembly edge cases for no benefit over the live
   `Type`, which is a perfect, collision-free key already in hand.

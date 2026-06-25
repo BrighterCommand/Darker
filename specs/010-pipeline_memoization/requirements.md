@@ -19,7 +19,7 @@ This is the query-side equivalent of the optimisation Brighter already implement
 
 ## Proposed Solution
 
-Follow Brighter's approach. On the **first** execution for a given handler type, Darker reflects over the handler exactly as it does today and caches the **ordered decorator attributes** in a static cache keyed by handler `Type`. On **subsequent** executions for the same handler type, Darker reuses the cached ordered attributes and skips the `GetCustomAttributes` + sort, building the pipeline by creating fresh handler and decorator **instances** and wiring them into the chain as it does today.
+Follow Brighter's approach. On the **first** execution for a given handler type, Darker reflects over the handler exactly as it does today and caches the **ordered decorator attributes** in a static cache keyed by handler `Type`. On **subsequent** executions for the same handler type, Darker reuses the cached ordered attributes and skips the `GetCustomAttributes` reflection (the in-memory sort over the small captured attribute array still re-runs per build, matching Brighter's `IOrderedEnumerable` memento — the reflection is the dominant cost per #289), building the pipeline by creating fresh handler and decorator **instances** and wiring them into the chain as it does today.
 
 From the developer's perspective nothing changes: the same queries return the same results, decorators run in the same order, exceptions surface the same way, and per-query handler/decorator lifecycle is unchanged. The only difference is reduced per-query reflection overhead.
 
