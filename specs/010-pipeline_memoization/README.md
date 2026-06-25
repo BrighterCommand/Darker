@@ -15,7 +15,7 @@ per-query. A pure performance optimisation with no observable behaviour change.
 ## Status Checklist
 
 - [x] Requirements (`/spec:requirements`)
-- [x] Design / ADR (`/spec:design`) — `docs/adr/0016-pipeline-attribute-memoization.md` (Proposed)
+- [x] Design / ADR (`/spec:design`) — `docs/adr/0016-pipeline-attribute-memoization.md` (Accepted)
 - [x] Adversarial Review — Round 1 FAIL (key-by-DeclaringType #4192 trap + 3 others), Round 2 PASS after fixes
 - [ ] Task Breakdown (`/spec:tasks`)
 - [ ] Implementation (`/spec:implement`)
@@ -25,5 +25,5 @@ per-query. A pure performance optimisation with no observable behaviour change.
 | Phase | File | Status |
 |-------|------|--------|
 | Requirements | `requirements.md` | ✅ Approved |
-| Design | `docs/adr/0016-pipeline-attribute-memoization.md` | 🟡 Proposed |
+| Design | `docs/adr/0016-pipeline-attribute-memoization.md` | ✅ Accepted |
 | Tasks | `tasks.md` | Not started |
