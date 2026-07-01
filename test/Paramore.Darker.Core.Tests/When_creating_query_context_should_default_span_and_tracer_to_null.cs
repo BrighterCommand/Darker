@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Paramore.Darker.Observability;
 using Shouldly;
@@ -48,7 +49,14 @@ namespace Paramore.Darker.Core.Tests
 
         private sealed class FakeTracer : IAmADarkerTracer
         {
-            public void Dispose() { }
+            public ActivitySource ActivitySource { get; } = new ActivitySource("fake");
+            public Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null,
+                InstrumentationOptions options = InstrumentationOptions.All) => null;
+            public Activity? CreateDbSpan(DbSpanInfo info, Activity? parentActivity,
+                InstrumentationOptions options = InstrumentationOptions.All) => null;
+            public void AddExceptionToSpan(Activity? span, Exception exception) { }
+            public void EndSpan(Activity? span) { }
+            public void Dispose() { ActivitySource.Dispose(); }
         }
     }
 }

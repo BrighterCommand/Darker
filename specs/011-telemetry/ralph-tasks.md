@@ -102,7 +102,7 @@
   - **References**: ADR 0017 §Key Components 8 (`DbSpanInfo` mirrors Brighter `BoxSpanInfo`); requirements FR12, RD3.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_db_span_info_should_carry_supplied_values"`
 
-- [ ] **Add `DarkerTracer` / `IAmADarkerTracer` skeleton owning the `ActivitySource`**
+- [x] **Add `DarkerTracer` / `IAmADarkerTracer` skeleton owning the `ActivitySource`**
   - **Behavior**: `DarkerTracer` owns one `ActivitySource` named `paramore.darker`; it is disposable and, because there is no listener in this test, `CreateQuerySpan` returns null (zero-overhead path).
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_tracer_without_listener_should_expose_source_and_return_null_span.cs`
   - **Test should verify**:
