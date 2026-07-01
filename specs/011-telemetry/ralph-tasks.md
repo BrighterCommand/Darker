@@ -30,7 +30,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_reading_semantic_conventions_should_expose_stable_attribute_keys"`
   - **References**: ADR 0017 §Key Components 4 (`DarkerSemanticConventions`); requirements FR1, FR6, FR8, FR10, NFR5.
 
-- [ ] **Add `InstrumentationOptions` `[Flags]` enum**
+- [x] **Add `InstrumentationOptions` `[Flags]` enum**
   - **Behavior**: An `InstrumentationOptions` flags enum names the attribute groups that may be emitted, with `All` being the union of every group.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_combining_instrumentation_options_should_expose_flag_groups.cs`
   - **Test should verify**:
