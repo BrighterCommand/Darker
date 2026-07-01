@@ -115,7 +115,7 @@
   - **References**: ADR 0017 §Key Components 1 (`IAmADarkerTracer`/`DarkerTracer`), §Technology Choices (`TimeProvider`, `HasListeners` guard); requirements FR1, NFR2. Brighter model `Paramore.Brighter/Observability/BrighterTracer.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_tracer_without_listener_should_expose_source_and_return_null_span"`
 
-- [ ] **`CreateQuerySpan` produces span with name/kind/parent**
+- [x] **`CreateQuerySpan` produces span with name/kind/parent**
   - **Behavior**: With a listener sampling AllData, `CreateQuerySpan` starts an `Internal` activity named `"<QueryType> query"`; when a parent activity is passed it nests under it, and when parent is null it uses ambient `Activity.Current`. The tracer sets `Activity.Current` to the new span.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_should_set_name_kind_and_parent.cs`
   - **Test should verify**:

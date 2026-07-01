@@ -45,8 +45,15 @@ public sealed class DarkerTracer : IAmADarkerTracer
         if (!ActivitySource.HasListeners())
             return null;
 
-        // Fuller span creation (attributes, kind, parenting) added in later tasks.
-        return null;
+        var activity = ActivitySource.StartActivity(
+            $"{query.GetType().Name} query",
+            ActivityKind.Internal,
+            parentActivity?.Id);
+
+        if (activity != null)
+            Activity.Current = activity;
+
+        return activity;
     }
 
     /// <inheritdoc />
