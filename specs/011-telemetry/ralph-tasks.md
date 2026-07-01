@@ -139,7 +139,7 @@
   - **References**: ADR 0017 §Key Components 1 (closed-generic id read), 4 (conventions); requirements FR6, FR6a, FR9, AC2. Read `src/Paramore.Darker/Observability/Query.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_information_should_tag_id_type_and_operation"`
 
-- [ ] **`CreateQuerySpan` records `query_body` only when `QueryBody` set**
+- [x] **`CreateQuerySpan` records `query_body` only when `QueryBody` set**
   - **Behavior**: When `options` includes `QueryBody`, the span carries `paramore.darker.query_body` = the query serialised as JSON using the runtime-type serializer; when the flag is absent, no body tag is emitted.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_body_should_serialise_runtime_type.cs`
   - **Test should verify**:

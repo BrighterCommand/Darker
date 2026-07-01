@@ -1,5 +1,10 @@
 using System;
 using System.Diagnostics;
+#if NET8_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Text.Json;
+using Paramore.Darker.Logging;
 
 namespace Paramore.Darker.Observability;
 
@@ -62,6 +67,9 @@ public sealed class DarkerTracer : IAmADarkerTracer
             activity.SetTag(DarkerSemanticConventions.Operation, "query");
         }
 
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryBody))
+            activity.SetTag(DarkerSemanticConventions.QueryBody, SerializeQuery(query));
+
         return activity;
     }
 
@@ -89,6 +97,21 @@ public sealed class DarkerTracer : IAmADarkerTracer
         if (span is null) return;
         // Fuller implementation (Ok status, Stop, restore Activity.Current) added in later tasks.
     }
+
+    // The pipeline closes CreateQuerySpan over IQuery<TResult> so the runtime-type overload is
+    // required: the generic Serialize<T>(value, options) overload would serialise the bare
+    // IQuery<TResult> interface and emit "{}". value.GetType() restores runtime-type behaviour and
+    // composes with a source-generated TypeInfoResolver under AOT.
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage(
+        "Trimming", "IL2026:RequiresUnreferencedCodeAttribute",
+        Justification = "Consumers supply their own JsonSerializerOptions. AOT/trim-safe usage is documented as the consumer responsibility (NFR2). Source-gen TypeInfoResolver is the supported escape hatch.")]
+    [UnconditionalSuppressMessage(
+        "AOT", "IL3050:RequiresDynamicCodeAttribute",
+        Justification = "Same as IL2026 — call site is unavoidable without erasing the public Serialize API. Consumers supply source-gen TypeInfoResolver for full AOT safety.")]
+#endif
+    private static string SerializeQuery<TResult>(IQuery<TResult> query) =>
+        JsonSerializer.Serialize(query, query.GetType(), QueryLoggingJsonOptions.Options);
 
     /// <summary>Disposes the underlying <see cref="System.Diagnostics.ActivitySource"/>.</summary>
     public void Dispose() => ActivitySource.Dispose();
