@@ -2,7 +2,7 @@
 
 **Spec ID:** 011-telemetry
 **Created:** 2026-07-01
-**Status:** Design approved — ADRs 0017 & 0018 Accepted; ready for task breakdown
+**Status:** Ralph tasks generated for ADR 0017 (25 tasks); ready for `/spec:ralph-implement`. Metrics (0018) tasks pending.
 
 ## Overview
 
@@ -29,8 +29,8 @@ are derived from spans via a `DarkerMetricsFromTracesProcessor` (RD4).
 - [x] Requirements (`/spec:requirements`) — ✅ approved
 - [x] Design / ADR (`/spec:design`) — ✅ approved: 0017 tracing+DB, 0018 metrics
 - [ ] Adversarial Review
-- [ ] Task Breakdown (`/spec:tasks`)
-- [ ] Implementation (`/spec:implement`)
+- [x] Task Breakdown — `ralph-tasks.md` generated for ADR 0017 (25 tasks, unattended path); 0018 metrics tasks pending
+- [ ] Implementation (`/spec:ralph-implement`)
 
 ## Documents
 
@@ -39,4 +39,4 @@ are derived from spans via a `DarkerMetricsFromTracesProcessor` (RD4).
 | Requirements | `requirements.md` | ✅ Approved |
 | Design | `docs/adr/0017-query-tracing-and-database-spans.md` | ✅ Accepted |
 | Design | `docs/adr/0018-metrics-from-query-traces.md` | ✅ Accepted |
-| Tasks | `tasks.md` | Not started |
+| Tasks | `ralph-tasks.md` | 📝 Generated (ADR 0017, 25 tasks); 0018 pending |
