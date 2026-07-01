@@ -42,7 +42,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_combining_instrumentation_options_should_expose_flag_groups"`
   - **References**: ADR 0017 §Key Components 3 (`InstrumentationOptions`); requirements FR5, FR9.
 
-- [ ] **Add `Query<TResult>` base class with defaulted-GUID `Id`**
+- [x] **Add `Query<TResult>` base class with defaulted-GUID `Id`**
   - **Behavior**: A query deriving from `Query<TResult>` and constructed with the parameterless ctor exposes a non-empty GUID string `Id` that is unique per instance.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_without_id_should_default_to_guid.cs`
   - **Test should verify**:
