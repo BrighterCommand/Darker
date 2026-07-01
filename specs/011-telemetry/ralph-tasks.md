@@ -65,7 +65,7 @@
   - **References**: ADR 0017 §Key Components 2 (`Query` base class); requirements FR6a, AC2a.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_with_explicit_id_should_use_supplied_id"`
 
-- [ ] **Surface `Span` and `Tracer` on `IQueryContext` (default null)**
+- [x] **Surface `Span` and `Tracer` on `IQueryContext` (default null)**
   - **Behavior**: `IQueryContext` gains nullable `Activity? Span` and `IAmADarkerTracer? Tracer` get/set properties; `QueryContext` defaults both to null so existing behaviour is unchanged. (This task also brings `System.Diagnostics.DiagnosticSource` into core so `Activity` is available.)
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_context_should_default_span_and_tracer_to_null.cs`
   - **Test should verify**:
