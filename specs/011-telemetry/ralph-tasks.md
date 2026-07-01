@@ -18,7 +18,7 @@
 
 ## Tasks
 
-- [ ] **Add `DarkerSemanticConventions` constants holder**
+- [x] **Add `DarkerSemanticConventions` constants holder**
   - **Behavior**: A static `DarkerSemanticConventions` class exposes the source name and all attribute/event key strings so a typo cannot silently break tracing.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_reading_semantic_conventions_should_expose_stable_attribute_keys.cs`
   - **Test should verify**:
