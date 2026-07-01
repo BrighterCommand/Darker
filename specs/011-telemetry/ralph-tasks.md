@@ -91,7 +91,7 @@
   - **References**: ADR 0017 §Key Components 8 (DB-span support, `DbSystem`); requirements FR12, RD3. OTel db.system: https://opentelemetry.io/docs/specs/semconv/db/database-spans/.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_mapping_db_system_should_return_otel_string"`
 
-- [ ] **Add `DbSpanInfo` record**
+- [x] **Add `DbSpanInfo` record**
   - **Behavior**: A `DbSpanInfo` record carries the attributes needed to shape a DB span: required system/name/operation plus optional table, server address, statement, user, and a free attribute bag.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_db_span_info_should_carry_supplied_values.cs`
   - **Test should verify**:
