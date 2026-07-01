@@ -53,6 +53,15 @@ public sealed class DarkerTracer : IAmADarkerTracer
         if (activity != null)
             Activity.Current = activity;
 
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryInformation))
+        {
+            var id = query is Query<TResult> q ? q.Id : null;
+            if (id != null)
+                activity.SetTag(DarkerSemanticConventions.QueryId, id);
+            activity.SetTag(DarkerSemanticConventions.QueryType, query.GetType().FullName);
+            activity.SetTag(DarkerSemanticConventions.Operation, "query");
+        }
+
         return activity;
     }
 

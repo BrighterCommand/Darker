@@ -127,7 +127,7 @@
   - **References**: ADR 0017 §Architecture Overview (span shape), §Key Components 1 (parenting); requirements FR2, FR3, AC1.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_should_set_name_kind_and_parent"`
 
-- [ ] **`CreateQuerySpan` records `QueryInformation` attributes**
+- [x] **`CreateQuerySpan` records `QueryInformation` attributes**
   - **Behavior**: When `options` includes `QueryInformation` and `Activity.IsAllDataRequested` is true, the span carries `paramore.darker.queryid` (from a `Query<TResult>.Id`, else absent), `paramore.darker.querytype` (full type name), and `paramore.darker.operation` (`"query"`).
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_information_should_tag_id_type_and_operation.cs`
   - **Test should verify**:
