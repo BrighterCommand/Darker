@@ -54,7 +54,7 @@
   - **References**: ADR 0017 §Key Components 2 (`Query` base class), §Alternatives (why not `IQuery`); requirements FR6a, RD1, AC2a. Read `src/Paramore.Darker/IQuery.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_without_id_should_default_to_guid"`
 
-- [ ] **Allow `Query<TResult>` to take an explicit id**
+- [x] **Allow `Query<TResult>` to take an explicit id**
   - **Behavior**: A query deriving from `Query<TResult>` constructed with `Query(string id)` exposes exactly that id instead of a generated GUID.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_with_explicit_id_should_use_supplied_id.cs`
   - **Test should verify**:
