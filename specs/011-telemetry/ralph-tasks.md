@@ -80,7 +80,7 @@
   - **References**: ADR 0017 §Key Components 5 (`IQueryContext` extension), §NFR4 dependency hygiene; requirements FR11, NFR1, NFR4. Read `src/Paramore.Darker/IQueryContext.cs`, `src/Paramore.Darker/QueryContext.cs`, `Directory.Packages.props`, `src/Paramore.Darker/Paramore.Darker.csproj`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_context_should_default_span_and_tracer_to_null"`
 
-- [ ] **Add `DbSystem` enum with OTel `db.system` string mapping**
+- [x] **Add `DbSystem` enum with OTel `db.system` string mapping**
   - **Behavior**: A `DbSystem` enum lists common OTel `db.system` values and maps each to its canonical `db.system` string, with an escape value for anything unlisted.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_mapping_db_system_should_return_otel_string.cs`
   - **Test should verify**:
