@@ -107,7 +107,8 @@ namespace Paramore.Darker
             return pipeline.Last();
         }
 
-        public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
+        public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext,
+            InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
@@ -130,10 +131,14 @@ namespace Paramore.Darker
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
+            // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
+            var span = queryContext.Span;
+
             var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
             {
                 (r, ct) =>
                 {
+                    DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: true, instrumentationOptions, isSink: true);
                     try
                     {
                         return (Task<TResult>)executeAsyncMethodInfo.Invoke(_handler, new object[] { r, ct });
@@ -155,7 +160,12 @@ namespace Paramore.Darker
                 _logger.LogDebug("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
-                pipeline.Add((r, ct) => decorator.ExecuteAsync(r, next, fallback, ct));
+                var decoratorName = decorator.GetType().Name;
+                pipeline.Add((r, ct) =>
+                {
+                    DarkerTracer.WriteQueryEvent(span, decoratorName, isAsync: true, instrumentationOptions);
+                    return decorator.ExecuteAsync(r, next, fallback, ct);
+                });
             }
 
             return pipeline.Last();

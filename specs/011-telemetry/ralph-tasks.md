@@ -249,7 +249,7 @@
   - **References**: ADR 0017 §Key Components 7 (`PipelineBuilder` changes), §Risks (double exception events, threading tracer via context); requirements FR10, FR10a, AC4. Read `src/Paramore.Darker/PipelineBuilder.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_building_sync_pipeline_with_span_should_write_event_per_step"`
 
-- [ ] **`PipelineBuilder.BuildAsync` weaves a step event per async decorator and the handler (sink)**
+- [x] **`PipelineBuilder.BuildAsync` weaves a step event per async decorator and the handler (sink)**
   - **Behavior**: The async `Func` chain writes one `WriteQueryEvent` per async decorator step and one for the handler with `isSink: true` and `handlertype == "async"`; with no span it is a pass-through.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_building_async_pipeline_with_span_should_write_event_per_step.cs`
   - **Test should verify**:
