@@ -144,6 +144,38 @@ public sealed class DarkerTracer : IAmADarkerTracer
         Activity.Current = previous;
     }
 
+    /// <summary>
+    /// Writes a pipeline step event onto <paramref name="span"/> recording the handler or
+    /// decorator name, whether it runs synchronously or asynchronously, and whether it is the
+    /// terminal sink handler. No-op when <paramref name="span"/> is <c>null</c>, when
+    /// <see cref="Activity.IsAllDataRequested"/> is <c>false</c>, or when
+    /// <paramref name="options"/> does not include
+    /// <see cref="InstrumentationOptions.QueryInformation"/>.
+    /// </summary>
+    /// <param name="span">The query span to record the event on; may be <c>null</c>.</param>
+    /// <param name="stepName">The handler or decorator type name used as the event name and <c>handlername</c> tag.</param>
+    /// <param name="isAsync"><c>true</c> emits <c>handlertype = "async"</c>; <c>false</c> emits <c>"sync"</c>.</param>
+    /// <param name="options">Instrumentation verbosity flags; the event is emitted only when <see cref="InstrumentationOptions.QueryInformation"/> is set.</param>
+    /// <param name="isSink"><c>true</c> marks this event as the terminal sink handler rather than a decorator.</param>
+    public static void WriteQueryEvent(Activity? span, string stepName, bool isAsync,
+        InstrumentationOptions options, bool isSink = false)
+    {
+        if (span?.IsAllDataRequested != true)
+            return;
+
+        if (!options.HasFlag(InstrumentationOptions.QueryInformation))
+            return;
+
+        var tags = new ActivityTagsCollection
+        {
+            { DarkerSemanticConventions.HandlerName, stepName },
+            { DarkerSemanticConventions.HandlerType, isAsync ? "async" : "sync" },
+            { DarkerSemanticConventions.IsSink, isSink },
+        };
+
+        span.AddEvent(new ActivityEvent(stepName, tags: tags));
+    }
+
     // The pipeline closes CreateQuerySpan over IQuery<TResult> so the runtime-type overload is
     // required: the generic Serialize<T>(value, options) overload would serialise the bare
     // IQuery<TResult> interface and emit "{}". value.GetType() restores runtime-type behaviour and

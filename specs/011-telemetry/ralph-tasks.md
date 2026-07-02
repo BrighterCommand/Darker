@@ -187,7 +187,7 @@
   - **References**: ADR 0017 §Key Components 1, §Risks (async `Activity.Current` leakage); requirements FR3, NFR3, AC6.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_ending_span_should_set_ok_and_restore_previous_current"`
 
-- [ ] **`DarkerTracer.WriteQueryEvent` static step-event writer**
+- [x] **`DarkerTracer.WriteQueryEvent` static step-event writer**
   - **Behavior**: The static `WriteQueryEvent(span, stepName, isAsync, options, isSink)` adds one `ActivityEvent` named after the step with tags `paramore.darker.handlername`, `paramore.darker.handlertype` (sync/async), and `paramore.darker.is_sink`; it is a no-op when the span is null or `QueryInformation` is not set.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_writing_query_event_should_add_event_with_handler_tags.cs`
   - **Test should verify**:
