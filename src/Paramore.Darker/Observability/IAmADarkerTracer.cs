@@ -17,9 +17,12 @@ public interface IAmADarkerTracer : IDisposable
     /// Creates a query span for the given query, parented to <paramref name="parentActivity"/>
     /// (or the ambient <c>Activity.Current</c> when null). Returns <c>null</c> when no
     /// <see cref="ActivityListener"/> is registered (zero-overhead path).
+    /// When <paramref name="options"/> includes <see cref="InstrumentationOptions.QueryContext"/> and
+    /// <paramref name="context"/> is non-null, entries in <see cref="IQueryContext.Bag"/> whose key
+    /// begins with <c>spancontext.</c> are copied onto the span as attributes.
     /// </summary>
     Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null,
-        InstrumentationOptions options = InstrumentationOptions.All);
+        IQueryContext? context = null, InstrumentationOptions options = InstrumentationOptions.All);
 
     /// <summary>
     /// Creates a child database span parented to <paramref name="parentActivity"/>.

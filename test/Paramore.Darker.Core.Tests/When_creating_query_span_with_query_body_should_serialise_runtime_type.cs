@@ -1,11 +1,18 @@
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Paramore.Darker.Core.Tests.TestDoubles;
+using Paramore.Darker.Logging;
 using Paramore.Darker.Observability;
 using Shouldly;
 using Xunit;
 
 namespace Paramore.Darker.Core.Tests
 {
+    // Joins the non-parallel QueryLoggingJsonOptions collection because CreateQuerySpan serialises
+    // the body through the process-global QueryLoggingJsonOptions.Options; being DisableParallelization
+    // this also serialises against the ActivitySource tracer tests (C5 test isolation).
+    [Collection("QueryLoggingJsonOptions")]
     public class When_creating_query_span_with_query_body_should_serialise_runtime_type
     {
         [Fact]
@@ -22,12 +29,22 @@ namespace Paramore.Darker.Core.Tests
             using var tracer = new DarkerTracer();
             var query = new QueryWithNameProperty("Alice");
 
-            // Act
-            var span = tracer.CreateQuerySpan(query, options: InstrumentationOptions.QueryBody);
-
-            // Assert
+            // Isolate the lock on a throwaway options instance so the shared default is never locked
+            // by this test's Serialize (C5); restore the original in finally.
+            var original = QueryLoggingJsonOptions.Options;
+            Activity? span = null;
             try
             {
+                QueryLoggingJsonOptions.Options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                    WriteIndented = false
+                };
+
+                // Act
+                span = tracer.CreateQuerySpan(query, options: InstrumentationOptions.QueryBody);
+
+                // Assert
                 span.ShouldNotBeNull();
                 span.IsAllDataRequested.ShouldBeTrue();
 
@@ -38,6 +55,7 @@ namespace Paramore.Darker.Core.Tests
             finally
             {
                 span?.Stop();
+                QueryLoggingJsonOptions.Options = original;
             }
         }
 

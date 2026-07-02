@@ -45,7 +45,7 @@ public sealed class DarkerTracer : IAmADarkerTracer
 
     /// <inheritdoc />
     public Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null,
-        InstrumentationOptions options = InstrumentationOptions.All)
+        IQueryContext? context = null, InstrumentationOptions options = InstrumentationOptions.All)
     {
         if (!ActivitySource.HasListeners())
             return null;
@@ -69,6 +69,15 @@ public sealed class DarkerTracer : IAmADarkerTracer
 
         if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryBody))
             activity.SetTag(DarkerSemanticConventions.QueryBody, SerializeQuery(query));
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryContext) && context != null)
+        {
+            foreach (var entry in context.Bag)
+            {
+                if (entry.Key.StartsWith(DarkerSemanticConventions.SpanContextPrefix))
+                    activity.SetTag(entry.Key, entry.Value?.ToString());
+            }
+        }
 
         return activity;
     }

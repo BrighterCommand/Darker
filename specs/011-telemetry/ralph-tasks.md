@@ -150,7 +150,7 @@
   - **References**: ADR 0017 §Technology Choices (existing serializer, runtime-type overload), ADR 0012; requirements FR7, FR9. Read `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecorator.cs` and `.../Logging/QueryLoggingJsonOptions.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_body_should_serialise_runtime_type"`
 
-- [ ] **`CreateQuerySpan` copies `spancontext.*` bag entries when `QueryContext` set**
+- [x] **`CreateQuerySpan` copies `spancontext.*` bag entries when `QueryContext` set**
   - **Behavior**: When `options` includes `QueryContext`, entries in a supplied `IQueryContext.Bag` whose key begins with `spancontext.` are copied onto the span as attributes; without the flag they are not.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_context_should_copy_spancontext_bag_entries.cs`
   - **Test should verify**:

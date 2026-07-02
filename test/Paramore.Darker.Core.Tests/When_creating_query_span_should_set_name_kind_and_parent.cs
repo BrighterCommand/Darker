@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Paramore.Darker.Core.Tests
 {
+    [Collection("DarkerActivitySource")]
     public class When_creating_query_span_should_set_name_kind_and_parent
     {
         [Fact]
@@ -23,7 +24,9 @@ namespace Paramore.Darker.Core.Tests
             var query = new SomeQuery();
 
             // Act
-            var span = tracer.CreateQuerySpan(query);
+            // Body-free options: this test asserts name/kind/parent only and must not serialise the
+            // query body (which would lock the process-global QueryLoggingJsonOptions.Options static).
+            var span = tracer.CreateQuerySpan(query, options: InstrumentationOptions.QueryInformation);
 
             // Assert
             try
@@ -54,7 +57,8 @@ namespace Paramore.Darker.Core.Tests
             using var parentActivity = new Activity("parent").Start();
 
             // Act
-            var span = tracer.CreateQuerySpan(query, parentActivity);
+            // Body-free options (see note above): assert parenting without locking the JSON static.
+            var span = tracer.CreateQuerySpan(query, parentActivity, options: InstrumentationOptions.QueryInformation);
 
             // Assert
             try
@@ -84,7 +88,9 @@ namespace Paramore.Darker.Core.Tests
             var query = new SomeQuery();
 
             // Act
-            var span = tracer.CreateQuerySpan(query);
+            // Body-free options: this test asserts name/kind/parent only and must not serialise the
+            // query body (which would lock the process-global QueryLoggingJsonOptions.Options static).
+            var span = tracer.CreateQuerySpan(query, options: InstrumentationOptions.QueryInformation);
 
             // Assert
             try

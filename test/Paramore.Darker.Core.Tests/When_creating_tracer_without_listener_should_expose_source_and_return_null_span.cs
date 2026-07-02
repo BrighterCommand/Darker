@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Paramore.Darker.Core.Tests
 {
+    [Collection("DarkerActivitySource")]
     public class When_creating_tracer_without_listener_should_expose_source_and_return_null_span
     {
         [Fact]

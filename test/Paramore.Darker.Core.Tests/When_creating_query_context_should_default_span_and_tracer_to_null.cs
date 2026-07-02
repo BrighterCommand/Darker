@@ -51,7 +51,7 @@ namespace Paramore.Darker.Core.Tests
         {
             public ActivitySource ActivitySource { get; } = new ActivitySource("fake");
             public Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null,
-                InstrumentationOptions options = InstrumentationOptions.All) => null;
+                IQueryContext? context = null, InstrumentationOptions options = InstrumentationOptions.All) => null;
             public Activity? CreateDbSpan(DbSpanInfo info, Activity? parentActivity,
                 InstrumentationOptions options = InstrumentationOptions.All) => null;
             public void AddExceptionToSpan(Activity? span, Exception exception) { }
