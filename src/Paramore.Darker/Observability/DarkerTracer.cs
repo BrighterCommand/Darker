@@ -96,8 +96,35 @@ public sealed class DarkerTracer : IAmADarkerTracer
         if (!ActivitySource.HasListeners())
             return null;
 
-        // Fuller span creation added in later tasks.
-        return null;
+        var name = info.DbTable is null
+            ? $"{info.DbOperation} {info.DbName}"
+            : $"{info.DbOperation} {info.DbName} {info.DbTable}";
+
+        var activity = ActivitySource.StartActivity(
+            name,
+            ActivityKind.Client,
+            parentActivity?.Id);
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.DatabaseInformation))
+        {
+            activity.SetTag(DarkerSemanticConventions.DbSystem, info.DbSystem.ToDbSystemString());
+            activity.SetTag(DarkerSemanticConventions.DbName, info.DbName);
+            activity.SetTag(DarkerSemanticConventions.DbOperation, info.DbOperation);
+
+            if (info.DbTable != null)
+                activity.SetTag(DarkerSemanticConventions.DbSqlTable, info.DbTable);
+
+            if (info.ServerAddress != null)
+                activity.SetTag(DarkerSemanticConventions.ServerAddress, info.ServerAddress);
+
+            if (info.DbStatement != null)
+                activity.SetTag(DarkerSemanticConventions.DbStatement, info.DbStatement);
+
+            if (info.DbUser != null)
+                activity.SetTag(DarkerSemanticConventions.DbUser, info.DbUser);
+        }
+
+        return activity;
     }
 
     /// <inheritdoc />

@@ -199,7 +199,7 @@
   - **References**: ADR 0017 §Key Components 1, 7 (events woven, static writer); requirements FR10, FR10a, AC4.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_writing_query_event_should_add_event_with_handler_tags"`
 
-- [ ] **`CreateDbSpan` produces a Client DB span nested under the parent**
+- [x] **`CreateDbSpan` produces a Client DB span nested under the parent**
   - **Behavior**: `CreateDbSpan(info, parent, options)` starts a `Client` activity named `"<operation> <dbName> <dbTable>"` (or `"<operation> <dbName>"` when no table), parented to the supplied span, and — when `DatabaseInformation` is set — tags it with the `db.*` attributes from `DbSpanInfo`; returns null when there is no listener.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_db_span_should_nest_under_parent_with_db_attributes.cs`
   - **Test should verify**:
