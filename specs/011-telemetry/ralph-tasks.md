@@ -274,7 +274,7 @@
   - **References**: ADR 0017 §Key Components 8 (DB decorator, `GetAttributeParams`/`InitializeFromAttributeParams`); requirements FR12a, RD3, AC7. Read `src/Paramore.Darker/Logging/Attributes/QueryLoggingAttribute.cs`, `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecorator.cs`, `src/Paramore.Darker/QueryHandlerAttribute.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_sync_handler_with_db_span_attribute_should_create_child_db_span"`
 
-- [ ] **`[QueryDbSpanAsync]` attribute + async `QueryDbSpanDecoratorAsync` opens a child DB span**
+- [x] **`[QueryDbSpanAsync]` attribute + async `QueryDbSpanDecoratorAsync` opens a child DB span**
   - **Behavior**: `[QueryDbSpanAsync(step, DbSystem, dbName, dbTable, operation)]` on an async handler's `ExecuteAsync` weaves a `QueryDbSpanDecoratorAsync<TQuery,TResult>` that opens a child DB span around the awaited `next` and ends it.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_async_handler_with_db_span_attribute_should_create_child_db_span.cs`
   - **Test should verify**:
