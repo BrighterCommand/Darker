@@ -102,6 +102,11 @@ namespace Paramore.Darker
                 if (queryContext == null)
                     queryContext = _queryContextFactory.Create();
                 InitQueryContext(queryContext);
+
+                var span = _tracer?.CreateQuerySpan(query, queryContext.Span, queryContext, _instrumentationOptions);
+                queryContext.Span = span;
+                queryContext.Tracer = _tracer;
+
                 var entryPoint = pipelineBuilder.BuildAsync(query, queryContext);
 
                 try
@@ -111,13 +116,19 @@ namespace Paramore.Darker
                 }
                 catch (TargetInvocationException ex) when (ex.InnerException != null)
                 {
+                    _tracer?.AddExceptionToSpan(span, ex.InnerException);
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     throw; // never reached, but required by compiler
                 }
                 catch (Exception ex)
                 {
+                    _tracer?.AddExceptionToSpan(span, ex);
                     _logger.LogInformation(ex,"An exception was thrown during async pipeline execution");
                     throw;
+                }
+                finally
+                {
+                    _tracer?.EndSpan(span);
                 }
             }
         }

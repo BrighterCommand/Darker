@@ -225,7 +225,7 @@
   - **References**: ADR 0017 §Key Components 6 (`QueryProcessor` changes); requirements FR2, FR3, FR4, FR11, AC1, AC5, AC6, NFR1. Read `src/Paramore.Darker/QueryProcessor.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_sync_query_with_tracer_should_create_and_end_query_span"`
 
-- [ ] **`QueryProcessor.ExecuteAsync` owns the async query-span lifecycle**
+- [x] **`QueryProcessor.ExecuteAsync` owns the async query-span lifecycle**
   - **Behavior**: `ExecuteAsync` mirrors the sync span lifecycle with correct `Activity.Current` flow across `await`: span created parented to `queryContext.Span`, ended in `finally`, exception recorded once, and no span/overhead when no tracer/listener.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_async_query_with_tracer_should_create_and_end_query_span.cs`
   - **Test should verify**:
