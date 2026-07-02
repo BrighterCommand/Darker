@@ -237,7 +237,7 @@
   - **References**: ADR 0017 §Key Components 6, §Risks (async `Activity.Current` leakage); requirements FR2, FR3, FR4, NFR3, AC5, AC6.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_async_query_with_tracer_should_create_and_end_query_span"`
 
-- [ ] **`PipelineBuilder.Build` weaves a step event per sync decorator and the handler (sink)**
+- [x] **`PipelineBuilder.Build` weaves a step event per sync decorator and the handler (sink)**
   - **Behavior**: When the context carries a span+tracer, the sync `Func` chain writes one `WriteQueryEvent` per decorator step and one for the handler with `isSink: true`; with no span it is a pass-through with no behaviour change.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_building_sync_pipeline_with_span_should_write_event_per_step.cs`
   - **Test should verify**:

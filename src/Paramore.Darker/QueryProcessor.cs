@@ -68,7 +68,7 @@ namespace Paramore.Darker
                 queryContext.Span = span;
                 queryContext.Tracer = _tracer;
 
-                var entryPoint = pipelineBuilder.Build(query, queryContext);
+                var entryPoint = pipelineBuilder.Build(query, queryContext, _instrumentationOptions);
 
                 try
                 {
