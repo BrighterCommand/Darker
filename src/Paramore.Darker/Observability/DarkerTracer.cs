@@ -50,13 +50,20 @@ public sealed class DarkerTracer : IAmADarkerTracer
         if (!ActivitySource.HasListeners())
             return null;
 
+        // Capture the ambient current BEFORE StartActivity, which may itself modify Activity.Current.
+        // EndSpan reads this back via GetCustomProperty to restore the previous value (NFR3, AC6).
+        var previous = Activity.Current;
+
         var activity = ActivitySource.StartActivity(
             $"{query.GetType().Name} query",
             ActivityKind.Internal,
             parentActivity?.Id);
 
         if (activity != null)
+        {
             Activity.Current = activity;
+            activity.SetCustomProperty("darker.previous_current", previous);
+        }
 
         if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryInformation))
         {
@@ -122,7 +129,19 @@ public sealed class DarkerTracer : IAmADarkerTracer
     public void EndSpan(Activity? span)
     {
         if (span is null) return;
-        // Fuller implementation (Ok status, Stop, restore Activity.Current) added in later tasks.
+
+        // Promote to Ok only when no explicit status has been set (e.g. Error from AddExceptionToSpan).
+        if (span.Status == ActivityStatusCode.Unset)
+            span.SetStatus(ActivityStatusCode.Ok);
+
+        // Retrieve the Activity that was current before CreateQuerySpan set Activity.Current = span,
+        // so we can restore it after stopping.  The value may be null (root span case).
+        var previous = span.GetCustomProperty("darker.previous_current") as Activity;
+
+        span.Stop();
+
+        // Restore the ambient current, mirroring BrighterTracer's approach (AC6, ADR 0017 §Risks).
+        Activity.Current = previous;
     }
 
     // The pipeline closes CreateQuerySpan over IQuery<TResult> so the runtime-type overload is

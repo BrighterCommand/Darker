@@ -174,7 +174,7 @@
   - **References**: ADR 0017 §Key Components 1, 6 (`error.type` shared with metrics); requirements FR4, AC5, NFR5. OTel exceptions: https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_recording_exception_on_span_should_set_error_status_and_error_type"`
 
-- [ ] **`EndSpan` sets Ok-if-unset, disposes, and restores prior `Activity.Current`**
+- [x] **`EndSpan` sets Ok-if-unset, disposes, and restores prior `Activity.Current`**
   - **Behavior**: `EndSpan(span)` sets status Ok only if the span has no status yet, stops the activity, and restores the `Activity.Current` that was current before the span was started.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_ending_span_should_set_ok_and_restore_previous_current.cs`
   - **Test should verify**:
