@@ -287,7 +287,7 @@
   - **References**: ADR 0017 §Key Components 8; requirements FR12a, RD3, AC7. Read `src/Paramore.Darker/Logging/Attributes/QueryLoggingAttributeAsync.cs`, `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecoratorAsync.cs`, `src/Paramore.Darker/QueryHandlerAttributeAsync.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_async_handler_with_db_span_attribute_should_create_child_db_span"`
 
-- [ ] **Create `Paramore.Darker.Extensions.Diagnostics` assembly + OTel CPM packages + solution/test wiring**
+- [x] **Create `Paramore.Darker.Extensions.Diagnostics` assembly + OTel CPM packages + solution/test wiring**
   - **Behavior**: A new SDK-wiring assembly and its test project exist, reference the OpenTelemetry SDK via CPM, and are registered in both solution files; nothing else changes behaviourally yet.
   - **Test file**: (none yet — project-creation task) build the new test project instead.
   - **Test should verify**:
