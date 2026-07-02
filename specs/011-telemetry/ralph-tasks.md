@@ -161,7 +161,7 @@
   - **References**: ADR 0017 §Key Components 3 (`QueryContext` flag), 6 (processor passes context); requirements FR8, FR9, AC3.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_context_should_copy_spancontext_bag_entries"`
 
-- [ ] **`AddExceptionToSpan` sets Error status, records the exception, tags `error.type`**
+- [x] **`AddExceptionToSpan` sets Error status, records the exception, tags `error.type`**
   - **Behavior**: `AddExceptionToSpan(span, ex)` sets `ActivityStatusCode.Error`, records the exception per the OTel exceptions convention, and adds an `error.type` tag equal to the exception's type name.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_recording_exception_on_span_should_set_error_status_and_error_type.cs`
   - **Test should verify**:

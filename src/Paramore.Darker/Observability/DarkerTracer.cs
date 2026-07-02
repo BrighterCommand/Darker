@@ -97,7 +97,25 @@ public sealed class DarkerTracer : IAmADarkerTracer
     public void AddExceptionToSpan(Activity? span, Exception exception)
     {
         if (span is null) return;
-        // Fuller implementation (exception event, Error status, error.type tag) added in later tasks.
+
+        span.SetStatus(ActivityStatusCode.Error);
+
+#if NETSTANDARD2_0
+        // Activity.AddException is not available on netstandard2.0; emit the OTel exception
+        // event manually following the exceptions semantic conventions specification:
+        // https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/
+        var eventTags = new ActivityTagsCollection
+        {
+            { "exception.type", exception.GetType().FullName },
+            { "exception.message", exception.Message },
+            { "exception.stacktrace", exception.ToString() },
+        };
+        span.AddEvent(new ActivityEvent("exception", tags: eventTags));
+#else
+        span.AddException(exception);
+#endif
+
+        span.SetTag(DarkerSemanticConventions.ErrorType, exception.GetType().Name);
     }
 
     /// <inheritdoc />
