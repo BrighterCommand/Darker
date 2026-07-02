@@ -300,7 +300,7 @@
   - **References**: ADR 0017 §Key Components 9, §NFR4; requirements FR14, NFR4. Read `Darker.slnx`, `Darker.Filter.slnf`, `Directory.Packages.props`, `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj`. Brighter model `Paramore.Brighter.Extensions.Diagnostics/BrighterTracerBuilderExtensions.cs`.
   - **RALPH-VERIFY**: `dotnet build test/Paramore.Darker.Extensions.Diagnostics.Tests/ -c Release`
 
-- [ ] **`AddDarkerInstrumentation(this TracerProviderBuilder)` registers source + tracer**
+- [x] **`AddDarkerInstrumentation(this TracerProviderBuilder)` registers source + tracer**
   - **Behavior**: `AddDarkerInstrumentation()` on a `TracerProviderBuilder` constructs a `DarkerTracer`, `TryAddSingleton<IAmADarkerTracer>` it, and adds the `paramore.darker` source so Darker query spans are collected. (No metrics processor — deferred to ADR 0018.)
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_should_register_source_and_tracer.cs`
   - **Test should verify**:
