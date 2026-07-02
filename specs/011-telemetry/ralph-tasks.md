@@ -261,7 +261,7 @@
   - **References**: ADR 0017 §Key Components 7; requirements FR10, FR10a, AC4.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_building_async_pipeline_with_span_should_write_event_per_step"`
 
-- [ ] **`[QueryDbSpan]` attribute + sync `QueryDbSpanDecorator` opens a child DB span**
+- [x] **`[QueryDbSpan]` attribute + sync `QueryDbSpanDecorator` opens a child DB span**
   - **Behavior**: `[QueryDbSpan(step, DbSystem, dbName, dbTable, operation)]` on a sync handler's `Execute` weaves a `QueryDbSpanDecorator<TQuery,TResult>` that reads `Context.Tracer`+`Context.Span`, opens a child DB span via `CreateDbSpan`, invokes `next`, and ends the DB span; the processor still records any exception.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_sync_handler_with_db_span_attribute_should_create_child_db_span.cs`
   - **Test should verify**:
