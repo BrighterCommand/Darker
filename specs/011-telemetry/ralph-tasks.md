@@ -212,7 +212,7 @@
   - **References**: ADR 0017 §Architecture Overview (DB span shape), §Key Components 8; requirements FR12, RD3, AC7.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_db_span_should_nest_under_parent_with_db_attributes"`
 
-- [ ] **`QueryProcessor.Execute` owns the sync query-span lifecycle**
+- [x] **`QueryProcessor.Execute` owns the sync query-span lifecycle**
   - **Behavior**: `Execute` (sync) creates the query span parented to `queryContext.Span`, sets `queryContext.Span`/`Tracer`, ends the span in `finally`, records any exception once via `AddExceptionToSpan`, and — with no tracer/listener — behaves exactly as today.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_sync_query_with_tracer_should_create_and_end_query_span.cs`
   - **Test should verify**:

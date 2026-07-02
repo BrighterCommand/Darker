@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
+using Paramore.Darker.Observability;
 using Polly.Registry;
 using System.Runtime.ExceptionServices;
 
@@ -25,11 +27,16 @@ namespace Paramore.Darker
         private readonly IPolicyRegistry<string> _policyRegistry;
         private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider;
 
+        private readonly IAmADarkerTracer? _tracer;
+        private readonly InstrumentationOptions _instrumentationOptions;
+
         public QueryProcessor(
             IHandlerConfiguration handlerConfiguration,
             IQueryContextFactory queryContextFactory,
             IPolicyRegistry<string> policyRegistry = null,
-            ResiliencePipelineProvider<string> resiliencePipelineProvider = null)
+            ResiliencePipelineProvider<string> resiliencePipelineProvider = null,
+            IAmADarkerTracer? tracer = null,
+            InstrumentationOptions instrumentationOptions = InstrumentationOptions.All)
         {
             if (handlerConfiguration == null)
                 throw new ArgumentNullException(nameof(handlerConfiguration));
@@ -45,6 +52,8 @@ namespace Paramore.Darker
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _policyRegistry = policyRegistry;
             _resiliencePipelineProvider = resiliencePipelineProvider;
+            _tracer = tracer;
+            _instrumentationOptions = instrumentationOptions;
         }
 
         public TResult Execute<TResult>(IQuery<TResult> query, IQueryContext queryContext = null)
@@ -54,6 +63,11 @@ namespace Paramore.Darker
                 if (queryContext == null)
                     queryContext = _queryContextFactory.Create();
                 InitQueryContext(queryContext);
+
+                var span = _tracer?.CreateQuerySpan(query, queryContext.Span, queryContext, _instrumentationOptions);
+                queryContext.Span = span;
+                queryContext.Tracer = _tracer;
+
                 var entryPoint = pipelineBuilder.Build(query, queryContext);
 
                 try
@@ -62,13 +76,19 @@ namespace Paramore.Darker
                 }
                 catch (TargetInvocationException ex) when (ex.InnerException != null)
                 {
+                    _tracer?.AddExceptionToSpan(span, ex.InnerException);
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     throw; // never reached, but required by compiler
                 }
                 catch (Exception ex)
                 {
+                    _tracer?.AddExceptionToSpan(span, ex);
                     _logger.LogInformation(ex,"An exception was thrown during pipeline execution");
                     throw;
+                }
+                finally
+                {
+                    _tracer?.EndSpan(span);
                 }
             }
         }
