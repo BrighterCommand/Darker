@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Paramore.Darker.Logging;
+using Paramore.Darker.Observability;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
@@ -42,12 +43,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var componentFactory = new ServiceProviderComponentFactory(provider, options.HandlerLifetime);
             var policyRegistry = provider.GetService<Polly.Registry.IPolicyRegistry<string>>();
             var resiliencePipelineProvider = provider.GetService<Polly.Registry.ResiliencePipelineProvider<string>>();
+            var tracer = provider.GetService<IAmADarkerTracer>();
 
             return new QueryProcessor(
                 new HandlerConfiguration(
                     handlerRegistry, componentFactory, decoratorRegistry, componentFactory,
                     handlerRegistryAsync, componentFactory, decoratorRegistry, componentFactory),
-                options.QueryContextFactory, policyRegistry, resiliencePipelineProvider);
+                options.QueryContextFactory, policyRegistry, resiliencePipelineProvider,
+                tracer, options.InstrumentationOptions);
         }
     }
 }

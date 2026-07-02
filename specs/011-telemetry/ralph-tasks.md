@@ -311,7 +311,7 @@
   - **References**: ADR 0017 §Key Components 9 (source + tracer ONLY; metrics processor belongs to 0018); requirements FR14, AC8. Brighter `BrighterTracerBuilderExtensions.cs`.
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_darker_instrumentation_should_register_source_and_tracer"`
 
-- [ ] **`AddDarker` threads the registered tracer + `InstrumentationOptions` into `QueryProcessor`**
+- [x] **`AddDarker` threads the registered tracer + `InstrumentationOptions` into `QueryProcessor`**
   - **Behavior**: When an `IAmADarkerTracer` is registered and `DarkerOptions.InstrumentationOptions` is set, `AddDarker` passes both to the `QueryProcessor` ctor; when no tracer is registered, the processor is built without one (unchanged behaviour).
   - **Test file**: `test/Paramore.Darker.Extensions.Tests/When_adding_darker_with_registered_tracer_should_pass_tracer_to_processor.cs`
   - **Test should verify**:
