@@ -49,7 +49,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_enriching_metric_tags_should_filter_to_allowed_keys_and_read_service_attributes"`
   - **References**: ADR 0018 §Technology Choices (allowed-tag filtering + `GetServiceAttributes`), §Key Components 2; requirements FR13, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/TagObjectsExtensions.cs` and `MeterProviderExtensions.cs`; `test/Paramore.Darker.Core.Tests/DarkerActivitySourceCollection.cs`.
 
-- [ ] **Add `IAmADarkerQueryMeter` + `QueryMeter` recording `paramore.darker.query.duration`**
+- [x] **Add `IAmADarkerQueryMeter` + `QueryMeter` recording `paramore.darker.query.duration`**
   - **Behavior**: `QueryMeter` owns one `Histogram<double>` `paramore.darker.query.duration` (unit `s`); `RecordQueryOperation(Activity)` records `activity.Duration.TotalSeconds` with the allowed query tags plus the resource service attributes; `Enabled` reflects the histogram's listener state.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_recording_query_operation_should_record_duration_with_allowed_query_tags.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
