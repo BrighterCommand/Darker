@@ -87,7 +87,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind"`
   - **References**: ADR 0018 §Key Components 1, §Architecture Overview (dispatch on `ActivityKind`), §Risks (Enabled/source guards first); requirements FR13, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/BrighterMetricsFromTracesProcessor.cs`; `src/Paramore.Darker/Observability/IAmADarkerTracer.cs`.
 
-- [ ] **Add `DarkerMetricsBuilderExtensions.AddDarkerInstrumentation(this MeterProviderBuilder)`**
+- [x] **Add `DarkerMetricsBuilderExtensions.AddDarkerInstrumentation(this MeterProviderBuilder)`**
   - **Behavior**: `AddDarkerInstrumentation()` on a `MeterProviderBuilder` registers the two meters as singletons and adds the `paramore.darker` meter so their instruments are collected.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_to_meter_builder_should_register_meters_and_meter.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
