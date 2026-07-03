@@ -98,7 +98,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_darker_instrumentation_to_meter_builder_should_register_meters_and_meter"`
   - **References**: ADR 0018 §Key Components 5; requirements FR13, NFR4. Read `../Brighter/src/Paramore.Brighter.Extensions.Diagnostics/BrighterMetricsBuilderExtensions.cs`; existing `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs`.
 
-- [ ] **Make the tracer-builder `AddDarkerInstrumentation` add the metrics processor only when both meters are registered**
+- [x] **Make the tracer-builder `AddDarkerInstrumentation` add the metrics processor only when both meters are registered**
   - **Behavior**: `AddDarkerInstrumentation(this TracerProviderBuilder)` adds a `DarkerMetricsFromTracesProcessor` to the tracer pipeline only when BOTH `IAmADarkerQueryMeter` and `IAmADarkerDbMeter` are registered (i.e. the meter builder was also wired); tracing alone adds no processor and no metric cost.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_tracer_instrumentation_should_add_metrics_processor_only_when_meters_registered.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:

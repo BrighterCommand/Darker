@@ -1,6 +1,8 @@
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenTelemetry.Trace;
+using Paramore.Darker.Extensions.Diagnostics.Observability;
 using Paramore.Darker.Observability;
 
 namespace Paramore.Darker.Extensions.Diagnostics;
@@ -35,6 +37,18 @@ public static class DarkerTracerBuilderExtensions
             services.TryAddSingleton<IAmADarkerTracer>(tracer));
 
         builder.AddSource(tracer.ActivitySource.Name);
+
+        builder.ConfigureServices(services =>
+        {
+            if (services.Any(sd => sd.ServiceType == typeof(IAmADarkerQueryMeter)) &&
+                services.Any(sd => sd.ServiceType == typeof(IAmADarkerDbMeter)))
+            {
+                builder.AddProcessor(sp => new DarkerMetricsFromTracesProcessor(
+                    sp.GetRequiredService<IAmADarkerTracer>(),
+                    sp.GetRequiredService<IAmADarkerQueryMeter>(),
+                    sp.GetRequiredService<IAmADarkerDbMeter>()));
+            }
+        });
 
         return builder;
     }
