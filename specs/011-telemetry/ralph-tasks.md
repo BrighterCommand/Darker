@@ -21,7 +21,7 @@
 
 ## Tasks
 
-- [ ] **Extend `DarkerSemanticConventions` with meter/metric constants and allowed-tag sets**
+- [x] **Extend `DarkerSemanticConventions` with meter/metric constants and allowed-tag sets**
   - **Behavior**: The core `DarkerSemanticConventions` holder exposes the meter name, the two metric names, the service-attribute resource keys, and the two per-instrument allowed-tag sets, so meters filter dimensions against a single typo-proof source.
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_reading_metric_semantic_conventions_should_expose_meter_and_metric_names.cs`
   - **Test should verify**:

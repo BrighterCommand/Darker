@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
+
 namespace Paramore.Darker.Observability;
 
 /// <summary>
@@ -84,4 +89,73 @@ public static class DarkerSemanticConventions
 
     /// <summary>The database user name (<c>db.user</c>).</summary>
     public const string DbUser = "db.user";
+
+    // ── Meter / metric names ──────────────────────────────────────────────────
+
+    /// <summary>The name of the <see cref="System.Diagnostics.Metrics.Meter"/> used by Darker.</summary>
+    public const string MeterName = "paramore.darker";
+
+    /// <summary>The name of the query-duration histogram instrument (<c>paramore.darker.query.duration</c>).</summary>
+    public const string QueryDurationMetricName = "paramore.darker.query.duration";
+
+    /// <summary>The name of the DB-client-operation-duration histogram instrument (<c>db.client.operation.duration</c>).</summary>
+    public const string DbClientOperationDurationMetricName = "db.client.operation.duration";
+
+    // ── Resource / service attributes ─────────────────────────────────────────
+
+    /// <summary>The service name resource attribute (<c>service.name</c>).</summary>
+    public const string ServiceName = "service.name";
+
+    /// <summary>The service version resource attribute (<c>service.version</c>).</summary>
+    public const string ServiceVersion = "service.version";
+
+    /// <summary>The service instance ID resource attribute (<c>service.instance.id</c>).</summary>
+    public const string ServiceInstanceId = "service.instance.id";
+
+    /// <summary>The service namespace resource attribute (<c>service.namespace</c>).</summary>
+    public const string ServiceNamespace = "service.namespace";
+
+    // ── Per-instrument allowed-tag sets ───────────────────────────────────────
+
+    /// <summary>
+    /// The low-cardinality tag keys permitted on the <c>paramore.darker.query.duration</c> histogram.
+    /// High-cardinality keys such as <see cref="QueryId"/> and <see cref="QueryBody"/> are intentionally excluded.
+    /// </summary>
+#if NET8_0_OR_GREATER
+    public static readonly FrozenSet<string> QueryDurationAllowedTags = new[]
+#else
+    public static readonly HashSet<string> QueryDurationAllowedTags = new()
+#endif
+    {
+        QueryType,
+        Operation,
+        ErrorType
+#if NET8_0_OR_GREATER
+    }.ToFrozenSet();
+#else
+    };
+#endif
+
+    /// <summary>
+    /// The low-cardinality tag keys permitted on the <c>db.client.operation.duration</c> histogram.
+    /// High-cardinality keys such as <see cref="DbStatement"/> and <see cref="DbUser"/> are intentionally excluded.
+    /// </summary>
+#if NET8_0_OR_GREATER
+    public static readonly FrozenSet<string> DbClientOperationDurationAllowedTags = new[]
+#else
+    public static readonly HashSet<string> DbClientOperationDurationAllowedTags = new()
+#endif
+    {
+        DbSystem,
+        DbName,
+        DbOperation,
+        DbSqlTable,
+        DbCollectionName,
+        ServerAddress,
+        ErrorType
+#if NET8_0_OR_GREATER
+    }.ToFrozenSet();
+#else
+    };
+#endif
 }
