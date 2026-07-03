@@ -35,7 +35,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_reading_metric_semantic_conventions_should_expose_meter_and_metric_names"`
   - **References**: ADR 0018 §Key Components 4, §Integration Points (reused 0017 keys); requirements FR13, RD4. Read `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` (existing 0017 constants), and `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs` + `BrighterSemanticConventions.cs` for the FrozenSet/HashSet shape.
 
-- [ ] **Add tag-enrichment helpers (`Filter` + `GetServiceAttributes`) and the `DarkerMeter` test collection**
+- [x] **Add tag-enrichment helpers (`Filter` + `GetServiceAttributes`) and the `DarkerMeter` test collection**
   - **Behavior**: A `Filter` extension keeps only allowed-key tags from an activity's `TagObjects`, and a `GetServiceAttributes` extension reads `service.*` resource attributes off a `MeterProvider`, so recorded measurements carry service identity and are protected from high-cardinality span tags.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_enriching_metric_tags_should_filter_to_allowed_keys_and_read_service_attributes.cs` (this is the FIRST meter test — it builds a `MeterProvider`, so it MUST carry `[Collection("DarkerMeter")]`)
   - **Test should verify**:

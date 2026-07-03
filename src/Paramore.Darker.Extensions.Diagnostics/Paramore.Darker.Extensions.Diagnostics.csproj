@@ -11,4 +11,7 @@
   <ItemGroup>
     <PackageReference Include="OpenTelemetry" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Paramore.Darker.Extensions.Diagnostics.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100bda4d9dec81972d27df9adc071b622114899353c9a34a5bb5681383f0a8297aad1cc21fd12147b1976ae9c4a6e0901bfb721021d2a7a9ff5b1672c026ce33488b340649898805118b5503073d7848e34637f61727aa3233cc009dbfc4a16c739799146f9a0d6974f71ab088458d72700de66b6ddf70d4ab1c30c5178509521be" />
+  </ItemGroup>
 </Project>
