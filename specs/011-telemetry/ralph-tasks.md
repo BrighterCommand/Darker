@@ -75,7 +75,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_recording_db_operation_should_record_duration_with_allowed_db_tags"`
   - **References**: ADR 0018 §Key Components 3 (DB meter, exact keys `CreateDbSpan` sets); requirements FR13, RD4. Read `src/Paramore.Darker/Observability/DarkerTracer.cs` (`CreateDbSpan` tag keys) and `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs`.
 
-- [ ] **Add `DarkerMetricsFromTracesProcessor` dispatching span ends to the right meter**
+- [x] **Add `DarkerMetricsFromTracesProcessor` dispatching span ends to the right meter**
   - **Behavior**: `DarkerMetricsFromTracesProcessor : BaseProcessor<Activity>` short-circuits when neither meter is enabled, ignores spans from other sources, and on our source dispatches by `ActivityKind` — `Internal` ⇒ `queryMeter.RecordQueryOperation`, `Client` ⇒ `dbMeter.RecordClientOperation`. It holds no metric state.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
