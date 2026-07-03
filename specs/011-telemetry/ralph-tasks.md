@@ -1,325 +1,123 @@
-# Ralph Tasks: 011-telemetry (Tracing + Database Spans — ADR 0017)
+# Ralph Tasks: 011-telemetry (Metrics from Query Traces — ADR 0018)
 
 > Auto-generated from the approved design for unattended TDD execution.
 > Each task is self-contained with all context a fresh Claude session needs.
-> Scope: ADR 0017 only. Metrics (ADR 0018) are a separate task list.
+> Scope: ADR 0018 only. Tracing (ADR 0017) is the separate ralph-tasks-0017.md list.
 
 ## Spec Context
 
 - **Spec**: 011-telemetry
-- **Requirements**: specs/011-telemetry/requirements.md
-- **ADRs**: docs/adr/0017-query-tracing-and-database-spans.md (metrics deferred to docs/adr/0018-metrics-from-query-traces.md)
+- **Requirements**: specs/011-telemetry/requirements.md (FR13, RD4, NFR2, NFR4, AC8)
+- **ADRs**: docs/adr/0018-metrics-from-query-traces.md (**depends on** docs/adr/0017-query-tracing-and-database-spans.md — the query/DB spans are the single source the metrics are derived from; 0018 does not change 0017's tracing behaviour)
 
 ## Conventions for every task
 
-- Core namespace for new types: `Paramore.Darker.Observability`.
-- Tests: `test/Paramore.Darker.Core.Tests/`, one public class per file, file/class named `When_[condition]_should_[expected_behavior]`, `[Fact]`, `Shouldly`, xUnit v3. Prefer REAL test doubles (`QueryHandlerRegistry`, `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory`, `InMemoryDecoratorRegistry`, `InMemoryQueryContextFactory`/`TrackingQueryContextFactory`) over mocks; shared doubles live in `test/Paramore.Darker.Core.Tests/TestDoubles/`. To capture spans use an in-memory `System.Diagnostics.ActivityListener` with `Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData` and `ShouldListenTo = s => s.Name == "paramore.darker"` — no OpenTelemetry SDK in core tests.
-- After every task, `dotnet build Darker.Filter.slnf -c Release` and the task's RALPH-VERIFY filter must both pass.
+- **Namespaces**: all new *behavioural* types (meters, processor, builder extension, tag/service helpers) live in `Paramore.Darker.Extensions.Diagnostics` under `src/Paramore.Darker.Extensions.Diagnostics/`, because they depend on the OpenTelemetry SDK (`BaseProcessor<Activity>`, `MeterProviderBuilder`, `IMeterFactory`, `MeterProvider`) — NFR4 keeps those out of core. The single exception is **constants**: the meter name, metric names, service-attribute keys, and the per-instrument allowed-tag sets are added to core `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` (System.Diagnostics/BCL only). Reuse the existing tag-key constants from 0017 (`QueryType`, `Operation`, `ErrorType`, `DbSystem`, `DbName`, `DbOperation`, `DbSqlTable`, `DbCollectionName`, `ServerAddress`).
+- **Allowed-tag sets** are `FrozenSet<string>` on net8.0+ and `HashSet<string>` on netstandard2.0 — use the same `#if NET8_0_OR_GREATER` / `#if NETSTANDARD2_0` conditional-compilation pattern already in `DarkerTracer.cs` and Brighter's `DbMeter.cs`/`TagObjectsExtensions.cs`.
+- **Meter/MeterProvider state is process-global** (exactly like the `ActivitySource` listeners in 0017). The first meter-test task creates a non-parallel xUnit collection `test/Paramore.Darker.Extensions.Diagnostics.Tests/DarkerMeterCollection.cs` — a `[CollectionDefinition("DarkerMeter", DisableParallelization = true)]` modelled on `test/Paramore.Darker.Core.Tests/DarkerActivitySourceCollection.cs`. EVERY test that builds a `MeterProvider`, registers a `MeterListener`, OR builds a `TracerProvider` (which registers a process-global `ActivityListener`) MUST carry `[Collection("DarkerMeter")]`. Because that collection disables parallelization it also prevents a leaked trace `ActivityListener` from one test bleeding into another in this assembly.
+- **Never use `InstrumentationOptions.All` in tests** — `All` includes `QueryBody`, which serialises via the shared, lock-prone `QueryLoggingJsonOptions.Options` singleton. Use body-free options (`QueryInformation`, `DatabaseInformation`, or their combination) instead.
+- **Tests**: xUnit v3, one public class per file, file/class named `When_[condition]_should_[expected_behavior]`, `[Fact]`, `Shouldly`. Prefer REAL implementations over mocks. Capture metrics with the OpenTelemetry in-memory exporter already referenced by the test project (`OpenTelemetry.Exporter.InMemory` 1.11.0 is in `Directory.Packages.props` and the test csproj, and supports metrics): `AddInMemoryExporter(List<Metric> exportedMetrics)` on the `MeterProviderBuilder`, then `meterProvider.ForceFlush()` before asserting — mirror the trace exporter-flush style in the existing `When_adding_darker_instrumentation_should_register_source_and_tracer.cs`. Every metric `Metric` exposes `MetricPoints`; read each point's tags via its enumerator to assert dimensions.
+- **After every task**: run `dotnet build Darker.Filter.slnf -c Release`, then the task's RALPH-VERIFY filter. Because these touch DI/OTel wiring and process-global meter/listener state, also run the FULL Diagnostics test project **twice** to prove determinism: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ -c Release` (x2). When the tracer-builder / DI wiring changes (the conditional-processor task), additionally run the full `dotnet test Darker.Filter.slnf -c Release`.
 
 ## Tasks
 
-- [x] **Add `DarkerSemanticConventions` constants holder**
-  - **Behavior**: A static `DarkerSemanticConventions` class exposes the source name and all attribute/event key strings so a typo cannot silently break tracing.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_reading_semantic_conventions_should_expose_stable_attribute_keys.cs`
+- [ ] **Extend `DarkerSemanticConventions` with meter/metric constants and allowed-tag sets**
+  - **Behavior**: The core `DarkerSemanticConventions` holder exposes the meter name, the two metric names, the service-attribute resource keys, and the two per-instrument allowed-tag sets, so meters filter dimensions against a single typo-proof source.
+  - **Test file**: `test/Paramore.Darker.Core.Tests/When_reading_metric_semantic_conventions_should_expose_meter_and_metric_names.cs`
   - **Test should verify**:
-    - `DarkerSemanticConventions.SourceName == "paramore.darker"`.
-    - `QueryId == "paramore.darker.queryid"`, `QueryType == "paramore.darker.querytype"`, `Operation == "paramore.darker.operation"`, `QueryBody == "paramore.darker.query_body"`.
-    - `HandlerName == "paramore.darker.handlername"`, `HandlerType == "paramore.darker.handlertype"`, `IsSink == "paramore.darker.is_sink"`, `ErrorType == "error.type"`, and a `SpanContextPrefix == "spancontext."`.
+    - `DarkerSemanticConventions.MeterName == "paramore.darker"`.
+    - `QueryDurationMetricName == "paramore.darker.query.duration"` and `DbClientOperationDurationMetricName == "db.client.operation.duration"`.
+    - `ServiceName == "service.name"`, `ServiceVersion == "service.version"`, `ServiceInstanceId == "service.instance.id"`, `ServiceNamespace == "service.namespace"`.
+    - `QueryDurationAllowedTags` contains exactly `QueryType`, `Operation`, `ErrorType` (and NOT `QueryId` or `QueryBody`).
+    - `DbClientOperationDurationAllowedTags` contains exactly `DbSystem`, `DbName`, `DbOperation`, `DbSqlTable`, `DbCollectionName`, `ServerAddress`, `ErrorType` (and NOT `DbStatement` or `DbUser` — high cardinality).
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` - new static class of `public const string` fields: `SourceName`, `QueryId`, `QueryType`, `Operation`, `QueryBody`, `SpanContextPrefix`, `HandlerName`, `HandlerType`, `IsSink`, `ErrorType`, plus the `db.*` keys (`DbSystem = "db.system"`, `DbName = "db.name"`, `DbOperation = "db.operation"`, `DbCollectionName`/`DbSqlTable`, `ServerAddress = "server.address"`, `DbStatement`, `DbUser`).
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_reading_semantic_conventions_should_expose_stable_attribute_keys"`
-  - **References**: ADR 0017 §Key Components 4 (`DarkerSemanticConventions`); requirements FR1, FR6, FR8, FR10, NFR5.
+    - `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` — add `public const string MeterName = "paramore.darker";`, `QueryDurationMetricName`, `DbClientOperationDurationMetricName`, the four `Service*` keys, and two static readonly allowed-tag sets built with the `#if NET8_0_OR_GREATER` `FrozenSet<string>` (`.ToFrozenSet()`) / `#else HashSet<string>` pattern, seeded from the existing 0017 key constants. Add `using System.Collections.Generic;` and a guarded `using System.Collections.Frozen;`.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_reading_metric_semantic_conventions_should_expose_meter_and_metric_names"`
+  - **References**: ADR 0018 §Key Components 4, §Integration Points (reused 0017 keys); requirements FR13, RD4. Read `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` (existing 0017 constants), and `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs` + `BrighterSemanticConventions.cs` for the FrozenSet/HashSet shape.
 
-- [x] **Add `InstrumentationOptions` `[Flags]` enum**
-  - **Behavior**: An `InstrumentationOptions` flags enum names the attribute groups that may be emitted, with `All` being the union of every group.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_combining_instrumentation_options_should_expose_flag_groups.cs`
+- [ ] **Add tag-enrichment helpers (`Filter` + `GetServiceAttributes`) and the `DarkerMeter` test collection**
+  - **Behavior**: A `Filter` extension keeps only allowed-key tags from an activity's `TagObjects`, and a `GetServiceAttributes` extension reads `service.*` resource attributes off a `MeterProvider`, so recorded measurements carry service identity and are protected from high-cardinality span tags.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_enriching_metric_tags_should_filter_to_allowed_keys_and_read_service_attributes.cs` (this is the FIRST meter test — it builds a `MeterProvider`, so it MUST carry `[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - `None == 0`, `QueryInformation == 1`, `QueryBody == 2`, `QueryContext == 4`, `DatabaseInformation == 8`.
-    - `All == (QueryInformation | QueryBody | QueryContext | DatabaseInformation)` and `All.HasFlag(QueryBody)` is true.
-    - `None.HasFlag(QueryInformation)` is false.
+    - `Filter` over a tag list `{querytype, queryid, query_body, error.type}` against `DarkerSemanticConventions.QueryDurationAllowedTags` returns exactly `querytype` and `error.type` (drops `queryid`/`query_body`).
+    - Building a `MeterProvider` via `Sdk.CreateMeterProviderBuilder().ConfigureResource(r => r.AddService("svc-a"))...` and calling `GetServiceAttributes()` returns a pair whose key is `service.name` and value `"svc-a"`.
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/InstrumentationOptions.cs` - new `[Flags] public enum InstrumentationOptions` exactly as above.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_combining_instrumentation_options_should_expose_flag_groups"`
-  - **References**: ADR 0017 §Key Components 3 (`InstrumentationOptions`); requirements FR5, FR9.
+    - `test/Paramore.Darker.Extensions.Diagnostics.Tests/DarkerMeterCollection.cs` — new `[CollectionDefinition("DarkerMeter", DisableParallelization = true)] public sealed class DarkerMeterCollection {}`, modelled on `test/Paramore.Darker.Core.Tests/DarkerActivitySourceCollection.cs`.
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/TagObjectsExtensions.cs` — `internal static KeyValuePair<string, object?>[] Filter(this IEnumerable<KeyValuePair<string, object?>> tags, FrozenSet<string>/HashSet<string> allowedTags)`, ported verbatim from Brighter's `TagObjectsExtensions` (allocation-free buffer, trimmed to `insertIndex`).
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/MeterProviderExtensions.cs` — `internal static KeyValuePair<string, object?>[] GetServiceAttributes(this MeterProvider meterProvider)` ported from Brighter's `MeterProviderExtensions` (`GetResource().Attributes.Where(service.* keys).Cast<...>().ToArray()`), using `DarkerSemanticConventions.Service*` keys.
+    - `src/Paramore.Darker.Extensions.Diagnostics/Paramore.Darker.Extensions.Diagnostics.csproj` — add `<ItemGroup><InternalsVisibleTo Include="Paramore.Darker.Extensions.Diagnostics.Tests" /></ItemGroup>` so the internal helpers are testable.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_enriching_metric_tags_should_filter_to_allowed_keys_and_read_service_attributes"`
+  - **References**: ADR 0018 §Technology Choices (allowed-tag filtering + `GetServiceAttributes`), §Key Components 2; requirements FR13, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/TagObjectsExtensions.cs` and `MeterProviderExtensions.cs`; `test/Paramore.Darker.Core.Tests/DarkerActivitySourceCollection.cs`.
 
-- [x] **Add `Query<TResult>` base class with defaulted-GUID `Id`**
-  - **Behavior**: A query deriving from `Query<TResult>` and constructed with the parameterless ctor exposes a non-empty GUID string `Id` that is unique per instance.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_without_id_should_default_to_guid.cs`
+- [ ] **Add `IAmADarkerQueryMeter` + `QueryMeter` recording `paramore.darker.query.duration`**
+  - **Behavior**: `QueryMeter` owns one `Histogram<double>` `paramore.darker.query.duration` (unit `s`); `RecordQueryOperation(Activity)` records `activity.Duration.TotalSeconds` with the allowed query tags plus the resource service attributes; `Enabled` reflects the histogram's listener state.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_recording_query_operation_should_record_duration_with_allowed_query_tags.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - A test query derived from `Query<TResult>` has a non-null, non-empty `Id` that parses as a `Guid`.
-    - Two instances have different `Id` values.
-    - The type is assignable to `IQuery<TResult>` (base class implements the marker; `IQuery` itself gains no member).
+    - Building a `MeterProvider` with `.AddMeter(DarkerSemanticConventions.MeterName)` + `AddInMemoryExporter(metrics)`, resolving/constructing a `QueryMeter` (with the SDK's `IMeterFactory` + `MeterProvider`), starting+stopping a `paramore.darker` `Internal` activity tagged `querytype`, `operation="query"`, and a stray `query_body`, then calling `RecordQueryOperation(activity)` and `ForceFlush()`, exports exactly one `paramore.darker.query.duration` metric with a single point whose tags include `querytype` and `operation` but NOT `query_body`.
+    - A recorded activity additionally tagged `error.type` surfaces `error.type` as a metric dimension.
+    - `queryMeter.Enabled` is true while the meter is subscribed.
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/Query.cs` - `public abstract class Query<TResult> : IQuery<TResult>` with `protected Query() { }` and `public string Id { get; init; } = Guid.NewGuid().ToString();`.
-  - **References**: ADR 0017 §Key Components 2 (`Query` base class), §Alternatives (why not `IQuery`); requirements FR6a, RD1, AC2a. Read `src/Paramore.Darker/IQuery.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_without_id_should_default_to_guid"`
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/IAmADarkerQueryMeter.cs` — `public interface IAmADarkerQueryMeter { void RecordQueryOperation(Activity activity); bool Enabled { get; } }`.
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/QueryMeter.cs` — `public sealed class QueryMeter : IAmADarkerQueryMeter`; ctor `(IMeterFactory meterFactory, MeterProvider meterProvider)` (mirrors Brighter `DbMeter`); caches `_serviceAttributes = meterProvider.GetServiceAttributes()`; creates the histogram on `DarkerSemanticConventions.MeterName` with name `QueryDurationMetricName`, unit `"s"`, description "Duration of Darker query executions."; `RecordQueryOperation` records `[..activity.TagObjects.Filter(DarkerSemanticConventions.QueryDurationAllowedTags), .._serviceAttributes]`; `Enabled => _histogram.Enabled`.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_recording_query_operation_should_record_duration_with_allowed_query_tags"`
+  - **References**: ADR 0018 §Key Components 2 (query meter, count/error derived); requirements FR13, RD4, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs` + `IAmABrighterDbMeter.cs`.
 
-- [x] **Allow `Query<TResult>` to take an explicit id**
-  - **Behavior**: A query deriving from `Query<TResult>` constructed with `Query(string id)` exposes exactly that id instead of a generated GUID.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_with_explicit_id_should_use_supplied_id.cs`
+- [ ] **Add `IAmADarkerDbMeter` + `DbMeter` recording `db.client.operation.duration`**
+  - **Behavior**: `DbMeter` owns one `Histogram<double>` `db.client.operation.duration` (unit `s`); `RecordClientOperation(Activity)` records the DB span duration with the allowed `db.*`/`server.address`/`error.type` tags plus service attributes; `Enabled` reflects the histogram.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_recording_db_operation_should_record_duration_with_allowed_db_tags.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - Passing `"order-42"` to the base ctor yields `Id == "order-42"`.
-    - The `init` setter also allows `new TestQuery { Id = "x" }` to override the default.
+    - With a subscribed `MeterProvider` + in-memory exporter, starting+stopping a `paramore.darker` `Client` activity tagged `db.system="postgresql"`, `db.name="orders"`, `db.operation="select"`, `db.sql.table="order"`, `server.address="db-host"`, and a stray `db.statement`, then `RecordClientOperation(activity)` + flush, exports one `db.client.operation.duration` metric whose point tags include `db.system`, `db.name`, `db.operation`, `db.sql.table`, `server.address` but NOT `db.statement`.
+    - An activity tagged `error.type` surfaces `error.type` as a dimension.
+    - `dbMeter.Enabled` is true while subscribed.
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/Query.cs` - add `protected Query(string id) => Id = id;`.
-  - **References**: ADR 0017 §Key Components 2 (`Query` base class); requirements FR6a, AC2a.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_with_explicit_id_should_use_supplied_id"`
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/IAmADarkerDbMeter.cs` — `public interface IAmADarkerDbMeter { void RecordClientOperation(Activity activity); bool Enabled { get; } }`.
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/DbMeter.cs` — `public sealed class DbMeter : IAmADarkerDbMeter`; ctor `(IMeterFactory meterFactory, MeterProvider meterProvider)`; histogram name `DbClientOperationDurationMetricName`, unit `"s"`, description "Duration of database client operations."; records `[..activity.TagObjects.Filter(DarkerSemanticConventions.DbClientOperationDurationAllowedTags), .._serviceAttributes]`; `Enabled => _histogram.Enabled`.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_recording_db_operation_should_record_duration_with_allowed_db_tags"`
+  - **References**: ADR 0018 §Key Components 3 (DB meter, exact keys `CreateDbSpan` sets); requirements FR13, RD4. Read `src/Paramore.Darker/Observability/DarkerTracer.cs` (`CreateDbSpan` tag keys) and `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs`.
 
-- [x] **Surface `Span` and `Tracer` on `IQueryContext` (default null)**
-  - **Behavior**: `IQueryContext` gains nullable `Activity? Span` and `IAmADarkerTracer? Tracer` get/set properties; `QueryContext` defaults both to null so existing behaviour is unchanged. (This task also brings `System.Diagnostics.DiagnosticSource` into core so `Activity` is available.)
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_context_should_default_span_and_tracer_to_null.cs`
+- [ ] **Add `DarkerMetricsFromTracesProcessor` dispatching span ends to the right meter**
+  - **Behavior**: `DarkerMetricsFromTracesProcessor : BaseProcessor<Activity>` short-circuits when neither meter is enabled, ignores spans from other sources, and on our source dispatches by `ActivityKind` — `Internal` ⇒ `queryMeter.RecordQueryOperation`, `Client` ⇒ `dbMeter.RecordClientOperation`. It holds no metric state.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - A new `QueryContext` has `Span == null` and `Tracer == null`.
-    - `Span` and `Tracer` are settable and round-trip the assigned values through the `IQueryContext` reference.
+    - With both meters enabled (subscribed `MeterProvider` + in-memory exporter), calling `OnEnd` with a stopped `paramore.darker` `Internal` activity records one `paramore.darker.query.duration` and no `db.client.operation.duration`; a `Client` activity records `db.client.operation.duration` and no query metric.
+    - An activity from a DIFFERENT `ActivitySource` name records nothing.
+    - When neither meter is enabled (no `MeterProvider` subscribing `paramore.darker`), `OnEnd` records nothing (short-circuit) and does not throw.
   - **Implementation files**:
-    - `src/Paramore.Darker/IQueryContext.cs` - add `Activity? Span { get; set; }` and `IAmADarkerTracer? Tracer { get; set; }` (add `using System.Diagnostics;` and `using Paramore.Darker.Observability;`).
-    - `src/Paramore.Darker/QueryContext.cs` - implement both auto-properties, defaulting null.
-    - `src/Paramore.Darker/Observability/IAmADarkerTracer.cs` - add a minimal `public interface IAmADarkerTracer : IDisposable { }` placeholder so the property type compiles (fleshed out in a later task).
-    - `Directory.Packages.props` - add `<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />` (match the existing 10.0.x lines for Microsoft.Extensions.* / System.Text.Json).
-    - `src/Paramore.Darker/Paramore.Darker.csproj` - add `<PackageReference Include="System.Diagnostics.DiagnosticSource" />`.
-  - **References**: ADR 0017 §Key Components 5 (`IQueryContext` extension), §NFR4 dependency hygiene; requirements FR11, NFR1, NFR4. Read `src/Paramore.Darker/IQueryContext.cs`, `src/Paramore.Darker/QueryContext.cs`, `Directory.Packages.props`, `src/Paramore.Darker/Paramore.Darker.csproj`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_context_should_default_span_and_tracer_to_null"`
+    - `src/Paramore.Darker.Extensions.Diagnostics/Observability/DarkerMetricsFromTracesProcessor.cs` — `public sealed class DarkerMetricsFromTracesProcessor : BaseProcessor<Activity>`; ctor `(IAmADarkerTracer tracer, IAmADarkerQueryMeter queryMeter, IAmADarkerDbMeter dbMeter)` caching `tracer.ActivitySource.Name`; `public override void OnEnd(Activity? activity)`: return if `!(queryMeter.Enabled || dbMeter.Enabled)`, if `activity is null`, if `activity.Source.Name != _sourceName`; then `switch (activity.Kind) { case ActivityKind.Internal: queryMeter.RecordQueryOperation(activity); break; case ActivityKind.Client: dbMeter.RecordClientOperation(activity); break; }`; call `base.OnEnd(activity)`.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind"`
+  - **References**: ADR 0018 §Key Components 1, §Architecture Overview (dispatch on `ActivityKind`), §Risks (Enabled/source guards first); requirements FR13, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/BrighterMetricsFromTracesProcessor.cs`; `src/Paramore.Darker/Observability/IAmADarkerTracer.cs`.
 
-- [x] **Add `DbSystem` enum with OTel `db.system` string mapping**
-  - **Behavior**: A `DbSystem` enum lists common OTel `db.system` values and maps each to its canonical `db.system` string, with an escape value for anything unlisted.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_mapping_db_system_should_return_otel_string.cs`
+- [ ] **Add `DarkerMetricsBuilderExtensions.AddDarkerInstrumentation(this MeterProviderBuilder)`**
+  - **Behavior**: `AddDarkerInstrumentation()` on a `MeterProviderBuilder` registers the two meters as singletons and adds the `paramore.darker` meter so their instruments are collected.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_to_meter_builder_should_register_meters_and_meter.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - `DbSystem.PostgreSql.ToDbSystemString() == "postgresql"`, `DbSystem.MsSql.ToDbSystemString() == "mssql"`, `DbSystem.MySql.ToDbSystemString() == "mysql"`, `DbSystem.Sqlite.ToDbSystemString() == "sqlite"`.
-    - `DbSystem.Other.ToDbSystemString()` returns a non-null fallback (e.g. `"other_sql"`).
+    - Building a `ServiceCollection` with `AddOpenTelemetry().WithMetrics(b => b.AddDarkerInstrumentation().AddInMemoryExporter(metrics))`, then resolving `GetRequiredService<MeterProvider>()` to activate collection, resolving `IAmADarkerQueryMeter` and `IAmADarkerDbMeter` returns non-null singletons whose `Enabled` is true.
+    - Resolving `IAmADarkerQueryMeter` twice returns the same instance.
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DbSystem.cs` - `public enum DbSystem` (MsSql, PostgreSql, MySql, Sqlite, Oracle, Db2, MongoDb, Redis, Cassandra, Other) plus a `public static class DbSystemExtensions { public static string ToDbSystemString(this DbSystem system) => ... }`.
-  - **References**: ADR 0017 §Key Components 8 (DB-span support, `DbSystem`); requirements FR12, RD3. OTel db.system: https://opentelemetry.io/docs/specs/semconv/db/database-spans/.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_mapping_db_system_should_return_otel_string"`
+    - `src/Paramore.Darker.Extensions.Diagnostics/DarkerMetricsBuilderExtensions.cs` — `public static MeterProviderBuilder AddDarkerInstrumentation(this MeterProviderBuilder builder)` that `builder.ConfigureServices(services => { services.TryAddSingleton<IAmADarkerQueryMeter, QueryMeter>(); services.TryAddSingleton<IAmADarkerDbMeter, DbMeter>(); })` and `builder.AddMeter(DarkerSemanticConventions.MeterName)`. Mirror Brighter's `BrighterMetricsBuilderExtensions`.
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_darker_instrumentation_to_meter_builder_should_register_meters_and_meter"`
+  - **References**: ADR 0018 §Key Components 5; requirements FR13, NFR4. Read `../Brighter/src/Paramore.Brighter.Extensions.Diagnostics/BrighterMetricsBuilderExtensions.cs`; existing `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs`.
 
-- [x] **Add `DbSpanInfo` record**
-  - **Behavior**: A `DbSpanInfo` record carries the attributes needed to shape a DB span: required system/name/operation plus optional table, server address, statement, user, and a free attribute bag.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_db_span_info_should_carry_supplied_values.cs`
+- [ ] **Make the tracer-builder `AddDarkerInstrumentation` add the metrics processor only when both meters are registered**
+  - **Behavior**: `AddDarkerInstrumentation(this TracerProviderBuilder)` adds a `DarkerMetricsFromTracesProcessor` to the tracer pipeline only when BOTH `IAmADarkerQueryMeter` and `IAmADarkerDbMeter` are registered (i.e. the meter builder was also wired); tracing alone adds no processor and no metric cost.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_tracer_instrumentation_should_add_metrics_processor_only_when_meters_registered.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - Constructing with `DbSystem.PostgreSql`, `dbName: "orders"`, `dbOperation: "select"`, `dbTable: "order"` exposes those values.
-    - Optional members (`ServerAddress`, `DbStatement`, `DbUser`, `DbAttributes`) default to null/empty and are settable.
+    - Wiring BOTH `WithTracing(t => t.AddDarkerInstrumentation()...)` and `WithMetrics(m => m.AddDarkerInstrumentation().AddInMemoryExporter(metrics))`, then creating+ending a query span on the resolved `IAmADarkerTracer` and flushing, records a `paramore.darker.query.duration` measurement (proves the processor was added to the tracer pipeline).
+    - Wiring ONLY `WithTracing(t => t.AddDarkerInstrumentation()...)` (no meter builder) creates+ends a span successfully and records NO metrics (no processor added, no throw) — NFR2/AC8.
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DbSpanInfo.cs` - `public record DbSpanInfo(DbSystem DbSystem, string DbName, string DbOperation, string? DbTable = null)` with additional `init` members `string? ServerAddress`, `string? DbStatement`, `string? DbUser`, and `IDictionary<string, string>? DbAttributes`.
-  - **References**: ADR 0017 §Key Components 8 (`DbSpanInfo` mirrors Brighter `BoxSpanInfo`); requirements FR12, RD3.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_db_span_info_should_carry_supplied_values"`
+    - `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs` — inside `AddDarkerInstrumentation`, after registering the tracer, add `builder.ConfigureServices(services => { if (services.Any(sd => sd.ServiceType == typeof(IAmADarkerQueryMeter)) && services.Any(sd => sd.ServiceType == typeof(IAmADarkerDbMeter))) builder.AddProcessor(sp => new DarkerMetricsFromTracesProcessor(sp.GetRequiredService<IAmADarkerTracer>(), sp.GetRequiredService<IAmADarkerQueryMeter>(), sp.GetRequiredService<IAmADarkerDbMeter>())); });`. Add `using System.Linq;` and `using Microsoft.Extensions.DependencyInjection;`. Do not otherwise change the existing source/tracer registration (0017 behaviour preserved).
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_tracer_instrumentation_should_add_metrics_processor_only_when_meters_registered"`
+  - **References**: ADR 0018 §Key Components 6 (conditional processor), §Consequences/Negative (both builders required); requirements FR13, NFR2, AC8. Read existing `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs`; `../Brighter/src/Paramore.Brighter.Extensions.Diagnostics/BrighterTracerBuilderExtensions.cs`.
 
-- [x] **Add `DarkerTracer` / `IAmADarkerTracer` skeleton owning the `ActivitySource`**
-  - **Behavior**: `DarkerTracer` owns one `ActivitySource` named `paramore.darker`; it is disposable and, because there is no listener in this test, `CreateQuerySpan` returns null (zero-overhead path).
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_tracer_without_listener_should_expose_source_and_return_null_span.cs`
+- [ ] **End-to-end: executing a query records query + DB duration metrics with correct dimensions, and nothing when unwired**
+  - **Behavior**: With both the tracer and meter builders wired and an in-memory metric reader, executing a query through a real `QueryProcessor` records one `paramore.darker.query.duration`; a DB span records `db.client.operation.duration`; a failing query adds `error.type`; high-cardinality span tags never become metric dimensions; and with no meter builder wired, nothing is recorded.
+  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_executing_query_with_metrics_wired_should_record_query_and_db_duration_metrics.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
-    - `tracer.ActivitySource.Name == DarkerSemanticConventions.SourceName`.
-    - With no `ActivityListener` registered, `tracer.CreateQuerySpan(new SomeQuery())` returns null.
-    - `DarkerTracer` implements `IAmADarkerTracer : IDisposable` and disposes without throwing.
+    - Wiring `WithTracing(t => t.AddDarkerInstrumentation())` + `WithMetrics(m => m.AddDarkerInstrumentation().AddInMemoryExporter(metrics))`, resolving the `IAmADarkerTracer`, building a `QueryProcessor` with that tracer and body-free `InstrumentationOptions` (`QueryInformation | DatabaseInformation`, NOT `All`), executing a query whose handler carries `[QueryDbSpan(...)]`, then `ForceFlush()`: exports one `paramore.darker.query.duration` point with `querytype`/`operation` dimensions and one `db.client.operation.duration` point with `db.*` dimensions.
+    - No exported metric point carries a `query_body` or `spancontext.*` dimension.
+    - Executing a query whose handler throws yields a `paramore.darker.query.duration` point with an `error.type` dimension.
+    - Wiring ONLY the tracer builder (no meter builder) and executing a query records zero metrics (NFR2, AC8).
   - **Implementation files**:
-    - `src/Paramore.Darker/Observability/IAmADarkerTracer.cs` - expand to `ActivitySource ActivitySource { get; }`, `Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null, InstrumentationOptions options = InstrumentationOptions.All)`, `Activity? CreateDbSpan(DbSpanInfo info, Activity? parentActivity, InstrumentationOptions options = InstrumentationOptions.All)`, `void AddExceptionToSpan(Activity? span, Exception exception)`, `void EndSpan(Activity? span)`.
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - new `public sealed class DarkerTracer : IAmADarkerTracer`; ctor builds `new ActivitySource(DarkerSemanticConventions.SourceName, <assembly version>)` and accepts an optional `TimeProvider` (defaulting `TimeProvider.System`); `CreateQuerySpan` guards with `ActivitySource.HasListeners()` and returns null when no listener (fuller body added in later tasks); other methods stubbed to no-op-safe; `Dispose()` disposes the source.
-  - **References**: ADR 0017 §Key Components 1 (`IAmADarkerTracer`/`DarkerTracer`), §Technology Choices (`TimeProvider`, `HasListeners` guard); requirements FR1, NFR2. Brighter model `Paramore.Brighter/Observability/BrighterTracer.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_tracer_without_listener_should_expose_source_and_return_null_span"`
-
-- [x] **`CreateQuerySpan` produces span with name/kind/parent**
-  - **Behavior**: With a listener sampling AllData, `CreateQuerySpan` starts an `Internal` activity named `"<QueryType> query"`; when a parent activity is passed it nests under it, and when parent is null it uses ambient `Activity.Current`. The tracer sets `Activity.Current` to the new span.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_should_set_name_kind_and_parent.cs`
-  - **Test should verify**:
-    - With an in-memory listener, the returned activity has `DisplayName == "<QueryTypeName> query"` and `Kind == ActivityKind.Internal`.
-    - Passing an explicit parent activity makes the query span's `ParentId == parent.Id`.
-    - After the call `Activity.Current` equals the returned span.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - implement `CreateQuerySpan` core: `var activity = ActivitySource.StartActivity($"{query.GetType().Name} query", ActivityKind.Internal, parentActivity?.Id); if (activity != null) Activity.Current = activity; return activity;` (attributes added in following tasks).
-  - **References**: ADR 0017 §Architecture Overview (span shape), §Key Components 1 (parenting); requirements FR2, FR3, AC1.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_should_set_name_kind_and_parent"`
-
-- [x] **`CreateQuerySpan` records `QueryInformation` attributes**
-  - **Behavior**: When `options` includes `QueryInformation` and `Activity.IsAllDataRequested` is true, the span carries `paramore.darker.queryid` (from a `Query<TResult>.Id`, else absent), `paramore.darker.querytype` (full type name), and `paramore.darker.operation` (`"query"`).
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_information_should_tag_id_type_and_operation.cs`
-  - **Test should verify**:
-    - For a query deriving from `Query<TResult>`, the span tag `paramore.darker.queryid` equals the query's `Id`.
-    - `paramore.darker.querytype` equals the query's `GetType().FullName` and `paramore.darker.operation == "query"`.
-    - For a query implementing `IQuery<TResult>` directly (no base), the `queryid` tag is absent while `querytype`/`operation` are present.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - after starting the activity, guard `if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryInformation))`; read id via closed-generic pattern `var id = query is Query<TResult> q ? q.Id : null;` and set the three tags via `DarkerSemanticConventions` keys (only set `QueryId` when `id != null`).
-  - **References**: ADR 0017 §Key Components 1 (closed-generic id read), 4 (conventions); requirements FR6, FR6a, FR9, AC2. Read `src/Paramore.Darker/Observability/Query.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_information_should_tag_id_type_and_operation"`
-
-- [x] **`CreateQuerySpan` records `query_body` only when `QueryBody` set**
-  - **Behavior**: When `options` includes `QueryBody`, the span carries `paramore.darker.query_body` = the query serialised as JSON using the runtime-type serializer; when the flag is absent, no body tag is emitted.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_body_should_serialise_runtime_type.cs`
-  - **Test should verify**:
-    - With `QueryBody` set, `paramore.darker.query_body` is present and its JSON contains the concrete query's property values (not `"{}"`), confirming runtime-type serialisation.
-    - With `QueryBody` NOT set (e.g. `QueryInformation` only), the body tag is absent.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - add a guarded block `if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryBody))` that serialises via `JsonSerializer.Serialize(query, query.GetType(), <options>)`, reusing the `QueryLoggingJsonOptions.Options` approach (add the same `IL2026`/`IL3050` `UnconditionalSuppressMessage` guards used by `QueryLoggingDecorator`).
-  - **References**: ADR 0017 §Technology Choices (existing serializer, runtime-type overload), ADR 0012; requirements FR7, FR9. Read `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecorator.cs` and `.../Logging/QueryLoggingJsonOptions.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_body_should_serialise_runtime_type"`
-
-- [x] **`CreateQuerySpan` copies `spancontext.*` bag entries when `QueryContext` set**
-  - **Behavior**: When `options` includes `QueryContext`, entries in a supplied `IQueryContext.Bag` whose key begins with `spancontext.` are copied onto the span as attributes; without the flag they are not.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_query_span_with_query_context_should_copy_spancontext_bag_entries.cs`
-  - **Test should verify**:
-    - A bag containing `spancontext.tenant = "acme"` and a non-prefixed `other = "x"` yields a span with tag `spancontext.tenant == "acme"` and no `other` tag.
-    - Without `QueryContext` in `options`, no `spancontext.*` tag appears.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/IAmADarkerTracer.cs` + `DarkerTracer.cs` - extend `CreateQuerySpan` to also accept the `IQueryContext` (or its `Bag`) so bag copying can occur; add the guarded copy loop keyed on `DarkerSemanticConventions.SpanContextPrefix`. (Adjust the interface signature and the earlier skeleton accordingly; keep `parentActivity`/`options` optional. Final signature: `CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity, IQueryContext? context, InstrumentationOptions options)`.)
-  - **References**: ADR 0017 §Key Components 3 (`QueryContext` flag), 6 (processor passes context); requirements FR8, FR9, AC3.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_query_span_with_query_context_should_copy_spancontext_bag_entries"`
-
-- [x] **`AddExceptionToSpan` sets Error status, records the exception, tags `error.type`**
-  - **Behavior**: `AddExceptionToSpan(span, ex)` sets `ActivityStatusCode.Error`, records the exception per the OTel exceptions convention, and adds an `error.type` tag equal to the exception's type name.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_recording_exception_on_span_should_set_error_status_and_error_type.cs`
-  - **Test should verify**:
-    - After the call, the span's `Status == ActivityStatusCode.Error`.
-    - The span has an `exception` `ActivityEvent` recorded.
-    - The span tag `error.type` equals `typeof(TException).Name` (or FullName — assert on what the impl sets consistently).
-    - Passing a null span is a safe no-op.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - implement `AddExceptionToSpan`: null-guard, `span.SetStatus(ActivityStatusCode.Error)`, `span.AddException(exception)` (or an `ActivityEvent`-based fallback for netstandard2.0, which lacks `Activity.AddException`), and `span.SetTag(DarkerSemanticConventions.ErrorType, exception.GetType().Name)`.
-  - **References**: ADR 0017 §Key Components 1, 6 (`error.type` shared with metrics); requirements FR4, AC5, NFR5. OTel exceptions: https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_recording_exception_on_span_should_set_error_status_and_error_type"`
-
-- [x] **`EndSpan` sets Ok-if-unset, disposes, and restores prior `Activity.Current`**
-  - **Behavior**: `EndSpan(span)` sets status Ok only if the span has no status yet, stops the activity, and restores the `Activity.Current` that was current before the span was started.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_ending_span_should_set_ok_and_restore_previous_current.cs`
-  - **Test should verify**:
-    - Capture `Activity.Current` (may be null), create a query span (which sets Current to it), then `EndSpan` restores `Activity.Current` to the captured value.
-    - A span with no explicit status ends with `Status == ActivityStatusCode.Ok`.
-    - A span already set to `Error` (via `AddExceptionToSpan`) is NOT overwritten to Ok by `EndSpan`.
-    - Null span is a safe no-op.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - track the previous `Activity.Current` when starting a span (e.g. capture in `CreateQuerySpan` and stash via a custom property so `EndSpan` can revert, mirroring `BrighterTracer`); `EndSpan` sets Ok if `span.Status == ActivityStatusCode.Unset`, calls `span.Stop()`/`Dispose()`, and reverts `Activity.Current`.
-  - **References**: ADR 0017 §Key Components 1, §Risks (async `Activity.Current` leakage); requirements FR3, NFR3, AC6.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_ending_span_should_set_ok_and_restore_previous_current"`
-
-- [x] **`DarkerTracer.WriteQueryEvent` static step-event writer**
-  - **Behavior**: The static `WriteQueryEvent(span, stepName, isAsync, options, isSink)` adds one `ActivityEvent` named after the step with tags `paramore.darker.handlername`, `paramore.darker.handlertype` (sync/async), and `paramore.darker.is_sink`; it is a no-op when the span is null or `QueryInformation` is not set.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_writing_query_event_should_add_event_with_handler_tags.cs`
-  - **Test should verify**:
-    - Calling with `stepName: "MyHandler", isAsync: true, isSink: true` adds exactly one `ActivityEvent` named `"MyHandler"` with `handlername == "MyHandler"`, `handlertype == "async"`, `is_sink == true`.
-    - `isAsync: false` yields `handlertype == "sync"`; `isSink: false` yields `is_sink == false`.
-    - Null span is a safe no-op (no throw).
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - add `public static void WriteQueryEvent(Activity? span, string stepName, bool isAsync, InstrumentationOptions options, bool isSink = false)` guarded by `span?.IsAllDataRequested == true && options.HasFlag(QueryInformation)`; build an `ActivityEvent` with `ActivityTagsCollection` using `DarkerSemanticConventions` keys and `span.AddEvent(...)`.
-  - **References**: ADR 0017 §Key Components 1, 7 (events woven, static writer); requirements FR10, FR10a, AC4.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_writing_query_event_should_add_event_with_handler_tags"`
-
-- [x] **`CreateDbSpan` produces a Client DB span nested under the parent**
-  - **Behavior**: `CreateDbSpan(info, parent, options)` starts a `Client` activity named `"<operation> <dbName> <dbTable>"` (or `"<operation> <dbName>"` when no table), parented to the supplied span, and — when `DatabaseInformation` is set — tags it with the `db.*` attributes from `DbSpanInfo`; returns null when there is no listener.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_creating_db_span_should_nest_under_parent_with_db_attributes.cs`
-  - **Test should verify**:
-    - With a listener and a parent query span, the DB span's `ParentId == parent.Id` and `Kind == ActivityKind.Client`.
-    - `DisplayName == "select orders order"` for operation `select`, name `orders`, table `order`; and `"select orders"` when table is null.
-    - With `DatabaseInformation` set, tags `db.system == "postgresql"`, `db.name == "orders"`, `db.operation == "select"` are present.
-    - With no listener, returns null.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/DarkerTracer.cs` - implement `CreateDbSpan` using `ActivitySource.StartActivity(name, ActivityKind.Client, parentActivity?.Id)`, then guarded `db.*` tagging via `DbSpanInfo`/`DbSystem.ToDbSystemString()` and `DarkerSemanticConventions`.
-  - **References**: ADR 0017 §Architecture Overview (DB span shape), §Key Components 8; requirements FR12, RD3, AC7.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_creating_db_span_should_nest_under_parent_with_db_attributes"`
-
-- [x] **`QueryProcessor.Execute` owns the sync query-span lifecycle**
-  - **Behavior**: `Execute` (sync) creates the query span parented to `queryContext.Span`, sets `queryContext.Span`/`Tracer`, ends the span in `finally`, records any exception once via `AddExceptionToSpan`, and — with no tracer/listener — behaves exactly as today.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_sync_query_with_tracer_should_create_and_end_query_span.cs`
-  - **Test should verify**:
-    - With a real `DarkerTracer` + in-memory listener, executing a sync query produces one completed span named `"<QueryType> query"` whose id is surfaced on the handler's `Context.Span` during execution.
-    - A throwing handler yields a span with `Status == Error` and a recorded exception, and the exception still propagates (unwrapped from `TargetInvocationException`).
-    - After execution `Activity.Current` is restored to its pre-call value.
-    - Constructing `QueryProcessor` WITHOUT a tracer leaves the existing suite behaviour unchanged (no span created; add a no-listener assertion).
-  - **Implementation files**:
-    - `src/Paramore.Darker/QueryProcessor.cs` - add optional ctor params `IAmADarkerTracer? tracer = null`, `InstrumentationOptions instrumentationOptions = InstrumentationOptions.All`; in `Execute`, after `InitQueryContext`, do `var span = tracer?.CreateQuerySpan(query, queryContext.Span, queryContext, instrumentationOptions); queryContext.Span = span; queryContext.Tracer = tracer;` then wrap invoke in `try/catch(...AddExceptionToSpan)/finally(EndSpan)`, recording the exception once inside the existing `TargetInvocationException`-unwrapping catch.
-  - **References**: ADR 0017 §Key Components 6 (`QueryProcessor` changes); requirements FR2, FR3, FR4, FR11, AC1, AC5, AC6, NFR1. Read `src/Paramore.Darker/QueryProcessor.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_sync_query_with_tracer_should_create_and_end_query_span"`
-
-- [x] **`QueryProcessor.ExecuteAsync` owns the async query-span lifecycle**
-  - **Behavior**: `ExecuteAsync` mirrors the sync span lifecycle with correct `Activity.Current` flow across `await`: span created parented to `queryContext.Span`, ended in `finally`, exception recorded once, and no span/overhead when no tracer/listener.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_async_query_with_tracer_should_create_and_end_query_span.cs`
-  - **Test should verify**:
-    - With a `DarkerTracer` + listener, awaiting an async query produces one completed `"<QueryType> query"` span, surfaced on `Context.Span` during handler execution.
-    - A throwing async handler yields `Status == Error` + recorded exception, exception propagates unwrapped.
-    - After `await`, `Activity.Current` is restored (assert unchanged from before the call).
-  - **Implementation files**:
-    - `src/Paramore.Darker/QueryProcessor.cs` - apply the same span create/end/exception logic in `ExecuteAsync`, ending the span in `finally` after the `await`.
-  - **References**: ADR 0017 §Key Components 6, §Risks (async `Activity.Current` leakage); requirements FR2, FR3, FR4, NFR3, AC5, AC6.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_async_query_with_tracer_should_create_and_end_query_span"`
-
-- [x] **`PipelineBuilder.Build` weaves a step event per sync decorator and the handler (sink)**
-  - **Behavior**: When the context carries a span+tracer, the sync `Func` chain writes one `WriteQueryEvent` per decorator step and one for the handler with `isSink: true`; with no span it is a pass-through with no behaviour change.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_building_sync_pipeline_with_span_should_write_event_per_step.cs`
-  - **Test should verify**:
-    - Executing a sync query with one decorator + handler yields two events on the span: the decorator (`is_sink == false`) and the handler (`is_sink == true`), each with `handlertype == "sync"`.
-    - The handler event names match the handler type name; the decorator event names match the decorator type name.
-    - With no span on the context, the pipeline runs identically and adds no events (no throw).
-  - **Implementation files**:
-    - `src/Paramore.Darker/PipelineBuilder.cs` - in `Build`, read `queryContext.Span`/`Tracer` (and the processor's options via the context/handler); wrap the innermost handler closure with `DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: false, options, isSink: true)` before invoking, and each decorator-wrapping closure with `WriteQueryEvent(span, decorator.GetType().Name, false, options)` before calling `next`. Exceptions are NOT recorded here (processor owns that).
-  - **References**: ADR 0017 §Key Components 7 (`PipelineBuilder` changes), §Risks (double exception events, threading tracer via context); requirements FR10, FR10a, AC4. Read `src/Paramore.Darker/PipelineBuilder.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_building_sync_pipeline_with_span_should_write_event_per_step"`
-
-- [x] **`PipelineBuilder.BuildAsync` weaves a step event per async decorator and the handler (sink)**
-  - **Behavior**: The async `Func` chain writes one `WriteQueryEvent` per async decorator step and one for the handler with `isSink: true` and `handlertype == "async"`; with no span it is a pass-through.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_building_async_pipeline_with_span_should_write_event_per_step.cs`
-  - **Test should verify**:
-    - Awaiting an async query with one async decorator + handler yields two events: decorator (`is_sink == false`) and handler (`is_sink == true`), each with `handlertype == "async"`.
-    - Event names match the async decorator and handler type names.
-    - With no span, the async pipeline runs identically and adds no events.
-  - **Implementation files**:
-    - `src/Paramore.Darker/PipelineBuilder.cs` - apply the same weaving in `BuildAsync` with `isAsync: true`.
-  - **References**: ADR 0017 §Key Components 7; requirements FR10, FR10a, AC4.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_building_async_pipeline_with_span_should_write_event_per_step"`
-
-- [x] **`[QueryDbSpan]` attribute + sync `QueryDbSpanDecorator` opens a child DB span**
-  - **Behavior**: `[QueryDbSpan(step, DbSystem, dbName, dbTable, operation)]` on a sync handler's `Execute` weaves a `QueryDbSpanDecorator<TQuery,TResult>` that reads `Context.Tracer`+`Context.Span`, opens a child DB span via `CreateDbSpan`, invokes `next`, and ends the DB span; the processor still records any exception.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_sync_handler_with_db_span_attribute_should_create_child_db_span.cs`
-  - **Test should verify**:
-    - A sync handler decorated with `[QueryDbSpan(1, DbSystem.PostgreSql, "orders", "order", "select")]` produces a `Client` DB span nested under the query span (`ParentId == querySpan.Id`) with `db.*` tags.
-    - The DB span starts and ends within the handler invocation (assert it is stopped after execution).
-    - With no listener/tracer, the handler runs unchanged (no DB span, no throw).
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/Attributes/QueryDbSpanAttribute.cs` - `public sealed class QueryDbSpanAttribute : QueryHandlerAttribute` with ctor `(int step, DbSystem system, string dbName, string dbTable, string operation)`; `GetAttributeParams()` returns those five values; `GetDecoratorType()` returns `typeof(QueryDbSpanDecorator<,>)`.
-    - `src/Paramore.Darker/Observability/Handlers/QueryDbSpanDecorator.cs` - `public class QueryDbSpanDecorator<TQuery,TResult> : IQueryHandlerDecorator<TQuery,TResult> where TQuery : IQuery<TResult>`; `InitializeFromAttributeParams` reads the five params into a `DbSpanInfo`; `Execute` opens `Context.Tracer?.CreateDbSpan(info, Context.Span)`, calls `next`, ends via `Context.Tracer?.EndSpan(dbSpan)` in `finally` (no exception recording here).
-  - **References**: ADR 0017 §Key Components 8 (DB decorator, `GetAttributeParams`/`InitializeFromAttributeParams`); requirements FR12a, RD3, AC7. Read `src/Paramore.Darker/Logging/Attributes/QueryLoggingAttribute.cs`, `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecorator.cs`, `src/Paramore.Darker/QueryHandlerAttribute.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_sync_handler_with_db_span_attribute_should_create_child_db_span"`
-
-- [x] **`[QueryDbSpanAsync]` attribute + async `QueryDbSpanDecoratorAsync` opens a child DB span**
-  - **Behavior**: `[QueryDbSpanAsync(step, DbSystem, dbName, dbTable, operation)]` on an async handler's `ExecuteAsync` weaves a `QueryDbSpanDecoratorAsync<TQuery,TResult>` that opens a child DB span around the awaited `next` and ends it.
-  - **Test file**: `test/Paramore.Darker.Core.Tests/When_executing_async_handler_with_db_span_attribute_should_create_child_db_span.cs`
-  - **Test should verify**:
-    - An async handler decorated with `[QueryDbSpanAsync(1, DbSystem.MsSql, "orders", "order", "select")]` produces a `Client` DB span nested under the query span with `db.*` tags.
-    - The DB span is stopped after the awaited handler completes.
-    - With no listener/tracer the async handler runs unchanged.
-  - **Implementation files**:
-    - `src/Paramore.Darker/Observability/Attributes/QueryDbSpanAttributeAsync.cs` - `public sealed class QueryDbSpanAttributeAsync : QueryHandlerAttributeAsync` mirroring the sync attribute, `GetDecoratorType()` returns `typeof(QueryDbSpanDecoratorAsync<,>)`.
-    - `src/Paramore.Darker/Observability/Handlers/QueryDbSpanDecoratorAsync.cs` - `public class QueryDbSpanDecoratorAsync<TQuery,TResult> : IQueryHandlerDecoratorAsync<TQuery,TResult>`; `ExecuteAsync` opens the DB span, `await next(...)`, ends it in `finally`.
-  - **References**: ADR 0017 §Key Components 8; requirements FR12a, RD3, AC7. Read `src/Paramore.Darker/Logging/Attributes/QueryLoggingAttributeAsync.cs`, `src/Paramore.Darker/Logging/Handlers/QueryLoggingDecoratorAsync.cs`, `src/Paramore.Darker/QueryHandlerAttributeAsync.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_executing_async_handler_with_db_span_attribute_should_create_child_db_span"`
-
-- [x] **Create `Paramore.Darker.Extensions.Diagnostics` assembly + OTel CPM packages + solution/test wiring**
-  - **Behavior**: A new SDK-wiring assembly and its test project exist, reference the OpenTelemetry SDK via CPM, and are registered in both solution files; nothing else changes behaviourally yet.
-  - **Test file**: (none yet — project-creation task) build the new test project instead.
-  - **Test should verify**:
-    - N/A for this structural task; the new test project compiles and references the Diagnostics assembly + OpenTelemetry SDK test packages.
-  - **Implementation files**:
-    - `Directory.Packages.props` - add `PackageVersion` entries for `OpenTelemetry` and `OpenTelemetry.Extensions.Hosting` (and, for tests, `OpenTelemetry.Exporter.InMemory`) at a current stable version.
-    - `src/Paramore.Darker.Extensions.Diagnostics/Paramore.Darker.Extensions.Diagnostics.csproj` - new SDK project (TFMs `netstandard2.0;net8.0;net9.0`), `ProjectReference` to `../Paramore.Darker/Paramore.Darker.csproj`, `PackageReference` to `OpenTelemetry`.
-    - `test/Paramore.Darker.Extensions.Diagnostics.Tests/Paramore.Darker.Extensions.Diagnostics.Tests.csproj` - new xUnit v3 test project referencing the Diagnostics assembly, `Shouldly`, and `OpenTelemetry.Exporter.InMemory`.
-    - `Darker.slnx` and `Darker.Filter.slnf` - add both new projects.
-  - **References**: ADR 0017 §Key Components 9, §NFR4; requirements FR14, NFR4. Read `Darker.slnx`, `Darker.Filter.slnf`, `Directory.Packages.props`, `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj`. Brighter model `Paramore.Brighter.Extensions.Diagnostics/BrighterTracerBuilderExtensions.cs`.
-  - **RALPH-VERIFY**: `dotnet build test/Paramore.Darker.Extensions.Diagnostics.Tests/ -c Release`
-
-- [x] **`AddDarkerInstrumentation(this TracerProviderBuilder)` registers source + tracer**
-  - **Behavior**: `AddDarkerInstrumentation()` on a `TracerProviderBuilder` constructs a `DarkerTracer`, `TryAddSingleton<IAmADarkerTracer>` it, and adds the `paramore.darker` source so Darker query spans are collected. (No metrics processor — deferred to ADR 0018.)
-  - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_should_register_source_and_tracer.cs`
-  - **Test should verify**:
-    - Building a `TracerProvider` with `.AddDarkerInstrumentation()` and an in-memory exporter, then creating+ending a span on a `DarkerTracer` resolved from the service provider, results in the span being exported (source is subscribed).
-    - The service collection has a singleton `IAmADarkerTracer` registered.
-  - **Implementation files**:
-    - `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs` - `public static TracerProviderBuilder AddDarkerInstrumentation(this TracerProviderBuilder builder)` that builds a `DarkerTracer`, registers it via `builder.ConfigureServices(s => s.TryAddSingleton<IAmADarkerTracer>(tracer))`, and calls `builder.AddSource(tracer.ActivitySource.Name)`.
-  - **References**: ADR 0017 §Key Components 9 (source + tracer ONLY; metrics processor belongs to 0018); requirements FR14, AC8. Brighter `BrighterTracerBuilderExtensions.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_darker_instrumentation_should_register_source_and_tracer"`
-
-- [x] **`AddDarker` threads the registered tracer + `InstrumentationOptions` into `QueryProcessor`**
-  - **Behavior**: When an `IAmADarkerTracer` is registered and `DarkerOptions.InstrumentationOptions` is set, `AddDarker` passes both to the `QueryProcessor` ctor; when no tracer is registered, the processor is built without one (unchanged behaviour).
-  - **Test file**: `test/Paramore.Darker.Extensions.Tests/When_adding_darker_with_registered_tracer_should_pass_tracer_to_processor.cs`
-  - **Test should verify**:
-    - With an `IAmADarkerTracer` registered in the container and a subscribed listener, resolving `IQueryProcessor` and executing a query produces a query span (proving the tracer was threaded in).
-    - `DarkerOptions.InstrumentationOptions` defaults to `All` and is forwarded (e.g. setting it to `None` suppresses attribute groups).
-    - With NO tracer registered, resolving and executing a query creates no span (existing behaviour preserved).
-  - **Implementation files**:
-    - `src/Paramore.Darker.Extensions.DependencyInjection/DarkerOptions.cs` - add `public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;`.
-    - `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs` - in `BuildQueryProcessor`, resolve `provider.GetService<IAmADarkerTracer>()` and pass it plus `options.InstrumentationOptions` to the `QueryProcessor` ctor.
-  - **References**: ADR 0017 §Key Components 6, 9 (DI resolves tracer + options); requirements FR15, AC8, NFR1. Read `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs`, `.../DarkerOptions.cs`.
-  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Tests/ --filter "FullyQualifiedName~When_adding_darker_with_registered_tracer_should_pass_tracer_to_processor"`
+    - (none — behaviour is fully delivered by the previous tasks; this task only adds the end-to-end test, plus any shared test-double query/handler under `test/Paramore.Darker.Extensions.Diagnostics.Tests/TestDoubles/` if one does not already exist.)
+  - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_executing_query_with_metrics_wired_should_record_query_and_db_duration_metrics"`
+  - **References**: ADR 0018 §Implementation Approach (end-to-end assertions), §Consequences; requirements FR13, RD4, NFR2, AC8. Read `src/Paramore.Darker/QueryProcessor.cs` (tracer/options ctor params from 0017), `src/Paramore.Darker/Observability/Attributes/QueryDbSpanAttribute.cs`, and the existing `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_should_register_source_and_tracer.cs` for the exporter-flush rig.
