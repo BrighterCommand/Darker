@@ -62,7 +62,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_recording_query_operation_should_record_duration_with_allowed_query_tags"`
   - **References**: ADR 0018 §Key Components 2 (query meter, count/error derived); requirements FR13, RD4, NFR2. Read `../Brighter/src/Paramore.Brighter/Observability/DbMeter.cs` + `IAmABrighterDbMeter.cs`.
 
-- [ ] **Add `IAmADarkerDbMeter` + `DbMeter` recording `db.client.operation.duration`**
+- [x] **Add `IAmADarkerDbMeter` + `DbMeter` recording `db.client.operation.duration`**
   - **Behavior**: `DbMeter` owns one `Histogram<double>` `db.client.operation.duration` (unit `s`); `RecordClientOperation(Activity)` records the DB span duration with the allowed `db.*`/`server.address`/`error.type` tags plus service attributes; `Enabled` reflects the histogram.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_recording_db_operation_should_record_duration_with_allowed_db_tags.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
