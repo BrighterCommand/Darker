@@ -109,7 +109,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_adding_tracer_instrumentation_should_add_metrics_processor_only_when_meters_registered"`
   - **References**: ADR 0018 §Key Components 6 (conditional processor), §Consequences/Negative (both builders required); requirements FR13, NFR2, AC8. Read existing `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs`; `../Brighter/src/Paramore.Brighter.Extensions.Diagnostics/BrighterTracerBuilderExtensions.cs`.
 
-- [ ] **End-to-end: executing a query records query + DB duration metrics with correct dimensions, and nothing when unwired**
+- [x] **End-to-end: executing a query records query + DB duration metrics with correct dimensions, and nothing when unwired**
   - **Behavior**: With both the tracer and meter builders wired and an in-memory metric reader, executing a query through a real `QueryProcessor` records one `paramore.darker.query.duration`; a DB span records `db.client.operation.duration`; a failing query adds `error.type`; high-cardinality span tags never become metric dimensions; and with no meter builder wired, nothing is recorded.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_executing_query_with_metrics_wired_should_record_query_and_db_duration_metrics.cs` (`[Collection("DarkerMeter")]`)
   - **Test should verify**:
