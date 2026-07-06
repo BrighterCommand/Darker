@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.Observability;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
@@ -7,5 +8,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public IQueryContextFactory QueryContextFactory { get; set; } = new InMemoryQueryContextFactory();
         public ServiceLifetime HandlerLifetime { get; set; } = ServiceLifetime.Transient;
         public ServiceLifetime QueryProcessorLifetime { get; set; } = ServiceLifetime.Singleton;
+        public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
     }
 }

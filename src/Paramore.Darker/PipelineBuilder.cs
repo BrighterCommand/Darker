@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
+using Paramore.Darker.Observability;
 using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
@@ -47,7 +48,8 @@ namespace Paramore.Darker
             _decoratorFactoryAsync = decoratorFactoryAsync;
         }
 
-        public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext)
+        public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext,
+            InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
@@ -66,10 +68,14 @@ namespace Paramore.Darker
                 "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
+            // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
+            var span = queryContext.Span;
+
             var pipeline = new List<Func<IQuery<TResult>, TResult>>
             {
                 r =>
                     {
+                        DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: false, instrumentationOptions, isSink: true);
                         try
                         {
                             return (TResult)executeMethodInfo.Invoke(_handler, new object[] { r });
@@ -91,13 +97,18 @@ namespace Paramore.Darker
                 _logger.LogDebug("Adding decorator to pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
-                pipeline.Add(r => decorator.Execute(r, next, fallback));
+                pipeline.Add(r =>
+                {
+                    DarkerTracer.WriteQueryEvent(span, decorator.GetType().Name, isAsync: false, instrumentationOptions);
+                    return decorator.Execute(r, next, fallback);
+                });
             }
 
             return pipeline.Last();
         }
 
-        public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext)
+        public Func<IQuery<TResult>, CancellationToken, Task<TResult>> BuildAsync(IQuery<TResult> query, IQueryContext queryContext,
+            InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
@@ -120,10 +131,14 @@ namespace Paramore.Darker
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
+            // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
+            var span = queryContext.Span;
+
             var pipeline = new List<Func<IQuery<TResult>, CancellationToken, Task<TResult>>>
             {
                 (r, ct) =>
                 {
+                    DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: true, instrumentationOptions, isSink: true);
                     try
                     {
                         return (Task<TResult>)executeAsyncMethodInfo.Invoke(_handler, new object[] { r, ct });
@@ -145,7 +160,12 @@ namespace Paramore.Darker
                 _logger.LogDebug("Adding decorator to async pipeline: {Decorator}", decorator.GetType().Name);
 
                 var next = pipeline.Last();
-                pipeline.Add((r, ct) => decorator.ExecuteAsync(r, next, fallback, ct));
+                var decoratorName = decorator.GetType().Name;
+                pipeline.Add((r, ct) =>
+                {
+                    DarkerTracer.WriteQueryEvent(span, decoratorName, isAsync: true, instrumentationOptions);
+                    return decorator.ExecuteAsync(r, next, fallback, ct);
+                });
             }
 
             return pipeline.Last();

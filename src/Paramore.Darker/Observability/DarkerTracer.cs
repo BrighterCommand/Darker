@@ -1,0 +1,223 @@
+using System;
+using System.Diagnostics;
+#if NET8_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Text.Json;
+using Paramore.Darker.Logging;
+
+namespace Paramore.Darker.Observability;
+
+/// <summary>
+/// Default implementation of <see cref="IAmADarkerTracer"/>. Owns a single
+/// <see cref="System.Diagnostics.ActivitySource"/> named <c>paramore.darker</c> and manages the
+/// query-span lifecycle. Dispose to release the underlying source.
+/// </summary>
+/// <remarks>
+/// Register this tracer by calling <c>AddDarkerInstrumentation()</c> on the
+/// <c>TracerProviderBuilder</c> (in <c>Paramore.Darker.Extensions.Diagnostics</c>), which wires
+/// the source into the OpenTelemetry SDK and adds the tracer to the DI container.
+/// When no <see cref="ActivityListener"/> is subscribed the
+/// <see cref="ActivitySource.HasListeners"/> guard returns <c>false</c> and every span-creation
+/// method returns <c>null</c> — zero allocation overhead when unobserved (NFR2).
+/// </remarks>
+public sealed class DarkerTracer : IAmADarkerTracer
+{
+    private readonly TimeProvider _timeProvider;
+
+    /// <inheritdoc />
+    public ActivitySource ActivitySource { get; }
+
+    /// <summary>
+    /// Initialises a new <see cref="DarkerTracer"/> that owns an
+    /// <see cref="System.Diagnostics.ActivitySource"/> named <see cref="DarkerSemanticConventions.SourceName"/>.
+    /// </summary>
+    /// <param name="timeProvider">
+    /// Optional <see cref="TimeProvider"/> seam for deterministic start/end times in tests.
+    /// Defaults to <see cref="TimeProvider.System"/> when <c>null</c>.
+    /// </param>
+    public DarkerTracer(TimeProvider? timeProvider = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        var version = typeof(DarkerTracer).Assembly.GetName().Version?.ToString();
+        ActivitySource = new ActivitySource(DarkerSemanticConventions.SourceName, version);
+    }
+
+    /// <inheritdoc />
+    public Activity? CreateQuerySpan<TResult>(IQuery<TResult> query, Activity? parentActivity = null,
+        IQueryContext? context = null, InstrumentationOptions options = InstrumentationOptions.All)
+    {
+        if (!ActivitySource.HasListeners())
+            return null;
+
+        // Capture the ambient current BEFORE StartActivity, which may itself modify Activity.Current.
+        // EndSpan reads this back via GetCustomProperty to restore the previous value (NFR3, AC6).
+        var previous = Activity.Current;
+
+        var activity = ActivitySource.StartActivity(
+            $"{query.GetType().Name} query",
+            ActivityKind.Internal,
+            parentActivity?.Id);
+
+        if (activity != null)
+        {
+            Activity.Current = activity;
+            activity.SetCustomProperty("darker.previous_current", previous);
+        }
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryInformation))
+        {
+            var id = query is Query<TResult> q ? q.Id : null;
+            if (id != null)
+                activity.SetTag(DarkerSemanticConventions.QueryId, id);
+            activity.SetTag(DarkerSemanticConventions.QueryType, query.GetType().FullName);
+            activity.SetTag(DarkerSemanticConventions.Operation, "query");
+        }
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryBody))
+            activity.SetTag(DarkerSemanticConventions.QueryBody, SerializeQuery(query));
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.QueryContext) && context != null)
+        {
+            foreach (var entry in context.Bag)
+            {
+                if (entry.Key.StartsWith(DarkerSemanticConventions.SpanContextPrefix))
+                    activity.SetTag(entry.Key, entry.Value?.ToString());
+            }
+        }
+
+        return activity;
+    }
+
+    /// <inheritdoc />
+    public Activity? CreateDbSpan(DbSpanInfo info, Activity? parentActivity,
+        InstrumentationOptions options = InstrumentationOptions.All)
+    {
+        if (!ActivitySource.HasListeners())
+            return null;
+
+        var name = info.DbTable is null
+            ? $"{info.DbOperation} {info.DbName}"
+            : $"{info.DbOperation} {info.DbName} {info.DbTable}";
+
+        var activity = ActivitySource.StartActivity(
+            name,
+            ActivityKind.Client,
+            parentActivity?.Id);
+
+        if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.DatabaseInformation))
+        {
+            activity.SetTag(DarkerSemanticConventions.DbSystem, info.DbSystem.ToDbSystemString());
+            activity.SetTag(DarkerSemanticConventions.DbName, info.DbName);
+            activity.SetTag(DarkerSemanticConventions.DbOperation, info.DbOperation);
+
+            if (info.DbTable != null)
+                activity.SetTag(DarkerSemanticConventions.DbSqlTable, info.DbTable);
+
+            if (info.ServerAddress != null)
+                activity.SetTag(DarkerSemanticConventions.ServerAddress, info.ServerAddress);
+
+            if (info.DbStatement != null)
+                activity.SetTag(DarkerSemanticConventions.DbStatement, info.DbStatement);
+
+            if (info.DbUser != null)
+                activity.SetTag(DarkerSemanticConventions.DbUser, info.DbUser);
+        }
+
+        return activity;
+    }
+
+    /// <inheritdoc />
+    public void AddExceptionToSpan(Activity? span, Exception exception)
+    {
+        if (span is null) return;
+
+        span.SetStatus(ActivityStatusCode.Error);
+
+#if NETSTANDARD2_0
+        // Activity.AddException is not available on netstandard2.0; emit the OTel exception
+        // event manually following the exceptions semantic conventions specification:
+        // https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/
+        var eventTags = new ActivityTagsCollection
+        {
+            { "exception.type", exception.GetType().FullName },
+            { "exception.message", exception.Message },
+            { "exception.stacktrace", exception.ToString() },
+        };
+        span.AddEvent(new ActivityEvent("exception", tags: eventTags));
+#else
+        span.AddException(exception);
+#endif
+
+        span.SetTag(DarkerSemanticConventions.ErrorType, exception.GetType().Name);
+    }
+
+    /// <inheritdoc />
+    public void EndSpan(Activity? span)
+    {
+        if (span is null) return;
+
+        // Promote to Ok only when no explicit status has been set (e.g. Error from AddExceptionToSpan).
+        if (span.Status == ActivityStatusCode.Unset)
+            span.SetStatus(ActivityStatusCode.Ok);
+
+        // Retrieve the Activity that was current before CreateQuerySpan set Activity.Current = span,
+        // so we can restore it after stopping.  The value may be null (root span case).
+        var previous = span.GetCustomProperty("darker.previous_current") as Activity;
+
+        span.Stop();
+
+        // Restore the ambient current, mirroring BrighterTracer's approach (AC6, ADR 0017 §Risks).
+        Activity.Current = previous;
+    }
+
+    /// <summary>
+    /// Writes a pipeline step event onto <paramref name="span"/> recording the handler or
+    /// decorator name, whether it runs synchronously or asynchronously, and whether it is the
+    /// terminal sink handler. No-op when <paramref name="span"/> is <c>null</c>, when
+    /// <see cref="Activity.IsAllDataRequested"/> is <c>false</c>, or when
+    /// <paramref name="options"/> does not include
+    /// <see cref="InstrumentationOptions.QueryInformation"/>.
+    /// </summary>
+    /// <param name="span">The query span to record the event on; may be <c>null</c>.</param>
+    /// <param name="stepName">The handler or decorator type name used as the event name and <c>handlername</c> tag.</param>
+    /// <param name="isAsync"><c>true</c> emits <c>handlertype = "async"</c>; <c>false</c> emits <c>"sync"</c>.</param>
+    /// <param name="options">Instrumentation verbosity flags; the event is emitted only when <see cref="InstrumentationOptions.QueryInformation"/> is set.</param>
+    /// <param name="isSink"><c>true</c> marks this event as the terminal sink handler rather than a decorator.</param>
+    public static void WriteQueryEvent(Activity? span, string stepName, bool isAsync,
+        InstrumentationOptions options, bool isSink = false)
+    {
+        if (span?.IsAllDataRequested != true)
+            return;
+
+        if (!options.HasFlag(InstrumentationOptions.QueryInformation))
+            return;
+
+        var tags = new ActivityTagsCollection
+        {
+            { DarkerSemanticConventions.HandlerName, stepName },
+            { DarkerSemanticConventions.HandlerType, isAsync ? "async" : "sync" },
+            { DarkerSemanticConventions.IsSink, isSink },
+        };
+
+        span.AddEvent(new ActivityEvent(stepName, tags: tags));
+    }
+
+    // The pipeline closes CreateQuerySpan over IQuery<TResult> so the runtime-type overload is
+    // required: the generic Serialize<T>(value, options) overload would serialise the bare
+    // IQuery<TResult> interface and emit "{}". value.GetType() restores runtime-type behaviour and
+    // composes with a source-generated TypeInfoResolver under AOT.
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage(
+        "Trimming", "IL2026:RequiresUnreferencedCodeAttribute",
+        Justification = "Consumers supply their own JsonSerializerOptions. AOT/trim-safe usage is documented as the consumer responsibility (NFR2). Source-gen TypeInfoResolver is the supported escape hatch.")]
+    [UnconditionalSuppressMessage(
+        "AOT", "IL3050:RequiresDynamicCodeAttribute",
+        Justification = "Same as IL2026 — call site is unavoidable without erasing the public Serialize API. Consumers supply source-gen TypeInfoResolver for full AOT safety.")]
+#endif
+    private static string SerializeQuery<TResult>(IQuery<TResult> query) =>
+        JsonSerializer.Serialize(query, query.GetType(), QueryLoggingJsonOptions.Options);
+
+    /// <summary>Disposes the underlying <see cref="System.Diagnostics.ActivitySource"/>.</summary>
+    public void Dispose() => ActivitySource.Dispose();
+}
