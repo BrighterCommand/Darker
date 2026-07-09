@@ -24,6 +24,8 @@ namespace Paramore.Darker
         private readonly IQueryHandlerFactoryAsync _handlerFactoryAsync;
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
+        private readonly IStreamQueryHandlerRegistry _streamHandlerRegistry;
+
         private readonly IPolicyRegistry<string> _policyRegistry;
         private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider;
 
@@ -48,6 +50,8 @@ namespace Paramore.Darker
             _handlerRegistryAsync = handlerConfiguration.HandlerRegistryAsync;
             _handlerFactoryAsync = handlerConfiguration.HandlerFactoryAsync;
             _decoratorFactoryAsync = handlerConfiguration.DecoratorFactoryAsync;
+
+            _streamHandlerRegistry = handlerConfiguration.StreamHandlerRegistry;
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
             _policyRegistry = policyRegistry;

@@ -27,6 +27,8 @@ namespace Paramore.Darker
         private readonly IQueryHandlerFactoryAsync _handlerFactoryAsync;
         private readonly IQueryHandlerDecoratorFactoryAsync _decoratorFactoryAsync;
 
+        private readonly IStreamQueryHandlerRegistry _streamHandlerRegistry;
+
         private IQueryHandler _handler;
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> _decorators;
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
@@ -38,7 +40,8 @@ namespace Paramore.Darker
             IQueryHandlerDecoratorFactory decoratorFactory,
             IQueryHandlerRegistryAsync handlerRegistryAsync = null,
             IQueryHandlerFactoryAsync handlerFactoryAsync = null,
-            IQueryHandlerDecoratorFactoryAsync decoratorFactoryAsync = null)
+            IQueryHandlerDecoratorFactoryAsync decoratorFactoryAsync = null,
+            IStreamQueryHandlerRegistry streamHandlerRegistry = null)
         {
             _handlerRegistry = handlerRegistry;
             _handlerFactory = handlerFactory;
@@ -46,6 +49,7 @@ namespace Paramore.Darker
             _handlerRegistryAsync = handlerRegistryAsync;
             _handlerFactoryAsync = handlerFactoryAsync;
             _decoratorFactoryAsync = decoratorFactoryAsync;
+            _streamHandlerRegistry = streamHandlerRegistry;
         }
 
         public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext,
