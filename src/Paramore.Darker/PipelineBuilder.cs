@@ -9,6 +9,7 @@ using Paramore.Darker.Exceptions;
 using Paramore.Darker.Logging;
 using Paramore.Darker.Observability;
 using System.Runtime.ExceptionServices;
+using System.Runtime.CompilerServices;
 
 namespace Paramore.Darker
 {
@@ -262,6 +263,61 @@ namespace Paramore.Darker
             _logger.LogDebug("Finished initialising {DecoratorsCount} decorators", decorators.Count);
 
             return decorators;
+        }
+
+        public Func<IStreamQuery<TResult>, CancellationToken, IAsyncEnumerable<TResult>> BuildStream(
+            IStreamQuery<TResult> query, IQueryContext queryContext,
+            InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
+        {
+            _lifetime = new QueryLifetimeScope();
+
+            var queryType = query.GetType();
+            _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);
+
+            var (handlerType, handler) = ResolveStreamHandler(queryType);
+            _handler = handler;
+            _handler.Context = queryContext;
+
+            // Resolve by signature to avoid AmbiguousMatchException when the handler
+            // also exposes a Task<TResult> ExecuteAsync with different param types.
+            var executeMethodInfo = handlerType.GetMethod(ExecuteAsyncMethodName, new[] { queryType, typeof(CancellationToken) });
+            if (executeMethodInfo == null)
+                throw new ConfigurationException($"Handler {handlerType.FullName} does not implement a stream ExecuteAsync(TQuery, CancellationToken). Ensure it implements IStreamQueryHandler.");
+
+            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttribute),
+                "Stream handler has sync attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
+                "Stream handler has async attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+
+            var span = queryContext.Span;
+
+            // No TargetInvocationException unwrap: the iterator body runs on MoveNextAsync, not Invoke.
+            return (r, ct) =>
+            {
+                DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: true, instrumentationOptions, isSink: true);
+                return (IAsyncEnumerable<TResult>)executeMethodInfo.Invoke(_handler, new object[] { r, ct });
+            };
+        }
+
+        private (Type handlerType, IQueryHandler handler) ResolveStreamHandler(Type queryType)
+        {
+            if (_streamHandlerRegistry == null)
+                throw new ConfigurationException("No stream handler registry configured. Use a HandlerConfiguration with StreamHandlerRegistry set.");
+
+            var handlerType = _streamHandlerRegistry.Get(queryType);
+            if (handlerType == null)
+                throw new ConfigurationException($"No stream handler registered for query: {queryType.FullName}");
+
+            _logger.LogDebug("Found stream handler type for {QueryType}: {HandlerType}", queryType.Name, handlerType.Name);
+
+            var handler = _handlerFactoryAsync != null
+                ? _handlerFactoryAsync.Create(handlerType, _lifetime)
+                : _handlerFactory?.Create(handlerType, _lifetime);
+
+            if (handler == null)
+                throw new ConfigurationException($"Stream handler could not be created for type: {handlerType.FullName}");
+
+            return (handlerType, handler);
         }
 
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> GetDecoratorsAsync(MemberInfo executeMethod, IQueryContext queryContext)

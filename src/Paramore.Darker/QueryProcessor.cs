@@ -1,13 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.Logging;
 using Paramore.Darker.Observability;
 using Polly.Registry;
-using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
 {
@@ -135,6 +137,35 @@ namespace Paramore.Darker
                     _tracer?.EndSpan(span);
                 }
             }
+        }
+
+        public async IAsyncEnumerable<TResult> ExecuteStream<TResult>(
+            IStreamQuery<TResult> query,
+            IQueryContext queryContext = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var pipelineBuilder = new PipelineBuilder<TResult>(
+                _handlerRegistry, _handlerFactory, _decoratorFactory,
+                _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync,
+                _streamHandlerRegistry);
+            try
+            {
+                queryContext ??= _queryContextFactory.Create();
+                InitQueryContext(queryContext);
+
+                var span = _tracer?.CreateQuerySpan(query, queryContext.Span, queryContext, _instrumentationOptions);
+                queryContext.Span = span;
+                queryContext.Tracer = _tracer;
+
+                var entryPoint = pipelineBuilder.BuildStream(query, queryContext, _instrumentationOptions);
+                try
+                {
+                    await foreach (var item in entryPoint(query, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
+                        yield return item;
+                }
+                finally { _tracer?.EndSpan(span); }
+            }
+            finally { pipelineBuilder.Dispose(); }
         }
 
         private void InitQueryContext(IQueryContext queryContext)
