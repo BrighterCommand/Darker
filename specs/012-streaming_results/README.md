@@ -17,7 +17,7 @@ result set. Requirements, design, and scope to be established in the workflow be
 - [x] Requirements (`/spec:requirements`) — ✅ approved
 - [x] Design / ADR (`/spec:design`) — ✅ ADR 0019 `Accepted`
 - [x] Adversarial Review — 3 rounds (6 + 4 + 3 findings) all resolved in ADR 0019 (see `review-design.md`)
-- [ ] Task Breakdown (`/spec:tasks` or `/spec:ralph-tasks`)
+- [x] Task Breakdown (`/spec:tasks`) — ✅ `tasks.md` created (31 tasks across 9 phases)
 - [ ] Implementation (`/spec:implement` or `/spec:ralph-implement`)
 
 ## Documents
@@ -26,4 +26,4 @@ result set. Requirements, design, and scope to be established in the workflow be
 |-------|------|--------|
 | Requirements | `requirements.md` | ⬜ Not started |
 | Design | `docs/adr/0019-streaming-query-pipeline.md` | ✅ Accepted |
-| Tasks | `tasks.md` | ⬜ Not started |
+| Tasks | `tasks.md` | ✅ Created |
