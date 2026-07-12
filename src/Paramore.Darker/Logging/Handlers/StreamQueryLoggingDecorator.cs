@@ -17,8 +17,9 @@ using System.Diagnostics;
 #if NET8_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
-using System.Text.Json;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -26,8 +27,8 @@ namespace Paramore.Darker.Logging.Handlers
 {
     /// <summary>
     /// A stream decorator that logs stream start (with serialised query body), yields each item
-    /// unchanged, and logs completion with item count and elapsed duration.
-    /// Exceptions during enumeration are handled by T019's decorator (this decorator does not swallow).
+    /// unchanged, records enumeration faults at Error level, and logs completion with item count
+    /// and elapsed duration.
     /// </summary>
     public class StreamQueryLoggingDecorator<TQuery, TResult> : IStreamQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IStreamQuery<TResult>
@@ -52,20 +53,42 @@ namespace Paramore.Darker.Logging.Handlers
 
             Logger.LogInformation("Executing stream query {QueryName}: {Query}", queryName, Serialize(query));
 
+            // Manual iteration so we can catch MoveNextAsync faults without a yield inside try/catch
+            // (C# does not allow yield return in a try block that has a catch clause).
+            var enumerator = next(query, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            ExceptionDispatchInfo fault = null;
             try
             {
-                await foreach (var item in next(query, cancellationToken))
+                while (true)
                 {
+                    bool moved;
+                    try
+                    {
+                        moved = await enumerator.MoveNextAsync();
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        Logger.LogError(ex,
+                            "Stream execution of query {QueryName} faulted after {ItemCount} items",
+                            queryName, itemCount);
+                        fault = ExceptionDispatchInfo.Capture(ex);
+                        break;
+                    }
+
+                    if (!moved) break;
                     itemCount++;
-                    yield return item;
+                    yield return enumerator.Current;
                 }
             }
             finally
             {
+                await enumerator.DisposeAsync();
                 Logger.LogInformation(
                     "Stream execution of query {QueryName} completed; {ItemCount} items in {Elapsed}ms",
                     queryName, itemCount, sw.Elapsed.TotalMilliseconds);
             }
+
+            fault?.Throw();
         }
 
 #if NET8_0_OR_GREATER

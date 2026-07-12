@@ -287,7 +287,7 @@
       over `next`, modelled on `QueryLoggingDecoratorAsync`, plus a `StreamQueryHandlerAttribute`-derived
       logging attribute and a builder-extension registration
 
-- [ ] **TEST + IMPLEMENT: T019 — Stream logging/telemetry records enumeration faults**
+- [x] **TEST + IMPLEMENT: T019 — Stream logging/telemetry records enumeration faults**
   - **USE COMMAND**: `/test-first when a stream faults during enumeration should record the exception in the logging decorator and rethrow`
   - Test location: `test/Paramore.Darker.Core.Tests` (Logging folder)
   - Test file: `When_stream_faults_during_enumeration_should_record_exception_in_logging_decorator.cs`
