@@ -273,7 +273,7 @@
 
 ## Phase 5 — Logging / telemetry stream decorators (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T018 — Stream logging decorator wraps the stream lifecycle**
+- [x] **TEST + IMPLEMENT: T018 — Stream logging decorator wraps the stream lifecycle**
   - **USE COMMAND**: `/test-first when a stream query has the logging decorator should log start yield each item and log completion with item count and duration`
   - Test location: `test/Paramore.Darker.Core.Tests` (Logging folder)
   - Test file: `When_stream_query_logged_should_wrap_lifecycle_with_item_count.cs`
