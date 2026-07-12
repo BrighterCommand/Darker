@@ -72,6 +72,8 @@ namespace Paramore.Darker
             var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType) as MethodInfo;
             ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
                 "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
+            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(StreamQueryHandlerAttribute),
+                "Sync handler has stream attribute(s) on Execute. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
@@ -134,6 +136,8 @@ namespace Paramore.Darker
 
             ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(QueryHandlerAttribute),
                 "Async handler has sync attribute(s) on ExecuteAsync. Use async attributes (e.g. QueryHandlerAttributeAsync) for async handlers, or switch to a sync handler with Execute.");
+            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(StreamQueryHandlerAttribute),
+                "Async handler has stream attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 

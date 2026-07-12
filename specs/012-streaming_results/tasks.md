@@ -242,7 +242,7 @@
       `IStreamQueryHandlerDecorator` instances via `next` (ADR §6), reusing the async decorator factory
     - Add step-event stream decorator + attribute test doubles in `TestDoubles/`
 
-- [ ] **TEST + IMPLEMENT: T016 — Mismatched decorator attributes are rejected**
+- [x] **TEST + IMPLEMENT: T016 — Mismatched decorator attributes are rejected**
   - **USE COMMAND**: `/test-first when a stream handler has a sync or async decorator attribute should throw ConfigurationException and vice versa`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_handler_has_mismatched_decorator_attribute_should_throw_ConfigurationException.cs`
