@@ -33,6 +33,7 @@ namespace Paramore.Darker
         private IQueryHandler _handler;
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> _decorators;
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
+        private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> _streamDecorators;
         private IAmALifetime _lifetime;
 
         public PipelineBuilder(
@@ -289,14 +290,74 @@ namespace Paramore.Darker
             ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
                 "Stream handler has async attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
 
+            _streamDecorators = GetStreamDecorators(executeMethodInfo, queryContext);
+
             var span = queryContext.Span;
 
-            // No TargetInvocationException unwrap: the iterator body runs on MoveNextAsync, not Invoke.
-            return (r, ct) =>
+            // Sink: no TargetInvocationException unwrap — iterator body runs on MoveNextAsync, not Invoke.
+            var pipeline = new List<Func<IStreamQuery<TResult>, CancellationToken, IAsyncEnumerable<TResult>>>
             {
-                DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: true, instrumentationOptions, isSink: true);
-                return (IAsyncEnumerable<TResult>)executeMethodInfo.Invoke(_handler, new object[] { r, ct });
+                (r, ct) =>
+                {
+                    DarkerTracer.WriteQueryEvent(span, handlerType.Name, isAsync: true, instrumentationOptions, isSink: true);
+                    return (IAsyncEnumerable<TResult>)executeMethodInfo.Invoke(_handler, new object[] { r, ct });
+                }
             };
+
+            foreach (var decorator in _streamDecorators)
+            {
+                _logger.LogDebug("Adding stream decorator to pipeline: {Decorator}", decorator.GetType().Name);
+                var next = pipeline.Last();
+                var dec = decorator;
+                pipeline.Add((r, ct) =>
+                {
+                    DarkerTracer.WriteQueryEvent(span, dec.GetType().Name, isAsync: true, instrumentationOptions);
+                    return dec.Execute(r, next, ct);
+                });
+            }
+
+            return pipeline.Last();
+        }
+
+        private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> GetStreamDecorators(MemberInfo executeMethod, IQueryContext queryContext)
+        {
+            var attributes = executeMethod.GetCustomAttributes(typeof(StreamQueryHandlerAttribute), true)
+                .Cast<StreamQueryHandlerAttribute>()
+                .OrderByDescending(attr => attr.Step)
+                .ToList();
+
+            _logger.LogDebug("Found {AttributesCount} stream query handler attributes", attributes.Count);
+
+            var decorators = new List<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>();
+
+            foreach (var attribute in attributes)
+            {
+                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IStreamQuery<TResult>), typeof(TResult));
+
+                _logger.LogDebug("Resolving stream decorator instance of type {DecoratorType}...", decoratorType.Name);
+
+                IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult> decorator;
+                if (_decoratorFactoryAsync != null)
+                    decorator = _decoratorFactoryAsync.Create<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>(decoratorType, _lifetime);
+                else if (_decoratorFactory != null)
+                    decorator = _decoratorFactory.Create<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>(decoratorType, _lifetime);
+                else
+                    throw new ConfigurationException($"No decorator factory configured. Cannot create stream decorator for type: {decoratorType.FullName}");
+
+                if (decorator == null)
+                    throw new ConfigurationException($"Stream decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
+
+                decorator.Context = queryContext;
+
+                _logger.LogDebug("Initialising stream decorator from attribute params...");
+                decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
+
+                decorators.Add(decorator);
+            }
+
+            _logger.LogDebug("Finished initialising {DecoratorsCount} stream decorators", decorators.Count);
+
+            return decorators;
         }
 
         private (Type handlerType, IQueryHandler handler) ResolveStreamHandler(Type queryType)
@@ -375,6 +436,17 @@ namespace Paramore.Darker
                 foreach (var decorator in _asyncDecorators)
                 {
                     _decoratorFactoryAsync?.Release(decorator, _lifetime);
+                }
+            }
+
+            if (_streamDecorators != null && _streamDecorators.Any())
+            {
+                foreach (var decorator in _streamDecorators)
+                {
+                    if (_decoratorFactoryAsync != null)
+                        _decoratorFactoryAsync.Release(decorator, _lifetime);
+                    else
+                        _decoratorFactory?.Release(decorator, _lifetime);
                 }
             }
 

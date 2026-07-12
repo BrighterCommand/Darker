@@ -26,14 +26,14 @@
 
 ## Phase 0 — Structural foundations (Tidy First, no behaviour)
 
-- [ ] **STRUCTURAL: T001 — `IAsyncEnumerable` available on all targets**
+- [x] **STRUCTURAL: T001 — `IAsyncEnumerable` available on all targets**
   - Add `Microsoft.Bcl.AsyncInterfaces` version to `Directory.Packages.props` (CPM).
   - Add a **conditional** `<PackageReference>` in `src/Paramore.Darker/Paramore.Darker.csproj`
     guarded to `netstandard2.0` only (native on net8.0/net9.0).
   - Verify `dotnet build Darker.Filter.slnf -c Release` still succeeds on all targets.
   - ADR §7. No behaviour; separate commit.
 
-- [ ] **STRUCTURAL: T002 — Stream query + handler contracts**
+- [x] **STRUCTURAL: T002 — Stream query + handler contracts**
   - Add `src/Paramore.Darker/IStreamQuery.cs`:
     `public interface IStreamQuery<out TResult> : IQuery<TResult> { }` (TResult = **item** type).
   - Add `src/Paramore.Darker/IStreamQueryHandler.cs`:
@@ -43,7 +43,7 @@
     and abstract `ExecuteAsync` (no `Fallback` method — ADR §2). XML docs incl. licence header.
   - ADR §2. Must compile; no behaviour.
 
-- [ ] **STRUCTURAL: T003 — Stream decorator contract + attribute base**
+- [x] **STRUCTURAL: T003 — Stream decorator contract + attribute base**
   - Add `src/Paramore.Darker/IStreamQueryHandlerDecorator.cs`:
     `IStreamQueryHandlerDecorator<TQuery, TResult> : IQueryHandlerDecorator where TQuery : IStreamQuery<TResult>`
     with `IAsyncEnumerable<TResult> Execute(TQuery query, Func<TQuery, CancellationToken, IAsyncEnumerable<TResult>> next, CancellationToken cancellationToken)`.
@@ -56,7 +56,7 @@
 
 ## Phase 1 — Handler registry (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T004 — Stream registry resolves a stream handler by query type**
+- [x] **TEST + IMPLEMENT: T004 — Stream registry resolves a stream handler by query type**
   - **USE COMMAND**: `/test-first when stream query registered should resolve its stream handler type from the stream registry`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_query_registered_should_resolve_stream_handler_type.cs`
@@ -75,7 +75,7 @@
       `QueryHandlerRegistryAsync` (dictionary, duplicate + result-type guards)
     - Requires a stream query + handler test double in `TestDoubles/`
 
-- [ ] **TEST + IMPLEMENT: T005 — Assembly scan registers only stream handlers**
+- [x] **TEST + IMPLEMENT: T005 — Assembly scan registers only stream handlers**
   - **USE COMMAND**: `/test-first when scanning assemblies for stream handlers should register IStreamQueryHandler implementations and ignore async handlers`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_scanning_assemblies_for_stream_handlers_should_register_only_stream_handlers.cs`
@@ -93,7 +93,7 @@
 
 ## Phase 2 — Pipeline build + processor entry point (MVP happy path)
 
-- [ ] **STRUCTURAL: T006 — Thread the stream registry through builder + configuration**
+- [x] **STRUCTURAL: T006 — Thread the stream registry through builder + configuration**
   - `PipelineBuilder<TResult>` gains a new ctor parameter for `IStreamQueryHandlerRegistry`
     (ADR §5.3) — additive, existing ctors unaffected.
   - `IHandlerConfiguration` / `HandlerConfiguration` gain an optional
@@ -101,7 +101,7 @@
   - `QueryProcessor` reads `StreamHandlerRegistry` off the configuration into a field (ADR §5.4).
   - Must compile; no behaviour yet.
 
-- [ ] **TEST + IMPLEMENT: T007 — `BuildStream` resolves the handler and yields its items (no decorators)**
+- [x] **TEST + IMPLEMENT: T007 — `BuildStream` resolves the handler and yields its items (no decorators)**
   - **USE COMMAND**: `/test-first when building a stream pipeline with no decorators should invoke the handler and yield its items`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_building_stream_pipeline_without_decorators_should_yield_handler_items.cs`
@@ -122,7 +122,7 @@
     - Sink invokes the handler's stream `ExecuteAsync` returning the enumerable — **no**
       `TargetInvocationException` unwrap around enumeration (iterator defers, ADR §4/§6)
 
-- [ ] **TEST + IMPLEMENT: T008 — `ExecuteStream` runs a stream query end-to-end**
+- [x] **TEST + IMPLEMENT: T008 — `ExecuteStream` runs a stream query end-to-end**
   - **USE COMMAND**: `/test-first when executing a stream query through the processor should yield all handler items via await foreach`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_executing_stream_query_should_yield_all_items.cs`
@@ -145,7 +145,7 @@
 
 ## Phase 3 — Core streaming correctness properties (each a distinct behaviour)
 
-- [ ] **TEST + IMPLEMENT: T009 — Items are produced lazily, not buffered**
+- [x] **TEST + IMPLEMENT: T009 — Items are produced lazily, not buffered**
   - **USE COMMAND**: `/test-first when consuming a stream query should observe the first item before the handler produces the last item`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_consuming_stream_query_should_produce_items_lazily.cs`
@@ -158,7 +158,7 @@
     - Confirm the `ExecuteStream` + `BuildStream` chain are `async` iterators end-to-end (no
       `ToListAsync`/eager await); fix any eager materialisation surfaced by the test
 
-- [ ] **TEST + IMPLEMENT: T010 — Cancellation stops enumeration promptly**
+- [x] **TEST + IMPLEMENT: T010 — Cancellation stops enumeration promptly**
   - **USE COMMAND**: `/test-first when the cancellation token is cancelled mid-stream should stop enumeration and propagate OperationCanceledException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_cancelled_mid_enumeration_should_stop_and_throw_OperationCanceledException.cs`
@@ -172,7 +172,7 @@
     - Ensure `ExecuteStream` applies `[EnumeratorCancellation]` and passes `.WithCancellation(ct)`
       to the inner enumeration (ADR §4); no special-casing beyond token flow
 
-- [ ] **TEST + IMPLEMENT: T011 — Exceptions mid-stream surface unwrapped**
+- [x] **TEST + IMPLEMENT: T011 — Exceptions mid-stream surface unwrapped**
   - **USE COMMAND**: `/test-first when the handler throws during enumeration should surface the original exception to the caller with its stack trace`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_handler_throws_during_enumeration_should_surface_original_exception.cs`
@@ -185,7 +185,7 @@
     - Confirm no `TargetInvocationException` unwrap is applied around enumeration (the iterator
       defers, so `Invoke` returns the enumerable without running the body — ADR §4)
 
-- [ ] **TEST + IMPLEMENT: T012 — Early `break` releases handler, decorators, and span**
+- [x] **TEST + IMPLEMENT: T012 — Early `break` releases handler, decorators, and span**
   - **USE COMMAND**: `/test-first when the caller breaks out of the stream early should release the handler decorators and end the span exactly once`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_consumer_breaks_early_should_release_pipeline_and_end_span_once.cs`
@@ -198,7 +198,7 @@
     - Rely on the `try/finally` in the `ExecuteStream` iterator running on enumerator `DisposeAsync`
       (ADR §4); use `RecordingHandlerFactory` / `RecordingDecoratorFactory` doubles to assert release
 
-- [ ] **TEST + IMPLEMENT: T013 — Stream query sent to `ExecuteAsync` fails cleanly**
+- [x] **TEST + IMPLEMENT: T013 — Stream query sent to `ExecuteAsync` fails cleanly**
   - **USE COMMAND**: `/test-first when a stream query is passed to ExecuteAsync should throw ConfigurationException for no async handler`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_query_passed_to_ExecuteAsync_should_throw_ConfigurationException.cs`
@@ -211,7 +211,7 @@
     - No new code expected beyond existing async-registry miss behaviour; test documents/locks the
       cross-path guarantee
 
-- [ ] **TEST + IMPLEMENT: T014 — Missing/mismatched stream handler surfaces on first `MoveNextAsync`**
+- [x] **TEST + IMPLEMENT: T014 — Missing/mismatched stream handler surfaces on first `MoveNextAsync`**
   - **USE COMMAND**: `/test-first when no stream handler is registered should throw ConfigurationException on the first enumeration step`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_no_stream_handler_registered_should_throw_ConfigurationException_on_first_move_next.cs`
@@ -228,7 +228,7 @@
 
 ## Phase 4 — Stream decorator pipeline (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T015 — Stream decorators run ordered by `Step` descending**
+- [x] **TEST + IMPLEMENT: T015 — Stream decorators run ordered by `Step` descending**
   - **USE COMMAND**: `/test-first when a stream handler has multiple stream decorators should execute them ordered by step descending around the handler`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_handler_has_multiple_decorators_should_order_by_step_descending.cs`
