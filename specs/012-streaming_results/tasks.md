@@ -256,7 +256,7 @@
       in `BuildStream` (and add the reciprocal guard in `Build`/`BuildAsync` for
       `StreamQueryHandlerAttribute`) — ADR §6
 
-- [ ] **TEST + IMPLEMENT: T017 — Re-enumeration re-executes the query**
+- [x] **TEST + IMPLEMENT: T017 — Re-enumeration re-executes the query**
   - **USE COMMAND**: `/test-first when a stream is enumerated twice should re-execute the handler with a fresh pipeline each time`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_enumerated_twice_should_re_execute_with_fresh_pipeline.cs`
