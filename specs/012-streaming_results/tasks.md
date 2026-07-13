@@ -298,7 +298,7 @@
   - Implementation should:
     - Wrap the decorator's `await foreach`/`yield` in `try/catch` that records then rethrows
 
-- [ ] **TEST + IMPLEMENT: T020 — `BuildStream` writes a span event per pipeline step**
+- [x] **TEST + IMPLEMENT: T020 — `BuildStream` writes a span event per pipeline step**
   - **USE COMMAND**: `/test-first when building a stream pipeline with a span should write a query event per pipeline step`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_building_stream_pipeline_with_span_should_write_event_per_step.cs`
@@ -313,12 +313,12 @@
 
 ## Phase 6 — Resilience for streams (behaviour — highest risk)
 
-- [ ] **STRUCTURAL: T021 — Stream resilience attribute**
+- [x] **STRUCTURAL: T021 — Stream resilience attribute**
   - Add `UseResiliencePipelineStreamAttribute(int step, string policy) : StreamQueryHandlerAttribute`
     (`src/Paramore.Darker/Policies/Attributes/`) returning the stream resilience decorator type;
     **no** `useTypePipeline` parameter (ADR §3a — untyped pipeline only). Must compile.
 
-- [ ] **TEST + IMPLEMENT: T022 — Resilience decorator yields items on the happy path**
+- [x] **TEST + IMPLEMENT: T022 — Resilience decorator yields items on the happy path**
   - **USE COMMAND**: `/test-first when a stream uses the resilience pipeline decorator and establishment succeeds should yield all items`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_resilience_establishment_succeeds_should_yield_all_items.cs`
@@ -333,7 +333,7 @@
       `[EnumeratorCancellation]`, yield only after the pipeline succeeds; reuse the async decorator's
       `InitializeFromAttributeParams` pipeline-resolution logic
 
-- [ ] **TEST + IMPLEMENT: T023 — Retry before the first item does not duplicate emission**
+- [x] **TEST + IMPLEMENT: T023 — Retry before the first item does not duplicate emission**
   - **USE COMMAND**: `/test-first when establishment fails before the first item should retry a fresh stream with no duplicate emission`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_establishment_fails_before_first_item_should_retry_without_duplicates.cs`
@@ -346,7 +346,7 @@
     - Rely on first-`MoveNextAsync`-inside-the-pipeline (ADR §3a); no item leaves the decorator until
       the pipeline succeeds
 
-- [ ] **TEST + IMPLEMENT: T024 — Faults after the first item are not retried**
+- [x] **TEST + IMPLEMENT: T024 — Faults after the first item are not retried**
   - **USE COMMAND**: `/test-first when a stream faults after the first item should propagate without retry and without re-emitting items`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_faults_after_first_item_should_not_retry.cs`
