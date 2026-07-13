@@ -58,6 +58,16 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return this;
         }
 
+        public IDarkerHandlerBuilder AddStreamHandlers(Action<IStreamQueryHandlerRegistry> registerHandlers)
+        {
+            if (registerHandlers == null)
+                throw new ArgumentNullException(nameof(registerHandlers));
+
+            registerHandlers(_registryStream);
+
+            return this;
+        }
+
         public IQueryProcessorExtensionBuilder RegisterDecorator(Type decoratorType)
         {
             if (decoratorType == null) throw new ArgumentNullException(nameof(decoratorType));
