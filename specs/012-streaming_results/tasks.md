@@ -437,7 +437,7 @@
     beyond existing `BuildAsync`).
   - Not a `/test-first` task — runs the existing suite; fix regressions surfaced.
 
-- [ ] **DOCS: T031 — Document streaming usage and semantics**
+- [x] **DOCS: T031 — Document streaming usage and semantics**
   - Update README / user docs with: `ExecuteStream` + `await foreach` usage; DI registration; and the
     **documented semantics** — deferred config error on first `MoveNextAsync` (ADR §4); resilience
     covers **establishment + first item only**, `Timeout` bounds start-up, `Hedging` unsupported (ADR §3a);
