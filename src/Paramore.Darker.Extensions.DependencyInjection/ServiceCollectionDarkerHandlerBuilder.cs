@@ -10,16 +10,19 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         private readonly ServiceCollectionDecoratorRegistry _decoratorRegistry;
         private readonly ServiceCollectionHandlerRegistry _registry;
         private readonly ServiceCollectionHandlerRegistryAsync _registryAsync;
+        private readonly ServiceCollectionStreamHandlerRegistry _registryStream;
 
         public IServiceCollection Services { get; }
 
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
             ServiceCollectionHandlerRegistryAsync registryAsync,
+            ServiceCollectionStreamHandlerRegistry registryStream,
             ServiceCollectionDecoratorRegistry decoratorRegistry,
             IServiceCollection services)
         {
             _registry = registry;
             _registryAsync = registryAsync;
+            _registryStream = registryStream;
             _decoratorRegistry = decoratorRegistry;
             Services = services;
         }
@@ -30,6 +33,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             _registry.RegisterFromAssemblies(assemblies);
             _registryAsync.RegisterFromAssemblies(assemblies);
+            _registryStream.RegisterFromAssemblies(assemblies);
 
             return this;
         }
@@ -50,6 +54,16 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(registerHandlers));
 
             registerHandlers(_registryAsync);
+
+            return this;
+        }
+
+        public IDarkerHandlerBuilder AddStreamHandlers(Action<IStreamQueryHandlerRegistry> registerHandlers)
+        {
+            if (registerHandlers == null)
+                throw new ArgumentNullException(nameof(registerHandlers));
+
+            registerHandlers(_registryStream);
 
             return this;
         }
