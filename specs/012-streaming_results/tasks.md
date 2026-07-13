@@ -388,7 +388,7 @@
 
 ## Phase 7 — Dependency Injection & registration wiring (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T027 — `AddHandlersFromAssemblies` registers stream handlers for DI**
+- [x] **TEST + IMPLEMENT: T027 — `AddHandlersFromAssemblies` registers stream handlers for DI**
   - **USE COMMAND**: `/test-first when AddDarker scans assemblies should register stream handlers so ExecuteStream resolves them from the container`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_AddHandlersFromAssemblies_scans_assembly_should_register_stream_handlers.cs`
@@ -402,7 +402,7 @@
     - Thread the stream registry into the `HandlerConfiguration` built in
       `ServiceCollectionExtensions.BuildQueryProcessor` (ADR §5.4)
 
-- [ ] **TEST + IMPLEMENT: T028 — Explicit `AddStreamHandlers` registration**
+- [x] **TEST + IMPLEMENT: T028 — Explicit `AddStreamHandlers` registration**
   - **USE COMMAND**: `/test-first when registering stream handlers explicitly via the builder should resolve and execute the stream query`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_registering_stream_handlers_explicitly_should_execute_stream_query.cs`
@@ -414,7 +414,7 @@
     - Add `AddStreamHandlers(Action<IStreamQueryHandlerRegistry>)` to `IDarkerHandlerBuilder` /
       `ServiceCollectionDarkerHandlerBuilder` (mirror `AddAsyncHandlers`)
 
-- [ ] **TEST + IMPLEMENT: T029 — Non-DI `QueryProcessorBuilder` wires the stream registry**
+- [x] **TEST + IMPLEMENT: T029 — Non-DI `QueryProcessorBuilder` wires the stream registry**
   - **USE COMMAND**: `/test-first when a processor is built via QueryProcessorBuilder with a stream registry should execute a stream query`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_QueryProcessorBuilder_configured_with_stream_registry_should_execute_stream_query.cs`
@@ -430,7 +430,7 @@
 
 ## Phase 8 — Cross-target build, AOT, docs (verification)
 
-- [ ] **VERIFY: T030 — Green on all target frameworks + AOT**
+- [x] **VERIFY: T030 — Green on all target frameworks + AOT**
   - `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release --no-build`
     pass on `netstandard2.0;net8.0;net9.0` (NFR3).
   - `Paramore.Darker.Tests.AOT` still builds/publishes (NFR4 — no new trim/AOT-hostile reflection
