@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,6 +53,16 @@ namespace Paramore.Darker.Testing
         public Task<TResponse> ExecuteAsync<TResponse>(IQuery<TResponse> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.FromResult(Execute(query, queryContext));
+        }
+
+#pragma warning disable CS1998
+        public async IAsyncEnumerable<TResponse> ExecuteStream<TResponse>(
+            IStreamQuery<TResponse> query,
+            IQueryContext queryContext = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
+        {
+            yield break;
         }
 
         public void SetupResultFor<TQuery>(Predicate<TQuery> predicate, object result)

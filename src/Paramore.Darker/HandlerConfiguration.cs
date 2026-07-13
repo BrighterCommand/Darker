@@ -14,6 +14,9 @@ namespace Paramore.Darker
         public IQueryHandlerDecoratorRegistryAsync DecoratorRegistryAsync { get; }
         public IQueryHandlerDecoratorFactoryAsync DecoratorFactoryAsync { get; }
 
+        /// <inheritdoc/>
+        public IStreamQueryHandlerRegistry StreamHandlerRegistry { get; }
+
         public HandlerConfiguration(
             IQueryHandlerRegistry handlerRegistry,
             IQueryHandlerFactory handlerFactory,
@@ -43,6 +46,22 @@ namespace Paramore.Darker
             HandlerFactoryAsync = handlerFactoryAsync;
             DecoratorRegistryAsync = decoratorRegistryAsync;
             DecoratorFactoryAsync = decoratorFactoryAsync;
+        }
+
+        public HandlerConfiguration(
+            IQueryHandlerRegistry handlerRegistry,
+            IQueryHandlerFactory handlerFactory,
+            IQueryHandlerDecoratorRegistry decoratorRegistry,
+            IQueryHandlerDecoratorFactory decoratorFactory,
+            IQueryHandlerRegistryAsync handlerRegistryAsync,
+            IQueryHandlerFactoryAsync handlerFactoryAsync,
+            IQueryHandlerDecoratorRegistryAsync decoratorRegistryAsync,
+            IQueryHandlerDecoratorFactoryAsync decoratorFactoryAsync,
+            IStreamQueryHandlerRegistry streamHandlerRegistry)
+            : this(handlerRegistry, handlerFactory, decoratorRegistry, decoratorFactory,
+                   handlerRegistryAsync, handlerFactoryAsync, decoratorRegistryAsync, decoratorFactoryAsync)
+        {
+            StreamHandlerRegistry = streamHandlerRegistry;
         }
     }
 }

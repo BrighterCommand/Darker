@@ -21,18 +21,20 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             var handlerRegistry = new ServiceCollectionHandlerRegistry(services, options.HandlerLifetime);
             var handlerRegistryAsync = new ServiceCollectionHandlerRegistryAsync(services, options.HandlerLifetime);
+            var handlerRegistryStream = new ServiceCollectionStreamHandlerRegistry(services, options.HandlerLifetime);
 
             var decoratorRegistry = new ServiceCollectionDecoratorRegistry(services, options.HandlerLifetime);
             decoratorRegistry.RegisterDefaultDecorators();
 
-            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, provider, decoratorRegistry, options), options.QueryProcessorLifetime));
+            services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, handlerRegistryStream, provider, decoratorRegistry, options), options.QueryProcessorLifetime));
 
-            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, decoratorRegistry, services);
+            return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, handlerRegistryStream, decoratorRegistry, services);
         }
 
         private static QueryProcessor BuildQueryProcessor(
             IQueryHandlerRegistry handlerRegistry,
             IQueryHandlerRegistryAsync handlerRegistryAsync,
+            IStreamQueryHandlerRegistry handlerRegistryStream,
             IServiceProvider provider,
             ServiceCollectionDecoratorRegistry decoratorRegistry,
             DarkerOptions options)
@@ -48,7 +50,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return new QueryProcessor(
                 new HandlerConfiguration(
                     handlerRegistry, componentFactory, decoratorRegistry, componentFactory,
-                    handlerRegistryAsync, componentFactory, decoratorRegistry, componentFactory),
+                    handlerRegistryAsync, componentFactory, decoratorRegistry, componentFactory,
+                    handlerRegistryStream),
                 options.QueryContextFactory, policyRegistry, resiliencePipelineProvider,
                 tracer, options.InstrumentationOptions);
         }

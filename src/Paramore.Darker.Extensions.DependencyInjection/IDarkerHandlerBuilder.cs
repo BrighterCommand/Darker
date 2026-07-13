@@ -11,5 +11,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         IDarkerHandlerBuilder AddHandlersFromAssemblies(params Assembly[] assemblies);
         IDarkerHandlerBuilder AddHandlers(Action<IQueryHandlerRegistry> registerHandlers);
         IDarkerHandlerBuilder AddAsyncHandlers(Action<IQueryHandlerRegistryAsync> registerHandlers);
+        IDarkerHandlerBuilder AddStreamHandlers(Action<IStreamQueryHandlerRegistry> registerHandlers);
     }
 }

@@ -11,5 +11,8 @@ namespace Paramore.Darker
         IQueryHandlerFactoryAsync HandlerFactoryAsync { get; }
         IQueryHandlerDecoratorRegistryAsync DecoratorRegistryAsync { get; }
         IQueryHandlerDecoratorFactoryAsync DecoratorFactoryAsync { get; }
+
+        /// <summary>Null when streaming is not used.</summary>
+        IStreamQueryHandlerRegistry StreamHandlerRegistry { get; }
     }
 }

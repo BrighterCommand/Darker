@@ -264,3 +264,9 @@ paket-files/
 
 # Benchmark.Net
 BenchmarkDotNet.Artifacts/
+
+# macOS
+.DS_Store
+
+# JetBrains Junie
+.junie/
