@@ -370,7 +370,7 @@
     - Ensure the in-pipeline `Establish` callback disposes the enumerator in its `catch` before
       rethrowing (the reference article omits this) — ADR §3a
 
-- [ ] **TEST + IMPLEMENT: T026 — Fallback strategy substitutes an alternate stream at establishment**
+- [x] **TEST + IMPLEMENT: T026 — Fallback strategy substitutes an alternate stream at establishment**
   - **USE COMMAND**: `/test-first when the resilience pipeline has a fallback strategy should substitute an alternate stream at establishment`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_establishment_fails_with_fallback_strategy_should_yield_alternate_stream.cs`
