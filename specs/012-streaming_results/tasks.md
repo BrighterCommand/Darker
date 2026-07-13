@@ -358,7 +358,7 @@
     - Confirm the pipeline has exited once the first item is yielded (subsequent `MoveNextAsync`
       faults propagate) — ADR §3a
 
-- [ ] **TEST + IMPLEMENT: T025 — Each failed establishment attempt disposes its enumerator**
+- [x] **TEST + IMPLEMENT: T025 — Each failed establishment attempt disposes its enumerator**
   - **USE COMMAND**: `/test-first when establishment retries N times should dispose the enumerator from each failed attempt`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_establishment_retries_should_dispose_each_failed_enumerator.cs`
