@@ -23,6 +23,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker
 {
@@ -40,6 +41,11 @@ namespace Paramore.Darker
         }
 
         public Type ResolveHandlerType(IQuery query, IQueryContext context)
-            => _router(query, context)!;
+        {
+            var handlerType = _router(query, context);
+            if (handlerType is null)
+                throw new RoutingException(RoutingFailure.NoHandlerResolved, _queryType);
+            return handlerType;
+        }
     }
 }
