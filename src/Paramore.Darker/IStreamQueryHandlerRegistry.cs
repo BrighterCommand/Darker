@@ -28,5 +28,33 @@ namespace Paramore.Darker
         /// Registers a stream handler for a stream query using runtime types.
         /// </summary>
         void Register(Type queryType, Type resultType, Type handlerType);
+
+        /// <summary>
+        /// Registers a routing function that selects a stream handler type from
+        /// <paramref name="candidateHandlerTypes"/> at execution time based on the query
+        /// content and/or the <see cref="IQueryContext"/>.
+        /// </summary>
+        /// <typeparam name="TQuery">The stream query type.</typeparam>
+        /// <typeparam name="TResult">The result element type.</typeparam>
+        /// <param name="router">
+        /// A function that receives the query and context and returns the handler type to use.
+        /// Returning <c>null</c> throws <see cref="Exceptions.RoutingException"/> with
+        /// <see cref="Exceptions.RoutingFailure.NoHandlerResolved"/>.
+        /// Returning a type outside <paramref name="candidateHandlerTypes"/> throws
+        /// <see cref="Exceptions.RoutingException"/> with
+        /// <see cref="Exceptions.RoutingFailure.UnregisteredCandidate"/>.
+        /// </param>
+        /// <param name="candidateHandlerTypes">
+        /// The exhaustive set of handler types the router may return.
+        /// Each must implement <see cref="IStreamQueryHandler{TQuery,TResult}"/>.
+        /// </param>
+        /// <exception cref="Exceptions.ConfigurationException">
+        /// Thrown at registration time if the query type is already registered or if
+        /// any candidate does not implement <see cref="IStreamQueryHandler{TQuery,TResult}"/>.
+        /// </exception>
+        void Register<TQuery, TResult>(
+            Func<TQuery, IQueryContext, Type?> router,
+            params Type[] candidateHandlerTypes)
+            where TQuery : IStreamQuery<TResult>;
     }
 }
