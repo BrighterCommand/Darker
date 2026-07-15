@@ -27,8 +27,8 @@ decision to change how a particular metric is provided.
 
 ## Status Checklist
 
-- [x] Requirements (`/spec:requirements`) — drafted, pending approval
-- [ ] Design / ADR (`/spec:design`)
-- [ ] Adversarial Review
-- [ ] Task Breakdown (`/spec:tasks`)
+- [x] Requirements (`/spec:requirements`) — approved
+- [x] Design / ADR (`/spec:design`) — approved (ADR 0020)
+- [x] Adversarial Review — PASS (see `review-design.md`)
+- [x] Task Breakdown (`/spec:tasks`) — `tasks.md`
 - [ ] Implementation (`/spec:implement`)

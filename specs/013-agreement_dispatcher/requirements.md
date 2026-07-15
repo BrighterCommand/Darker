@@ -119,7 +119,11 @@ the same `IQueryHandlerRegistry` / `IQueryHandlerRegistryAsync`.
   distinct exception at execution time.
 - A routing function that resolves to no handler throws a clear, distinct exception at execution
   time, different from "unregistered query type."
-- Existing tests for type-based registration and dispatch continue to pass unmodified.
+- Existing tests for type-based registration and dispatch continue to pass with their **behaviour and
+  assertions unchanged**. Mechanical source-level updates required purely by a deliberate breaking API
+  change in the approved design (e.g. widening the registry `Get` signature, which the design chose
+  over adding an overload) are permitted at their call sites; no test's expected behaviour or
+  assertions may change.
 - New tests cover: routing to different handlers based on query content, routing based on
   `IQueryContext`, the "no match" error path, and the "unregistered candidate" error path — for
   sync, async, and streaming registries.
