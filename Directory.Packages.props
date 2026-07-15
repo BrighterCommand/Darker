@@ -32,6 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="MinVer" Version="7.0.0" />
-    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
+    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
   </ItemGroup>
 </Project>
