@@ -43,7 +43,7 @@
 > **One commit.** No new behaviour. Existing tests pass unmodified. Use `/tidy-first`.
 > Message the commit as structural (e.g. `refactor: model handler resolution as a route (IResolveHandlers)`).
 
-- [ ] **STRUCTURAL: Introduce the `IResolveHandlers` role and `FixedHandlerRoute`**
+- [x] **STRUCTURAL: Introduce the `IResolveHandlers` role and `FixedHandlerRoute`**
   - **USE COMMAND**: `/tidy-first introduce IResolveHandlers role and FixedHandlerRoute encapsulating today's type-based resolution`
   - Create `src/Paramore.Darker/IResolveHandlers.cs`:
     - Single method `Type ResolveHandlerType(IQuery query, IQueryContext context)`.
@@ -53,7 +53,7 @@
     - Encapsulates today's fixed type-to-handler behaviour.
   - No test change: nothing constructs these yet.
 
-- [ ] **STRUCTURAL: Migrate the three registries' storage to `Dictionary<Type, IResolveHandlers>` and widen `Get`**
+- [x] **STRUCTURAL: Migrate the three registries' storage to `Dictionary<Type, IResolveHandlers>` and widen `Get`**
   - **USE COMMAND**: `/tidy-first change registry storage to Dictionary of IResolveHandlers, route type-based Register through FixedHandlerRoute, and widen Get to accept query and context`
   - For **each** of `QueryHandlerRegistry`, `QueryHandlerRegistryAsync`, `StreamQueryHandlerRegistry`:
     - Change `_registry`/`_routes` to `Dictionary<Type, IResolveHandlers>`.
@@ -66,7 +66,7 @@
     - Rewrite the `Get` XML docs to describe the **three** outcomes: absent type → `null`; present resolvable → handler `Type`; present routed entry that fails → *throws* `RoutingException` (forward-reference; the throw path arrives in Phase 3, but document it now so the contract is stated once).
   - **No new behaviour**: `FixedHandlerRoute` ignores `query`/`context`, so results are identical to today.
 
-- [ ] **STRUCTURAL: Thread `(query, context)` through `PipelineBuilder` resolution helpers**
+- [x] **STRUCTURAL: Thread `(query, context)` through `PipelineBuilder` resolution helpers**
   - **USE COMMAND**: `/tidy-first thread query and context into PipelineBuilder handler-resolution helpers so they call the widened registry Get`
   - Change the three private helpers to take the query + context already in scope at their callers:
     - `ResolveHandler` (`PipelineBuilder.cs:201`) — called from `Build` (:67), which holds `query` + `queryContext`.
@@ -86,7 +86,7 @@
 
 > First behavioural commit begins here. Use `/test-first`.
 
-- [ ] **TEST + IMPLEMENT: RoutingException carries a distinct Reason and a message that differs per failure mode**
+- [x] **TEST + IMPLEMENT: RoutingException carries a distinct Reason and a message that differs per failure mode**
   - **USE COMMAND**: `/test-first when RoutingException constructed should expose RoutingFailure reason and compose a message distinct from ConfigurationException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_exception_constructed_should_expose_reason_and_compose_message.cs`
@@ -105,7 +105,7 @@
 
 > Prove agreement dispatch end-to-end on the **sync** registry first; async/stream mirror it in Phase 4.
 
-- [ ] **TEST + IMPLEMENT: A routing function selects the handler by query content**
+- [x] **TEST + IMPLEMENT: A routing function selects the handler by query content**
   - **USE COMMAND**: `/test-first when query registered with routing function should dispatch to handler chosen from query content`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_query_registered_with_routing_function_should_route_by_content.cs`
