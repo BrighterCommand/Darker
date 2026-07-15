@@ -293,7 +293,7 @@
 
 ## Phase 5 — Behavioural: DI integration
 
-- [ ] **TEST + IMPLEMENT: Sync DI routing registration registers every candidate handler in the container**
+- [x] **TEST + IMPLEMENT: Sync DI routing registration registers every candidate handler in the container**
   - **USE COMMAND**: `/test-first when sync routing registration used via ServiceCollection should register all candidate handler types in the container`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_sync_routing_registration_used_should_register_all_candidate_handlers.cs`
