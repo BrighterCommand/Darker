@@ -54,6 +54,14 @@ namespace Paramore.Darker
             if (_registry.ContainsKey(queryType))
                 throw new ConfigurationException($"Registry already contains an entry for {queryType.Name}");
 
+            var handlerInterface = typeof(IQueryHandler<TQuery, TResult>);
+            foreach (var candidate in candidateHandlerTypes)
+            {
+                if (!handlerInterface.IsAssignableFrom(candidate))
+                    throw new ConfigurationException(
+                        $"Candidate {candidate.Name} does not implement {handlerInterface.Name}");
+            }
+
             Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
             _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
         }
