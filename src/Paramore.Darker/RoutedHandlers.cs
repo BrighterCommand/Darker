@@ -45,6 +45,8 @@ namespace Paramore.Darker
             var handlerType = _router(query, context);
             if (handlerType is null)
                 throw new RoutingException(RoutingFailure.NoHandlerResolved, _queryType);
+            if (!_candidates.Contains(handlerType))
+                throw new RoutingException(RoutingFailure.UnregisteredCandidate, _queryType, handlerType);
             return handlerType;
         }
     }
