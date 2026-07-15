@@ -64,7 +64,7 @@ namespace Paramore.Darker
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
 
-            var (handlerType, handler) = ResolveHandler(queryType);
+            var (handlerType, handler) = ResolveHandler(queryType, query, queryContext);
 
             _handler = handler;
             _handler.Context = queryContext;
@@ -125,7 +125,7 @@ namespace Paramore.Darker
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
 
-            var (handlerType, handler) = ResolveHandlerAsync(queryType);
+            var (handlerType, handler) = ResolveHandlerAsync(queryType, query, queryContext);
 
             _handler = handler;
             _handler.Context = queryContext;
@@ -198,10 +198,10 @@ namespace Paramore.Darker
                 throw new ConfigurationException(message);
         }
 
-        private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType)
+        private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType, IQuery query, IQueryContext context)
         {
             _logger.LogDebug("Looking up handler type in handler registry...");
-            var handlerType = _handlerRegistry.Get(queryType);
+            var handlerType = _handlerRegistry.Get(queryType, query, context);
             if (handlerType == null)
                 throw new ConfigurationException($"No sync handler registered for query: {queryType.FullName}. If you have an async handler, use ExecuteAsync instead.");
 
@@ -215,12 +215,12 @@ namespace Paramore.Darker
             return (handlerType, handler);
         }
 
-        private (Type handlerType, IQueryHandler handler) ResolveHandlerAsync(Type queryType)
+        private (Type handlerType, IQueryHandler handler) ResolveHandlerAsync(Type queryType, IQuery query, IQueryContext context)
         {
             if (_handlerRegistryAsync != null && _handlerFactoryAsync != null)
             {
                 _logger.LogDebug("Looking up handler type in async handler registry...");
-                var handlerType = _handlerRegistryAsync.Get(queryType);
+                var handlerType = _handlerRegistryAsync.Get(queryType, query, context);
                 if (handlerType == null)
                     throw new ConfigurationException($"No async handler registered for query: {queryType.FullName}. If you have a sync handler, use Execute instead.");
 
@@ -235,7 +235,7 @@ namespace Paramore.Darker
             }
 
             // Fallback to sync registry for backwards compatibility during structural migration
-            return ResolveHandler(queryType);
+            return ResolveHandler(queryType, query, context);
         }
 
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(MemberInfo executeMethod, IQueryContext queryContext)
@@ -279,7 +279,7 @@ namespace Paramore.Darker
             var queryType = query.GetType();
             _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);
 
-            var (handlerType, handler) = ResolveStreamHandler(queryType);
+            var (handlerType, handler) = ResolveStreamHandler(queryType, query, queryContext);
             _handler = handler;
             _handler.Context = queryContext;
 
@@ -364,12 +364,12 @@ namespace Paramore.Darker
             return decorators;
         }
 
-        private (Type handlerType, IQueryHandler handler) ResolveStreamHandler(Type queryType)
+        private (Type handlerType, IQueryHandler handler) ResolveStreamHandler(Type queryType, IQuery query, IQueryContext context)
         {
             if (_streamHandlerRegistry == null)
                 throw new ConfigurationException("No stream handler registry configured. Use a HandlerConfiguration with StreamHandlerRegistry set.");
 
-            var handlerType = _streamHandlerRegistry.Get(queryType);
+            var handlerType = _streamHandlerRegistry.Get(queryType, query, context);
             if (handlerType == null)
                 throw new ConfigurationException($"No stream handler registered for query: {queryType.FullName}");
 

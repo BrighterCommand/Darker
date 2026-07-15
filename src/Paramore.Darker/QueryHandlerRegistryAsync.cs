@@ -8,16 +8,16 @@ namespace Paramore.Darker
 {
     public class QueryHandlerRegistryAsync : IQueryHandlerRegistryAsync
     {
-        private readonly IDictionary<Type, Type> _registry;
+        private readonly IDictionary<Type, IResolveHandlers> _registry;
 
         public QueryHandlerRegistryAsync()
         {
-            _registry = new Dictionary<Type, Type>();
+            _registry = new Dictionary<Type, IResolveHandlers>();
         }
 
-        public virtual Type Get(Type queryType)
+        public virtual Type Get(Type queryType, IQuery query, IQueryContext context)
         {
-            return _registry.ContainsKey(queryType) ? _registry[queryType] : null;
+            return _registry.TryGetValue(queryType, out var route) ? route.ResolveHandlerType(query, context) : null;
         }
 
         public virtual void Register<TQuery, TResult, THandler>()
@@ -35,7 +35,7 @@ namespace Paramore.Darker
             if (!HasMatchingResultType(queryType, resultType))
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
-            _registry.Add(queryType, handlerType);
+            _registry.Add(queryType, new FixedHandlerRoute(handlerType));
         }
 
         private static bool HasMatchingResultType(Type queryType, Type resultType)

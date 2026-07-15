@@ -15,7 +15,7 @@ namespace Paramore.Darker.Core.Tests
             registry.Register<StreamTestQuery, string, StreamTestQueryHandler>();
 
             // Act
-            var handlerType = registry.Get(typeof(StreamTestQuery));
+            var handlerType = registry.Get(typeof(StreamTestQuery), null, null);
 
             // Assert
             handlerType.ShouldBe(typeof(StreamTestQueryHandler));
@@ -29,7 +29,7 @@ namespace Paramore.Darker.Core.Tests
             registry.Register<StreamTestQuery, string, StreamTestQueryHandler>();
 
             // Act
-            var handlerType = registry.Get(typeof(StreamTestQueryOfDifferentResult));
+            var handlerType = registry.Get(typeof(StreamTestQueryOfDifferentResult), null, null);
 
             // Assert
             handlerType.ShouldBeNull();

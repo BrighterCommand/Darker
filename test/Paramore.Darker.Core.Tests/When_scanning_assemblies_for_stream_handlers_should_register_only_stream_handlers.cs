@@ -16,7 +16,7 @@ namespace Paramore.Darker.Core.Tests
             registry.RegisterFromAssemblies(new[] { typeof(ExportedStreamQueryHandler).Assembly });
 
             // Assert — the exported stream handler is found
-            registry.Get(typeof(ExportedStreamQuery)).ShouldBe(typeof(ExportedStreamQueryHandler));
+            registry.Get(typeof(ExportedStreamQuery), null, null).ShouldBe(typeof(ExportedStreamQueryHandler));
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Paramore.Darker.Core.Tests
             registry.RegisterFromAssemblies(new[] { typeof(TestQueryHandlerAsync).Assembly });
 
             // Assert — IQueryHandlerAsync implementations are NOT in the stream registry
-            registry.Get(typeof(TestQueryA)).ShouldBeNull();
+            registry.Get(typeof(TestQueryA), null, null).ShouldBeNull();
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Paramore.Darker.Core.Tests
 
             // Assert — IQueryHandler implementations are NOT in the stream registry
             // TestQueryHandler handles TestQueryA; it should not appear in the stream registry
-            registry.Get(typeof(TestQueryA)).ShouldBeNull();
+            registry.Get(typeof(TestQueryA), null, null).ShouldBeNull();
         }
     }
 }
