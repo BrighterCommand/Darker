@@ -120,7 +120,7 @@
     - Store the generic router type-erased via a cast wrapper `(q,ctx) => router((TQuery)q, ctx)` (safe: keyed on `typeof(TQuery)`, `Get` only reached with `query.GetType() == queryType`).
     - Add `TestDoubles` as needed (a dated query + two handlers).
 
-- [ ] **TEST + IMPLEMENT: A routing function selects the handler from IQueryContext**
+- [x] **TEST + IMPLEMENT: A routing function selects the handler from IQueryContext**
   - **USE COMMAND**: `/test-first when routing function reads IQueryContext bag should route by context not query content`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_function_reads_context_should_route_by_context.cs`
@@ -131,7 +131,7 @@
   - Implementation should:
     - No new production code beyond Phase 3's `RoutedHandlers`/overload if already general; if the router wasn't receiving `context`, thread it. (Expected: already satisfied — this test guards the context path.)
 
-- [ ] **TEST + IMPLEMENT: Routing to null throws RoutingException(NoHandlerResolved), distinct from unregistered-query-type**
+- [x] **TEST + IMPLEMENT: Routing to null throws RoutingException(NoHandlerResolved), distinct from unregistered-query-type**
   - **USE COMMAND**: `/test-first when routing function returns null should throw RoutingException NoHandlerResolved distinct from unregistered query type`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_function_returns_null_should_throw_RoutingException_NoHandlerResolved.cs`
@@ -142,7 +142,7 @@
   - Implementation should:
     - In `RoutedHandlers.ResolveHandlerType`: `if (handlerType is null) throw new RoutingException(RoutingFailure.NoHandlerResolved, _queryType);`.
 
-- [ ] **TEST + IMPLEMENT: Routing to a non-candidate type throws RoutingException(UnregisteredCandidate)**
+- [x] **TEST + IMPLEMENT: Routing to a non-candidate type throws RoutingException(UnregisteredCandidate)**
   - **USE COMMAND**: `/test-first when routing function returns type outside candidate set should throw RoutingException UnregisteredCandidate`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_function_returns_non_candidate_should_throw_RoutingException_UnregisteredCandidate.cs`
@@ -152,7 +152,7 @@
   - Implementation should:
     - In `RoutedHandlers.ResolveHandlerType`: `if (!_candidates.Contains(handlerType)) throw new RoutingException(RoutingFailure.UnregisteredCandidate, _queryType, handlerType);` else return it.
 
-- [ ] **TEST + IMPLEMENT: Registering a candidate that does not implement the handler interface is rejected at registration time**
+- [x] **TEST + IMPLEMENT: Registering a candidate that does not implement the handler interface is rejected at registration time**
   - **USE COMMAND**: `/test-first when routing registered with candidate not implementing handler interface should throw ConfigurationException at registration`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_candidate_does_not_implement_handler_interface_should_throw_ConfigurationException.cs`
@@ -162,7 +162,7 @@
   - Implementation should:
     - In the routing `Register` overload, validate each candidate with `IsAssignableFrom` against `IQueryHandler<TQuery,TResult>` (async/stream use their own handler interface in Phase 4); throw `ConfigurationException` naming the offending candidate.
 
-- [ ] **TEST + IMPLEMENT: An exception thrown inside the routing function surfaces to the caller unwrapped**
+- [x] **TEST + IMPLEMENT: An exception thrown inside the routing function surfaces to the caller unwrapped**
   - **USE COMMAND**: `/test-first when routing function itself throws should surface original exception not wrapped in RoutingException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_function_throws_should_surface_original_exception.cs`
@@ -173,7 +173,7 @@
   - Implementation should:
     - Confirm `RoutedHandlers.ResolveHandlerType` invokes `_router(...)` directly with no surrounding try/catch, so an in-func throw propagates with its stack trace intact. Expected: already satisfied by the Phase 3 implementation — this is a guard test pinning the ADR Risks contract ("does not swallow exceptions thrown *inside* the func").
 
-- [ ] **TEST + IMPLEMENT: A routed handler still runs its decorator pipeline**
+- [x] **TEST + IMPLEMENT: A routed handler still runs its decorator pipeline**
   - **USE COMMAND**: `/test-first when handler selected by routing function should still apply its decorator pipeline`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_handler_selected_by_routing_should_apply_decorator_pipeline.cs`
@@ -183,7 +183,7 @@
   - Implementation should:
     - No new production code expected — routing returns a `Type` that re-enters `PipelineBuilder` exactly as type-based resolution does. This test guards that the routing seam did not bypass decorator discovery.
 
-- [ ] **TEST + IMPLEMENT: Agreement dispatch cannot be combined with type-based/auto-scan registration for the same query type**
+- [x] **TEST + IMPLEMENT: Agreement dispatch cannot be combined with type-based/auto-scan registration for the same query type**
   - **USE COMMAND**: `/test-first when routing function registered for a query type already registered should throw ConfigurationException duplicate`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_routing_registered_for_already_registered_query_type_should_throw_ConfigurationException.cs`
@@ -201,7 +201,7 @@
 > ("sync, async, and streaming"). One `/test-first` task per behaviour, matching Phase 3's granularity.
 > The first task adds the async routing overload (production code); the rest are behaviour tests over it.
 
-- [ ] **TEST + IMPLEMENT: Async routing function selects the handler by query content**
+- [x] **TEST + IMPLEMENT: Async routing function selects the handler by query content**
   - **USE COMMAND**: `/test-first when async query registered with routing function should route by content`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_async_query_registered_with_routing_function_should_route_by_content.cs`
@@ -211,7 +211,7 @@
   - Implementation should:
     - Add the routing `Register` overload to `QueryHandlerRegistryAsync`/`IQueryHandlerRegistryAsync` with `where TQuery : IQuery<TResult>`, validating candidates against `IQueryHandlerAsync<TQuery,TResult>`; reuse `RoutedHandlers`/`RoutingException`.
 
-- [ ] **TEST + IMPLEMENT: Async routing function selects the handler from IQueryContext**
+- [x] **TEST + IMPLEMENT: Async routing function selects the handler from IQueryContext**
   - **USE COMMAND**: `/test-first when async routing function reads IQueryContext should route by context`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_async_routing_function_reads_context_should_route_by_context.cs`
@@ -219,7 +219,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: no new production code beyond the async overload (guard test).
 
-- [ ] **TEST + IMPLEMENT: Async routing to null throws RoutingException(NoHandlerResolved)**
+- [x] **TEST + IMPLEMENT: Async routing to null throws RoutingException(NoHandlerResolved)**
   - **USE COMMAND**: `/test-first when async routing function returns null should throw RoutingException NoHandlerResolved`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_async_routing_function_returns_null_should_throw_RoutingException_NoHandlerResolved.cs`
@@ -227,7 +227,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: reuse `RoutedHandlers` throw path (guard test).
 
-- [ ] **TEST + IMPLEMENT: Async routing to a non-candidate throws RoutingException(UnregisteredCandidate)**
+- [x] **TEST + IMPLEMENT: Async routing to a non-candidate throws RoutingException(UnregisteredCandidate)**
   - **USE COMMAND**: `/test-first when async routing function returns non-candidate should throw RoutingException UnregisteredCandidate`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_async_routing_function_returns_non_candidate_should_throw_RoutingException_UnregisteredCandidate.cs`
@@ -235,7 +235,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: reuse `RoutedHandlers` throw path (guard test).
 
-- [ ] **TEST + IMPLEMENT: Async candidate-validation and duplicate-registration guards**
+- [x] **TEST + IMPLEMENT: Async candidate-validation and duplicate-registration guards**
   - **USE COMMAND**: `/test-first when async routing registered with bad candidate or duplicate query type should throw ConfigurationException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_async_routing_registration_invalid_should_throw_ConfigurationException.cs`
@@ -248,7 +248,7 @@
 > Streaming resolves the handler type **before** enumeration, so routing errors surface at
 > build/first-resolve (consistent with ADR 0019 ordering). One `/test-first` task per behaviour.
 
-- [ ] **TEST + IMPLEMENT: Stream routing function selects the handler by query content**
+- [x] **TEST + IMPLEMENT: Stream routing function selects the handler by query content**
   - **USE COMMAND**: `/test-first when stream query registered with routing function should route by content`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_query_registered_with_routing_function_should_route_by_content.cs`
@@ -257,7 +257,7 @@
   - Implementation should:
     - Add the routing `Register` overload to `StreamQueryHandlerRegistry`/`IStreamQueryHandlerRegistry` with `where TQuery : IStreamQuery<TResult>`, validating candidates against `IStreamQueryHandler<TQuery,TResult>`; reuse `RoutedHandlers`/`RoutingException`.
 
-- [ ] **TEST + IMPLEMENT: Stream routing function selects the handler from IQueryContext**
+- [x] **TEST + IMPLEMENT: Stream routing function selects the handler from IQueryContext**
   - **USE COMMAND**: `/test-first when stream routing function reads IQueryContext should route by context`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_routing_function_reads_context_should_route_by_context.cs`
@@ -265,7 +265,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: no new production code beyond the stream overload (guard test).
 
-- [ ] **TEST + IMPLEMENT: Stream routing to null throws RoutingException(NoHandlerResolved) before enumeration**
+- [x] **TEST + IMPLEMENT: Stream routing to null throws RoutingException(NoHandlerResolved) before enumeration**
   - **USE COMMAND**: `/test-first when stream routing function returns null should throw RoutingException NoHandlerResolved at resolve time`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_routing_function_returns_null_should_throw_RoutingException_NoHandlerResolved.cs`
@@ -273,7 +273,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: reuse `RoutedHandlers` throw path (guard test).
 
-- [ ] **TEST + IMPLEMENT: Stream routing to a non-candidate throws RoutingException(UnregisteredCandidate)**
+- [x] **TEST + IMPLEMENT: Stream routing to a non-candidate throws RoutingException(UnregisteredCandidate)**
   - **USE COMMAND**: `/test-first when stream routing function returns non-candidate should throw RoutingException UnregisteredCandidate`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_routing_function_returns_non_candidate_should_throw_RoutingException_UnregisteredCandidate.cs`
@@ -281,7 +281,7 @@
   - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
   - Implementation should: reuse `RoutedHandlers` throw path (guard test).
 
-- [ ] **TEST + IMPLEMENT: Stream candidate-validation and duplicate-registration guards**
+- [x] **TEST + IMPLEMENT: Stream candidate-validation and duplicate-registration guards**
   - **USE COMMAND**: `/test-first when stream routing registered with bad candidate or duplicate query type should throw ConfigurationException`
   - Test location: `test/Paramore.Darker.Core.Tests`
   - Test file: `When_stream_routing_registration_invalid_should_throw_ConfigurationException.cs`
