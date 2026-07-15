@@ -45,6 +45,19 @@ namespace Paramore.Darker
         }
 
 
+        public virtual void Register<TQuery, TResult>(
+            Func<TQuery, IQueryContext, Type?> router,
+            params Type[] candidateHandlerTypes)
+            where TQuery : IQuery<TResult>
+        {
+            var queryType = typeof(TQuery);
+            if (_registry.ContainsKey(queryType))
+                throw new ConfigurationException($"Registry already contains an entry for {queryType.Name}");
+
+            Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
+            _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
+        }
+
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
         {
             // IMPORTANT: ExportedTypes is load-bearing — see ADR 0011 §9-10.
