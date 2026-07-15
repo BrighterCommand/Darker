@@ -303,7 +303,7 @@
   - Implementation should:
     - Override the routing `Register` overload in `ServiceCollectionHandlerRegistry` to `TryAdd` each candidate handler type (symmetric with the existing single-handler override at `ServiceCollectionHandlerRegistry.cs:18-23`), then delegate to base.
 
-- [ ] **TEST + IMPLEMENT: Async DI routing registration registers every candidate handler in the container**
+- [x] **TEST + IMPLEMENT: Async DI routing registration registers every candidate handler in the container**
   - **USE COMMAND**: `/test-first when async routing registration used via ServiceCollection should register all candidate handler types in the container`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_async_routing_registration_used_should_register_all_candidate_handlers.cs`
