@@ -312,7 +312,7 @@
   - Implementation should:
     - Override the routing `Register` overload in `ServiceCollectionHandlerRegistryAsync` to `TryAdd` each candidate, then delegate to base.
 
-- [ ] **TEST + IMPLEMENT: Stream DI routing registration registers every candidate handler in the container**
+- [x] **TEST + IMPLEMENT: Stream DI routing registration registers every candidate handler in the container**
   - **USE COMMAND**: `/test-first when stream routing registration used via ServiceCollection should register all candidate handler types in the container`
   - Test location: `test/Paramore.Darker.Extensions.Tests`
   - Test file: `When_stream_routing_registration_used_should_register_all_candidate_handlers.cs`

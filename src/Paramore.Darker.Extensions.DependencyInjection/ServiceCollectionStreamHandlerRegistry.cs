@@ -45,5 +45,16 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             base.Register(queryType, resultType, handlerType);
         }
+
+        /// <inheritdoc/>
+        public override void Register<TQuery, TResult>(
+            Func<TQuery, IQueryContext, Type?> router,
+            params Type[] candidateHandlerTypes)
+        {
+            foreach (var candidate in candidateHandlerTypes)
+                _services.TryAdd(new ServiceDescriptor(candidate, candidate, _lifetime));
+
+            base.Register<TQuery, TResult>(router, candidateHandlerTypes);
+        }
     }
 }
