@@ -31,4 +31,4 @@ decision to change how a particular metric is provided.
 - [x] Design / ADR (`/spec:design`) — approved (ADR 0020)
 - [x] Adversarial Review — PASS (see `review-design.md`)
 - [x] Task Breakdown (`/spec:tasks`) — `tasks.md`
-- [ ] Implementation (`/spec:implement`)
+- [x] Implementation (`/spec:implement`)
