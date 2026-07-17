@@ -8,16 +8,16 @@ namespace Paramore.Darker
 {
     public class QueryHandlerRegistryAsync : IQueryHandlerRegistryAsync
     {
-        private readonly IDictionary<Type, Type> _registry;
+        private readonly IDictionary<Type, IResolveHandlers> _registry;
 
         public QueryHandlerRegistryAsync()
         {
-            _registry = new Dictionary<Type, Type>();
+            _registry = new Dictionary<Type, IResolveHandlers>();
         }
 
-        public virtual Type Get(Type queryType)
+        public virtual Type Get(Type queryType, IQuery query, IQueryContext context)
         {
-            return _registry.ContainsKey(queryType) ? _registry[queryType] : null;
+            return _registry.TryGetValue(queryType, out var route) ? route.ResolveHandlerType(query, context) : null;
         }
 
         public virtual void Register<TQuery, TResult, THandler>()
@@ -35,12 +35,33 @@ namespace Paramore.Darker
             if (!HasMatchingResultType(queryType, resultType))
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
-            _registry.Add(queryType, handlerType);
+            _registry.Add(queryType, new FixedHandlerRoute(handlerType));
         }
 
         private static bool HasMatchingResultType(Type queryType, Type resultType)
         {
             return queryType.GetInterfaces().Any(i => i.GenericTypeArguments.Any(t => t == resultType));
+        }
+
+        public virtual void Register<TQuery, TResult>(
+            Func<TQuery, IQueryContext, Type?> router,
+            params Type[] candidateHandlerTypes)
+            where TQuery : IQuery<TResult>
+        {
+            var queryType = typeof(TQuery);
+            if (_registry.ContainsKey(queryType))
+                throw new ConfigurationException($"Registry already contains an entry for {queryType.Name}");
+
+            var handlerInterface = typeof(IQueryHandlerAsync<TQuery, TResult>);
+            foreach (var candidate in candidateHandlerTypes)
+            {
+                if (!handlerInterface.IsAssignableFrom(candidate))
+                    throw new ConfigurationException(
+                        $"Candidate {candidate.Name} does not implement {handlerInterface.Name}");
+            }
+
+            Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
+            _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
         }
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)

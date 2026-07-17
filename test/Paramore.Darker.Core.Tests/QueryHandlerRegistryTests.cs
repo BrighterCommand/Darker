@@ -18,7 +18,7 @@ namespace Paramore.Darker.Core.Tests
                 handlerRegistry.Register(typeof(TestQueryA), typeof(Guid), typeof(IQueryHandler<TestQueryA, Guid>));
 
                 // Act
-                var handlerType = handlerRegistry.Get(typeof(TestQueryA));
+                var handlerType = handlerRegistry.Get(typeof(TestQueryA), null, null);
 
                 // Assert
                 handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, Guid>));
@@ -32,7 +32,7 @@ namespace Paramore.Darker.Core.Tests
                 handlerRegistry.Register(typeof(TestQueryA), typeof(Guid), typeof(IQueryHandler<TestQueryA, Guid>));
 
                 // Act
-                var handlerType = handlerRegistry.Get(typeof(TestQueryB));
+                var handlerType = handlerRegistry.Get(typeof(TestQueryB), null, null);
 
                 // Assert
                 handlerType.ShouldBeNull();
@@ -51,9 +51,9 @@ namespace Paramore.Darker.Core.Tests
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
-                handlerRegistry.Get(typeof(TestQueryA)).ShouldNotBeNull();
-                handlerRegistry.Get(typeof(TestQueryB)).ShouldBeNull();
-                handlerRegistry.Get(typeof(TestQueryC)).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryA), null, null).ShouldNotBeNull();
+                handlerRegistry.Get(typeof(TestQueryB), null, null).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryC), null, null).ShouldBeNull();
             }
 
 #if !NET452
@@ -83,7 +83,7 @@ namespace Paramore.Darker.Core.Tests
                 handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
 
                 // Act
-                var handlerType = handlerRegistry.Get(typeof(TestQueryA));
+                var handlerType = handlerRegistry.Get(typeof(TestQueryA), null, null);
 
                 // Assert
                 handlerType.ShouldBe(typeof(IQueryHandler<TestQueryA, Guid>));
@@ -97,7 +97,7 @@ namespace Paramore.Darker.Core.Tests
                 handlerRegistry.Register<TestQueryA, Guid, IQueryHandler<TestQueryA, Guid>>();
 
                 // Act
-                var handlerType = handlerRegistry.Get(typeof(TestQueryB));
+                var handlerType = handlerRegistry.Get(typeof(TestQueryB), null, null);
 
                 // Assert
                 handlerType.ShouldBeNull();
@@ -115,9 +115,9 @@ namespace Paramore.Darker.Core.Tests
 
                 // Assert
                 exception.Message.ShouldBe($"Registry already contains an entry for {typeof(TestQueryA).Name}");
-                handlerRegistry.Get(typeof(TestQueryA)).ShouldNotBeNull();
-                handlerRegistry.Get(typeof(TestQueryB)).ShouldBeNull();
-                handlerRegistry.Get(typeof(TestQueryC)).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryA), null, null).ShouldNotBeNull();
+                handlerRegistry.Get(typeof(TestQueryB), null, null).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryC), null, null).ShouldBeNull();
             }
         }
 
@@ -133,9 +133,9 @@ namespace Paramore.Darker.Core.Tests
                 handlerRegistry.RegisterFromAssemblies(new[] { typeof(TestQueryHandler).Assembly });
 
                 // Assert
-                handlerRegistry.Get(typeof(TestQueryA)).ShouldNotBeNull();
-                handlerRegistry.Get(typeof(TestQueryB)).ShouldBeNull();
-                handlerRegistry.Get(typeof(TestQueryC)).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryA), null, null).ShouldNotBeNull();
+                handlerRegistry.Get(typeof(TestQueryB), null, null).ShouldBeNull();
+                handlerRegistry.Get(typeof(TestQueryC), null, null).ShouldBeNull();
             }
         }
     }
