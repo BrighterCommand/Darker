@@ -59,7 +59,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_creating_query_validation_exception_should_expose_errors"`
   - **References**: ADR 0020 (Key Components → `QueryValidationException`); requirements FR6
 
-- [ ] **Core package is dependency-free (FR10 executable guard)**
+- [x] **Core package is dependency-free (FR10 executable guard)**
   - **Behavior**: The `Paramore.Darker.Validation` core assembly depends on neither FluentValidation nor DataAnnotations. Enforced by a test so a later accidental reference is caught as a regression. Two complementary checks, because each alone has a blind spot: the IL-reference check misses a *declared-but-unused* package reference (the compiler omits references to assemblies whose types aren't used in IL), while the csproj check misses a *transitive* leak — together they cover FR10.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_inspecting_core_assembly_should_have_no_provider_dependencies.cs`
   - **Test should verify**:
