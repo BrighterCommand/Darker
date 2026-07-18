@@ -151,7 +151,7 @@
   - **RALPH-VERIFY**: `dotnet build src/Paramore.Darker.Validation/Paramore.Darker.Validation.csproj -c Release`
   - **References**: `Directory.Packages.props`; Resolved Decision (FluentValidation 11.11.0, own task)
 
-- [ ] **Scaffold `Paramore.Darker.Validation.FluentValidation` project + its test project**
+- [x] **Scaffold `Paramore.Darker.Validation.FluentValidation` project + its test project**
   - **Behavior**: A new library `Paramore.Darker.Validation.FluentValidation` (targets `netstandard2.0;net8.0;net9.0`) references `Paramore.Darker.Validation`, `Paramore.Darker.Extensions.DependencyInjection`, and the CPM-managed `FluentValidation` package. A matching test project `Paramore.Darker.Validation.FluentValidation.Tests` (`net8.0;net9.0`) references the FV provider and the FluentValidation package (so tests can declare validators). Both are added to `Darker.slnx` and `Darker.Filter.slnf`. Both build.
   - **Test file**: _(none — scaffolding task, build verification only)_
   - **Test should verify**:

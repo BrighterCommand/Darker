@@ -8,12 +8,14 @@
       "src\\Paramore.Darker.Testing\\Paramore.Darker.Testing.csproj",
       "src\\Paramore.Darker\\Paramore.Darker.csproj",
       "src\\Paramore.Darker.Validation\\Paramore.Darker.Validation.csproj",
+      "src\\Paramore.Darker.Validation.FluentValidation\\Paramore.Darker.Validation.FluentValidation.csproj",
       "test\\Paramore.Darker.Benchmarks\\Paramore.Darker.Benchmarks.csproj",
       "test\\Paramore.Darker.Tests.AOT\\Paramore.Darker.Tests.AOT.csproj",
       "test\\Paramore.Darker.Core.Tests\\Paramore.Darker.Core.Tests.csproj",
       "test\\Paramore.Darker.Extensions.Tests\\Paramore.Darker.Extensions.Tests.csproj",
       "test\\Paramore.Darker.Extensions.Diagnostics.Tests\\Paramore.Darker.Extensions.Diagnostics.Tests.csproj",
-      "test\\Paramore.Darker.Validation.Tests\\Paramore.Darker.Validation.Tests.csproj"
+      "test\\Paramore.Darker.Validation.Tests\\Paramore.Darker.Validation.Tests.csproj",
+      "test\\Paramore.Darker.Validation.FluentValidation.Tests\\Paramore.Darker.Validation.FluentValidation.Tests.csproj"
     ]
   }
 }
