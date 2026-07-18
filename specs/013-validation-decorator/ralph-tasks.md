@@ -129,7 +129,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_validate_query_attribute_created_should_return_abstract_decorator_type"`
   - **References**: ADR 0020 (Key Components + provider-switchability decision); `src/Paramore.Darker/QueryHandlerAttribute.cs`; `src/Paramore.Darker/Policies/Attributes/RetryableQueryAttribute.cs`; `src/Paramore.Darker.Validation/ValidateQueryDecorator.cs`
 
-- [ ] **`ValidateQueryAttributeAsync` (async)**
+- [x] **`ValidateQueryAttributeAsync` (async)**
   - **Behavior**: A sealed `ValidateQueryAttributeAsync : QueryHandlerAttributeAsync` exists. `GetDecoratorType()` returns `typeof(ValidateQueryDecoratorAsync<,>)`, `GetAttributeParams()` returns empty, `Step` preserved.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_validate_query_attribute_async_created_should_return_abstract_async_decorator_type.cs`
   - **Test should verify**:
