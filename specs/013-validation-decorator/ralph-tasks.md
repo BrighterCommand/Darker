@@ -94,7 +94,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_query_is_invalid_should_throw_and_not_call_next"`
   - **References**: ADR 0020 (Architecture Overview: "validation runs before `next`"); requirements FR4, FR5; reuse `TestDoubles/StubValidateQueryDecorator.cs` + `ValidationTestQuery.cs`
 
-- [ ] **Abstract `ValidateQueryDecoratorAsync<TQuery,TResult>` — valid query calls `next`**
+- [x] **Abstract `ValidateQueryDecoratorAsync<TQuery,TResult>` — valid query calls `next`**
   - **Behavior**: An abstract `ValidateQueryDecoratorAsync<TQuery,TResult> : IQueryHandlerDecoratorAsync<TQuery,TResult>` implements `ExecuteAsync`: it awaits the abstract member `Task<IReadOnlyCollection<QueryValidationError>> ValidateAsync(TQuery query, CancellationToken)`; on zero errors it awaits `next(query, ct)` and returns the result. Implements `Context` and no-op `InitializeFromAttributeParams`.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_async_query_is_valid_should_call_next.cs`
   - **Test should verify**:
