@@ -83,7 +83,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_query_is_valid_should_call_next"`
   - **References**: ADR 0020 (Architecture Overview + template-method seam); `src/Paramore.Darker/IQueryHandlerDecorator.cs`; `src/Paramore.Darker/Policies/Handlers/RetryableQueryDecoratorAsync.cs` (Context/InitializeFromAttributeParams shape); `test/Paramore.Darker.Core.Tests/TestDoubles/SyncTestQuery.cs`
 
-- [ ] **Abstract `ValidateQueryDecorator<TQuery,TResult>` sync — invalid query throws and short-circuits**
+- [x] **Abstract `ValidateQueryDecorator<TQuery,TResult>` sync — invalid query throws and short-circuits**
   - **Behavior**: When the abstract member returns one or more `QueryValidationError`s, `Execute` throws `QueryValidationException` carrying those errors and does NOT invoke `next`.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_query_is_invalid_should_throw_and_not_call_next.cs`
   - **Test should verify**:
