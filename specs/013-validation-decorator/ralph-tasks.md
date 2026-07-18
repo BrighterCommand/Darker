@@ -37,7 +37,7 @@
   - **RALPH-VERIFY**: `dotnet build test/Paramore.Darker.Validation.Tests/Paramore.Darker.Validation.Tests.csproj -c Release`
   - **References**: `test/Paramore.Darker.Extensions.Tests/Paramore.Darker.Extensions.Tests.csproj`; `Directory.Packages.props` (CPM — reference packages WITHOUT version attributes); `Darker.slnx`; `Darker.Filter.slnf`
 
-- [ ] **`QueryValidationError` record**
+- [x] **`QueryValidationError` record**
   - **Behavior**: A sealed record `QueryValidationError(string PropertyName, string ErrorMessage, object? AttemptedValue = null, string? ErrorCode = null)` exists in the core package. It is value-equatable; two errors with the same four values are equal; `AttemptedValue` and `ErrorCode` default to null.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_creating_query_validation_error_should_expose_supplied_values.cs`
   - **Test should verify**:
