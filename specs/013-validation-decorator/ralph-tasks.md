@@ -11,7 +11,7 @@
 
 ## Tasks
 
-- [ ] **Scaffold the dependency-free core `Paramore.Darker.Validation` project**
+- [x] **Scaffold the dependency-free core `Paramore.Darker.Validation` project**
   - **Behavior**: A new class library `Paramore.Darker.Validation` exists, targets `netstandard2.0;net8.0;net9.0`, references ONLY `Paramore.Darker` (no third-party packages), and is added to both `Darker.slnx` and `Darker.Filter.slnf`. It compiles cleanly (empty of code beyond a placeholder namespace is fine).
   - **Test file**: _(none — scaffolding task, build verification only)_
   - **Test should verify**:

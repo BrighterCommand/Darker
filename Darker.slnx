@@ -52,6 +52,12 @@
       <Configuration Solution="Release|x64" Project="Release|Any CPU" />
       <Configuration Solution="Release|x86" Project="Release|Any CPU" />
     </Project>
+    <Project Path="src\Paramore.Darker.Validation\Paramore.Darker.Validation.csproj">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
   </Folder>
   <Folder Name="/test/">
     <Project Path="test\Paramore.Darker.Benchmarks\Paramore.Darker.Benchmarks.csproj">
