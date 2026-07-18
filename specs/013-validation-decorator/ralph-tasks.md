@@ -165,7 +165,7 @@
   - **RALPH-VERIFY**: `dotnet build src/Paramore.Darker.Validation.FluentValidation/Paramore.Darker.Validation.FluentValidation.csproj -c Release`
   - **References**: Resolved Decision (FV package deps; FV isolated to its own test project); `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj`; `test/Paramore.Darker.Extensions.Tests/Paramore.Darker.Extensions.Tests.csproj`; `Darker.slnx`; `Darker.Filter.slnf`
 
-- [ ] **`FluentValidationQueryValidatorDecorator<,>` sync — valid query passes to `next`**
+- [x] **`FluentValidationQueryValidatorDecorator<,>` sync — valid query passes to `next`**
   - **Behavior**: A concrete `FluentValidationQueryValidatorDecorator<TQuery,TResult> : ValidateQueryDecorator<TQuery,TResult>` injects `IServiceProvider` and, inside `Validate`, resolves the FluentValidation validator from the **runtime query type**: `serviceProvider.GetService(typeof(IValidator<>).MakeGenericType(query.GetType()))` (NOT generic `IValidator<TQuery>` — at pipeline runtime `TQuery` is `IQuery<TResult>`, see the CRITICAL note below). It runs the resolved validator's `Validate(query)`; when valid, returns an empty `IReadOnlyCollection<QueryValidationError>` so the base calls `next`.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_fluent_validator_passes_should_call_next.cs`
   - **Test should verify**:
