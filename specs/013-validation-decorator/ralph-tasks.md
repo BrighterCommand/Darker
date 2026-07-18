@@ -106,7 +106,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_async_query_is_valid_should_call_next"`
   - **References**: ADR 0020 (Architecture Overview); `src/Paramore.Darker/IQueryHandlerDecoratorAsync.cs`; `src/Paramore.Darker/Policies/Handlers/RetryableQueryDecoratorAsync.cs` (ExecuteAsync signature incl. `fallback` + `CancellationToken`)
 
-- [ ] **Abstract `ValidateQueryDecoratorAsync<TQuery,TResult>` — invalid query throws and short-circuits**
+- [x] **Abstract `ValidateQueryDecoratorAsync<TQuery,TResult>` — invalid query throws and short-circuits**
   - **Behavior**: When `ValidateAsync` returns errors, `ExecuteAsync` throws `QueryValidationException` carrying them and does NOT await `next`.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_async_query_is_invalid_should_throw_and_not_call_next.cs`
   - **Test should verify**:
