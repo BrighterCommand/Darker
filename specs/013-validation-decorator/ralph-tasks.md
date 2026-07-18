@@ -141,7 +141,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_validate_query_attribute_async_created_should_return_abstract_async_decorator_type"`
   - **References**: `src/Paramore.Darker/QueryHandlerAttributeAsync.cs`; `src/Paramore.Darker/Policies/Attributes/RetryableQueryAttributeAsync.cs`; `src/Paramore.Darker.Validation/ValidateQueryDecoratorAsync.cs`
 
-- [ ] **Pin FluentValidation 11.11.0 in CPM**
+- [x] **Pin FluentValidation 11.11.0 in CPM**
   - **Behavior**: `Directory.Packages.props` gains `<PackageVersion Include="FluentValidation" Version="11.11.0" />` (11.x retains netstandard2.0 support). No project references it yet; the build still restores/compiles.
   - **Test file**: _(none — CPM entry, build verification only)_
   - **Test should verify**:
