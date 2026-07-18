@@ -202,7 +202,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_no_fluent_validator_registered_should_throw_configuration_exception"`
   - **References**: ADR 0020 (**Amendment** + fail-fast); requirements FR9 + Resolved Decision 1; `src/Paramore.Darker/Exceptions/ConfigurationException.cs`; `src/Paramore.Darker/Policies/Handlers/RetryableQueryDecoratorAsync.cs` (ConfigurationException usage)
 
-- [ ] **`FluentValidationQueryValidatorDecoratorAsync<,>` — valid query passes to `next`**
+- [x] **`FluentValidationQueryValidatorDecoratorAsync<,>` — valid query passes to `next`**
   - **Behavior**: A concrete `FluentValidationQueryValidatorDecoratorAsync<TQuery,TResult> : ValidateQueryDecoratorAsync<TQuery,TResult>` injects `IServiceProvider`, resolves the validator from the **runtime query type** (`query.GetType()`, as the sync decorator does), awaits the non-generic `IValidator.ValidateAsync(IValidationContext, ct)` (honouring async rules and threading the `CancellationToken`), and on success returns empty so the base awaits `next`.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_async_fluent_validator_passes_should_call_next.cs`
   - **Test should verify**:
