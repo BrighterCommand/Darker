@@ -213,7 +213,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_async_fluent_validator_passes_should_call_next"`
   - **References**: ADR 0020 (**Amendment** + async path); requirements NFR async; `src/Paramore.Darker/IQueryHandlerDecoratorAsync.cs` (CancellationToken on `ExecuteAsync`); reuse FV `TestDoubles`
 
-- [ ] **`FluentValidationQueryValidatorDecoratorAsync<,>` — invalid query maps failures and throws**
+- [x] **`FluentValidationQueryValidatorDecoratorAsync<,>` — invalid query maps failures and throws**
   - **Behavior**: On an invalid async result, map each `ValidationFailure` → `QueryValidationError`; base throws `QueryValidationException`; `next` not awaited.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_async_fluent_validator_fails_should_map_failures_and_throw.cs`
   - **Test should verify**:
