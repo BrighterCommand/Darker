@@ -48,7 +48,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_creating_query_validation_error_should_expose_supplied_values"`
   - **References**: ADR 0020 (Key Components → `QueryValidationError`); requirements FR6 + Resolved Decision 4
 
-- [ ] **`QueryValidationException`**
+- [x] **`QueryValidationException`**
   - **Behavior**: A `QueryValidationException : Exception` exists carrying `IReadOnlyCollection<QueryValidationError> Errors`. Constructing it with a collection of errors exposes exactly those errors; it has a message summarising the failure count.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_creating_query_validation_exception_should_expose_errors.cs`
   - **Test should verify**:
