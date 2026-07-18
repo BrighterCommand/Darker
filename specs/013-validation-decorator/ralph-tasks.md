@@ -117,7 +117,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_async_query_is_invalid_should_throw_and_not_call_next"`
   - **References**: requirements FR4, FR5, NFR async; reuse `TestDoubles/StubValidateQueryDecoratorAsync.cs`
 
-- [ ] **`ValidateQueryAttribute` (sync)**
+- [x] **`ValidateQueryAttribute` (sync)**
   - **Behavior**: A sealed `ValidateQueryAttribute : QueryHandlerAttribute` exists. Constructed with a `step`, `GetDecoratorType()` returns the **abstract** open generic `typeof(ValidateQueryDecorator<,>)`, `GetAttributeParams()` returns an empty `object[]`, and `Step` is preserved. `[AttributeUsage(AttributeTargets.Method)]`.
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_validate_query_attribute_created_should_return_abstract_decorator_type.cs`
   - **Test should verify**:
