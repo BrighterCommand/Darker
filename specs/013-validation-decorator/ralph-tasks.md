@@ -177,7 +177,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_fluent_validator_passes_should_call_next"`
   - **References**: ADR 0020 (**Amendment** + Provider → FluentValidation); requirements FR3, FR4; `src/Paramore.Darker/PipelineBuilder.cs:253` (decorators closed over `IQuery<TResult>`); `src/Paramore.Darker/Policies/Handlers/RetryableQueryDecoratorAsync.cs` (DI-resolved decorator pattern). **CRITICAL**: `PipelineBuilder` closes every decorator over `typeof(IQuery<TResult>)`, so `TQuery` is `IQuery<TResult>` at runtime — you CANNOT inject `IValidator<TQuery>` (it would resolve to `IValidator<IQuery<TResult>>`, which nobody registers). Resolve from `query.GetType()` at validate-time. Use FluentValidation's non-generic `IValidator.Validate(IValidationContext)` API since the compile-time type is not the concrete validator.
 
-- [ ] **`FluentValidationQueryValidatorDecorator<,>` sync — invalid query maps failures and throws**
+- [x] **`FluentValidationQueryValidatorDecorator<,>` sync — invalid query maps failures and throws**
   - **Behavior**: When the FluentValidation `Validate` result is invalid, the override maps each `ValidationFailure` → `QueryValidationError(PropertyName, ErrorMessage, AttemptedValue, ErrorCode)`; the base then throws `QueryValidationException` and `next` is not invoked. A query that fails **two distinct rules** produces **two** `QueryValidationError`s (proves the whole collection is surfaced, not just the first failure — FR6).
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_fluent_validator_fails_should_map_failures_and_throw.cs`
   - **Test should verify**:
