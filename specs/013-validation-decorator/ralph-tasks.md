@@ -191,7 +191,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_fluent_validator_fails_should_map_failures_and_throw"`
   - **References**: ADR 0020 (Provider → FluentValidation, `ValidationFailure` → `QueryValidationError`); requirements FR6 (read-only *collection*), FR7
 
-- [ ] **`FluentValidationQueryValidatorDecorator<,>` sync — missing validator fails fast**
+- [x] **`FluentValidationQueryValidatorDecorator<,>` sync — missing validator fails fast**
   - **Behavior**: When `serviceProvider.GetService(typeof(IValidator<>).MakeGenericType(query.GetType()))` returns null (no validator registered for the runtime query type), the decorator throws `Paramore.Darker.Exceptions.ConfigurationException` (fail-fast) rather than silently skipping validation.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_no_fluent_validator_registered_should_throw_configuration_exception.cs`
   - **Test should verify**:

@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
+using Paramore.Darker.Exceptions;
 using Paramore.Darker.Validation;
 
 namespace Paramore.Darker.Validation.FluentValidation;
@@ -76,13 +77,20 @@ public class FluentValidationQueryValidatorDecorator<TQuery, TResult> : Validate
     /// An empty collection when validation succeeds; otherwise a collection of
     /// <see cref="QueryValidationError"/> instances describing each failure.
     /// </returns>
+    /// <exception cref="ConfigurationException">
+    /// Thrown when no <see cref="IValidator{T}"/> is registered for the runtime query type.
+    /// A missing validator on a handler annotated with <c>[ValidateQuery]</c> is a
+    /// configuration error (FR9 — fail-fast), not a silent no-op.
+    /// </exception>
     protected override IReadOnlyCollection<QueryValidationError> Validate(TQuery query)
     {
         var validatorType = typeof(IValidator<>).MakeGenericType(query.GetType());
         var validator = (IValidator?)_serviceProvider.GetService(validatorType);
 
         if (validator == null)
-            return Array.Empty<QueryValidationError>();
+            throw new ConfigurationException(
+                $"No FluentValidation IValidator<{query.GetType().Name}> is registered. " +
+                $"Register a validator for {query.GetType().Name} or remove [ValidateQuery] from the handler.");
 
         var validationResult = validator.Validate(new ValidationContext<object>(query));
 
