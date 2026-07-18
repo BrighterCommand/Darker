@@ -225,7 +225,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_async_fluent_validator_fails_should_map_failures_and_throw"`
   - **References**: requirements FR6, FR7, NFR async
 
-- [ ] **`FluentValidationQueryValidatorDecoratorAsync<,>` — missing validator fails fast**
+- [x] **`FluentValidationQueryValidatorDecoratorAsync<,>` — missing validator fails fast**
   - **Behavior**: When the runtime-type validator lookup (`query.GetType()`) returns null, `ExecuteAsync` throws `ConfigurationException`.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_no_async_fluent_validator_registered_should_throw_configuration_exception.cs`
   - **Test should verify**:
