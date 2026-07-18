@@ -70,7 +70,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.Tests/ --filter "FullyQualifiedName~When_inspecting_core_assembly_should_have_no_provider_dependencies"`
   - **References**: requirements FR10 + Acceptance Criteria ("Core validation abstractions carry no dependency on FluentValidation or DataAnnotations"); ADR 0020 (Consequences → Dependency-free core); review round 2 Finding 2 (assembly-name + trimming caveats)
 
-- [ ] **Abstract `ValidateQueryDecorator<TQuery,TResult>` sync — valid query calls `next`**
+- [x] **Abstract `ValidateQueryDecorator<TQuery,TResult>` sync — valid query calls `next`**
   - **Behavior**: An abstract `ValidateQueryDecorator<TQuery,TResult> : IQueryHandlerDecorator<TQuery,TResult>` implements the template method `Execute`: it calls the abstract member `IReadOnlyCollection<QueryValidationError> Validate(TQuery query)`; when it returns zero errors, `Execute` invokes `next(query)` and returns its result unchanged. Implements `Context { get; set; }` and a no-op `InitializeFromAttributeParams` (attribute has no params).
   - **Test file**: `test/Paramore.Darker.Validation.Tests/When_query_is_valid_should_call_next.cs`
   - **Test should verify**:
