@@ -12,7 +12,8 @@
       "test\\Paramore.Darker.Tests.AOT\\Paramore.Darker.Tests.AOT.csproj",
       "test\\Paramore.Darker.Core.Tests\\Paramore.Darker.Core.Tests.csproj",
       "test\\Paramore.Darker.Extensions.Tests\\Paramore.Darker.Extensions.Tests.csproj",
-      "test\\Paramore.Darker.Extensions.Diagnostics.Tests\\Paramore.Darker.Extensions.Diagnostics.Tests.csproj"
+      "test\\Paramore.Darker.Extensions.Diagnostics.Tests\\Paramore.Darker.Extensions.Diagnostics.Tests.csproj",
+      "test\\Paramore.Darker.Validation.Tests\\Paramore.Darker.Validation.Tests.csproj"
     ]
   }
 }

@@ -24,7 +24,7 @@
   - **RALPH-VERIFY**: `dotnet build src/Paramore.Darker.Validation/Paramore.Darker.Validation.csproj -c Release`
   - **References**: ADR 0020 (Key Components → Core); `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj` (csproj shape); `Darker.slnx`; `Darker.Filter.slnf`
 
-- [ ] **Scaffold the `Paramore.Darker.Validation.Tests` project**
+- [x] **Scaffold the `Paramore.Darker.Validation.Tests` project**
   - **Behavior**: A new xUnit test project `Paramore.Darker.Validation.Tests` exists, targets `net8.0;net9.0`, `IsPackable=false`, references `Paramore.Darker.Validation`, and is added to `Darker.slnx` and `Darker.Filter.slnf`. It contains an empty `TestDoubles/` folder convention (no doubles yet). It builds and reports zero tests.
   - **Test file**: _(none — scaffolding task, build verification only)_
   - **Test should verify**:
