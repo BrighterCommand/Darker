@@ -235,7 +235,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_no_async_fluent_validator_registered_should_throw_configuration_exception"`
   - **References**: ADR 0020 (**Amendment** + fail-fast); requirements FR9; `src/Paramore.Darker/Exceptions/ConfigurationException.cs`
 
-- [ ] **`UseFluentValidation()` DI extension registers the abstract→concrete mapping**
+- [x] **`UseFluentValidation()` DI extension registers the abstract→concrete mapping**
   - **Behavior**: A `UseFluentValidation(this IDarkerHandlerBuilder builder)` extension registers open-generic service descriptors mapping the abstract core decorators to the FluentValidation concretes — `typeof(ValidateQueryDecorator<,>)` → `typeof(FluentValidationQueryValidatorDecorator<,>)` and the async pair — so DI closes the generic per query and the pipeline resolves the concrete decorator. Registered as `Transient` (mirroring Brighter). Returns the builder for chaining; throws `ArgumentNullException` on null builder.
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_UseFluentValidation_called_should_resolve_concrete_decorator_for_abstract_type.cs`
   - **Test should verify**:
