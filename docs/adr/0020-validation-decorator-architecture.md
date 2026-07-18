@@ -6,6 +6,25 @@ Date: 2026-07-18
 
 Accepted
 
+## Amendment (2026-07-18)
+
+An adversarial review of the task breakdown caught a defect in the original validator-resolution
+mechanism. `PipelineBuilder<TResult>` closes every decorator's open generic over the **interface**
+`IQuery<TResult>`, not the concrete query type
+(`src/Paramore.Darker/PipelineBuilder.cs:253` sync, `:404` async:
+`attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult))`). So at
+pipeline runtime a decorator's `TQuery` **is `IQuery<TResult>`, never the concrete query type.**
+
+The original text ("DI closes the generic per query and constructor-inject a per-`TQuery` validator")
+was therefore wrong: a generic `IValidator<TQuery>` resolves to `IValidator<IQuery<TResult>>`, which
+no application registers, so the FluentValidation fail-fast would fire on every query. The passages
+below have been corrected: the FluentValidation provider resolves its validator by **reflecting on
+the runtime object type** — `serviceProvider.GetService(typeof(IValidator<>).MakeGenericType(query.GetType()))`
+— inside `Validate`/`ValidateAsync`, because the query *object* passed to `Execute` is concrete even
+though its static type is `IQuery<TResult>`. DataAnnotations was always unaffected (it reflects on the
+runtime object via `new ValidationContext(query)`). The abstract→concrete open-generic DI mapping and
+every other decision stand unchanged.
+
 ## Context
 
 Darker has no first-class stage for validating a query's inputs before its handler runs. Although
@@ -40,8 +59,16 @@ core; Brighter-style `Use*` registration; a shared `QueryValidationError` record
   open generic service descriptors and resolved through `ServiceProviderComponentFactory`
   (`serviceProvider.GetService(closedDecoratorType)` or the per-query child scope). This is exactly
   the seam Brighter's `UseDataAnnotations()` exploits: an open-generic `ServiceDescriptor` mapping the
-  provider-agnostic decorator type to a concrete provider type lets DI close the generic per query
-  and constructor-inject a per-`TQuery` validator. No new resolution machinery is required.
+  provider-agnostic decorator type to a concrete provider type lets DI resolve the concrete decorator
+  when the pipeline asks for the abstract one. No new resolution machinery is required.
+- **Decorators are closed over `IQuery<TResult>`, not the concrete query (see Amendment)** —
+  `PipelineBuilder` closes each decorator's open generic over `typeof(IQuery<TResult>)`
+  (`PipelineBuilder.cs:253/404`), so a decorator's `TQuery` type parameter is `IQuery<TResult>` at
+  runtime. A provider that needs a per-concrete-query dependency (FluentValidation's
+  `IValidator<TQuery>`) therefore cannot rely on generic injection of `IValidator<TQuery>`; it must
+  resolve the validator from the **runtime type of the query object** it is handed. This mirrors how
+  existing Darker decorators work — `RetryableQueryDecoratorAsync` pulls its dependency from
+  `Context`, never from per-`TQuery` DI.
 - **Dependency-free core (FR10)** — the core abstractions must not reference FluentValidation or
   `System.ComponentModel.DataAnnotations`; those dependencies live only in their provider packages.
 - **Fail fast (FR9)** — a query marked `[ValidateQuery]` with no available validator is a
@@ -92,8 +119,9 @@ DI:  ValidateQueryDecoratorAsync<,>  ──mapped by UseX()──►  <Provider>
         ▲                                             ▲
         │ overrides ValidateAsync                     │ overrides ValidateAsync
 FluentValidationQueryValidatorDecoratorAsync   DataAnnotationsQueryValidatorDecoratorAsync
-  resolve IValidator<TQuery> (FluentValidation)   Validator.TryValidateObject (reflection)
-  no validator → ConfigurationException           map ValidationResult → QueryValidationError
+  resolve IValidator<query.GetType()> from        Validator.TryValidateObject (reflection)
+    IServiceProvider (runtime type, not TQuery)   map ValidationResult → QueryValidationError
+  no validator → ConfigurationException
   map ValidationFailure → QueryValidationError
 ```
 
@@ -131,10 +159,12 @@ exactly like every other Darker decorator.
 **Provider — `Paramore.Darker.Validation.FluentValidation`:**
 
 - `FluentValidationQueryValidatorDecorator<,>` / `...Async<,>` — concrete *service providers*
-  subclassing the core decorators. Constructor-inject the per-query FluentValidation
-  `IValidator<TQuery>` (resolved from DI); if none is available, throw `ConfigurationException`
-  (fail-fast, FR9). Override `Validate`/`ValidateAsync` to run the validator and map each
-  `ValidationFailure` → `QueryValidationError` (property, message, attempted value, error code).
+  subclassing the core decorators. Because the decorator's `TQuery` is `IQuery<TResult>` at runtime
+  (see Amendment), they inject `IServiceProvider` and resolve the FluentValidation validator from the
+  **runtime query type**: `serviceProvider.GetService(typeof(IValidator<>).MakeGenericType(query.GetType()))`.
+  If none is available, throw `ConfigurationException` (fail-fast, FR9). Override
+  `Validate`/`ValidateAsync` to run the validator and map each `ValidationFailure` →
+  `QueryValidationError` (property, message, attempted value, error code).
 - `UseFluentValidation()` — `IDarkerHandlerBuilder` extension that registers the abstract→concrete
   open-generic mapping so DI resolves the FluentValidation decorator.
 
@@ -166,8 +196,10 @@ exactly like every other Darker decorator.
 2. The abstract decorator's `Execute`/`ExecuteAsync` implements the template method; only
    `Validate`/`ValidateAsync` is abstract.
 3. Add `Paramore.Darker.Validation.FluentValidation` with concrete decorators, failure mapping, and
-   `UseFluentValidation()`. Fail-fast with `ConfigurationException` when no `IValidator<TQuery>` is
-   registered.
+   `UseFluentValidation()`. The decorators resolve `IValidator<>` from the **runtime query type**
+   (`query.GetType()`) via `IServiceProvider`, not by generic `IValidator<TQuery>` injection (the
+   decorator's `TQuery` is `IQuery<TResult>` at runtime — see Amendment). Fail-fast with
+   `ConfigurationException` when no validator is registered for the runtime query type.
 4. Add `Paramore.Darker.Validation.DataAnnotations` with concrete decorators, failure mapping, and
    `UseDataAnnotations()`.
 5. Each `Use*` registers the open-generic mapping
@@ -175,9 +207,20 @@ exactly like every other Darker decorator.
    lifetime, and registers the decorator with Darker's decorator registry so the pipeline can resolve
    it — mirroring how policy decorators register today.
 6. Tests (TDD) cover: valid pass-through, invalid → `QueryValidationException` (+ handler not
-   invoked), missing FluentValidation validator → `ConfigurationException`, identical
-   `QueryValidationError` shape across both providers, and both sync and async paths — following
-   Brighter's test structure.
+   invoked), missing FluentValidation validator → `ConfigurationException`, multiple failures →
+   multiple `QueryValidationError`s, identical `QueryValidationError` shape across both providers, and
+   both sync and async paths — following Brighter's test structure.
+7. **End-to-end pipeline tests are mandatory, not optional.** Because the decorator's `TQuery` is
+   `IQuery<TResult>` at runtime, unit tests that instantiate the decorator or resolve it directly from
+   a `ServiceProvider` closed over the *concrete* query type exercise a resolution path the pipeline
+   never uses — a false-green that would hide exactly the runtime-type-resolution wiring. Each
+   provider MUST have at least one test that registers a handler annotated with
+   `[ValidateQuery]`/`[ValidateQueryAsync]` plus a validator via `AddDarker(...).UseX()` and drives a
+   valid and an invalid query through a **real `QueryProcessor`**, asserting pass-through and
+   `QueryValidationException`.
+8. **FR10 is enforced by a test**, not just by project references: a test reflects over the core
+   assembly's `GetReferencedAssemblies()` and asserts no `FluentValidation` /
+   `System.ComponentModel.DataAnnotations` reference.
 
 ## Consequences
 
