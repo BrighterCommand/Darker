@@ -298,7 +298,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_data_annotations_fail_should_map_results_and_throw"`
   - **References**: ADR 0020 (Provider → DataAnnotations, `AttemptedValue`/`ErrorCode` left null); requirements FR6, FR8
 
-- [ ] **`DataAnnotationsQueryValidatorDecoratorAsync<,>` — valid query passes to `next`**
+- [x] **`DataAnnotationsQueryValidatorDecoratorAsync<,>` — valid query passes to `next`**
   - **Behavior**: A concrete async subclass overrides `ValidateAsync`, runs the same `Validator.TryValidateObject` synchronously and wraps the result in a completed task; on success the base awaits `next`. (DataAnnotations has no async validation API.)
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_async_data_annotations_pass_should_call_next.cs`
   - **Test should verify**:

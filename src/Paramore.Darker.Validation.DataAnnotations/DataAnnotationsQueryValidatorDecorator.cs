@@ -30,6 +30,38 @@ using Paramore.Darker.Validation;
 namespace Paramore.Darker.Validation.DataAnnotations;
 
 /// <summary>
+/// Shared validation logic for DataAnnotations-based query validators.
+/// Extracted to be reused by both the sync and async decorator variants.
+/// </summary>
+internal static class DataAnnotationsValidationHelper
+{
+    /// <summary>
+    /// Runs <see cref="Validator.TryValidateObject"/> against the runtime type of
+    /// <paramref name="query"/> and returns any validation errors mapped to
+    /// <see cref="QueryValidationError"/> instances.
+    /// </summary>
+    /// <param name="query">The query object to validate (validated via its runtime type).</param>
+    /// <returns>
+    /// An empty collection when all DataAnnotations constraints are satisfied; otherwise a
+    /// collection of <see cref="QueryValidationError"/> instances describing each failure.
+    /// </returns>
+    internal static IReadOnlyCollection<QueryValidationError> Validate(object query)
+    {
+        var validationResults = new List<ValidationResult>();
+        var context = new ValidationContext(query);
+
+        if (Validator.TryValidateObject(query, context, validationResults, validateAllProperties: true))
+            return Array.Empty<QueryValidationError>();
+
+        return validationResults
+            .Select(result => new QueryValidationError(
+                result.MemberNames.FirstOrDefault() ?? string.Empty,
+                result.ErrorMessage ?? string.Empty))
+            .ToArray();
+    }
+}
+
+/// <summary>
 /// A concrete <see cref="ValidateQueryDecorator{TQuery,TResult}"/> that validates query objects
 /// using <see cref="System.ComponentModel.DataAnnotations.Validator"/>.
 /// </summary>
@@ -62,17 +94,5 @@ public class DataAnnotationsQueryValidatorDecorator<TQuery, TResult> : ValidateQ
     /// describing each failure.
     /// </returns>
     protected override IReadOnlyCollection<QueryValidationError> Validate(TQuery query)
-    {
-        var validationResults = new List<ValidationResult>();
-        var context = new ValidationContext(query);
-
-        if (Validator.TryValidateObject(query, context, validationResults, validateAllProperties: true))
-            return Array.Empty<QueryValidationError>();
-
-        return validationResults
-            .Select(result => new QueryValidationError(
-                result.MemberNames.FirstOrDefault() ?? string.Empty,
-                result.ErrorMessage ?? string.Empty))
-            .ToArray();
-    }
+        => DataAnnotationsValidationHelper.Validate(query!);
 }
