@@ -274,7 +274,7 @@
   - **RALPH-VERIFY**: `dotnet build src/Paramore.Darker.Validation.DataAnnotations/Paramore.Darker.Validation.DataAnnotations.csproj -c Release`
   - **References**: Resolved Decision (DA deps, in-box); ADR 0020 (Provider → DataAnnotations); `Darker.slnx`; `Darker.Filter.slnf`
 
-- [ ] **`DataAnnotationsQueryValidatorDecorator<,>` sync — valid query passes to `next`**
+- [x] **`DataAnnotationsQueryValidatorDecorator<,>` sync — valid query passes to `next`**
   - **Behavior**: A concrete `DataAnnotationsQueryValidatorDecorator<TQuery,TResult> : ValidateQueryDecorator<TQuery,TResult>` runs `Validator.TryValidateObject(query, new ValidationContext(query), results, validateAllProperties: true)`; when valid, returns an empty error collection so the base calls `next`. NO fail-fast (constraints live on the query type; nothing per-query to register).
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_data_annotations_pass_should_call_next.cs`
   - **Test should verify**:
