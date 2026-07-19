@@ -35,17 +35,22 @@ namespace Paramore.Darker.Validation.FluentValidation.Tests.TestDoubles;
 /// <remarks>
 /// Must be <c>public</c> so that <c>AddHandlersFromAssemblies</c> discovers it via
 /// <c>Assembly.GetExportedTypes()</c> when scanning the test assembly in end-to-end tests.
-/// The static <see cref="HandlerExecuted"/> flag lets end-to-end tests assert whether the
-/// handler body ran or was short-circuited by the validation decorator.
-/// Reset the flag via <see cref="Reset"/> before each test scenario.
+/// The injected <see cref="HandlerExecutionRecorder"/> lets end-to-end tests assert whether the
+/// handler body ran or was short-circuited by the validation decorator without using static
+/// mutable state.
 /// </remarks>
 public sealed class FvTestQueryHandlerAsync : QueryHandlerAsync<FvTestQuery, FvTestQuery.Result>
 {
-    /// <summary>Gets a value indicating whether the handler body was entered during the last execution.</summary>
-    public static bool HandlerExecuted { get; private set; }
+    private readonly HandlerExecutionRecorder _recorder;
 
-    /// <summary>Resets <see cref="HandlerExecuted"/> to <c>false</c> before a new test scenario.</summary>
-    public static void Reset() => HandlerExecuted = false;
+    /// <summary>
+    /// Initialises the handler with the shared execution recorder.
+    /// </summary>
+    /// <param name="recorder">The recorder that tracks whether the handler body was entered.</param>
+    public FvTestQueryHandlerAsync(HandlerExecutionRecorder recorder)
+    {
+        _recorder = recorder;
+    }
 
     /// <inheritdoc />
     [ValidateQueryAttributeAsync(1)]
@@ -53,7 +58,7 @@ public sealed class FvTestQueryHandlerAsync : QueryHandlerAsync<FvTestQuery, FvT
         FvTestQuery query,
         CancellationToken cancellationToken = default)
     {
-        HandlerExecuted = true;
+        _recorder.Record();
         return Task.FromResult(new FvTestQuery.Result { Value = query.Name });
     }
 }

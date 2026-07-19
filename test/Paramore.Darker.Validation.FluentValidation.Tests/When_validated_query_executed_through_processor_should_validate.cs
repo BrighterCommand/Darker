@@ -51,11 +51,12 @@ public class ValidatedQueryProcessorPipelineTests
     [Fact]
     public async Task When_validated_query_executed_through_processor_should_validate()
     {
-        // Arrange — build a real ServiceProvider with the full Darker DI pipeline
-        FvTestQueryHandlerAsync.Reset();
-
+        // Arrange — build a real ServiceProvider with the full Darker DI pipeline.
+        // the HandlerExecutionRecorder is a singleton so the same instance is injected
+        // into every FvTestQueryHandlerAsync and can be resolved from the provider for assertions.
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(LoggerFactory.Create(_ => { }));
+        services.AddSingleton<HandlerExecutionRecorder>();
         services
             .AddDarker()
             .AddHandlersFromAssemblies(typeof(FvTestQueryHandlerAsync).Assembly)
@@ -64,6 +65,7 @@ public class ValidatedQueryProcessorPipelineTests
 
         await using var provider = services.BuildServiceProvider();
         var queryProcessor = provider.GetRequiredService<IQueryProcessor>();
+        var recorder = provider.GetRequiredService<HandlerExecutionRecorder>();
 
         // Act — a valid query must reach the handler and return its result
         var VALID_QUERY = new FvTestQuery { Name = "Alice", Age = 30 };
@@ -72,10 +74,10 @@ public class ValidatedQueryProcessorPipelineTests
         // Assert — handler ran and returned the expected result
         result.ShouldNotBeNull();
         result.Value.ShouldBe("Alice");
-        FvTestQueryHandlerAsync.HandlerExecuted.ShouldBeTrue();
+        recorder.Executed.ShouldBeTrue();
 
         // Arrange — reset handler-ran flag before the invalid scenario
-        FvTestQueryHandlerAsync.Reset();
+        recorder.Reset();
 
         // Act & Assert — an invalid query must throw QueryValidationException
         var INVALID_QUERY = new FvTestQuery { Name = string.Empty, Age = 0 };
@@ -83,6 +85,6 @@ public class ValidatedQueryProcessorPipelineTests
             () => queryProcessor.ExecuteAsync(INVALID_QUERY));
 
         // Assert — the handler body was never entered for the invalid query
-        FvTestQueryHandlerAsync.HandlerExecuted.ShouldBeFalse();
+        recorder.Executed.ShouldBeFalse();
     }
 }
