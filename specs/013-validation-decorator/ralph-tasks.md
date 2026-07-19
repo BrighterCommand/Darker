@@ -308,7 +308,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_async_data_annotations_pass_should_call_next"`
   - **References**: ADR 0020 (async path); requirements NFR async; reuse DA `TestDoubles`
 
-- [ ] **`DataAnnotationsQueryValidatorDecoratorAsync<,>` — invalid query maps results and throws**
+- [x] **`DataAnnotationsQueryValidatorDecoratorAsync<,>` — invalid query maps results and throws**
   - **Behavior**: On failure, map `ValidationResult` → `QueryValidationError` (as sync) and the base throws `QueryValidationException`; `next` not awaited.
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_async_data_annotations_fail_should_map_results_and_throw.cs`
   - **Test should verify**:
