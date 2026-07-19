@@ -344,7 +344,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_validated_query_executed_through_processor_should_validate"`
   - **References**: ADR 0020 (Implementation Approach step 7); review Finding 2; `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs` (`AddDarker`) + `IDarkerHandlerBuilder.cs` (use `AddHandlersFromAssemblies(params Assembly[])` — registers sync+async; `AddHandlers(Action<IQueryHandlerRegistry>)` is sync-only and will NOT register the async handler); `src/Paramore.Darker/QueryProcessor.cs`; `test/Paramore.Darker.Extensions.Tests/QueryProcessorIntegrationTests.cs`
 
-- [ ] **Cross-provider identical `QueryValidationError` shape**
+- [x] **Cross-provider identical `QueryValidationError` shape**
   - **Behavior**: For an equivalent invalid query, both the FluentValidation and DataAnnotations decorators produce `QueryValidationException.Errors` of the same shape — same `QueryValidationError` type, `PropertyName` and `ErrorMessage` populated for both (values may differ; `AttemptedValue`/`ErrorCode` may be null for DataAnnotations). This proves the provider-agnostic contract (identical shape, not identical values).
   - **Test file**: `test/Paramore.Darker.Validation.FluentValidation.Tests/When_both_providers_fail_should_produce_identical_error_shape.cs`
   - **Test should verify**:

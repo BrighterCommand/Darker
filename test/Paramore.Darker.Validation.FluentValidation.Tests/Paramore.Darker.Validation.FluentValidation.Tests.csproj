@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paramore.Darker.Validation.FluentValidation\Paramore.Darker.Validation.FluentValidation.csproj" />
+    <ProjectReference Include="..\..\src\Paramore.Darker.Validation.DataAnnotations\Paramore.Darker.Validation.DataAnnotations.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" />
