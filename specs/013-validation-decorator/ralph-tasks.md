@@ -260,7 +260,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.FluentValidation.Tests/ --filter "FullyQualifiedName~When_validated_query_executed_through_processor_should_validate"`
   - **References**: ADR 0020 (Implementation Approach step 7); review Finding 1 + 2; `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs` (`AddDarker`) + `IDarkerHandlerBuilder.cs` (`AddHandlersFromAssemblies(params Assembly[])` — registers BOTH sync and async handlers; `AddHandlers` takes `Action<IQueryHandlerRegistry>` and is sync-only, so it will NOT work for an async handler); `src/Paramore.Darker/QueryProcessor.cs`; existing async end-to-end style in `test/Paramore.Darker.Extensions.Tests/QueryProcessorIntegrationTests.cs` (uses `AddHandlersFromAssemblies`)
 
-- [ ] **Scaffold `Paramore.Darker.Validation.DataAnnotations` project + its test project**
+- [x] **Scaffold `Paramore.Darker.Validation.DataAnnotations` project + its test project**
   - **Behavior**: A new library `Paramore.Darker.Validation.DataAnnotations` (targets `netstandard2.0;net8.0;net9.0`) references `Paramore.Darker.Validation` and `Paramore.Darker.Extensions.DependencyInjection` and uses in-box `System.ComponentModel.DataAnnotations` (add a framework/BCL reference if netstandard2.0 requires it — no external package). A matching test project `Paramore.Darker.Validation.DataAnnotations.Tests` (`net8.0;net9.0`) references the DA provider. Both added to `Darker.slnx` and `Darker.Filter.slnf`. Both build. NO FluentValidation reference anywhere here.
   - **Test file**: _(none — scaffolding task, build verification only)_
   - **Test should verify**:
