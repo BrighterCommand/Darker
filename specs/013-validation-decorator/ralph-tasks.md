@@ -285,7 +285,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_data_annotations_pass_should_call_next"`
   - **References**: ADR 0020 (Provider → DataAnnotations); requirements FR4, FR8
 
-- [ ] **`DataAnnotationsQueryValidatorDecorator<,>` sync — invalid query maps results and throws**
+- [x] **`DataAnnotationsQueryValidatorDecorator<,>` sync — invalid query maps results and throws**
   - **Behavior**: On failed `TryValidateObject`, map each `ValidationResult` → `QueryValidationError(memberName, ErrorMessage, AttemptedValue: null, ErrorCode: null)` (DataAnnotations has no attempted-value/error-code concept); base throws `QueryValidationException`; `next` not invoked. A query violating **two** constraints (on distinct members) yields **two** `QueryValidationError`s (FR6 collection coverage).
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_data_annotations_fail_should_map_results_and_throw.cs`
   - **Test should verify**:
