@@ -28,25 +28,6 @@ using Paramore.Darker.Validation;
 namespace Paramore.Darker.Validation.DataAnnotations.Tests.TestDoubles;
 
 /// <summary>
-/// Records whether the handler body was entered during a query execution.
-/// Register this as a singleton in the <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/>
-/// and inject it into <see cref="DaTestQueryHandlerAsync"/> via constructor injection so that
-/// end-to-end tests can assert on an instance, avoiding fragile static mutable state that can
-/// cause flaky failures under xUnit's parallel test execution.
-/// </summary>
-public sealed class HandlerExecutionRecorder
-{
-    /// <summary>Gets a value indicating whether the handler body was entered.</summary>
-    public bool Executed { get; private set; }
-
-    /// <summary>Records that the handler body was entered.</summary>
-    public void Record() => Executed = true;
-
-    /// <summary>Resets <see cref="Executed"/> to <c>false</c> before a new test scenario.</summary>
-    public void Reset() => Executed = false;
-}
-
-/// <summary>
 /// A test-double async handler for <see cref="DaTestQuery"/> whose <c>ExecuteAsync</c> method
 /// carries <see cref="ValidateQueryAttributeAsync"/> so that the DataAnnotations validation
 /// decorator is wired into the pipeline automatically.
