@@ -320,7 +320,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_async_data_annotations_fail_should_map_results_and_throw"`
   - **References**: requirements FR6, FR8, NFR async
 
-- [ ] **`UseDataAnnotations()` DI extension registers the abstract→concrete mapping**
+- [x] **`UseDataAnnotations()` DI extension registers the abstract→concrete mapping**
   - **Behavior**: A `UseDataAnnotations(this IDarkerHandlerBuilder builder)` extension registers `typeof(ValidateQueryDecorator<,>)` → `typeof(DataAnnotationsQueryValidatorDecorator<,>)` and the async pair as open-generic `Transient` descriptors so DI resolves the DataAnnotations concrete for the abstract type. Returns the builder; throws `ArgumentNullException` on null.
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_UseDataAnnotations_called_should_resolve_concrete_decorator_for_abstract_type.cs`
   - **Test should verify**:
