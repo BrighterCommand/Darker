@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
+    <Description>DataAnnotations integration for Darker query validation</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paramore.Darker.Validation\Paramore.Darker.Validation.csproj" />
+    <ProjectReference Include="..\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+</Project>
