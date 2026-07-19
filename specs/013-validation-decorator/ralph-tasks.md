@@ -331,7 +331,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Validation.DataAnnotations.Tests/ --filter "FullyQualifiedName~When_UseDataAnnotations_called_should_resolve_concrete_decorator_for_abstract_type"`
   - **References**: ADR 0020 (Implementation Approach step 5 + **Amendment**); requirements FR8 + Resolved Decision 3; `src/Paramore.Darker/PipelineBuilder.cs:253` (closed type the pipeline resolves); `src/Paramore.Darker.Extensions.DependencyInjection/PolicyDIExtensions.cs`; `src/Paramore.Darker.Extensions.DependencyInjection/IDarkerHandlerBuilder.cs`
 
-- [ ] **End-to-end: DataAnnotations validates through the real `QueryProcessor` pipeline**
+- [x] **End-to-end: DataAnnotations validates through the real `QueryProcessor` pipeline**
   - **Behavior**: A handler whose async execute method carries `[ValidateQueryAsync(step)]`, wired via `AddDarker(...).AddHandlersFromAssemblies(...).UseDataAnnotations()`, validates the query through a **real `QueryProcessor`**: a query satisfying its DataAnnotations constraints returns the handler result; a violating query throws `QueryValidationException` and the handler never runs.
   - **Test file**: `test/Paramore.Darker.Validation.DataAnnotations.Tests/When_validated_query_executed_through_processor_should_validate.cs`
   - **Test should verify**:
