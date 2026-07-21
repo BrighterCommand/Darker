@@ -72,7 +72,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_generating_default_key_should_be_deterministic_and_distinct_per_input"`
   - **References**: requirements.md (FR4, FR5); ADR 0021 (Key Components — `ICacheKeyGenerator` / `DefaultCacheKeyGenerator`, and Risks — "cache-key logic reflects on `typeof(TQuery)` … instead of the runtime object")
 
-- [ ] **DefaultCacheKeyGenerator uses IAmCacheable.CacheKey when the query implements it**
+- [x] **DefaultCacheKeyGenerator uses IAmCacheable.CacheKey when the query implements it**
   - **Behavior**: When the runtime query object implements `IAmCacheable`, `DefaultCacheKeyGenerator.GenerateKey` returns the query's `CacheKey` verbatim instead of the default type+JSON strategy. Example (FR5): a query with `CacheKey => $"GetUser-{UserId}"` and `UserId = 42` yields `"GetUser-42"`.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_query_is_cacheable_should_use_its_cache_key.cs`
   - **Test should verify**:

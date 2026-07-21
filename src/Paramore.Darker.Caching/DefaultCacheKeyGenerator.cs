@@ -16,8 +16,8 @@ namespace Paramore.Darker.Caching;
 /// formatting), with explicit <c>null</c> values and no whitespace.
 /// </para>
 /// <para>
-/// Queries that implement <see cref="IAmCacheable"/> use their own key instead
-/// (handled in the caching decorator — see next task).
+/// Queries that implement <see cref="IAmCacheable"/> use their own <see cref="IAmCacheable.CacheKey"/>
+/// instead; this check is applied before the default type+JSON strategy.
 /// </para>
 /// </summary>
 public sealed class DefaultCacheKeyGenerator : ICacheKeyGenerator
@@ -25,7 +25,9 @@ public sealed class DefaultCacheKeyGenerator : ICacheKeyGenerator
     /// <inheritdoc />
     public string GenerateKey(object query)
     {
-        // TODO: IAmCacheable branch delegated to the caching decorator (next task).
+        if (query is IAmCacheable c)
+            return c.CacheKey;
+
         var type = query.GetType();
         return $"{type.FullName}|{BuildOrderedJson(query, type)}";
     }
