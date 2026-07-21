@@ -33,7 +33,7 @@
   - **RALPH-VERIFY**: `dotnet build Darker.Filter.slnf -c Release`
   - **References**: requirements.md (FR7, Targeting NFR, Resolved Decision 5); ADR 0021 (Key Components — "Package — `Paramore.Darker.Caching` … depends on … NOT on OpenTelemetry"); `src/Paramore.Darker.Validation/Paramore.Darker.Validation.csproj` (csproj template); `Darker.Filter.slnf` (existing project list)
 
-- [ ] **Create the Paramore.Darker.Caching.Tests project**
+- [x] **Create the Paramore.Darker.Caching.Tests project**
   - **Behavior**: A new test project `Paramore.Darker.Caching.Tests` exists (mirroring the validation feature's test-project layout), targeting net8.0 and net9.0, referencing `Paramore.Darker.Caching`, the DI extensions project, xunit.v3, and Shouldly. It is added to `Darker.Filter.slnf`. A single trivial passing test proves the project runs under `dotnet test`.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_test_project_bootstrapped_should_run.cs`
   - **Test should verify**:
