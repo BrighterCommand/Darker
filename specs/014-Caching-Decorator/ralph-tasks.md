@@ -21,7 +21,7 @@
   - **RALPH-VERIFY**: `dotnet build Darker.Filter.slnf -c Release`
   - **References**: requirements.md (FR7, Targeting NFR, Constraints — "not yet referenced anywhere in the repo"); ADR 0021 (Implementation Approach step 1, Technology Choices); `Directory.Packages.props` (existing CPM layout)
 
-- [ ] **Create the Paramore.Darker.Caching project (net8.0;net9.0)**
+- [x] **Create the Paramore.Darker.Caching project (net8.0;net9.0)**
   - **Behavior**: A new source project `Paramore.Darker.Caching` exists, targeting **net8.0 and net9.0 only** (deliberately NOT netstandard2.0), referencing the Darker core project and `Microsoft.Extensions.Caching.Hybrid` — and **NOT** OpenTelemetry or any metrics package. It is added to `Darker.slnx` and `Darker.Filter.slnf` so it builds with the rest of the solution.
   - **Test file**: _none — pure scaffolding (new csproj + solution wiring)._
   - **Test should verify**:

@@ -10,6 +10,7 @@
       "src\\Paramore.Darker.Validation\\Paramore.Darker.Validation.csproj",
       "src\\Paramore.Darker.Validation.FluentValidation\\Paramore.Darker.Validation.FluentValidation.csproj",
       "src\\Paramore.Darker.Validation.DataAnnotations\\Paramore.Darker.Validation.DataAnnotations.csproj",
+      "src\\Paramore.Darker.Caching\\Paramore.Darker.Caching.csproj",
       "test\\Paramore.Darker.Benchmarks\\Paramore.Darker.Benchmarks.csproj",
       "test\\Paramore.Darker.Tests.AOT\\Paramore.Darker.Tests.AOT.csproj",
       "test\\Paramore.Darker.Core.Tests\\Paramore.Darker.Core.Tests.csproj",
