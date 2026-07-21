@@ -57,7 +57,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~When_reading_cache_semantic_conventions_should_expose_cache_names_and_tags"`
   - **References**: requirements.md (FR10); ADR 0021 (Key Components — "Core — `Paramore.Darker` (`DarkerSemanticConventions`) additions"); `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` (~line 96+, existing `MeterName` / `QueryDurationAllowedTags`); `test/Paramore.Darker.Core.Tests/When_reading_metric_semantic_conventions_should_expose_meter_and_metric_names.cs` (existing convention-test pattern)
 
-- [ ] **DefaultCacheKeyGenerator produces the deterministic default key from query type + invariant JSON**
+- [x] **DefaultCacheKeyGenerator produces the deterministic default key from query type + invariant JSON**
   - **Behavior**: Introduce the `ICacheKeyGenerator` role (`string GenerateKey(object query)`, operating on the **runtime object** — never `typeof(TQuery)`), its default implementation `DefaultCacheKeyGenerator`, and the marker interface `IAmCacheable { string CacheKey { get; } }`. For a query that does **not** implement `IAmCacheable`, `GenerateKey` returns `query.GetType().FullName + "|" + <deterministic, culture-invariant JSON of the query's public readable properties>`. The JSON body is stable across runs: properties ordered by name (ordinal), `CultureInfo.InvariantCulture` formatting, explicit `null` properties. Worked example (FR5): a `GetUser(int UserId)` query with `UserId = 42` yields a key ending in `|{"UserId":42}`; `UserId = 43` yields a distinct body.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_generating_default_key_should_be_deterministic_and_distinct_per_input.cs`
   - **Test should verify**:
