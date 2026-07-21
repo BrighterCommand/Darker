@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker.Caching;
 
@@ -26,7 +27,13 @@ public sealed class DefaultCacheKeyGenerator : ICacheKeyGenerator
     public string GenerateKey(object query)
     {
         if (query is IAmCacheable c)
-            return c.CacheKey;
+        {
+            var key = c.CacheKey;
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ConfigurationException(
+                    $"Query '{query.GetType().FullName}' implements IAmCacheable but its CacheKey returned a null, empty, or whitespace value. Provide a non-empty CacheKey.");
+            return key;
+        }
 
         var type = query.GetType();
         return $"{type.FullName}|{BuildOrderedJson(query, type)}";

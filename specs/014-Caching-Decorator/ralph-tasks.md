@@ -83,7 +83,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_query_is_cacheable_should_use_its_cache_key"`
   - **References**: requirements.md (FR4, FR5); ADR 0021 (Key Components — `DefaultCacheKeyGenerator`, "`query is IAmCacheable c` → return `c.CacheKey`")
 
-- [ ] **DefaultCacheKeyGenerator fails fast on a null/empty/whitespace IAmCacheable.CacheKey**
+- [x] **DefaultCacheKeyGenerator fails fast on a null/empty/whitespace IAmCacheable.CacheKey**
   - **Behavior**: If a query implements `IAmCacheable` but its `CacheKey` returns `null`, empty, or whitespace **at runtime**, `GenerateKey` throws `Paramore.Darker.Exceptions.ConfigurationException` rather than caching under an empty/colliding key. (The non-nullable annotation on `CacheKey` is compile-time only.)
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_cacheable_key_is_null_or_whitespace_should_throw_configuration_exception.cs`
   - **Test should verify**:
