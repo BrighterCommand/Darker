@@ -90,6 +90,14 @@ public static class DarkerSemanticConventions
     /// <summary>The database user name (<c>db.user</c>).</summary>
     public const string DbUser = "db.user";
 
+    // ── Cache span attributes ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// The cache-lookup outcome attribute key (<c>paramore.darker.cache.outcome</c>).
+    /// Value is <c>"hit"</c> when a cached result is returned, or <c>"miss"</c> when the handler is invoked.
+    /// </summary>
+    public const string CacheOutcome = "paramore.darker.cache.outcome";
+
     // ── Meter / metric names ──────────────────────────────────────────────────
 
     /// <summary>The name of the <see cref="System.Diagnostics.Metrics.Meter"/> used by Darker.</summary>
@@ -100,6 +108,9 @@ public static class DarkerSemanticConventions
 
     /// <summary>The name of the DB-client-operation-duration histogram instrument (<c>db.client.operation.duration</c>).</summary>
     public const string DbClientOperationDurationMetricName = "db.client.operation.duration";
+
+    /// <summary>The name of the cache-requests counter instrument (<c>paramore.darker.cache.requests</c>).</summary>
+    public const string CacheRequestsMetricName = "paramore.darker.cache.requests";
 
     // ── Resource / service attributes ─────────────────────────────────────────
 
@@ -153,6 +164,24 @@ public static class DarkerSemanticConventions
         DbCollectionName,
         ServerAddress,
         ErrorType
+#if NET8_0_OR_GREATER
+    }.ToFrozenSet();
+#else
+    };
+#endif
+
+    /// <summary>
+    /// The low-cardinality tag keys permitted on the <c>paramore.darker.cache.requests</c> counter.
+    /// High-cardinality keys such as <see cref="QueryId"/> are intentionally excluded.
+    /// </summary>
+#if NET8_0_OR_GREATER
+    public static readonly FrozenSet<string> CacheRequestsAllowedTags = new[]
+#else
+    public static readonly HashSet<string> CacheRequestsAllowedTags = new()
+#endif
+    {
+        QueryType,
+        CacheOutcome
 #if NET8_0_OR_GREATER
     }.ToFrozenSet();
 #else

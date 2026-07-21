@@ -45,7 +45,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_test_project_bootstrapped_should_run"`
   - **References**: requirements.md (test-project placement mirrors validation); `test/Paramore.Darker.Validation.Tests/Paramore.Darker.Validation.Tests.csproj` (template); `Darker.Filter.slnf`
 
-- [ ] **Add cache semantic-convention constants to core DarkerSemanticConventions**
+- [x] **Add cache semantic-convention constants to core DarkerSemanticConventions**
   - **Behavior**: The core `DarkerSemanticConventions` static class exposes the three cache constants next to `MeterName` / `QueryDurationAllowedTags`: `CacheOutcome = "paramore.darker.cache.outcome"` (span-attribute / counter-dimension key, value `"hit"`/`"miss"`), `CacheRequestsMetricName = "paramore.darker.cache.requests"` (counter instrument name), and a low-cardinality allowed-tag set `CacheRequestsAllowedTags = { QueryType, CacheOutcome }` (a `FrozenSet<string>` on net8.0+, `HashSet<string>` otherwise — mirroring `QueryDurationAllowedTags`).
   - **Test file**: `test/Paramore.Darker.Core.Tests/When_reading_cache_semantic_conventions_should_expose_cache_names_and_tags.cs`
   - **Test should verify**:
