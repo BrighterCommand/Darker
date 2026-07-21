@@ -11,7 +11,7 @@
 
 ## Tasks
 
-- [ ] **Add Microsoft.Extensions.Caching.Hybrid to Directory.Packages.props (prerequisite)**
+- [x] **Add Microsoft.Extensions.Caching.Hybrid to Directory.Packages.props (prerequisite)**
   - **Behavior**: Central Package Management gains a pinned `Microsoft.Extensions.Caching.Hybrid` version so the new caching package and its tests can reference it. The package is not currently referenced anywhere in the repo. Pin the **concrete latest stable 9.x** patch — not a preview, not 10.x — to match the repo's net8.0/net9.0 targeting.
   - **Test file**: _none — pure scaffolding (Central Package Management edit)._
   - **Test should verify**:
