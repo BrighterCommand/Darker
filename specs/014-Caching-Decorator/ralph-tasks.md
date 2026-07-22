@@ -109,7 +109,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_cached_query_executed_twice_should_run_handler_once_and_serve_hit"`
   - **References**: requirements.md (FR1, FR3, FR7, FR8 async, Acceptance Criteria); ADR 0021 (Architecture Overview diagram, Decision, Implementation Approach steps 2–4, "End-to-end pipeline tests are mandatory"); `src/Paramore.Darker/PipelineBuilder.cs:404` (decorators closed over `IQuery<TResult>`); `src/Paramore.Darker.Validation.FluentValidation/FluentValidationDarkerBuilderExtensions.cs` (DI registration template); `src/Paramore.Darker/Logging/QueryProcessorBuilderExtensions.cs` (`RegisterDecorator` usage); `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDarkerHandlerBuilder.cs` (`RegisterDecorator`); `test/Paramore.Darker.Validation.FluentValidation.Tests/When_validated_query_executed_through_processor_should_validate.cs` (real-processor test template)
 
-- [ ] **Expiry maps to HybridCacheEntryOptions.Expiration and the handler re-runs after it elapses**
+- [x] **Expiry maps to HybridCacheEntryOptions.Expiration and the handler re-runs after it elapses**
   - **Behavior**: `InitializeFromAttributeParams(new object[] { expirationSeconds })` reads `expirationSeconds` and maps it to `HybridCacheEntryOptions.Expiration = TimeSpan.FromSeconds(expirationSeconds)`, passed on every `GetOrCreateAsync` call. `LocalCacheExpiration` (L1) is left to HybridCache's default and is not set in v1. After the configured expiry elapses, a subsequent execution re-runs the handler (cache entry expired).
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_cache_entry_expires_should_rerun_handler.cs`
   - **Test should verify**:
