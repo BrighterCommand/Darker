@@ -28,22 +28,25 @@ using Paramore.Darker.Extensions.DependencyInjection;
 namespace Paramore.Darker.Caching;
 
 /// <summary>
-/// Extension methods for <see cref="IDarkerHandlerBuilder"/> that wire up the async caching
-/// decorator by registering the open-generic <see cref="CacheableQueryDecoratorAsync{TQuery,TResult}"/>
-/// and the default <see cref="ICacheKeyGenerator"/> in DI.
+/// Extension methods for <see cref="IDarkerHandlerBuilder"/> that wire up the caching
+/// decorators by registering the open-generic <see cref="CacheableQueryDecoratorAsync{TQuery,TResult}"/>,
+/// the open-generic <see cref="CacheableQueryDecorator{TQuery,TResult}"/>, and the default
+/// <see cref="ICacheKeyGenerator"/> in DI.
 /// </summary>
 public static class CachingDarkerBuilderExtensions
 {
     /// <summary>
-    /// Registers the async caching decorator and the default cache-key generator so that
-    /// handlers annotated with <see cref="CacheableQueryAttributeAsync"/> are automatically
-    /// wrapped by <see cref="CacheableQueryDecoratorAsync{TQuery,TResult}"/> in the pipeline.
+    /// Registers the async and sync caching decorators and the default cache-key generator so that
+    /// handlers annotated with <see cref="CacheableQueryAttributeAsync"/> or
+    /// <see cref="CacheableQueryAttribute"/> are automatically wrapped by the respective caching
+    /// decorator in the pipeline.
     /// </summary>
     /// <param name="builder">The Darker handler builder. Must not be null.</param>
     /// <returns>The builder, for chaining.</returns>
     public static IDarkerHandlerBuilder AddCaching(this IDarkerHandlerBuilder builder)
     {
         builder.RegisterDecorator(typeof(CacheableQueryDecoratorAsync<,>));
+        builder.RegisterDecorator(typeof(CacheableQueryDecorator<,>));
         builder.Services.TryAddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
         return builder;
     }
