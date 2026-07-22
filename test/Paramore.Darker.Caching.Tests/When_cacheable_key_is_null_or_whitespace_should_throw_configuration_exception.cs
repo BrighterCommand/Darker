@@ -22,7 +22,7 @@ file record QueryWithWhitespaceCacheKey : IAmCacheable
 
 public class When_cacheable_key_is_null_or_whitespace_should_throw_configuration_exception
 {
-    private readonly DefaultCacheKeyGenerator _sut = new();
+    private readonly DefaultCacheKeyGenerator defaultCacheKeyGenerator = new();
 
     [Fact]
     public void Should_throw_configuration_exception_for_null_empty_and_whitespace_cache_keys()
@@ -33,12 +33,12 @@ public class When_cacheable_key_is_null_or_whitespace_should_throw_configuration
         var whitespaceKeyQuery = new QueryWithWhitespaceCacheKey();
 
         // Act & Assert — null cache key
-        Should.Throw<ConfigurationException>(() => _sut.GenerateKey(nullKeyQuery));
+        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(nullKeyQuery));
 
         // Act & Assert — empty cache key
-        Should.Throw<ConfigurationException>(() => _sut.GenerateKey(emptyKeyQuery));
+        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(emptyKeyQuery));
 
         // Act & Assert — whitespace cache key
-        Should.Throw<ConfigurationException>(() => _sut.GenerateKey(whitespaceKeyQuery));
+        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(whitespaceKeyQuery));
     }
 }

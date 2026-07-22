@@ -12,7 +12,7 @@ file record CollisionQueryB(int Id);
 
 public class DefaultCacheKeyGeneratorTests
 {
-    private readonly DefaultCacheKeyGenerator _sut = new();
+    private readonly DefaultCacheKeyGenerator defaultCacheKeyGenerator = new();
 
     [Fact]
     public void When_generating_default_key_should_be_deterministic_and_distinct_per_input()
@@ -24,11 +24,11 @@ public class DefaultCacheKeyGeneratorTests
         var collisionB = new CollisionQueryB(42);
 
         //Act
-        var key42 = _sut.GenerateKey(queryWith42);
-        var key43 = _sut.GenerateKey(queryWith43);
-        var keyA = _sut.GenerateKey(collisionA);
-        var keyB = _sut.GenerateKey(collisionB);
-        var key42Again = _sut.GenerateKey(queryWith42);
+        var key42 = defaultCacheKeyGenerator.GenerateKey(queryWith42);
+        var key43 = defaultCacheKeyGenerator.GenerateKey(queryWith43);
+        var keyA = defaultCacheKeyGenerator.GenerateKey(collisionA);
+        var keyB = defaultCacheKeyGenerator.GenerateKey(collisionB);
+        var key42Again = defaultCacheKeyGenerator.GenerateKey(queryWith42);
 
         //Assert
 

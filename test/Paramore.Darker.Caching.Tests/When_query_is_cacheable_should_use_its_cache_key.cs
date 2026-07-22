@@ -11,7 +11,7 @@ file record GetCacheableUser(int UserId) : IAmCacheable
 
 public class When_query_is_cacheable_should_use_its_cache_key
 {
-    private readonly DefaultCacheKeyGenerator _sut = new();
+    private readonly DefaultCacheKeyGenerator defaultCacheKeyGenerator = new();
 
     [Fact]
     public void When_query_implements_IAmCacheable_should_return_its_CacheKey_verbatim()
@@ -20,7 +20,7 @@ public class When_query_is_cacheable_should_use_its_cache_key
         var query = new GetCacheableUser(42);
 
         //Act
-        var key = _sut.GenerateKey(query);
+        var key = defaultCacheKeyGenerator.GenerateKey(query);
 
         //Assert
 
