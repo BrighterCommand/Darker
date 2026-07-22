@@ -46,7 +46,7 @@ internal static class CacheTagHelper
     {
         if (context.Bag.TryGetValue(CacheableQueryAttribute.CacheTag, out var tagValue)
             && tagValue is string tag
-            && !string.IsNullOrEmpty(tag))
+            && !string.IsNullOrWhiteSpace(tag))
             return new[] { tag };
 
         return null;

@@ -257,7 +257,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_tag_supplied_in_bag_should_apply_and_allow_remove_by_tag"`
   - **References**: requirements.md (FR9, Acceptance Criteria); ADR 0021 (Key Components — shared `CacheTag` constant, Implementation Approach step 6); `src/Paramore.Darker/IQueryContext.cs` (`IDictionary<string,object> Bag`)
 
-- [ ] **Absent or non-string Bag tag value stores the entry untagged without throwing (FR9)**
+- [x] **Absent or non-string Bag tag value stores the entry untagged without throwing (FR9)**
   - **Behavior**: When the `CacheableQueryAttribute.CacheTag` Bag key is absent, or its value is not a non-empty `string` (e.g. `null`, empty, whitespace, or a non-string object), the entry is stored **untagged** and no exception is thrown — consistent with the best-effort stance.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_bag_tag_absent_or_not_string_should_store_untagged.cs`
   - **Test should verify**:
