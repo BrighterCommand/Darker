@@ -197,7 +197,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_handler_returns_null_should_cache_null_and_serve_hit"`
   - **References**: requirements.md (FR11, Acceptance Criteria); ADR 0021 (Implementation Approach step 5, Alternatives — "Special-case null … Rejected")
 
-- [ ] **Serialization failure surfaces to the caller unswallowed (FR13)**
+- [x] **Serialization failure surfaces to the caller unswallowed (FR13)**
   - **Behavior**: If the configured `HybridCache` cannot serialize the result type on a miss, the resulting exception propagates to the caller — it is not swallowed and no result is silently returned uncached without signal.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_result_cannot_be_serialized_should_surface_exception.cs`
   - **Test should verify**:
