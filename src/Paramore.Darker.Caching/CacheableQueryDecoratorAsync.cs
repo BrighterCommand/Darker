@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Exceptions;
+using Paramore.Darker.Observability;
 
 namespace Paramore.Darker.Caching;
 
@@ -115,12 +116,21 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
             Expiration = TimeSpan.FromSeconds(_expirationSeconds)
         };
 
+        var ran = false;
         var state = (next, query);
-        return await cache.GetOrCreateAsync(
+        var result = await cache.GetOrCreateAsync(
             key,
             state,
-            async (s, ct) => await s.next(s.query, ct).ConfigureAwait(false),
+            async (s, ct) =>
+            {
+                ran = true;
+                return await s.next(s.query, ct).ConfigureAwait(false);
+            },
             options,
             cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var outcome = ran ? CacheOutcome.Miss : CacheOutcome.Hit;
+        Context.Span?.SetTag(DarkerSemanticConventions.CacheOutcome, outcome == CacheOutcome.Hit ? "hit" : "miss");
+        return result;
     }
 }

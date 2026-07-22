@@ -208,7 +208,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_result_cannot_be_serialized_should_surface_exception"`
   - **References**: requirements.md (FR13, Acceptance Criteria); ADR 0021 (Implementation Approach step 5 — "Serialization failures … surface to the caller unswallowed")
 
-- [ ] **Decorator records the cache-outcome span attribute (hit/miss) using only the core Activity type**
+- [x] **Decorator records the cache-outcome span attribute (hit/miss) using only the core Activity type**
   - **Behavior**: Introduce the `CacheOutcome { Hit, Miss }` enum (first consumed here) and use it in the async decorator. After `GetOrCreateAsync` returns, the decorator derives the outcome from the local `ran` flag (`ran ? CacheOutcome.Miss : CacheOutcome.Hit`) and writes it onto the ambient query span via `Context.Span?.SetTag(DarkerSemanticConventions.CacheOutcome, "hit"|"miss")` — using only the core `System.Diagnostics.Activity` type, taking **no** OpenTelemetry/metrics dependency in the caching package.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_recording_outcome_should_set_cache_outcome_span_attribute.cs`
   - **Test should verify**:
