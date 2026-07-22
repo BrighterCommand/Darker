@@ -26,6 +26,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker.Caching;
 
@@ -78,7 +79,12 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
     /// </remarks>
     public void InitializeFromAttributeParams(object[] attributeParams)
     {
-        _expirationSeconds = (int)attributeParams[0];
+        var expirationSeconds = (int)attributeParams[0];
+        if (expirationSeconds <= 0)
+            throw new ConfigurationException(
+                $"[CacheableQueryAttributeAsync] expirationSeconds must be a positive integer; got {expirationSeconds}. " +
+                "Specify a value greater than zero so every cached query has an explicit, positive lifetime.");
+        _expirationSeconds = expirationSeconds;
     }
 
     /// <inheritdoc />

@@ -120,7 +120,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_cache_entry_expires_should_rerun_handler"`
   - **References**: requirements.md (FR2, Acceptance Criteria — "after the configured expiry elapses, the handler re-runs"); ADR 0021 (Technology Choices — `HybridCacheEntryOptions.Expiration`, "`LocalCacheExpiration` … not set in v1"); `src/Paramore.Darker/PipelineBuilder.cs:263` (`InitializeFromAttributeParams` at build time)
 
-- [ ] **Non-positive expirationSeconds fails fast at pipeline build**
+- [x] **Non-positive expirationSeconds fails fast at pipeline build**
   - **Behavior**: A `[CacheableQueryAsync(step, expirationSeconds)]` with `expirationSeconds <= 0` throws `Paramore.Darker.Exceptions.ConfigurationException` inside `InitializeFromAttributeParams` — which `PipelineBuilder` invokes while **building** the pipeline (before any handler runs). There is no silent default and no caching with an undefined lifetime.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_expiration_seconds_not_positive_should_throw_at_pipeline_build.cs`
   - **Test should verify**:
