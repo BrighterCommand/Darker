@@ -186,7 +186,7 @@
   - **RALPH-VERIFY**: `dotnet build src/Paramore.Darker.Caching/Paramore.Darker.Caching.csproj -c Release` (compiles with the async-attribute XML-doc additions; documentation task has no test filter)
   - **References**: requirements.md (NFR "The ordering-sensitivity … must be documented", Additional Context "first-class part of this feature's documentation", Acceptance Criteria — "demonstrated by a test **and documented**"); ADR 0021 (Consequences — "Ordering is a footgun … Mitigated by documentation making the cache decorator's position first-class guidance"); the step-ordering test task above (the behavior this documents)
 
-- [ ] **Null result is cached (negative caching) and returned as a hit (FR11)**
+- [x] **Null result is cached (negative caching) and returned as a hit (FR11)**
   - **Behavior**: A handler that returns `null` has that `null` stored by `GetOrCreateAsync` like any value. A subsequent call within the expiry window returns the cached `null` as a **hit** without re-running the handler. The decorator does not special-case `null`.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_handler_returns_null_should_cache_null_and_serve_hit.cs`
   - **Test should verify**:
