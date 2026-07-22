@@ -164,7 +164,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_runtime_cache_key_is_empty_should_throw_through_processor"`
   - **References**: requirements.md (FR4, Acceptance Criteria); ADR 0021 (Key Components — `IAmCacheable` fail-fast, "End-to-end pipeline tests are mandatory")
 
-- [ ] **Step ordering: a cache hit skips an inner decorator**
+- [x] **Step ordering: a cache hit skips an inner decorator**
   - **Behavior**: The attribute's `step` orders the cache decorator relative to other decorators. When the cache decorator is ordered to wrap an inner decorator, a cache **hit** short-circuits the pipeline so the inner decorator does **not** run (only `next`, and everything inside it, is skipped). This is the load-bearing short-circuit / ordering guarantee.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_cache_hit_should_skip_inner_decorator.cs`
   - **Test should verify**:
