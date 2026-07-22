@@ -269,7 +269,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_bag_tag_absent_or_not_string_should_store_untagged"`
   - **References**: requirements.md (FR9, Acceptance Criteria); ADR 0021 (Implementation Approach step 6 — "absent or non-string ⇒ stored untagged, no throw")
 
-- [ ] **Tagging against a HybridCache implementation without tag support still caches and never fails the query (FR14)**
+- [x] **Tagging against a HybridCache implementation without tag support still caches and never fails the query (FR14)**
   - **Behavior**: Supplying a tag is best-effort. If the configured `HybridCache` implementation does not support tag-based eviction, the entry is still cached (tagging becomes a no-op for eviction) and the query does not fail.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_cache_impl_lacks_tag_support_should_still_cache_query.cs`
   - **Test should verify**:
