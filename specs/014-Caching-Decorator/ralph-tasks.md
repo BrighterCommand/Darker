@@ -142,7 +142,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_hybrid_cache_not_registered_should_throw_configuration_exception"`
   - **References**: requirements.md (FR12); ADR 0021 (Forces — "Fail fast (FR12)", Architecture Overview diagram — `?? throw new ConfigurationException`)
 
-- [ ] **IAmCacheable query caches under its own key end-to-end**
+- [x] **IAmCacheable query caches under its own key end-to-end**
   - **Behavior**: A `[CacheableQueryAsync]` handler whose query implements `IAmCacheable` caches under the query's `CacheKey` (not the default strategy) when driven through a real `QueryProcessor`, and two calls with the same `CacheKey` serve a hit. This proves the runtime `query is IAmCacheable` path works through the pipeline (where `TQuery` is `IQuery<TResult>`).
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_cacheable_query_executed_through_processor_should_cache_under_its_key.cs`
   - **Test should verify**:
