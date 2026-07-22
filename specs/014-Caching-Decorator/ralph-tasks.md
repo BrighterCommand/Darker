@@ -280,7 +280,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_cache_impl_lacks_tag_support_should_still_cache_query"`
   - **References**: requirements.md (FR14, Acceptance Criteria); ADR 0021 (Implementation Approach step 6 — "Tagging against an implementation without tag support still caches and never fails the query, best-effort")
 
-- [ ] **AddCaching opt-in exposes a configurable overload with a replaceable key generator**
+- [x] **AddCaching opt-in exposes a configurable overload with a replaceable key generator**
   - **Behavior**: Introduce the `CachingOptions` type (first used here) and add the `AddCaching(this IDarkerHandlerBuilder, Action<CachingOptions> configure)` overload alongside the parameterless `AddCaching()` created in the vertical-slice task. The `configure` callback (`CachingOptions`) allows supplying a custom `ICacheKeyGenerator` that replaces the default `DefaultCacheKeyGenerator` **without changing the decorator** (NFR extensibility). By this point both concrete decorator open generics are registered (async from the vertical-slice task, sync from the sync-decorator task); `AddCaching` registers no `HybridCache` and wires no metrics.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_AddCaching_called_should_register_decorators_and_key_generator.cs`
   - **Test should verify**:
