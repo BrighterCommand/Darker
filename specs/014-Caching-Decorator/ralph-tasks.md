@@ -175,7 +175,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_cache_hit_should_skip_inner_decorator"`
   - **References**: requirements.md (FR1 step, NFR correctness/short-circuit, Acceptance Criteria — "a test with the cache decorator wrapping an inner decorator proves the inner decorator is skipped on a hit"); ADR 0021 (Forces — "Short-circuit / ordering is significant"); `src/Paramore.Darker/PipelineBuilder.cs:240` (`OrderByDescending(attr => attr.Step)`)
 
-- [ ] **Document the step-ordering footgun on the attribute and package README**
+- [x] **Document the step-ordering footgun on the attribute and package README**
   - **Behavior**: The requirements make ordering-sensitivity a first-class **documentation** deliverable, not only a tested behavior ("Decorator ordering behaviour … demonstrated by a test **and documented**"; "correct step-ordering guidance is a first-class part of this feature's documentation"). Add developer-facing documentation that a cache **hit short-circuits the pipeline**, so any decorator ordered "inside" (a lower `step` than) the cache decorator — logging, retry, fallback — is **skipped on a hit**, and give guidance on choosing `step` accordingly. This closes the "and documented" clause left open by the step-ordering test task.
   - **Test file**: _none — documentation deliverable (no behavioral test; the behavior is already proven by the step-ordering test task)._
   - **Test should verify**:
