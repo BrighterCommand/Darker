@@ -100,7 +100,11 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
         Func<TQuery, CancellationToken, Task<TResult>> fallback,
         CancellationToken cancellationToken = default)
     {
-        var cache = _serviceProvider.GetRequiredService<HybridCache>();
+        var cache = _serviceProvider.GetService<HybridCache>()
+            ?? throw new ConfigurationException(
+                "No HybridCache is registered in the DI container. " +
+                "Call services.AddHybridCache() (or register a HybridCache implementation such as FusionCache) " +
+                "before using [CacheableQueryAttributeAsync].");
         var keyGenerator = _serviceProvider.GetRequiredService<ICacheKeyGenerator>();
 
         // Use the runtime query argument — never typeof(TQuery) — to compute the key.

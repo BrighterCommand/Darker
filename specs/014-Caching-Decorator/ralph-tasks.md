@@ -131,7 +131,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_expiration_seconds_not_positive_should_throw_at_pipeline_build"`
   - **References**: requirements.md (FR2, Acceptance Criteria); ADR 0021 (Forces — "the correct, honest place to validate `expirationSeconds > 0` and fail fast"); `src/Paramore.Darker/PipelineBuilder.cs:263`
 
-- [ ] **Missing HybridCache registration fails fast (FR12)**
+- [x] **Missing HybridCache registration fails fast (FR12)**
   - **Behavior**: If a query is annotated `[CacheableQueryAsync]` and `AddCaching()` is called, but **no `HybridCache` is registered in DI**, the decorator throws `Paramore.Darker.Exceptions.ConfigurationException` (naming the registration required) rather than silently bypassing the cache.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_hybrid_cache_not_registered_should_throw_configuration_exception.cs`
   - **Test should verify**:
