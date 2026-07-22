@@ -153,7 +153,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_cacheable_query_executed_through_processor_should_cache_under_its_key"`
   - **References**: requirements.md (FR4, FR5, Acceptance Criteria); ADR 0021 ("End-to-end pipeline tests are mandatory", runtime-type risk); `src/Paramore.Darker/PipelineBuilder.cs:404`
 
-- [ ] **Null/empty runtime CacheKey fails fast end-to-end through the pipeline**
+- [x] **Null/empty runtime CacheKey fails fast end-to-end through the pipeline**
   - **Behavior**: When a `[CacheableQueryAsync]` query implements `IAmCacheable` but its `CacheKey` returns null/empty/whitespace at runtime, executing it through a real `QueryProcessor` surfaces `ConfigurationException` (from `DefaultCacheKeyGenerator`) and the handler does not run under an empty key.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_runtime_cache_key_is_empty_should_throw_through_processor.cs`
   - **Test should verify**:
