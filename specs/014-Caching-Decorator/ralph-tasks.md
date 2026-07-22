@@ -234,7 +234,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_sync_cache_value_task_completed_should_return_synchronously"`
   - **References**: requirements.md (FR1, FR8 sync, Resolved Decision 2, NFR async-first-with-sync-fast-path); ADR 0021 (Forces — "Async-first with a sync fast-path", Key Components — sync decorator "inspects its returned `ValueTask<TResult>`"); `src/Paramore.Darker/QueryHandlerAttribute.cs`, `src/Paramore.Darker/IQueryHandlerDecorator.cs`, `src/Paramore.Darker/PipelineBuilder.cs:253`
 
-- [ ] **Sync caching decorator blocking fallback materializes a non-completed ValueTask**
+- [x] **Sync caching decorator blocking fallback materializes a non-completed ValueTask**
   - **Behavior**: When the `ValueTask<TResult>` returned by `GetOrCreateAsync` is **not** already completed (e.g. an L2/async populate on a miss), the sync `Execute` blocks via `.AsTask().GetAwaiter().GetResult()` to obtain the result. Correctness never depends on synchronous completion; the `ValueTask` is still consumed exactly once (fast-path OR fallback, never both).
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_sync_cache_value_task_not_completed_should_block_and_return.cs`
   - **Test should verify**:
