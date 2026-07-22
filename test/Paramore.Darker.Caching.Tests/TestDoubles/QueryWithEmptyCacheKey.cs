@@ -21,32 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 #endregion
 
-using Paramore.Darker.Caching.Tests.TestDoubles;
-using Paramore.Darker.Exceptions;
-using Shouldly;
-using Xunit;
+namespace Paramore.Darker.Caching.Tests.TestDoubles;
 
-namespace Paramore.Darker.Caching.Tests;
-
-public class EmptyCacheableKeyTests
+/// <summary>An <see cref="IAmCacheable"/> query whose <see cref="CacheKey"/> returns an empty string at runtime.</summary>
+public sealed record QueryWithEmptyCacheKey : IAmCacheable
 {
-    private readonly DefaultCacheKeyGenerator defaultCacheKeyGenerator = new();
-
-    [Fact]
-    public void Should_throw_configuration_exception_for_null_empty_and_whitespace_cache_keys()
-    {
-        // Arrange
-        var nullKeyQuery = new QueryWithNullCacheKey();
-        var emptyKeyQuery = new QueryWithEmptyCacheKey();
-        var whitespaceKeyQuery = new QueryWithWhitespaceCacheKey();
-
-        // Act & Assert — null cache key
-        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(nullKeyQuery));
-
-        // Act & Assert — empty cache key
-        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(emptyKeyQuery));
-
-        // Act & Assert — whitespace cache key
-        Should.Throw<ConfigurationException>(() => defaultCacheKeyGenerator.GenerateKey(whitespaceKeyQuery));
-    }
+    /// <inheritdoc />
+    public string CacheKey => string.Empty;
 }
