@@ -116,6 +116,7 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
             Expiration = TimeSpan.FromSeconds(_expirationSeconds)
         };
 
+        var tags = CacheTagHelper.ReadTags(Context);
         var ran = false;
         var state = (next, query);
         var result = await cache.GetOrCreateAsync(
@@ -127,6 +128,7 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
                 return await s.next(s.query, ct).ConfigureAwait(false);
             },
             options,
+            tags: tags,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var outcome = ran ? CacheOutcome.Miss : CacheOutcome.Hit;

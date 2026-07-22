@@ -245,7 +245,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_sync_cache_value_task_not_completed_should_block_and_return"`
   - **References**: requirements.md (FR8, NFR async-first-with-sync-fast-path — "Both the fast-path and the blocking fallback must be covered by tests"); ADR 0021 (Risks — "sync-over-async deadlock … the blocking fallback is documented as the sync-path cost and covered by a test that forces the non-completed branch")
 
-- [ ] **A tag supplied via the Bag key is applied to the entry and enables RemoveByTagAsync eviction (FR9)**
+- [x] **A tag supplied via the Bag key is applied to the entry and enables RemoveByTagAsync eviction (FR9)**
   - **Behavior**: The decorator reads `Context.Bag[CacheableQueryAttribute.CacheTag]` (`"Paramore.Darker.Caching.Tag"`); when the value is a non-empty `string`, it wraps it as a one-element `IEnumerable<string>` and passes it as the `tags` argument to `GetOrCreateAsync`. Application code can then evict the entry via the underlying cache's `RemoveByTagAsync(tag)`, after which the next execution is a miss and re-runs the handler.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_tag_supplied_in_bag_should_apply_and_allow_remove_by_tag.cs`
   - **Test should verify**:

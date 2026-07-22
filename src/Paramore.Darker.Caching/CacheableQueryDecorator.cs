@@ -129,6 +129,7 @@ public sealed class CacheableQueryDecorator<TQuery, TResult> : IQueryHandlerDeco
             Expiration = TimeSpan.FromSeconds(_expirationSeconds)
         };
 
+        var tags = CacheTagHelper.ReadTags(Context);
         var ran = false;
         var state = (next, query);
         var valueTask = cache.GetOrCreateAsync(
@@ -142,6 +143,7 @@ public sealed class CacheableQueryDecorator<TQuery, TResult> : IQueryHandlerDeco
                 return ValueTask.FromResult(s.next(s.query));
             },
             options,
+            tags: tags,
             cancellationToken: CancellationToken.None);
 
         // Fast path: in-memory L1 cache hit returns a completed ValueTask synchronously.
