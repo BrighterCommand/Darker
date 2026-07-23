@@ -90,10 +90,11 @@ public sealed class CacheableQueryDecoratorAsync<TQuery, TResult> : IQueryHandle
 
     /// <inheritdoc />
     /// <remarks>
-    /// Delegates to <see cref="HybridCache.GetOrCreateAsync{TState,T}"/> using the
-    /// state overload to avoid capturing variables in a closure. On a miss the factory
-    /// invokes <paramref name="next"/> and the result is stored; on a hit the factory
-    /// is never called and the cached value is returned.
+    /// Delegates to <see cref="HybridCache.GetOrCreateAsync{TState,T}"/> using the state overload
+    /// to pass <paramref name="next"/> and <paramref name="query"/> without capturing them in a
+    /// closure. The factory still closes over the local hit/miss flag so the outcome can be
+    /// recorded after the call. On a miss the factory invokes <paramref name="next"/> and the
+    /// result is stored; on a hit the factory is never called and the cached value is returned.
     /// </remarks>
     public async Task<TResult> ExecuteAsync(
         TQuery query,

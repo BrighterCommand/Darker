@@ -110,9 +110,10 @@ public sealed class CacheableQueryDecorator<TQuery, TResult> : IQueryHandlerDeco
     /// <inheritdoc />
     /// <remarks>
     /// Delegates to <see cref="HybridCache.GetOrCreateAsync{TState,T}"/> using the state overload
-    /// to avoid capturing <paramref name="next"/> and <paramref name="query"/> in a closure. The
-    /// factory wraps the synchronous <paramref name="next"/> delegate in a completed
-    /// <see cref="ValueTask{TResult}"/>. A synchronously-completed value task (in-memory L1 hit) is
+    /// to pass <paramref name="next"/> and <paramref name="query"/> without capturing them in a
+    /// closure; the factory still closes over the local hit/miss flag so the outcome can be
+    /// recorded after the call. The factory wraps the synchronous <paramref name="next"/> delegate
+    /// in a completed <see cref="ValueTask{TResult}"/>. A synchronously-completed value task (in-memory L1 hit) is
     /// read directly via <see cref="ValueTask{TResult}.Result"/>; otherwise the value task is
     /// resolved by blocking via <c>.AsTask().GetAwaiter().GetResult()</c>. The ambient
     /// <see cref="System.Threading.SynchronizationContext"/> is suppressed for the duration of the
