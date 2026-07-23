@@ -7,6 +7,7 @@
     <ProjectReference Include="..\..\src\Paramore.Darker.Validation.DataAnnotations\Paramore.Darker.Validation.DataAnnotations.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.analyzers" />
