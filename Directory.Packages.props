@@ -20,7 +20,7 @@
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.16.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
     <PackageVersion Include="Polly" Version="8.7.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
     <PackageVersion Include="System.Text.Json" Version="10.0.9" />
