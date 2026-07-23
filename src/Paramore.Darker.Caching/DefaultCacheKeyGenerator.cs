@@ -65,10 +65,12 @@ public sealed class DefaultCacheKeyGenerator : ICacheKeyGenerator
     private static string BuildOrderedJson(object query, Type type)
     {
         // Reflect on the runtime type — never typeof(TQuery).
+        // Skip indexers: they surface as readable properties but cannot be read without an
+        // index argument, so prop.GetValue(query) would throw TargetParameterCountException.
         // Order properties by name with ordinal comparison for stable, deterministic output.
         var properties = type
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanRead)
+            .Where(p => p.CanRead && p.GetIndexParameters().Length == 0)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
         using var ms = new MemoryStream();
