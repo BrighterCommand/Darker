@@ -315,7 +315,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_backing_cache_is_fusioncache_should_cache_via_di_switch"`
   - **References**: requirements.md (FR6, FR7, NFR extensibility, Acceptance Criteria — "switched … purely via DI registration"); ADR 0021 (Decision, Positive — "Switching Microsoft ↔ FusionCache is a pure DI choice"); product-owner decision 1 (use the REAL FusionCache package as a test-only dependency); `Directory.Packages.props`
 
-- [ ] **CacheMeter derives a hit/miss counter from the cache-outcome span attribute**
+- [x] **CacheMeter derives a hit/miss counter from the cache-outcome span attribute**
   - **Behavior**: In `Paramore.Darker.Extensions.Diagnostics`, add the `IAmADarkerCacheMeter` role and its default `CacheMeter`, modelled exactly on `IAmADarkerQueryMeter`/`QueryMeter`. `CacheMeter(IMeterFactory, MeterProvider)` creates a `Counter<long>` via `meterFactory.Create(DarkerSemanticConventions.MeterName)` named `CacheRequestsMetricName`. `RecordCacheOperation(Activity activity)` reads the `CacheOutcome` tag from the span and — **only when present** — `Add(1, …)` with the `CacheRequestsAllowedTags`-filtered span tags plus the service attributes. `Enabled` exposes the counter's listener state for cheap short-circuiting.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_recording_cache_operation_should_record_counter_with_allowed_tags.cs`
   - **Test should verify**:
