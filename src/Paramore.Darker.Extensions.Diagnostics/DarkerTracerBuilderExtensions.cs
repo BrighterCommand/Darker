@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,6 +14,20 @@ namespace Paramore.Darker.Extensions.Diagnostics;
 /// </summary>
 public static class DarkerTracerBuilderExtensions
 {
+    /// <summary>
+    /// Null-object implementation of <see cref="IAmADarkerCacheMeter"/> used when the cache
+    /// meter has not yet been registered (e.g. before <c>AddDarkerInstrumentation</c> on the
+    /// <see cref="MeterProviderBuilder"/> is updated to include the cache meter in task 29).
+    /// Records nothing and reports <c>Enabled = false</c>, so the short-circuit guard
+    /// in <see cref="DarkerMetricsFromTracesProcessor"/> eliminates all overhead.
+    /// </summary>
+    private sealed class NullCacheMeter : IAmADarkerCacheMeter
+    {
+        public static readonly NullCacheMeter Instance = new();
+        public void RecordCacheOperation(Activity activity) { }
+        public bool Enabled => false;
+    }
+
     /// <summary>
     /// Adds Darker instrumentation to the <see cref="TracerProviderBuilder"/>.
     /// Constructs a <see cref="DarkerTracer"/>, registers it as a singleton
@@ -46,7 +61,8 @@ public static class DarkerTracerBuilderExtensions
                 builder.AddProcessor(sp => new DarkerMetricsFromTracesProcessor(
                     sp.GetRequiredService<IAmADarkerTracer>(),
                     sp.GetRequiredService<IAmADarkerQueryMeter>(),
-                    sp.GetRequiredService<IAmADarkerDbMeter>()));
+                    sp.GetRequiredService<IAmADarkerDbMeter>(),
+                    sp.GetService<IAmADarkerCacheMeter>() ?? NullCacheMeter.Instance));
             }
         });
 
