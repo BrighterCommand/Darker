@@ -292,7 +292,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_AddCaching_called_should_register_decorators_and_key_generator"`
   - **References**: requirements.md (FR7, NFR extensibility, Acceptance Criteria — "opt-in via that extension"); ADR 0021 (Key Components — `AddCaching`, "registers `DefaultCacheKeyGenerator` (overridable via an options callback)"); `src/Paramore.Darker.Validation.FluentValidation/FluentValidationDarkerBuilderExtensions.cs`
 
-- [ ] **The Paramore.Darker.Caching assembly takes no OpenTelemetry/metrics dependency**
+- [x] **The Paramore.Darker.Caching assembly takes no OpenTelemetry/metrics dependency**
   - **Behavior**: The caching package depends only on the Darker core and `Microsoft.Extensions.Caching.Hybrid`. It must not reference any OpenTelemetry assembly or `System.Diagnostics.Metrics` types — the cache outcome is recorded purely via the core `Activity` span attribute.
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_inspecting_caching_assembly_should_have_no_otel_or_metrics_dependency.cs`
   - **Test should verify**:
