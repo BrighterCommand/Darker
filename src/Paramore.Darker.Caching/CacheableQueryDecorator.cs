@@ -51,17 +51,23 @@ namespace Paramore.Darker.Caching;
 /// argument to <see cref="ICacheKeyGenerator.GenerateKey"/>.
 /// </para>
 /// <para>
-/// <strong>Async-first with a sync fast-path.</strong> This synchronous decorator calls
-/// <see cref="HybridCache.GetOrCreateAsync{TState,T}"/>, which returns a
-/// <see cref="ValueTask{TResult}"/>. The factory passed to <c>GetOrCreateAsync</c> wraps
-/// the synchronous <c>next</c> delegate in a completed <see cref="ValueTask{TResult}"/> so
-/// it never blocks the thread pool. On an in-memory L1 cache hit the returned
-/// <see cref="ValueTask{TResult}"/> is already completed; we inspect
-/// <see cref="ValueTask{TResult}.IsCompletedSuccessfully"/> and return
-/// <see cref="ValueTask{TResult}.Result"/> synchronously, consuming the
-/// <see cref="ValueTask{TResult}"/> exactly once. When the value task is not yet complete
-/// (e.g. a distributed L2 cache read), we fall back to blocking via
-/// <c>.AsTask().GetAwaiter().GetResult()</c>.
+/// <strong>Async-first with a sync fast-path.</strong> This synchronous decorator calls the
+/// asynchronous <see cref="HybridCache.GetOrCreateAsync{TState,T}"/>, which returns a
+/// <see cref="ValueTask{TResult}"/>. On an in-memory L1 cache hit that value task is already
+/// completed; we inspect <see cref="ValueTask{TResult}.IsCompletedSuccessfully"/> and return
+/// <see cref="ValueTask{TResult}.Result"/> synchronously on the originating thread — no
+/// thread-pool hop. When the value task is not yet complete (e.g. a distributed L2 read) we block
+/// via <c>.AsTask().GetAwaiter().GetResult()</c>.
+/// </para>
+/// <para>
+/// <strong>Deadlock safety.</strong> Before the cache call the ambient
+/// <see cref="System.Threading.SynchronizationContext"/> is suppressed (set to <see langword="null"/>)
+/// and restored in a <c>finally</c>. This is the sync-over-async equivalent of
+/// <c>ConfigureAwait(false)</c>: the cache's internal continuations capture the null context and
+/// resume on a thread-pool thread rather than a single-threaded originating context (classic
+/// ASP.NET request thread, WPF/WinForms UI thread), so the blocking wait cannot deadlock. Because
+/// <c>Execute</c> is fully synchronous and restores the context before returning, the caller never
+/// observes the suppression.
 /// </para>
 /// </remarks>
 /// <typeparam name="TQuery">The query type, constrained to <see cref="IQuery{TResult}"/>.</typeparam>
@@ -103,14 +109,15 @@ public sealed class CacheableQueryDecorator<TQuery, TResult> : IQueryHandlerDeco
 
     /// <inheritdoc />
     /// <remarks>
-    /// Delegates to <see cref="HybridCache.GetOrCreateAsync{TState,T}"/> using the
-    /// state overload to avoid capturing variables in a closure. The factory wraps the
-    /// synchronous <paramref name="next"/> delegate in a completed <see cref="ValueTask{TResult}"/>.
-    /// The returned <see cref="ValueTask{TResult}"/> is inspected: if
-    /// <see cref="ValueTask{TResult}.IsCompletedSuccessfully"/> (the expected in-memory L1 hit
-    /// case), the result is returned synchronously via <see cref="ValueTask{TResult}.Result"/>,
-    /// consuming the <see cref="ValueTask{TResult}"/> exactly once. Otherwise the value task is
-    /// resolved by blocking via <c>.AsTask().GetAwaiter().GetResult()</c>.
+    /// Delegates to <see cref="HybridCache.GetOrCreateAsync{TState,T}"/> using the state overload
+    /// to avoid capturing <paramref name="next"/> and <paramref name="query"/> in a closure. The
+    /// factory wraps the synchronous <paramref name="next"/> delegate in a completed
+    /// <see cref="ValueTask{TResult}"/>. A synchronously-completed value task (in-memory L1 hit) is
+    /// read directly via <see cref="ValueTask{TResult}.Result"/>; otherwise the value task is
+    /// resolved by blocking via <c>.AsTask().GetAwaiter().GetResult()</c>. The ambient
+    /// <see cref="System.Threading.SynchronizationContext"/> is suppressed for the duration of the
+    /// call and restored in a <c>finally</c> so the blocking wait cannot deadlock under a
+    /// single-threaded context.
     /// </remarks>
     public TResult Execute(TQuery query, Func<TQuery, TResult> next, Func<TQuery, TResult> fallback)
     {
@@ -132,27 +139,46 @@ public sealed class CacheableQueryDecorator<TQuery, TResult> : IQueryHandlerDeco
         var tags = CacheTagHelper.ReadTags(Context);
         var ran = false;
         var state = (next, query);
-        var valueTask = cache.GetOrCreateAsync(
-            key,
-            state,
-            (s, ct) =>
-            {
-                ran = true;
-                // Wrap the synchronous next() result in a completed ValueTask so the factory
-                // never blocks the thread pool.
-                return ValueTask.FromResult(s.next(s.query));
-            },
-            options,
-            tags: tags,
-            cancellationToken: CancellationToken.None);
 
-        // Fast path: in-memory L1 cache hit returns a completed ValueTask synchronously.
-        // Consume the ValueTask exactly once — either via .Result or via .AsTask().
+        // Suppress any ambient SynchronizationContext for the duration of the cache call. If a
+        // single-threaded context (classic ASP.NET request thread, WPF/WinForms UI thread) were
+        // captured by the cache's internal awaits, blocking on the result below would deadlock.
+        // Removing the context is the sync-over-async equivalent of ConfigureAwait(false): the
+        // cache read's continuations resume on a thread-pool thread, not the originating thread.
+        // Execute is fully synchronous and restores the context in the finally before returning,
+        // so the caller never observes the suppression. The original context is restored on every
+        // path, including exceptions.
+        var originalContext = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
         TResult result;
-        if (valueTask.IsCompletedSuccessfully)
-            result = valueTask.Result;
-        else
-            result = valueTask.AsTask().GetAwaiter().GetResult();
+        try
+        {
+            var valueTask = cache.GetOrCreateAsync(
+                key,
+                state,
+                (s, ct) =>
+                {
+                    ran = true;
+                    // Wrap the synchronous next() result in a completed ValueTask so the factory
+                    // never blocks the thread pool.
+                    return ValueTask.FromResult(s.next(s.query));
+                },
+                options,
+                tags: tags,
+                cancellationToken: CancellationToken.None);
+
+            // Fast path: a synchronously-completed ValueTask (in-memory L1 hit) never suspended,
+            // so no continuation was scheduled — read the result directly on the originating
+            // thread with no thread-pool hop. Consume the ValueTask exactly once.
+            if (valueTask.IsCompletedSuccessfully)
+                result = valueTask.Result;
+            else
+                result = valueTask.AsTask().GetAwaiter().GetResult();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(originalContext);
+        }
 
         var outcome = ran ? CacheOutcome.Miss : CacheOutcome.Hit;
         Context.Span?.SetTag(DarkerSemanticConventions.CacheOutcome, outcome == CacheOutcome.Hit ? "hit" : "miss");
