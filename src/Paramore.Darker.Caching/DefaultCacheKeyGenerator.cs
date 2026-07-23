@@ -96,9 +96,13 @@ public sealed class DefaultCacheKeyGenerator : ICacheKeyGenerator
             return;
         }
 
-        // Serialize the value using the declared property type so that boxed value
-        // types (int, bool, etc.) are written as JSON numbers/booleans, not objects.
+        // Serialize the value using its runtime type rather than the declared property type.
+        // Serializing against the declared type drops the distinguishing data of anything held
+        // behind an interface or abstract base (System.Text.Json emits only the declared type's
+        // members — often "{}" for a marker interface), collapsing distinct values onto the same
+        // cache key. The runtime type serializes the concrete value in full while still writing
+        // boxed value types (int, bool, etc.) as JSON numbers/booleans, not objects.
         // System.Text.Json always uses invariant-culture for number formatting.
-        JsonSerializer.Serialize(writer, value, prop.PropertyType);
+        JsonSerializer.Serialize(writer, value, value.GetType());
     }
 }
