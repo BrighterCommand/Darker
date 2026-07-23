@@ -43,6 +43,7 @@ public class MetricsFromTracesProcessorTests : IDisposable
     private readonly MeterProvider _meterProvider;
     private readonly QueryMeter _queryMeter;
     private readonly DbMeter _dbMeter;
+    private readonly CacheMeter _cacheMeter;
     private readonly IAmADarkerTracer _tracer;
     private readonly DarkerMetricsFromTracesProcessor _processor;
     private readonly ActivitySource _activitySource;
@@ -81,10 +82,11 @@ public class MetricsFromTracesProcessorTests : IDisposable
         _meterFactory = new SimpleMeterFactory();
         _queryMeter = new QueryMeter(_meterFactory, _meterProvider);
         _dbMeter = new DbMeter(_meterFactory, _meterProvider);
+        _cacheMeter = new CacheMeter(_meterFactory, _meterProvider);
 
         _tracer = new DarkerTracer();
 
-        _processor = new DarkerMetricsFromTracesProcessor(_tracer, _queryMeter, _dbMeter);
+        _processor = new DarkerMetricsFromTracesProcessor(_tracer, _queryMeter, _dbMeter, _cacheMeter);
 
         _activitySource = new ActivitySource(DarkerSemanticConventions.SourceName);
         _activityListener = new ActivityListener
@@ -173,11 +175,13 @@ public class MetricsFromTracesProcessorTests : IDisposable
 
         var disabledQueryMeter = new QueryMeter(disabledMeterFactory, disabledProvider);
         var disabledDbMeter = new DbMeter(disabledMeterFactory, disabledProvider);
+        var disabledCacheMeter = new CacheMeter(disabledMeterFactory, disabledProvider);
 
         disabledQueryMeter.Enabled.ShouldBeFalse();
         disabledDbMeter.Enabled.ShouldBeFalse();
+        disabledCacheMeter.Enabled.ShouldBeFalse();
 
-        using var disabledProcessor = new DarkerMetricsFromTracesProcessor(_tracer, disabledQueryMeter, disabledDbMeter);
+        using var disabledProcessor = new DarkerMetricsFromTracesProcessor(_tracer, disabledQueryMeter, disabledDbMeter, disabledCacheMeter);
 
         var activity = _activitySource.StartActivity("TestQuery query", ActivityKind.Internal);
         activity!.Stop();
