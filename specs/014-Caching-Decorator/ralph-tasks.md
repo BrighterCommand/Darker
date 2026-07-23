@@ -340,7 +340,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_ending_internal_span_with_cache_outcome_should_dispatch_to_cache_meter"`
   - **References**: requirements.md (FR10); ADR 0021 (Key Components — `DarkerMetricsFromTracesProcessor` extension, Implementation Approach step 7); `src/Paramore.Darker.Extensions.Diagnostics/Observability/DarkerMetricsFromTracesProcessor.cs`; `src/Paramore.Darker.Extensions.Diagnostics/DarkerTracerBuilderExtensions.cs:46`; `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind.cs` (test template)
 
-- [ ] **AddDarkerInstrumentation registers the cache meter and honors the opt-out toggle**
+- [x] **AddDarkerInstrumentation registers the cache meter and honors the opt-out toggle**
   - **Behavior**: `AddDarkerInstrumentation` on the `MeterProviderBuilder` is extended to `TryAddSingleton<IAmADarkerCacheMeter, CacheMeter>()` alongside the query and DB meters, and to accept an opt-out toggle (e.g. `AddDarkerInstrumentation(bool emitCacheMetrics = true)`). When the toggle is **disabled**, it registers a no-op `IAmADarkerCacheMeter` whose `Enabled == false`, so the cache counter is never recorded. This toggle is entirely independent of `InstrumentationOptions`.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_adding_darker_instrumentation_should_register_cache_meter_with_toggle.cs`
   - **Test should verify**:
