@@ -328,7 +328,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_recording_cache_operation_should_record_counter_with_allowed_tags"`
   - **References**: requirements.md (FR10); ADR 0021 (Key Components — "Package — `Paramore.Darker.Extensions.Diagnostics` additions", Implementation Approach step 7); `src/Paramore.Darker.Extensions.Diagnostics/Observability/QueryMeter.cs` and `IAmADarkerQueryMeter.cs` (template); `src/Paramore.Darker/Observability/DarkerSemanticConventions.cs` (`CacheRequestsMetricName`, `CacheRequestsAllowedTags`)
 
-- [ ] **The metrics-from-traces processor dispatches Internal spans to the cache meter**
+- [x] **The metrics-from-traces processor dispatches Internal spans to the cache meter**
   - **Behavior**: `DarkerMetricsFromTracesProcessor` gains an `IAmADarkerCacheMeter` dependency. In its `ActivityKind.Internal` branch it also calls `cacheMeter.RecordCacheOperation(activity)` (a no-op when the span carries no cache outcome, so it coexists with `queryMeter.RecordQueryOperation`), and its cheap short-circuit guard is extended to include `cacheMeter.Enabled` (`if (!(queryMeter.Enabled || dbMeter.Enabled || cacheMeter.Enabled)) return;`). The construction site in `DarkerTracerBuilderExtensions` is updated to resolve and pass the cache meter and to include the cache meter in its registration gate.
   - **Test file**: `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_ending_internal_span_with_cache_outcome_should_dispatch_to_cache_meter.cs`
   - **Test should verify**:

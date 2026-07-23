@@ -33,18 +33,20 @@ namespace Paramore.Darker.Extensions.Diagnostics.Observability;
 /// Generates metrics from traces following OpenTelemetry's metrics-from-traces pattern (ADR 0018).
 /// On each span end, filters to the <c>paramore.darker</c> source and dispatches to the appropriate
 /// meter by <see cref="ActivityKind"/>: <see cref="ActivityKind.Internal"/> (query spans) ⇒
-/// <see cref="IAmADarkerQueryMeter"/>; <see cref="ActivityKind.Client"/> (DB spans) ⇒
-/// <see cref="IAmADarkerDbMeter"/>. Holds no metric state of its own.
+/// <see cref="IAmADarkerQueryMeter"/> and <see cref="IAmADarkerCacheMeter"/>;
+/// <see cref="ActivityKind.Client"/> (DB spans) ⇒ <see cref="IAmADarkerDbMeter"/>.
+/// Holds no metric state of its own.
 /// </summary>
 /// <remarks>
-/// Short-circuits cheaply when neither meter has listeners (NFR2). The processor is added to
-/// the tracer pipeline only when both meters are registered, so there is no cost when the user
+/// Short-circuits cheaply when no meter has listeners (NFR2). The processor is added to
+/// the tracer pipeline only when meters are registered, so there is no cost when the user
 /// wires only tracing.
 /// </remarks>
 public sealed class DarkerMetricsFromTracesProcessor(
     IAmADarkerTracer tracer,
     IAmADarkerQueryMeter queryMeter,
-    IAmADarkerDbMeter dbMeter)
+    IAmADarkerDbMeter dbMeter,
+    IAmADarkerCacheMeter cacheMeter)
     : BaseProcessor<Activity>
 {
     private readonly string _sourceName = tracer.ActivitySource.Name;
@@ -52,7 +54,7 @@ public sealed class DarkerMetricsFromTracesProcessor(
     /// <inheritdoc />
     public override void OnEnd(Activity? activity)
     {
-        if (!(queryMeter.Enabled || dbMeter.Enabled)) return;
+        if (!(queryMeter.Enabled || dbMeter.Enabled || cacheMeter.Enabled)) return;
 
         if (activity is null) return;
 
@@ -62,6 +64,7 @@ public sealed class DarkerMetricsFromTracesProcessor(
         {
             case ActivityKind.Internal:
                 queryMeter.RecordQueryOperation(activity);
+                cacheMeter.RecordCacheOperation(activity);
                 break;
             case ActivityKind.Client:
                 dbMeter.RecordClientOperation(activity);

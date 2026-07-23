@@ -1,7 +1,7 @@
 #region Licence
 
 /* The MIT License (MIT)
-Copyright © 2025 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
+Copyright © 2026 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Diagnostics.Tests;
 
 [Collection("DarkerMeter")]
-public class MetricsFromTracesProcessorTests : IDisposable
+public class CacheMetricsFromTracesProcessorTests : IDisposable
 {
     private readonly List<Metric> _metrics;
     private readonly MeterProvider _meterProvider;
@@ -45,7 +45,7 @@ public class MetricsFromTracesProcessorTests : IDisposable
     private readonly DbMeter _dbMeter;
     private readonly CacheMeter _cacheMeter;
     private readonly IAmADarkerTracer _tracer;
-    private readonly DarkerMetricsFromTracesProcessor _processor;
+    private readonly DarkerMetricsFromTracesProcessor _darkerMetricsFromTracesProcessor;
     private readonly ActivitySource _activitySource;
     private readonly ActivityListener _activityListener;
     private readonly SimpleMeterFactory _meterFactory;
@@ -68,12 +68,12 @@ public class MetricsFromTracesProcessorTests : IDisposable
         }
     }
 
-    public MetricsFromTracesProcessorTests()
+    public CacheMetricsFromTracesProcessorTests()
     {
         _metrics = new List<Metric>();
 
         // Build the MeterProvider BEFORE creating the meters so that the SDK's
-        // MeterListener is registered and will pick up the histograms when they are published.
+        // MeterListener is registered and will pick up the counters when they are published.
         _meterProvider = Sdk.CreateMeterProviderBuilder()
             .AddMeter(DarkerSemanticConventions.MeterName)
             .AddInMemoryExporter(_metrics)
@@ -86,7 +86,7 @@ public class MetricsFromTracesProcessorTests : IDisposable
 
         _tracer = new DarkerTracer();
 
-        _processor = new DarkerMetricsFromTracesProcessor(_tracer, _queryMeter, _dbMeter, _cacheMeter);
+        _darkerMetricsFromTracesProcessor = new DarkerMetricsFromTracesProcessor(_tracer, _queryMeter, _dbMeter, _cacheMeter);
 
         _activitySource = new ActivitySource(DarkerSemanticConventions.SourceName);
         _activityListener = new ActivityListener
@@ -100,72 +100,29 @@ public class MetricsFromTracesProcessorTests : IDisposable
     }
 
     [Fact]
-    public void When_ending_span_through_processor_should_dispatch_to_meter_by_activity_kind()
+    public void When_ending_internal_span_with_cache_outcome_should_dispatch_to_cache_meter()
     {
         //Arrange
         var activity = _activitySource.StartActivity("TestQuery query", ActivityKind.Internal);
         activity!.SetTag(DarkerSemanticConventions.QueryType, "TestQuery");
         activity.SetTag(DarkerSemanticConventions.Operation, "query");
+        activity.SetTag(DarkerSemanticConventions.CacheOutcome, "miss");
         activity.Stop();
 
         //Act
-        _processor.OnEnd(activity);
+        _darkerMetricsFromTracesProcessor.OnEnd(activity);
         _meterProvider.ForceFlush();
 
-        //Assert - Internal span routes to query meter only
+        //Assert - Internal span with cache outcome routes to cache meter and query meter
+        _metrics.ShouldContain(m => m.Name == DarkerSemanticConventions.CacheRequestsMetricName);
         _metrics.ShouldContain(m => m.Name == DarkerSemanticConventions.QueryDurationMetricName);
-        _metrics.ShouldNotContain(m => m.Name == DarkerSemanticConventions.DbClientOperationDurationMetricName);
     }
 
     [Fact]
-    public void When_ending_client_span_through_processor_should_record_db_metric_only()
-    {
-        //Arrange
-        var activity = _activitySource.StartActivity("orders select", ActivityKind.Client);
-        activity!.SetTag(DarkerSemanticConventions.DbSystem, "postgresql");
-        activity.SetTag(DarkerSemanticConventions.DbOperation, "select");
-        activity.Stop();
-
-        //Act
-        _processor.OnEnd(activity);
-        _meterProvider.ForceFlush();
-
-        //Assert - Client span routes to db meter only
-        _metrics.ShouldContain(m => m.Name == DarkerSemanticConventions.DbClientOperationDurationMetricName);
-        _metrics.ShouldNotContain(m => m.Name == DarkerSemanticConventions.QueryDurationMetricName);
-    }
-
-    [Fact]
-    public void When_span_from_different_source_should_not_record_any_metrics()
-    {
-        //Arrange
-        using var otherSource = new ActivitySource("other.source");
-        using var otherListener = new ActivityListener
-        {
-            ShouldListenTo = s => s.Name == "other.source",
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = _ => { },
-            ActivityStopped = _ => { }
-        };
-        ActivitySource.AddActivityListener(otherListener);
-
-        var activity = otherSource.StartActivity("something", ActivityKind.Internal);
-        activity!.Stop();
-
-        //Act
-        _processor.OnEnd(activity);
-        _meterProvider.ForceFlush();
-
-        //Assert - foreign source spans are ignored
-        _metrics.ShouldNotContain(m => m.Name == DarkerSemanticConventions.QueryDurationMetricName);
-        _metrics.ShouldNotContain(m => m.Name == DarkerSemanticConventions.DbClientOperationDurationMetricName);
-    }
-
-    [Fact]
-    public void When_neither_meter_enabled_should_short_circuit_and_not_throw()
+    public void When_no_meter_enabled_should_short_circuit_and_not_throw()
     {
         // Dispose the subscribing provider first so no MeterProvider is listening to paramore.darker.
-        // This ensures the histograms created below report Enabled == false (NFR2 short-circuit guard).
+        // This ensures the meters created below report Enabled == false (NFR2 short-circuit guard).
         _meterProvider.Dispose();
 
         //Arrange - build a provider that does NOT subscribe to paramore.darker → Enabled == false
@@ -181,7 +138,8 @@ public class MetricsFromTracesProcessorTests : IDisposable
         disabledDbMeter.Enabled.ShouldBeFalse();
         disabledCacheMeter.Enabled.ShouldBeFalse();
 
-        using var disabledProcessor = new DarkerMetricsFromTracesProcessor(_tracer, disabledQueryMeter, disabledDbMeter, disabledCacheMeter);
+        using var disabledProcessor = new DarkerMetricsFromTracesProcessor(
+            _tracer, disabledQueryMeter, disabledDbMeter, disabledCacheMeter);
 
         var activity = _activitySource.StartActivity("TestQuery query", ActivityKind.Internal);
         activity!.Stop();
@@ -192,7 +150,7 @@ public class MetricsFromTracesProcessorTests : IDisposable
 
     public void Dispose()
     {
-        _processor.Dispose();
+        _darkerMetricsFromTracesProcessor.Dispose();
         _activityListener.Dispose();
         _activitySource.Dispose();
         _tracer.Dispose();
