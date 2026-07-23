@@ -19,5 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Shouldly" />
+    <!-- TEST-ONLY: FusionCache as a drop-in HybridCache implementation -->
+    <PackageReference Include="ZiggyCreatures.FusionCache" />
   </ItemGroup>
 </Project>

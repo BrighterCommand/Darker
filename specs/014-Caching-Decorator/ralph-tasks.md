@@ -303,7 +303,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Caching.Tests/ --filter "FullyQualifiedName~When_inspecting_caching_assembly_should_have_no_otel_or_metrics_dependency"`
   - **References**: requirements.md (FR7, FR10); ADR 0021 (Key Components — "depends on … but NOT on OpenTelemetry / `System.Diagnostics.Metrics`")
 
-- [ ] **Backing HybridCache can be switched to real FusionCache purely via DI (decorator unchanged)**
+- [x] **Backing HybridCache can be switched to real FusionCache purely via DI (decorator unchanged)**
   - **Behavior**: The cache implementation is selected entirely by DI. Registering the **real FusionCache** `HybridCache` implementation (via its Microsoft HybridCache adapter) in place of Microsoft's makes the same, unchanged caching decorator cache through FusionCache. This test uses the real FusionCache packages (test-only dependency).
   - **Test file**: `test/Paramore.Darker.Caching.Tests/When_backing_cache_is_fusioncache_should_cache_via_di_switch.cs`
   - **Test should verify**:
