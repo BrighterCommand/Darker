@@ -363,7 +363,7 @@
   - **RALPH-VERIFY**: `dotnet test test/Paramore.Darker.Extensions.Diagnostics.Tests/ --filter "FullyQualifiedName~When_cached_query_executed_with_metrics_should_emit_hit_and_miss_counters"`
   - **References**: requirements.md (FR10, Acceptance Criteria); ADR 0021 (Implementation Approach step 8, Risks — "hit/miss counter is miscounted under cache-stampede protection … metrics-only inaccuracy … documented as a known caveat"); `test/Paramore.Darker.Extensions.Diagnostics.Tests/When_executing_query_with_metrics_wired_should_record_query_and_db_duration_metrics.cs` (full-wiring test template)
 
-- [ ] **Full feature builds and the whole filtered solution's tests pass on net8.0 and net9.0**
+- [x] **Full feature builds and the whole filtered solution's tests pass on net8.0 and net9.0**
   - **Behavior**: The complete feature builds and the **entire** `Darker.Filter.slnf` test suite passes on both target frameworks — not just cache-named subsets — confirming the caching package, core convention additions, and diagnostics additions integrate cleanly and introduce **no regressions** elsewhere in the solution. This is the final integration gate, so it must run the full filtered solution (both TFMs) rather than filtered project subsets.
   - **Test file**: _none — whole-solution cross-framework verification (no new test)._
   - **Test should verify**:
