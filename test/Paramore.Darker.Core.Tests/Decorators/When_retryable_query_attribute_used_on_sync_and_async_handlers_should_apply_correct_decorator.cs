@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Paramore.Darker.Core.Tests.Decorators
 {
+#pragma warning disable CS0618 // Exercise legacy retry support retained until V6.
     public class RetryableQueryDecoratorTests
     {
         [Fact]
@@ -36,4 +37,5 @@ namespace Paramore.Darker.Core.Tests.Decorators
             decoratorType.ShouldBe(typeof(RetryableQueryDecoratorAsync<,>));
         }
     }
+#pragma warning restore CS0618
 }

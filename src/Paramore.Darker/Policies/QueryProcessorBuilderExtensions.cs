@@ -35,8 +35,10 @@ namespace Paramore.Darker.Policies
             if (!policyRegistry.ContainsKey(Constants.CircuitBreakerPolicyName))
                 throw new ConfigurationException($"The policy registry is missing the {Constants.CircuitBreakerPolicyName} policy which is required");
 
+#pragma warning disable CS0618 // Retain legacy policy registration until V6.
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
+#pragma warning restore CS0618
 
             return builder;
         }
@@ -182,8 +184,10 @@ namespace Paramore.Darker.Policies
                 { Constants.CircuitBreakerPolicyName, circuitBreakerPolicy }
             };
 
+#pragma warning disable CS0618 // Retain legacy policy registration until V6.
             builder.RegisterDecorator(typeof(RetryableQueryDecorator<,>));
             builder.RegisterDecorator(typeof(RetryableQueryDecoratorAsync<,>));
+#pragma warning restore CS0618
 
             return builder;
         }

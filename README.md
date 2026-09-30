@@ -16,7 +16,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddDarker()
         .AddHandlersFromAssemblies(typeof(GetPeopleQueryHandler).Assembly)
         .AddJsonQueryLogging()
-        .AddDefaultPolicies();
+        .AddDefaultResiliencePipelines();
 
     // Add framework services.
     services.AddMvc();
@@ -31,10 +31,8 @@ public void ConfigureServices(IServiceCollection services)
                 })
 ```
 
-This example uses the request logging integration provided by [Paramore.Darker.QueryLogging](https://www.nuget.org/packages/Paramore.Darker.QueryLogging)
-and policy integration provided by [Paramore.Darker.Policies](https://www.nuget.org/packages/Paramore.Darker.Policies).
-Have a look at the [Startup.ConfigureServices](https://github.com/BrighterCommand/Darker/blob/master/samples/SampleApi/Startup.cs) method
-in the [SampleApi](https://github.com/BrighterCommand/Darker/tree/master/samples/SampleApi) project for more examples on how to use the integrations.
+Request logging and Polly resilience pipeline integration are included in `Paramore.Darker` in V5.
+See [SampleMinimalApi](samples/SampleMinimalApi) for an example with custom resilience pipelines.
 
 Inject `IQueryProcessor` and call `Execute` or `ExecuteAsync` to dispatch your query to the registered query handler.
 
@@ -81,23 +79,49 @@ For most control, you can also implement `IQueryHandler<,>` directly.
 
 ```csharp
 using Paramore.Darker;
-using Paramore.Darker.Attributes;
+using Paramore.Darker.Logging.Attributes;
 using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Policies.Attributes;
 using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class GetFooHandler : QueryHandlerAsync<GetFoo, string>
 {
-    [QueryLogging(1)]
-    [FallbackPolicy(2)]
-    [RetryableQuery(3)]
+    [QueryLoggingAttributeAsync(1)]
+    [FallbackPolicyAttributeAsync(2)]
+    [UseResiliencePipelineAttributeAsync(3, Constants.RetryPipelineName)]
     public override async Task<string> ExecuteAsync(GetFoo query, CancellationToken cancellationToken = default(CancellationToken))
     {
         return await FetchFooForNumber(query.Number, cancellationToken);
     }
 }
 ```
+
+## Migrating from RetryableQuery in V5
+
+`RetryableQueryAttribute`, `RetryableQueryAttributeAsync`, and their public decorators
+are obsolete in V5 and will be removed in V6. They continue to work in V5 and produce
+compiler warnings when referenced.
+
+| Legacy type | Replacement |
+|---|---|
+| `RetryableQueryAttribute` | `UseResiliencePipelineAttribute` |
+| `RetryableQueryAttributeAsync` | `UseResiliencePipelineAttributeAsync` |
+| `RetryableQueryDecorator<TQuery, TResult>` | `UseResiliencePipelineHandler<TQuery, TResult>` |
+| `RetryableQueryDecoratorAsync<TQuery, TResult>` | `UseResiliencePipelineHandlerAsync<TQuery, TResult>` |
+
+The replacement attributes require an explicit pipeline name. For the built-in retry
+pipeline, register `.AddDefaultResiliencePipelines()` with DI and use
+`[UseResiliencePipeline(3, Constants.RetryPipelineName)]` on synchronous handlers, or
+`[UseResiliencePipelineAttributeAsync(3, Constants.RetryPipelineName)]` on asynchronous handlers.
+With `QueryProcessorBuilder`, use `.DefaultResiliencePipelines()` instead of `.DefaultPolicies()`.
+
+For custom policies, migrate from Polly's `PolicyRegistry` to a
+`ResiliencePipelineRegistry<string>` and register it using `.AddResiliencePipelines(registry)`
+with DI, or `.ResiliencePipelines(registry)` with `QueryProcessorBuilder`. The attribute's
+pipeline name must match a key in that registry. A legacy policy registry cannot supply
+the new decorators. Review retry delays, exception handling, and circuit-breaker settings
+when migrating: the new defaults are not identical to the legacy defaults.
 
 ## Usage without ASP.NET
 Register your queries and handlers with `QueryHandlerRegistry` and use `QueryProcessorBuilder` to configure and build a `IQueryProcessor`.
