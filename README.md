@@ -221,6 +221,8 @@ supported for streams. These are intentional semantics, not limitations to be wo
 | **Caller-supplied context** | A `queryContext` passed to `ExecuteStream` is scoped to a **single enumeration**. Concurrent or repeated enumeration is only safe when the processor creates the context (pass `null`). |
 | **Legacy attributes** | `[RetryableQuery]` and `[FallbackPolicy]` do **not** apply to streams. Use `[UseResiliencePipelineStream]` for stream resilience. Applying a mismatched attribute throws `ConfigurationException`. |
 
-## Contributing with a coding agent
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for our coding guidelines, how to build and test, and how to submit a change.
 
 We welcome contributions authored with a coding agent. See [AGENTIC_CODING.md](AGENTIC_CODING.md) for how to use our agent instructions and slash commands — the spec and bugfix workflows, review gears, and keeping state across sessions — and remember that you remain responsible for the code you submit.

@@ -2,7 +2,7 @@
 
 This guide explains how to use a coding agent to contribute to Darker. We have focused on [Claude Code](https://claude.com/claude-code), but most of what is here (our instructions, our workflow, the reasoning behind our gears) applies to other agents too.
 
-We welcome code authored with an agent. **You remain responsible for the code you submit.** Read it, understand it, and make sure it follows our contribution guidelines, which [`.agent_instructions/`](.agent_instructions/) restates for agents. Darker shares its workflow with [Brighter](https://github.com/BrighterCommand/Brighter), and the tooling described here is kept in step with Brighter's. The workflows below exist to make that practical.
+We welcome code authored with an agent. **You remain responsible for the code you submit.** Read it, understand it, and make sure it follows our [contribution guidelines](CONTRIBUTING.md), which [`.agent_instructions/`](.agent_instructions/) restates for agents. Darker shares its workflow with [Brighter](https://github.com/BrighterCommand/Brighter), and the tooling described here is kept in step with Brighter's. The workflows below exist to make that practical.
 
 ## Table of Contents
 
@@ -76,7 +76,7 @@ The `/spec` commands implement Darker's contribution workflow: **Issue → Requi
 | `/spec:new <name>` | Creates `specs/NNN-name/` and makes it the current spec. |
 | `/spec:requirements [issue]` | Drafts `requirements.md`, from a GitHub issue if one is given. Requirements say *what* users need, not *how*. |
 | `/spec:design [focus-area]` | Drafts an ADR in `docs/adr/`, after looking up related ADRs from their frontmatter. Write one ADR per architectural decision; a feature often needs several. ADRs follow the shared skeleton and readability rules in [documentation.md](.agent_instructions/documentation.md). |
-| `/spec:review [phase]` | Runs an **adversarial review** of the current phase in a separate agent. Run it more than once: fix the findings, then review again. When you fix findings, fix the *issue* everywhere it is stated, not just the quoted line. |
+| `/spec:review [phase]` | Runs an **adversarial review** of the current phase in a separate agent. Once implementation is done, `/spec:review code` reviews the branch diff against the approved specs. Run it more than once: fix the findings, then review again. When you fix findings, fix the *issue* everywhere it is stated, not just the quoted line. |
 | `/spec:approve <phase>` | Records your approval and unlocks the next phase. Approving `tasks` freezes the *content* of `tasks.md`; ticking checkboxes is still allowed. |
 | `/spec:tasks` | Breaks the approved design into a test-first task list. |
 | `/spec:write_release_notes` | Writes the spec's section of `release_notes.md` when the design breaks an existing behaviour or interface. `/spec:design` tells you when to run it. |
@@ -287,4 +287,4 @@ Nothing here is specific to Claude Code: any agent that can read a file can work
 
 Whichever gear you drove in, review the pull request yourself before asking anyone else to. An agent's green test suite tells you the code does what its tests say. It does not tell you that the tests say the right thing, or that you could explain the design without looking at the code.
 
-If you ask an agent to review the pull request, treat it like any other review: useful, occasionally wrong, and never a substitute for a human reviewer signing off.
+Before you open the pull request, run `/spec:review code`: an adversarial review of the branch diff against the approved requirements, ADRs and tasks, and against our code-style and testing conventions. Fix what it finds and run it again until it is clean. Treat any AI review like any other review: useful, occasionally wrong, and never a substitute for a human reviewer signing off.
