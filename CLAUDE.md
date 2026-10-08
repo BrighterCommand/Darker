@@ -218,6 +218,8 @@ Place test-specific handlers, queries, and decorators in `test/Paramore.Darker.T
 - Cache key: `Linux-nuget-${{ hashFiles('**/Directory.Packages.props') }}`
 
 ## Detailed Instructions
+For how contributors drive these workflows with an agent (choosing a workflow, review gears, `PROMPT.md` across sessions), see [AGENTIC_CODING.md](AGENTIC_CODING.md).
+
 For comprehensive guidance on working with this codebase, Claude should read the following files as needed:
 
 - [Build and Development Commands](.agent_instructions/build_and_development.md) - Build scripts, test commands

@@ -220,3 +220,7 @@ supported for streams. These are intentional semantics, not limitations to be wo
 | **Re-enumeration** | Each `await foreach` over the same `IAsyncEnumerable` re-executes the handler with a fresh pipeline. The stream is cold, not cached. To iterate twice over the same data, buffer it yourself (`await ToListAsync()`). |
 | **Caller-supplied context** | A `queryContext` passed to `ExecuteStream` is scoped to a **single enumeration**. Concurrent or repeated enumeration is only safe when the processor creates the context (pass `null`). |
 | **Legacy attributes** | `[RetryableQuery]` and `[FallbackPolicy]` do **not** apply to streams. Use `[UseResiliencePipelineStream]` for stream resilience. Applying a mismatched attribute throws `ConfigurationException`. |
+
+## Contributing with a coding agent
+
+We welcome contributions authored with a coding agent. See [AGENTIC_CODING.md](AGENTIC_CODING.md) for how to use our agent instructions and slash commands — the spec and bugfix workflows, review gears, and keeping state across sessions — and remember that you remain responsible for the code you submit.
