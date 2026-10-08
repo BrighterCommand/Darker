@@ -76,7 +76,7 @@ Running unattended changes *who reviews when*. It changes nothing else. Every ta
   separate `docs:` commit ticking the task off in `tasks.md`.
 - **Obeys every standing test-authoring convention** in `.agent_instructions/testing.md`:
   `When_[condition]_should_[behavior]` method and file naming, `[Behavior]Tests` class naming; one
-  test per file; Arrange/Act/Assert; test doubles in `test/Paramore.Darker.Tests/TestDoubles/`, one
+  test per file; Arrange/Act/Assert; test doubles in each test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`), one
   class per file; Real > Simple > InMemory > Mock; no mocks for isolation; public exports only.
 
 ## Your Task
@@ -247,8 +247,8 @@ from conversation.
   highlight evident data.
 - Test behavior, not implementation — public exports only; prefer real/Simple/InMemory* test
   doubles over mocks (Real > Simple > InMemory > Mock); no mocks for isolation.
-- Test-specific handlers, queries and decorators go in `test/Paramore.Darker.Tests/TestDoubles/`
-  (namespace `Paramore.Darker.Tests.TestDoubles`), one class per file.
+- Test-specific handlers, queries and decorators go in each test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`)
+  (namespace `{TestProject}.TestDoubles`, e.g. `Paramore.Darker.Core.Tests.TestDoubles`), one class per file.
 - Write the test file at the path the task specifies.
 - Run the verify command and confirm the test **FAILS** for the right reason (behavior doesn't
   exist yet). **Do not skip this.** Running unattended does not make this test-after.

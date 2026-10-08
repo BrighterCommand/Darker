@@ -1,16 +1,18 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*), Bash(touch:*), Bash(ls:*), Bash(echo:*), Bash(grep:*), Bash(mkdir:*), Bash(npx:*), Bash(python3:*), Read, Write, Glob, Grep, Agent
-description: Review current specification phase
-argument-hint: [requirements|design [adr-number]|tasks] [threshold]
+allowed-tools: Bash(cat:*), Bash(test:*), Bash(touch:*), Bash(ls:*), Bash(echo:*), Bash(grep:*), Bash(mkdir:*), Bash(npx:*), Bash(python3:*), Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git show:*), Read, Write, Glob, Grep, Agent, AskUserQuestion
+description: Review current specification phase (requirements, design, tasks, or code)
+argument-hint: [requirements|design [adr-number]|tasks|code [--base=ref]] [threshold]
 ---
 
 ## Adversarial Specification Review
 
 Current spec directory: specs/
 
-**Workflow**: Issue -> Requirements -> ADR(s) -> Tasks -> Tests -> Code
+**Workflow**: Issue -> Requirements -> ADR(s) -> Tasks -> Tests -> Code -> **Code Review**
 
 **Philosophy**: The first draft is never good enough. This review is skeptical and adversarial — it assumes problems exist and looks for them. The goal is to force iteration towards quality.
+
+**Phases reviewable here**: `requirements`, `design`, `tasks`, and `code`. The first three review specification documents. `code` reviews the actual implementation against the approved specs — the diff vs. a base branch, cross-referenced against requirements.md + ADRs + tasks.md.
 
 ## Your Task
 
@@ -21,12 +23,13 @@ Read `specs/.current-spec` to determine the active specification directory.
 **Error handling**: If `.current-spec` does not exist, tell the user to run `/spec:new` first and stop. If the spec directory doesn't exist, tell the user and stop. If the document for the requested phase doesn't exist, tell the user to run the appropriate creation command first and stop. Do NOT launch the sub-agent with missing documents.
 
 Parse $ARGUMENTS:
-- Extract **phase**: first word — `requirements`, `design`, or `tasks`
+- Extract **phase**: first word — `requirements`, `design`, `tasks`, or `code`
 - Extract **adr-number**: for `design` phase, a zero-padded 4-digit number (e.g., `0053`). **Precedence rule**: a 4-digit zero-padded number is ALWAYS an ADR number, never a threshold.
+- Extract **base-ref**: for `code` phase, a token starting with `--base=` (e.g., `--base=origin/master`). Default base is `master`.
 - Extract **threshold**: any other numeric value (default: **60**)
-- If phase is empty: auto-detect (first unapproved phase by checking `.requirements-approved`, `.design-approved`, `.tasks-approved` markers). If ALL phases are approved, tell the user all phases are approved and suggest `/spec:status` or `/spec:implement` instead.
+- If phase is empty: auto-detect. Check approval markers in order: `.requirements-approved`, `.design-approved`, `.tasks-approved`. The first missing marker is the phase to review. If all three are approved, default to `code` (review the implementation against the approved specs). If no branch is checked out or there is no diff vs. base, tell the user there is nothing to review and suggest `/spec:status`.
 
-**Approved phase warning**: If the user explicitly requests review of an already-approved phase, note this in the sub-agent prompt and include a note in the output.
+**Approved phase warning**: If the user explicitly requests review of an already-approved phase, note this in the sub-agent prompt and include a note in the output: "This phase is already approved. Findings are informational — consider whether any warrant re-opening the phase." (Not applicable to `code` — code is never "approved" by the spec system.)
 
 Examples:
 - `/spec:review` -> auto-detect phase, threshold 60
@@ -36,6 +39,9 @@ Examples:
 - `/spec:review design 0053 80` -> review ADR 0053, threshold 80
 - `/spec:review design 70` -> review all ADRs, threshold 70
 - `/spec:review tasks 50` -> review tasks, threshold 50
+- `/spec:review code` -> review branch diff vs. master, threshold 60
+- `/spec:review code 70` -> review branch diff vs. master, threshold 70
+- `/spec:review code --base=origin/master 70` -> diff vs. origin/master, threshold 70
 
 ### Step 2: Gather Documents for the Sub-Agent
 
@@ -62,11 +68,24 @@ Read ALL documents the sub-agent will need. The sub-agent gets a clean context �
 - Read `specs/{current-spec}/requirements.md` (for cross-referencing)
 - Read `specs/{current-spec}/.adr-list` and each ADR (for cross-referencing)
 
+**For code review:**
+- Resolve `{base-ref}` (default `master`). Run `git rev-parse --verify {base-ref}` — if it fails, tell the user the base ref doesn't exist and stop.
+- Run `git merge-base {base-ref} HEAD` to find the divergence point.
+- Run `git diff --stat {base-ref}...HEAD` to get the summary of changed files.
+- Run `git log --oneline {base-ref}..HEAD` to get the commit list.
+- Run `git status --porcelain` to check for uncommitted changes (flag in findings if present).
+- If the diff is empty, tell the user there is nothing to review vs. `{base-ref}` and stop.
+- Read `specs/{current-spec}/requirements.md`, all ADRs from `.adr-list`, and `specs/{current-spec}/tasks.md`. These are the contracts the code must satisfy.
+- Read `.agent_instructions/code_style.md`, `.agent_instructions/testing.md`, and `.agent_instructions/design_principles.md` — these encode project conventions the sub-agent must check against.
+- The sub-agent itself will use `Bash(git diff:* / git show:*)`, `Read`, `Glob`, and `Grep` to pull specific file-level diffs and surrounding context. Do NOT attempt to inline the full diff in the sub-agent prompt — pass the file list, commit list, stats, and base ref, and let the sub-agent drill in where it needs to.
+
 ### Step 3: Launch Sub-Agent for Adversarial Review
 
-Launch an Agent (subagent_type: "general-purpose") with the prompt below.
+**Verify scope with the user before launching (MAIN agent).** All user interaction stays in the main agent — never the sub-agent. If the review scope is ambiguous (which phase to review, which ADR for a design review, the base ref for a code review, the threshold to apply), confirm it with the user via `AskUserQuestion` before launching.
 
-**Sub-agent tool access**: The sub-agent (general-purpose) inherits tool access. For design and tasks reviews it SHOULD use Read, Glob, and Grep to read documents and verify codebase references. For **design** reviews it SHOULD additionally use `Bash` to run the diagram render check and the escaped-markdown grep in the *Diagrams* criteria — those are verifications, not judgements, and a review that skips them has not checked the one class of defect that is invisible to a careful read. The sub-agent should NOT write the findings file — it should return the findings as text. The main agent writes the file after validating the output.
+Launch an Agent (subagent_type: "general-purpose", **model: "opus"**) with the prompt below. Review is reasoning-heavy work, so it uses opus per the model policy (see `.claude/commands/spec/README.md` → "Sub-agents & model policy").
+
+**Sub-agent tool access**: The sub-agent (general-purpose) inherits tool access. For design and tasks reviews it SHOULD use Read, Glob, and Grep to read documents and verify codebase references. For **design** reviews it SHOULD additionally use `Bash` to run the diagram render check and the escaped-markdown grep in the *Diagrams* criteria — those are verifications, not judgements, and a review that skips them has not checked the one class of defect that is invisible to a careful read. For **code** reviews it SHOULD additionally use `Bash(git diff:* / git show:* / git log:*)` to pull file-level diffs on demand, and MAY run `dotnet build Darker.Filter.slnf` / `dotnet test Darker.Filter.slnf` to check a claim about the build or the suite. The sub-agent should NOT write the findings file — it should return the findings as text. The main agent writes the file after validating the output.
 
 **IMPORTANT**: The sub-agent prompt must include:
 1. The review criteria for the relevant phase (from Step 4 below)
@@ -75,6 +94,15 @@ Launch an Agent (subagent_type: "general-purpose") with the prompt below.
 4. The threshold value
 5. The output format instructions (from Step 5 below)
 6. An instruction to RETURN the findings as text output, NOT to write a file
+7. An instruction to NOT ask the user any questions — review the supplied inputs and return
+   findings; any clarification was handled by the main agent before launch
+
+**Code review sub-agent prompt must additionally include:**
+- The resolved base ref, the commit list, and the `git diff --stat` output
+- The full text of requirements.md, tasks.md, and each ADR (so the sub-agent can cross-reference without re-reading)
+- The paths to `.agent_instructions/code_style.md`, `testing.md`, `design_principles.md` (sub-agent reads them directly)
+- An explicit instruction to drill into at least the top-N changed files (by size) using `git diff {base}...HEAD -- <file>` and to cite specific file:line references in every finding
+- A reminder that uncommitted changes reported by `git status --porcelain` should be surfaced as at least a Medium finding
 
 ### Step 4: Phase-Specific Review Criteria
 
@@ -253,6 +281,69 @@ You are a skeptical reviewer. Assume the task list has problems — your job is 
 
 ---
 
+#### Code Review Criteria
+
+You are a skeptical, **adversarial** reviewer. Your job is to find problems, not to validate work that has already been done. Assume:
+
+- The author convinced themselves the code is right — they are not a reliable narrator.
+- Tests that pass locally may still be wrong (asserting the wrong thing, testing the stub, or passing vacuously).
+- Commit messages and PROMPT.md describe intent, not outcome — verify against the actual diff.
+
+Every finding MUST cite concrete evidence: a file path, a line range, a diff hunk, or a spec section. No vibes.
+
+**Requirement & ADR Fidelity (highest priority):**
+- For each FR-N in requirements.md, locate where it is implemented in the diff. If you cannot find it, that is a finding (High or Critical depending on FR importance).
+- For each AC, locate a test that asserts it. If the AC is satisfied by a unit test where the spec implies integration, downgrade trust and flag it.
+- For each ADR decision, locate the corresponding code. Flag any deviation where the code does something different from the ADR without a documented reason.
+- Flag scope creep: changed files or new abstractions that don't trace back to any FR, AC, or ADR decision.
+- Flag scope holes: tasks in `tasks.md` marked done but with no visible code.
+
+**TDD Compliance (Darker-specific):**
+- For each behavioral change, confirm a test exists. Prefer finding the test commit BEFORE (or in the same commit as) the implementation in `git log {base}..HEAD` — that's the TDD signature. Absence isn't proof of violation, but combined with tests committed *after* implementation, it's a finding.
+- Test naming: method and file `When_[condition]_should_[expected_behavior]`; class `[Behavior]Tests`. Violations are Low–Medium unless pervasive.
+- Test doubles follow Real > Simple > InMemory > Mock: Moq used where a real registry, `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory`, `InMemoryDecoratorRegistry` or `InMemoryQueryContextFactory` would do is a finding. Mocks used to isolate a class (rather than replace I/O) are at least Medium.
+- Test-specific handlers, queries and decorators belong in `test/Paramore.Darker.Tests/TestDoubles/` (namespace `Paramore.Darker.Tests.TestDoubles`), one class per file; shared doubles in `test/Paramore.Darker.Testing.Ports/`.
+- Tests reach only public exports. `InternalsVisibleTo` added for testing is a High finding.
+- Check for `[Fact(Skip=...)]`, commented-out `Assert`, or empty test bodies — any of these in the diff is at least Medium.
+
+**Correctness:**
+- Walk the logic of non-trivial new methods. Look for: off-by-one, null derefs, resource leaks (handlers, decorators, scopes or streams not released/disposed), async methods that swallow exceptions, race conditions in shared or static state (e.g. memoisation caches).
+- For each new `if`/`else`, ask: is the else branch tested? Is there a condition where both branches are wrong?
+- Exceptions raised through reflection must still surface unwrapped (the `ExceptionDispatchInfo` pattern in `QueryProcessor` / `PipelineBuilder`); a new path that leaks a `TargetInvocationException` is a finding.
+- For new configuration/DI changes: is the lifetime correct (singleton vs scoped vs transient)? Are disposables registered correctly? Is anything released in `PipelineBuilder.Dispose()` that should be?
+
+**Pipeline parity (Darker-specific):**
+- Darker has parallel sync, async and streaming pipelines (handlers, decorators, attributes, factories, registries). A behavioural change on one path without its twin — or without a documented reason the twin does not need it — is a finding. Check that each twin also has its test.
+- New decorators: step ordering via the attribute is respected, and the decorator is registered/resolved the same way on every path it claims to support.
+
+**Security (apply even in "internal" code):**
+- Injection or path traversal at any trust boundary (query parameters, context bag values, file names, connection strings)
+- Secrets or connection strings committed to code, logs, or test fixtures
+- Unsafe deserialization of attacker-controlled data; query-logging that writes sensitive query contents
+- Weak crypto or `Random` used for security-sensitive values
+
+**Project Conventions (read `.agent_instructions/code_style.md` yourself to verify):**
+- Primary constructors where possible for new classes (project default)
+- `Async` suffix on async methods; `ValueTask` vs `Task` consistency with surrounding code
+- Nullability annotations consistent with the file's existing style
+- XML doc comments on public APIs, and the MIT licence header on new files (project requires them)
+- No dead code, speculative abstractions, or commented-out blocks
+- No mixing of structural and behavioral changes in the same commit (tidy-first rule)
+- Package versions managed centrally in `Directory.Packages.props` — a `Version=` attribute on a project `PackageReference` is a finding
+
+**Hygiene:**
+- `git status --porcelain` non-empty → Medium finding ("uncommitted work on branch at time of review").
+- New files that look misplaced (e.g., test files in src/, or vice versa).
+- Binary files, generated files, or `.DS_Store` committed by accident.
+- Build warnings introduced (if the diff touches a project the user has recently built, note whether warnings regressed).
+
+**Grounding — no hallucinated findings:**
+- Before filing a finding, verify: did you actually read the file, or are you guessing from the name? If guessing, either read it or don't file the finding.
+- If the diff references a class or method, grep for it in the actual codebase (post-change) to confirm it exists as described.
+- A finding that says "you should have done X" when X is already present is worse than no finding — it destroys trust in the whole review. Prefer fewer, grounded findings over comprehensive-looking speculation.
+
+---
+
 ### Step 5: Output Format for Sub-Agent
 
 Tell the sub-agent to produce output in this exact format:
@@ -263,6 +354,10 @@ Tell the sub-agent to produce output in this exact format:
 **Date**: {today's date}
 **Threshold**: {threshold}
 **Verdict**: {PASS or NEEDS WORK}
+{For code reviews: **Base**: {base-ref} | **Head**: {HEAD commit sha}}
+
+{If NEEDS WORK: "N findings at or above threshold {threshold}. Address these before approving."}
+{If PASS: "No findings at or above threshold {threshold}. Consider addressing lower-scored items."}
 
 ## Findings
 
@@ -295,6 +390,13 @@ Tell the sub-agent to produce output in this exact format:
 - **50-69 (Medium)**: Worth addressing. Vagueness, missing examples.
 - **0-49 (Low)**: Suggestion or nit.
 
+**Calibration for code reviews:**
+- A FR or ADR decision with no corresponding code IS High or Critical (70-95), depending on the FR's importance.
+- A behavioural change on one of the sync, async or streaming pipeline paths without its twin IS High (70-80), unless the spec documents why the twin does not need it.
+- A test that passes vacuously, or asserts the stub rather than the behaviour, IS High (70-85) — it reads as coverage and is not.
+- A mock used to isolate a class where a real/Simple/InMemory double exists IS Medium (55-65).
+- Naming-convention drift in tests is Low-Medium (35-55) unless pervasive.
+
 **Calibration for design reviews:**
 - **A mermaid diagram that does not render IS High (70-85)** — it is a broken artefact that reads as perfectly fine, so nothing else will catch it before it ships.
 - **An ADR that references a participant in the authoring conversation** ("at the user's direction", "the user explicitly chose") **IS Medium-High (65-75)** — it fails the document's only audience, and once the ADR is Accepted the sentence tends to stay.
@@ -311,10 +413,16 @@ Calibrating the structure criteria specifically — they are about navigability,
 
 After the sub-agent returns:
 
-1. **Validate the output** before writing
-2. **Write the findings file** to `specs/{current-spec}/review-{phase}.md`
-3. **Present a summary to the user**, and remind them to use `/spec:approve {phase}` when ready, or
-   to work the findings (Step 8) and re-run `/spec:review {phase}`.
+1. **Validate the output** before writing: the expected sections are present, the Summary counts
+   match the findings listed (count them yourself), and the verdict is consistent with the threshold
+2. **Write the findings file** to `specs/{current-spec}/review-{phase}.md`. For the `code` phase the
+   file is `specs/{current-spec}/review-code.md`.
+3. **Present a summary to the user**: verdict, counts by severity, the title and score of each
+   finding at or above threshold, and the path to the findings file.
+   - For `requirements`/`design`/`tasks`: remind them to use `/spec:approve {phase}` when ready, or
+     to work the findings (Step 8) and re-run `/spec:review {phase}`.
+   - For `code`: remind them that `code` has no approval marker — fix findings, commit, and re-run
+     `/spec:review code` until clean. When clean, the next step is commit/push/PR.
 
 ### Step 7: Spec Status
 
@@ -323,6 +431,7 @@ Display overall spec status:
 - Requirements: Approved / In Progress
 - Design: {X} ADRs ({Y} approved, {Z} proposed)
 - Tasks: Approved / In Progress / Not Started
+- Code: Reviewed at {commit sha} / Not reviewed (code is "reviewed" if `review-code.md` exists; include its verdict and the commit sha at the top of HEAD when the review was run)
 
 ### Step 8: Working the Findings — Fix Issues, Not Lines
 

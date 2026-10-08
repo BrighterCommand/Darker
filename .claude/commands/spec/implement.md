@@ -145,7 +145,7 @@ For each task, follow this strict workflow:
 
 4. **Create/Update Test File**: Use Write or Edit tool to create the test
 
-5. **Run the Test**: Use Bash to run: `dotnet test test/Paramore.Darker.Tests/ --filter "FullyQualifiedName~When_[test_name]"`
+5. **Run the Test**: Use Bash to run: `dotnet test test/{TestProject}/ --filter "FullyQualifiedName~When_[test_name]"`
    - Verify the test FAILS (Red), for the expected reason (behavior doesn't exist yet)
    - **`CHARACTERISE` task, test passes on first run**: an earlier task already delivers the
      behaviour — that is expected, not a reason to rewrite the test. Apply the task's **named RED
@@ -287,7 +287,7 @@ terminal while you were working, and a downshift must take effect at the very ne
 - **The two-commit shape** — `feat:`/`test:` for the behaviour, then a separate `docs:` for the
   task-list tick
 - **The test-authoring conventions** — `When_[condition]_should_[behavior]` naming; one test per
-  file; test doubles in `test/Paramore.Darker.Tests/TestDoubles/`, one class per file;
+  file; test doubles in each test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`), one class per file;
   Real > Simple > InMemory > Mock; no mocks for isolation
 
 ### Code Quality Requirements

@@ -209,7 +209,15 @@ Review the current specification phase or specific ADR.
 /spec:review requirements
 /spec:review design 0043
 /spec:review tasks
+/spec:review code                       # Branch diff vs. master
+/spec:review code --base=origin/master  # Diff vs. another base ref
 ```
+
+`/spec:review code` reviews the implementation — the branch diff — adversarially against the approved
+requirements, ADRs and `tasks.md`, plus the project's code-style and testing conventions (including
+sync/async/streaming pipeline parity), and writes `review-code.md`. Code has no approval marker:
+fix the findings and re-run until clean, then open the PR. With no phase given and every phase
+approved, `/spec:review` defaults to `code`.
 
 ---
 

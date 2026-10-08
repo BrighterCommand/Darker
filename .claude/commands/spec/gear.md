@@ -175,7 +175,7 @@ explicitly whenever you shift:
 - **Every standing test-authoring convention** in
   [.agent_instructions/testing.md](../../../.agent_instructions/testing.md):
   `When_[condition]_should_[behavior]` method and file naming, `[Behavior]Tests` class naming; one
-  test per file; Arrange/Act/Assert; test doubles in `test/Paramore.Darker.Tests/TestDoubles/`, one
+  test per file; Arrange/Act/Assert; test doubles in each test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`), one
   class per file; Real > Simple > InMemory > Mock; no mocks for isolation; public exports only.
 
 If a run in `review-after` is dropping any of these, that is a defect in the run, not a consequence
