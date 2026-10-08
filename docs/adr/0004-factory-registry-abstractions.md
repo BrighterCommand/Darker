@@ -1,3 +1,17 @@
+---
+id: 0004-factory-registry-abstractions
+title: "Factory and Registry Abstractions for DI Container Independence"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Defines four abstractions (IQueryHandlerRegistry, IQueryHandlerFactory, decorator registry and decorator factory) separating registration from creation and handlers from decorators, so Darker is independent of any DI container."
+tags:
+  - "architecture"
+  - "di"
+  - "dependencies"
+---
+
 # 4. Factory and Registry Abstractions for DI Container Independence
 
 Date: 2026-05-15

@@ -1,3 +1,16 @@
+---
+id: 0010-pass-query-context
+title: "Pass QueryContext into QueryProcessor"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-20
+summary: "Allows a caller to pass an external IQueryContext into IQueryProcessor.Execute/ExecuteAsync, introduces InitQueryContext, adds a typed Policies property to the context, and removes the contextBagData mechanism."
+tags:
+  - "query-context"
+  - "api-design"
+---
+
 # 10. Pass QueryContext into QueryProcessor
 
 Date: 2026-05-20

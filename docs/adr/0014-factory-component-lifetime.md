@@ -1,3 +1,17 @@
+---
+id: 0014-factory-component-lifetime
+title: "Lifetime-Aware Handler and Decorator Factories with a Per-Query Lifetime Scope"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-06-08
+summary: "Makes handler and decorator factories lifetime-aware via a per-query IAmALifetime owning a child IServiceScope that PipelineBuilder creates and disposes, resolving Singleton from a shared cache and Scoped/Transient from the child scope."
+tags:
+  - "lifetime"
+  - "di"
+  - "pipeline"
+---
+
 # 14. Lifetime-Aware Handler and Decorator Factories with a Per-Query Lifetime Scope
 
 Date: 2026-06-08

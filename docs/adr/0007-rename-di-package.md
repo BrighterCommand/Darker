@@ -1,3 +1,16 @@
+---
+id: 0007-rename-di-package
+title: "Rename DI Integration Package from AspNetCore to Extensions.DependencyInjection"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Renames Paramore.Darker.AspNetCore to Paramore.Darker.Extensions.DependencyInjection as a purely structural change with an unchanged public API surface."
+tags:
+  - "di"
+  - "packaging"
+---
+
 # 7. Rename DI Integration Package from AspNetCore to Extensions.DependencyInjection
 
 Date: 2026-05-15

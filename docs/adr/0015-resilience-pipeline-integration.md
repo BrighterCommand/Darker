@@ -1,3 +1,17 @@
+---
+id: 0015-resilience-pipeline-integration
+title: "Polly V8 Resilience Pipeline Integration"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-06-15
+summary: "Adds a Polly V8 resilience-pipeline integration parallel to the legacy policy path, exposing pipelines via IQueryContext, new decorators and attributes, type-scoped generic pipelines keyed by result type, and default pipelines via DI."
+tags:
+  - "resilience"
+  - "retry"
+  - "circuit-breaker"
+---
+
 # 15. Polly V8 Resilience Pipeline Integration
 
 Date: 2026-06-15
