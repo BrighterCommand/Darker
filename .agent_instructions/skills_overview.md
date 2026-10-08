@@ -41,6 +41,7 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 | `/spec:approve` | Approve phases | `/spec:approve <phase> [adr-number]` |
 | `/spec:review` | Review phases | `/spec:review [phase] [adr-number]` |
 | `/spec:switch` | Switch to different spec | `/spec:switch <spec-name>` |
+| `/spec:write_release_notes` | Write the spec's marked section in `release_notes.md` | `/spec:write_release_notes [spec-id]` |
 | `/spec:gear` | Report or shift the TDD review gear | `/spec:gear [review-before\|review-after] ["section"] [--because "..."]` |
 | `/spec:ralph-implement` | Unattended TDD implementation over the approved `tasks.md` | `/spec:ralph-implement [count]` |
 
@@ -140,6 +141,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 - Dash-case file naming
 - Linking to parent requirements
 - Tracking in spec's `.adr-list`
+- YAML frontmatter (see `adr_frontmatter.md`) and a regenerated `docs/adr/index.md`
 
 **Reference**: [documentation.md](documentation.md)
 

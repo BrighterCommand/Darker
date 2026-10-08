@@ -141,7 +141,8 @@ Documentation: [.claude/commands/bugfix/README.md](bugfix/README.md)
 - **`/bugfix:*`** - Diagnosis-first bug workflow (Triage → Confirm → Test-first → Fix → Verify)
 
 ### Documentation Skills
-- **`/adr`** - Architecture Decision Records
+- **`/adr`** - Architecture Decision Records (stamps YAML frontmatter, regenerates `docs/adr/index.md`)
+- **`read_adr_metadata`** / **`write_adr_metadata`** - Find prior-art ADRs from frontmatter; add or update an ADR's frontmatter and status
 
 ### Specification Workflow Skills
 - **`/spec:requirements`** - Capture requirements
@@ -153,6 +154,7 @@ Documentation: [.claude/commands/bugfix/README.md](bugfix/README.md)
 - **`/spec:status`** - Show spec status (including the review gear)
 - **`/spec:approve`** - Approve phases
 - **`/spec:review`** - Review phases
+- **`/spec:write_release_notes`** - Write or replace the spec's marked section in `release_notes.md`
 
 Documentation: [.claude/commands/spec/README.md](spec/README.md)
 

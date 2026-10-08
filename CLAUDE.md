@@ -226,4 +226,5 @@ For comprehensive guidance on working with this codebase, Claude should read the
 - [Design Principles](.agent_instructions/design_principles.md) - Responsibility-Driven Design and architectural guidance
 - [Testing](.agent_instructions/testing.md) - TDD practices, test structure, and testing guidelines
 - [Documentation](.agent_instructions/documentation.md) - XML documentation standards and licensing requirements
+- [ADR Frontmatter](.agent_instructions/adr_frontmatter.md) - ADR YAML frontmatter schema, status vocabulary, tag taxonomy, and the generated ADR index
 - [Dependency Management](.agent_instructions/dependency_management.md) - Package management with Directory.Packages.props

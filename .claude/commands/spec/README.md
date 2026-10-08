@@ -79,6 +79,11 @@ context clean and gives the heavy work a focused, single-purpose context.
    what is in its prompt. The command reads the needed files (and runs `gh`/`git`) first, then
    passes the text or paths.
 2. **Launch `Agent`** with an explicit `subagent_type` and `model`:
+   - **`/spec:tasks`** uses `subagent_type: "Plan"`. `Plan` has all tools **except** `Agent`,
+     `ExitPlanMode`, `Edit`, `Write`, and `NotebookEdit` — so it can Read/Glob/Grep/Bash but has
+     no file-editing tool. That makes it much **harder** for the sub-agent to accidentally write
+     the spec file than relying on the prompt alone (it still has `Bash`, so the prompt also
+     forbids writing through it).
    - **`/spec:review`** uses `subagent_type: "general-purpose"` (adversarial reasoning that
      needs no source mutation).
    - **`/spec:ralph-implement`** uses `subagent_type: "general-purpose"` because its per-task
@@ -87,7 +92,8 @@ context clean and gives the heavy work a focused, single-purpose context.
    runs to completion and returns; it cannot pause to ask the user anything. So before
    launching, the main agent clarifies any ambiguous inputs with the user via `AskUserQuestion`,
    then launches the sub-agent with the clarified inputs folded in. The
-   `general-purpose` `review` sub-agent is explicitly instructed not to prompt. **Exception:**
+   `Plan`-based `tasks` sub-agent has no `AskUserQuestion` so it *structurally* can't prompt; the
+   `general-purpose` `review` sub-agent is explicitly instructed not to. **Exception:**
    `/spec:ralph-implement` runs fully **unattended** — neither its orchestrator nor its
    sub-agent prompts the user once the loop starts.
 4. **The sub-agent RETURNS its artifact as text** — it does *not* write the spec file. The one
@@ -96,19 +102,20 @@ context clean and gives the heavy work a focused, single-purpose context.
 5. **The main agent validates** the returned output against a checklist, then writes the file
    and does all bookkeeping (approval markers, `.adr-list`, git, next-steps).
 
-The remaining planning commands (`/spec:requirements`, `/spec:design`, `/spec:tasks`) currently
-run inline in the main agent rather than delegating — they have no sub-agent to assign a model to.
+The remaining planning commands (`/spec:requirements`, `/spec:design`) currently run inline in the
+main agent rather than delegating — they have no sub-agent to assign a model to.
 
 **Model policy** — reasoning vs. implementation:
 
 | Command | Sub-agent (type) | Model | Rationale |
 |---------|------------------|-------|-----------|
+| `/spec:tasks` | Yes — `Plan` (read-only) | **opus** | Planning / coverage mapping |
 | `/spec:review` | Yes — `general-purpose` | **opus** | Adversarial reasoning |
 | `/spec:ralph-implement` (orchestrator) | — (the loop itself) | **opus** | Cheap bookkeeping + **required for auto mode** |
 | `/spec:ralph-implement` (per-task sub-agent) | Yes — `general-purpose` (writes source) | **sonnet** | Mechanical TDD implementation, kept off the opus loop context for cost |
 | `/spec:implement` | No | **sonnet** (Step 0 prompts to switch) | Implementation work; runs in the main agent, so set the session model |
-| `/spec:requirements`, `/spec:design`, `/spec:tasks` | No (main agent) | — | Run inline |
-| `/spec:new`, `/spec:switch`, `/spec:approve`, `/spec:status`, `/spec:gear` | No | — | Mechanical bookkeeping |
+| `/spec:requirements`, `/spec:design` | No (main agent) | — | Run inline |
+| `/spec:new`, `/spec:switch`, `/spec:approve`, `/spec:status`, `/spec:gear`, `/spec:write_release_notes` | No | — | Mechanical bookkeeping |
 
 `/spec:ralph-implement` runs **two models on purpose**: the orchestrator loop on **opus**
 (required for **auto mode**, and the policy for the unattended path) does only cheap
@@ -157,6 +164,12 @@ Create an Architecture Decision Record (ADR) for a specific architectural decisi
 /spec:design handler-lifecycle
 ```
 
+Before drafting, surfaces prior-art ADRs with `read_adr_metadata` (frontmatter only, retired ADRs
+skipped). After writing, stamps the new ADR's YAML frontmatter with `write_adr_metadata`
+(`status: Proposed`, a summary, 1–4 tags from the taxonomy in
+`.agent_instructions/adr_frontmatter.md`), regenerates `docs/adr/index.md`, and — if the ADR's
+`## Consequences` record a breaking change — recommends `/spec:write_release_notes`.
+
 ---
 
 ### `/spec:approve <phase> [adr-number]`
@@ -170,7 +183,9 @@ Approve a specification phase or specific ADR.
 /spec:approve tasks
 ```
 
-Approving the **design** points you at `/spec:tasks` — there is one task list and one route to
+Approving the **design** flips each ADR to `Accepted` with `write_adr_metadata` (frontmatter and
+body `## Status` together), marks any ADR it replaces `Superseded` (or `Deprecated`), and
+regenerates `docs/adr/index.md`. It then points you at `/spec:tasks` — there is one task list and one route to
 it. Attended vs. unattended is not a fork here; it is a **gear** you pick (and change) at
 implementation time with `/spec:gear`.
 
@@ -196,7 +211,9 @@ Review the current specification phase or specific ADR.
 ### `/spec:tasks`
 
 Create the implementation task list based on the approved design. This is the **single** task
-list; both `/spec:implement` and `/spec:ralph-implement` run it.
+list; both `/spec:implement` and `/spec:ralph-implement` run it. Drafting is delegated to a `Plan`
+sub-agent on **opus**, which returns the list plus an FR/ADR coverage cross-reference; the main agent
+sanity-checks coverage and writes `tasks.md`.
 
 ```bash
 /spec:tasks
@@ -205,6 +222,28 @@ list; both `/spec:implement` and `/spec:ralph-implement` run it.
 Every task opens with a tag — `TEST + IMPLEMENT`, `CHARACTERISE`, `STRUCTURAL`, `SETUP`, `DOC` or
 `VERIFY` — and behavioral tasks carry the `⛔` approval-gate line, which fires in the default
 `review-before` gear. Do not encode the gear in `tasks.md`.
+
+---
+
+### `/spec:write_release_notes [spec-id]`
+
+Write, or replace in place, the spec's section of the root `release_notes.md`. The section sits
+under the file's first `##` heading (`## Master`), is headed `### {title} (spec {id})`, and is marked
+with `<!-- spec: {spec directory} -->` on the next line so later runs find and replace it rather
+than duplicating it.
+
+```bash
+/spec:write_release_notes                         # the current spec
+/spec:write_release_notes 014-Caching-Decorator   # a named spec (full name, numeric id, or substring)
+```
+
+Breaking-change items are judged from the prose of each ADR's `## Consequences` (and
+`requirements.md`), never from a diff. The command stops without writing whenever it would have to
+guess — an ambiguous spec id, a missing `release_notes.md`, a duplicate or misplaced marked section,
+or an unmarked heading that already names the spec. It never stages or commits.
+
+`/spec:design` recommends it when an ADR records a breaking change, and `/spec:review design` flags a
+breaking change with no marked section.
 
 ---
 
@@ -440,9 +479,11 @@ Darker/
 │       └── README.md                      # Spec overview
 ├── docs/
 │   └── adr/
+│       ├── index.md                       # Derived index (generated from frontmatter; do not hand-edit)
 │       ├── 0001-record-architecture-decisions.md
 │       ├── 0002-feature-aspect-one.md
 │       └── 0003-feature-aspect-two.md
+└── release_notes.md                       # Per-spec release-notes sections (/spec:write_release_notes)
 ```
 
 ## Best Practices

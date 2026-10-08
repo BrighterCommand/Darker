@@ -62,6 +62,11 @@ Scan the ADR directory for existing ADRs to determine the next [Sequence Number]
 
 Use dash-case (aka kebab-case) for the [Title] of the ADR.
 
+Every ADR carries a YAML frontmatter block (`id`, `title`, `status`, `author`, `created`, `summary`,
+`tags`). The schema, status vocabulary and tag taxonomy are in
+[adr_frontmatter.md](adr_frontmatter.md); `/adr` and `/spec:design` stamp it with the
+`write_adr_metadata` skill, and `docs/adr/index.md` is generated from it — never hand-edit the index.
+
 ## Licensing
 
 - We add a license comment to every src file

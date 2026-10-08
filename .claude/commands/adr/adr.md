@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Glob, Bash, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Bash, AskUserQuestion, Skill
 description: Create Architecture Decision Record following Darker's template
 argument-hint: <title-of-decision>
 ---
@@ -26,7 +26,16 @@ ls -1 docs/adr/*.md | grep -E '^docs/adr/[0-9]+' | sed 's/docs\/adr\/\([0-9]*\).
 
 If `docs/adr/` does not exist, create it and start with number `0001`.
 
-The next ADR number should be the highest number + 1, formatted as a 4-digit number with leading zeros (e.g., `0037`).
+The next ADR number is the highest number + 1, formatted as a 4-digit number with leading zeros
+(e.g., `0022`).
+
+**The number is a non-unique ordering hint, not the ADR's identity.** Numbers are allocated `max+1`
+per branch without locking, so parallel branches can collide — `0020` is already shared by two ADRs,
+and we do **not** renumber. The **identity is the `id`/slug = the filename stem**
+(`0020-validation-decorator-architecture`), which is unique; all tooling keys off that. So: take
+`max+1`, but if a concurrent branch later lands the same number, that collision is **acceptable and
+not a defect** — do not renumber to "fix" it. See *Identity and numbering* in
+[`.agent_instructions/adr_frontmatter.md`](../../../.agent_instructions/adr_frontmatter.md).
 
 ### Step 2: Check for Linked Specification
 
@@ -52,6 +61,19 @@ Read the foundational ADR to understand the expected structure:
 If the first ADR does not exist yet, use the template from Step 5 directly.
 
 ### Step 4: Gather Information from User
+
+**Surface prior art first.** Before gathering new content, find existing ADRs relevant to this
+decision so you reuse, avoid contradicting, or deliberately supersede them rather than re-deciding in
+ignorance. Use the `read_adr_metadata` skill, passing the decision title as the query and any
+obvious tags from the taxonomy:
+
+```
+read_adr_metadata "{decision title}" --tags "{likely-tags}"
+```
+
+It reads only frontmatter (cheap) and skips `Deprecated`/`Superseded` ADRs by default. Show the user
+the returned prior-art candidates (`id` + `title` + `summary`), and note any this ADR would supersede
+(you will mark that older ADR `Superseded` in Step 5).
 
 Use AskUserQuestion to gather the key information needed for the ADR:
 
@@ -158,7 +180,34 @@ Proposed
   - [Link to external documentation, articles, etc.]
 ```
 
-### Step 6: Update Spec ADR List (if applicable)
+**Add frontmatter**: after writing the body above, stamp the YAML frontmatter block with the
+`write_adr_metadata` skill. It derives `id`/`title`/`created` from the file, sets `status: Proposed`,
+and keeps the frontmatter in sync with the body `## Status`. Provide a `summary` (1–2 sentences on
+WHAT was decided — an agent reads this to decide whether to open the ADR) and 1–4 `tags` from the
+controlled taxonomy in [`.agent_instructions/adr_frontmatter.md`](../../../.agent_instructions/adr_frontmatter.md):
+
+```
+write_adr_metadata docs/adr/[NNNN]-[title].md init --summary "..." --tags "tag-a,tag-b"
+```
+
+Confirm the six checks the skill reports pass (`id` == filename stem, `status` ∈ enum, tags ⊆
+taxonomy, valid date, all seven keys, frontmatter status matches body). If this ADR **supersedes** a
+prior one you found in Step 4, also mark that older ADR:
+`write_adr_metadata docs/adr/[old-id].md supersede --by [NNNN]-[title]`.
+
+### Step 6: Regenerate the ADR index
+
+The new frontmatter (and any supersession from Step 5) must be reflected in the derived
+`docs/adr/index.md`. Regenerate it — this is the single canonical command (documented in
+[`.agent_instructions/adr_frontmatter.md`](../../../.agent_instructions/adr_frontmatter.md)):
+
+```bash
+awk -f .claude/commands/adr/generate_adr_index.awk docs/adr/[0-9]*.md > docs/adr/index.md
+```
+
+`docs/adr/index.md` is a regenerable cache — never hand-edit it; always regenerate from frontmatter.
+
+### Step 7: Update Spec ADR List (if applicable)
 
 If linked to a spec, append this ADR to the spec's ADR list:
 
@@ -166,7 +215,7 @@ If linked to a spec, append this ADR to the spec's ADR list:
 echo "docs/adr/[NNNN]-[title].md" >> specs/[spec-name]/.adr-list
 ```
 
-### Step 7: Inform the User
+### Step 8: Inform the User
 
 Tell the user:
 1. The ADR file path and number
@@ -177,7 +226,7 @@ Tell the user:
    - Use `/spec:approve design [NNNN]` when approved (changes status to "Accepted")
 
 
-### Step 8: Review against the Design Principles
+### Step 9: Review against the Design Principles
 
 Read the ADR:
 
@@ -190,12 +239,12 @@ Read the ADR:
 - A class can implement one or more roles. If it implements multiple roles, they should be related.
 - Provide feedback and suggest improvements
 
-### Step 9. Suggest next steps:
+### Step 10. Suggest next steps:
 
 Ask the user for the next step:
 
    - Create a feature branch if not already on one
-   - Commit the ADR: `git commit -m "docs: add ADR for [title]"`
+   - Commit the ADR and the regenerated index: `git add docs/adr/[NNNN]-[title].md docs/adr/index.md && git commit -m "docs: add ADR for [title]"`
    - Continue with additional ADRs if needed
    - Or proceed to `/spec:tasks` if design is complete
 

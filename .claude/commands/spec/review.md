@@ -129,6 +129,18 @@ You are a skeptical reviewer. Assume the design has problems — your job is to 
 - Is the error handling strategy explicit?
 - Are concurrency/threading concerns addressed where relevant?
 
+**Frontmatter:**
+- Does each ADR carry the YAML frontmatter defined in `.agent_instructions/adr_frontmatter.md`
+  (`id` == filename stem, `status` matching the body `## Status`, a `summary` that states what was
+  decided, 1–4 tags from the controlled taxonomy)?
+
+**Release Notes Coverage:**
+- Does the ADR set (or any ADR in it) record, in its `## Consequences`, a change that breaks an
+  existing behaviour or interface? If so, does `release_notes.md` carry a section marked for this
+  spec (a `### … (spec {id})` heading immediately followed by
+  `<!-- spec: {this spec's directory name} -->`)? A breaking change with no such marked section is
+  a finding — recommend running `/spec:write_release_notes`.
+
 ---
 
 #### Tasks Review Criteria
@@ -154,6 +166,16 @@ You are a skeptical reviewer. Assume the task list has problems — your job is 
 **Coverage Cross-Reference:**
 - Map each FR from requirements.md to tasks. Are there FRs with no corresponding task? LIST THEM.
 - Map each ADR decision to tasks. Are there design decisions with no implementation task? LIST THEM.
+
+**Task-Type Tag Form:**
+- Does every task checkbox open its bold lead-in with the tag first (`**STRUCTURAL: T1.2 —
+  …**`), never the task id first (`**T1.2 — STRUCTURAL: …**`)? `/spec:ralph-implement` dispatches
+  on the leading label and skips a task it cannot classify — flag any checkbox that drifts, outside
+  a *DO NOT* block.
+- Does every behavioral task carry the `⛔ APPROVAL GATE` line, and does no task try to encode the
+  review gear (a "no gate" annotation, an omitted gate line)? The gear lives in `.current-gear`.
+- Does every `CHARACTERISE` task name its RED mutation (the production change and the assertion it
+  must fail on)?
 
 ---
 
