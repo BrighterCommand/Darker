@@ -6,7 +6,9 @@ This directory contains Claude Code commands that enforce Test-Driven Developmen
 
 ### `/test-first <behavior description>`
 
-Guides you through the Red-Green-Refactor TDD cycle with a **mandatory approval gate** before implementation.
+Guides you through the Red-Green-Refactor TDD cycle with an **approval gate** before implementation. The gate is armed by default; a standalone
+`/test-first` is always gated, and only a spec command running in the `review-after` gear
+(`/spec:gear`) skips the pause.
 
 **Purpose**: Ensures you write and approve tests before writing implementation code, preventing scope creep and promoting better design.
 
@@ -40,7 +42,8 @@ Guides you through the Red-Green-Refactor TDD cycle with a **mandatory approval 
 **Why Use This?**
 
 From [.agent_instructions/testing.md](../../../.agent_instructions/testing.md):
-> The approval step is MANDATORY when working with an AI coding assistant
+> The approval gate is **armed by default**. Assume it is armed unless a spec command has explicitly
+> told you the spec is in the `review-after` gear
 
 This command enforces that requirement automatically, ensuring:
 - Tests correctly specify desired behavior before implementation
