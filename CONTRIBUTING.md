@@ -308,9 +308,9 @@ branch.
 - Respond to review feedback; we will get to it as soon as we can
 
 Please ask that your pull request is merged with a merge commit, not squashed or rebased. Some of
-our tooling pins commit shas from a merged branch's history for later reference — a spec's
-`tasks.md` ticks, and the commits that review findings were fixed in — and only a merge commit keeps
-those commits reachable from `master` afterwards.
+our tooling pins commit shas from a merged branch's history for later reference — for example,
+`/spec:review code` records the commit it reviewed in the spec's `review-code.md` — and only a merge
+commit keeps those commits reachable from `master` afterwards.
 
 ### Contributor License Agreement
 
@@ -359,7 +359,7 @@ this project you agree to abide by its terms. The code of conduct is from the
 - `test/` — test projects, partitioned to match the libraries (`Paramore.Darker.Core.Tests`,
   `Paramore.Darker.Extensions.Tests`, `Paramore.Darker.Caching.Tests`, the validation test projects,
   and so on), plus `Paramore.Darker.Tests.AOT` for trimming/AOT compatibility,
-  `Paramore.Darker.Benchmarks`, and the shared `Paramore.Test.Helpers`.
+  and `Paramore.Darker.Benchmarks`.
 - `samples/` — `SampleMinimalApi` (an ASP.NET Core minimal API) and `SampleMauiTestApp`.
 - `docs/adr/` — Architecture Decision Records, with a generated `index.md`.
 - `specs/` — specifications produced by the `/spec` workflow.

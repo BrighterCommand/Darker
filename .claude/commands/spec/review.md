@@ -302,7 +302,7 @@ Every finding MUST cite concrete evidence: a file path, a line range, a diff hun
 - For each behavioral change, confirm a test exists. Prefer finding the test commit BEFORE (or in the same commit as) the implementation in `git log {base}..HEAD` — that's the TDD signature. Absence isn't proof of violation, but combined with tests committed *after* implementation, it's a finding.
 - Test naming: method and file `When_[condition]_should_[expected_behavior]`; class `[Behavior]Tests`. Violations are Low–Medium unless pervasive.
 - Test doubles follow Real > Simple > InMemory > Mock: Moq used where a real registry, `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory`, `InMemoryDecoratorRegistry` or `InMemoryQueryContextFactory` would do is a finding. Mocks used to isolate a class (rather than replace I/O) are at least Medium.
-- Test-specific handlers, queries and decorators belong in `test/Paramore.Darker.Tests/TestDoubles/` (namespace `Paramore.Darker.Tests.TestDoubles`), one class per file; shared doubles in `test/Paramore.Darker.Testing.Ports/`.
+- Test-specific handlers, queries and decorators belong in the test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`, namespace `Paramore.Darker.Core.Tests.TestDoubles`), one class per file.
 - Tests reach only public exports. `InternalsVisibleTo` added for testing is a High finding.
 - Check for `[Fact(Skip=...)]`, commented-out `Assert`, or empty test bodies — any of these in the diff is at least Medium.
 
