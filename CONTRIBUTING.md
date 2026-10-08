@@ -307,6 +307,11 @@ branch.
 - Submit a pull request against `master`
 - Respond to review feedback; we will get to it as soon as we can
 
+Please ask that your pull request is merged with a merge commit, not squashed or rebased. Some of
+our tooling pins commit shas from a merged branch's history for later reference — a spec's
+`tasks.md` ticks, and the commits that review findings were fixed in — and only a merge commit keeps
+those commits reachable from `master` afterwards.
+
 ### Contributor License Agreement
 
 To safeguard the project, we ask you to sign a Contributor License Agreement. You keep your
