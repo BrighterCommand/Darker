@@ -21,7 +21,7 @@ Bring Darker's DI lifetime handling into conformance with Brighter: ambient requ
 | Phase | File | Status |
 |-------|------|--------|
 | Requirements | `requirements.md` | Approved |
-| Design | ADRs (`.adr-list`): 0022 | In progress — 0022 Proposed |
+| Design | ADRs (`.adr-list`): 0022, 0023 | In progress — 0022 committed, 0023 Proposed |
 | Tasks | `tasks.md` | Not started |
 
 ## Notes

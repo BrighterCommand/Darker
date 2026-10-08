@@ -29,7 +29,7 @@ When a query finishes, Darker releases the handler and its decorators and then d
 
 - **Teardown** — the work Darker does after a pipeline completes: release every component, then dispose the lifetime. *The mechanism, end to end* specifies its order.
 - **Release** — the factory step that ends Darker's use of one component. The factory decides whether release means disposal (see *The roles, and what each is responsible for*).
-- **Per-query scope** — the child DI scope that the lifetime disposes at the end of a query. ADR 0014 describes how it is created and owned today.
+- **Per-query scope** — the child DI scope that the lifetime disposes at the end of a query. ADR 0014 describes how it is created and owned today; ADR 0023 carries it on the lifetime as the pipeline scope.
 - **Teardown fault** — an exception thrown by a release or by a disposal during teardown.
 
 ### Scope
@@ -39,7 +39,7 @@ When a query finishes, Darker releases the handler and its decorators and then d
   - FR1 — the pipeline builder releases the handler and each decorator in its own fault boundary, and logs each teardown fault at Error with the component type.
   - FR2 — the pipeline builder disposes the lifetime after all releases, outside every release's fault boundary, so the per-query scope is disposed whatever the releases did.
   - FR3 — teardown catches and logs every teardown fault, so the processor's `using`/`finally` never replaces a result or the handler's exception.
-  - FR4 — `QueryLifetimeScope` disposes every tracked item in its own fault boundary, logs each fault, and ignores a second disposal.
+  - FR4 — `QueryLifetimeScope` disposes every tracked item in its own fault boundary, logs each fault, and ignores a second disposal. After ADR 0023, the only item it holds is the pipeline scope.
   - FR5 — the same rules apply on `Execute`, `ExecuteAsync` and `ExecuteStream`, because all three paths end in the same pipeline builder teardown.
   - FR5a — the pipeline builder and the lifetime become asynchronously disposable, the async factories gain `ReleaseAsync`, and the async and stream paths await teardown. The sync path keeps synchronous teardown.
   - NFR Reliability, Diagnosability, Parity — the teardown part of each, through the mechanisms above.
@@ -213,7 +213,7 @@ No new assembly and no new package reference. `IAsyncDisposable` comes from the 
 | Chooses the teardown form for the path | `QueryProcessor` | Disposes the pipeline builder synchronously on `Execute`, awaits its disposal on `ExecuteAsync` and `ExecuteStream`, and ends the span before teardown | deciding, doing | `PipelineBuilder<TResult>`, `IAmADarkerTracer` |
 | Tears down one pipeline | `PipelineBuilder<TResult>` | Knows each created component and the factory that created it; releases each in its own fault boundary; logs each fault at Error with the component type; disposes the lifetime last; never throws | knowing, doing | the four factory roles, `IAmALifetime`, `ILogger` |
 | Releases a component | `IQueryHandlerFactory`, `IQueryHandlerFactoryAsync`, `IQueryHandlerDecoratorFactory`, `IQueryHandlerDecoratorFactoryAsync` | Decides whether releasing a component means disposing it, and does so synchronously or asynchronously | deciding, doing | the component, `IAmALifetime` |
-| Owns per-query resources | `IAmALifetime`, implemented by `QueryLifetimeScope` | Tracks per-query disposables; disposes each newest first in its own fault boundary; logs each fault; disposes once | knowing, doing | tracked disposables, `ILogger` |
+| Owns per-query resources | `IAmALifetime`, implemented by `QueryLifetimeScope` | Holds the per-query disposables (ADR 0023 reduces them to the pipeline scope); disposes each newest first in its own fault boundary; logs each fault; disposes once | knowing, doing | tracked disposables, `ILogger` |
 | Adapts the per-query DI scope | `ServiceProviderLifetimeScope` | Disposes the child DI scope, synchronously or asynchronously | doing | `AsyncServiceScope` |
 
 The split that matters most is between the pipeline builder and the factories. The pipeline builder decides *when* each release happens and contains its faults. The factory decides *what* release means. The pipeline builder never disposes a component directly, so the DI factory's rule that Darker never disposes a Singleton (ADR 0014) stays in the one place that knows the component's lifetime.
@@ -229,11 +229,11 @@ public interface IAmALifetime : IDisposable, IAsyncDisposable
 
 | Member | Input | Output | Error conditions |
 | --- | --- | --- | --- |
-| `Add` | a disposable to track | none | `ArgumentNullException` for null (unchanged) |
+| `Add` | a disposable to track | none | `ArgumentNullException` for null (unchanged here, and removed by ADR 0023) |
 | `Dispose` | none | none | never throws. Disposes each tracked item newest first, each in its own fault boundary, and logs each fault at Error with the item type. A second call, after `Dispose` or `DisposeAsync`, does nothing |
 | `DisposeAsync` | none | `ValueTask` | never faults. Same rules as `Dispose`. Awaits `DisposeAsync` on an item that implements `IAsyncDisposable`, and calls `Dispose` on any other item |
 
-`Add` keeps its `IDisposable` parameter. A tracked item that also implements `IAsyncDisposable` receives `DisposeAsync` on the async paths. ADR 0023 changes how the lifetime carries the per-query scope; the two disposal members and their rules stay as stated here.
+This ADR leaves `Add` unchanged. A tracked item that also implements `IAsyncDisposable` receives `DisposeAsync` on the async paths. ADR 0023 gives `IAmALifetime` its final shape. It removes `Add` and carries the per-query scope as `PipelineScope`. The two disposal members and their rules stay as stated here, and apply to that scope.
 
 #### `IQueryHandlerFactoryAsync` and `IQueryHandlerDecoratorFactoryAsync`
 
@@ -256,7 +256,7 @@ public interface IQueryHandlerDecoratorFactoryAsync
 | `ReleaseAsync` (handler) | the handler, possibly null after a failed build; the lifetime | `ValueTask` | an implementation may throw or fault. The pipeline builder contains and logs the fault. Must tolerate a null handler |
 | `ReleaseAsync<T>` (decorator) | the decorator; the lifetime | `ValueTask` | as above |
 
-`ReleaseAsync` replaces `Release` on the two async interfaces. The Simple factories await `DisposeAsync` on a component that implements `IAsyncDisposable`, and otherwise call `Dispose`. The DI factory returns a completed `ValueTask` and does nothing, because the per-query scope owns Scoped and Transient disposal. ADR 0023 adds members to the factory interfaces; it does not change `ReleaseAsync`.
+`ReleaseAsync` replaces `Release` on the two async interfaces. The Simple factories await `DisposeAsync` on a component that implements `IAsyncDisposable`, and otherwise call `Dispose`. The DI factory returns a completed `ValueTask` and does nothing, because the per-query scope owns Scoped and Transient disposal. ADR 0023 adds `CreatePipelineScope` to the two handler factory interfaces; it does not change `ReleaseAsync`.
 
 #### `PipelineBuilder<TResult>` (internal)
 
