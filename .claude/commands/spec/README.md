@@ -79,7 +79,7 @@ context clean and gives the heavy work a focused, single-purpose context.
    what is in its prompt. The command reads the needed files (and runs `gh`/`git`) first, then
    passes the text or paths.
 2. **Launch `Agent`** with an explicit `subagent_type` and `model`:
-   - **`/spec:tasks`** uses `subagent_type: "Plan"`. `Plan` has all tools **except** `Agent`,
+   - **Planning commands** (`/spec:design`, `/spec:tasks`) use `subagent_type: "Plan"`. `Plan` has all tools **except** `Agent`,
      `ExitPlanMode`, `Edit`, `Write`, and `NotebookEdit` — so it can Read/Glob/Grep/Bash but has
      no file-editing tool. That makes it much **harder** for the sub-agent to accidentally write
      the spec file than relying on the prompt alone (it still has `Bash`, so the prompt also
@@ -92,7 +92,7 @@ context clean and gives the heavy work a focused, single-purpose context.
    runs to completion and returns; it cannot pause to ask the user anything. So before
    launching, the main agent clarifies any ambiguous inputs with the user via `AskUserQuestion`,
    then launches the sub-agent with the clarified inputs folded in. The
-   `Plan`-based `tasks` sub-agent has no `AskUserQuestion` so it *structurally* can't prompt; the
+   `Plan`-based `design` and `tasks` sub-agents have no `AskUserQuestion` so it *structurally* can't prompt; the
    `general-purpose` `review` sub-agent is explicitly instructed not to. **Exception:**
    `/spec:ralph-implement` runs fully **unattended** — neither its orchestrator nor its
    sub-agent prompts the user once the loop starts.
@@ -102,19 +102,20 @@ context clean and gives the heavy work a focused, single-purpose context.
 5. **The main agent validates** the returned output against a checklist, then writes the file
    and does all bookkeeping (approval markers, `.adr-list`, git, next-steps).
 
-The remaining planning commands (`/spec:requirements`, `/spec:design`) currently run inline in the
-main agent rather than delegating — they have no sub-agent to assign a model to.
+`/spec:requirements` still runs inline in the main agent rather than delegating — it has no
+sub-agent to assign a model to.
 
 **Model policy** — reasoning vs. implementation:
 
 | Command | Sub-agent (type) | Model | Rationale |
 |---------|------------------|-------|-----------|
+| `/spec:design` | Yes — `Plan` (read-only) | **opus** | Architecture / design |
 | `/spec:tasks` | Yes — `Plan` (read-only) | **opus** | Planning / coverage mapping |
 | `/spec:review` | Yes — `general-purpose` | **opus** | Adversarial reasoning |
 | `/spec:ralph-implement` (orchestrator) | — (the loop itself) | **opus** | Cheap bookkeeping + **required for auto mode** |
 | `/spec:ralph-implement` (per-task sub-agent) | Yes — `general-purpose` (writes source) | **sonnet** | Mechanical TDD implementation, kept off the opus loop context for cost |
 | `/spec:implement` | No | **sonnet** (Step 0 prompts to switch) | Implementation work; runs in the main agent, so set the session model |
-| `/spec:requirements`, `/spec:design` | No (main agent) | — | Run inline |
+| `/spec:requirements` | No (main agent) | — | Runs inline |
 | `/spec:new`, `/spec:switch`, `/spec:approve`, `/spec:status`, `/spec:gear`, `/spec:write_release_notes` | No | — | Mechanical bookkeeping |
 
 `/spec:ralph-implement` runs **two models on purpose**: the orchestrator loop on **opus**
@@ -164,7 +165,11 @@ Create an Architecture Decision Record (ADR) for a specific architectural decisi
 /spec:design handler-lifecycle
 ```
 
-Before drafting, surfaces prior-art ADRs with `read_adr_metadata` (frontmatter only, retired ADRs
+Drafting is delegated to a `Plan` sub-agent on **opus**, which verifies its codebase references
+and returns the ADR body (plus a proposed summary and tags); the main agent validates it against the
+shared ADR skeleton in `.agent_instructions/documentation.md`, runs the mechanical checks (mermaid
+render, escaped-markdown grep), writes the file, and back-fills sibling ADRs' `### Where this ADR
+sits` maps. Before drafting, it surfaces prior-art ADRs with `read_adr_metadata` (frontmatter only, retired ADRs
 skipped). After writing, stamps the new ADR's YAML frontmatter with `write_adr_metadata`
 (`status: Proposed`, a summary, 1–4 tags from the taxonomy in
 `.agent_instructions/adr_frontmatter.md`), regenerates `docs/adr/index.md`, and — if the ADR's
