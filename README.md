@@ -31,10 +31,10 @@ public void ConfigureServices(IServiceCollection services)
                 })
 ```
 
-This example uses the request logging integration provided by [Paramore.Darker.QueryLogging](https://www.nuget.org/packages/Paramore.Darker.QueryLogging)
-and policy integration provided by [Paramore.Darker.Policies](https://www.nuget.org/packages/Paramore.Darker.Policies).
-Have a look at the [Startup.ConfigureServices](https://github.com/BrighterCommand/Darker/blob/master/samples/SampleApi/Startup.cs) method
-in the [SampleApi](https://github.com/BrighterCommand/Darker/tree/master/samples/SampleApi) project for more examples on how to use the integrations.
+This example uses the query logging and policy decorators, which are built into the core
+[Paramore.Darker](https://www.nuget.org/packages/Paramore.Darker) package.
+Have a look at [Program.cs](https://github.com/BrighterCommand/Darker/blob/master/samples/SampleMinimalApi/Program.cs)
+in the [SampleMinimalApi](https://github.com/BrighterCommand/Darker/tree/master/samples/SampleMinimalApi) project for more examples on how to use the integrations.
 
 Inject `IQueryProcessor` and call `Execute` or `ExecuteAsync` to dispatch your query to the registered query handler.
 
@@ -81,9 +81,8 @@ For most control, you can also implement `IQueryHandler<,>` directly.
 
 ```csharp
 using Paramore.Darker;
-using Paramore.Darker.Attributes;
-using Paramore.Darker.Policies;
-using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Logging.Attributes;
+using Paramore.Darker.Policies.Attributes;
 using System.Threading;
 using System.Threading.Tasks;
 

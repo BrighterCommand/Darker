@@ -227,7 +227,7 @@ User: /test-first when a query handler is not registered it should throw QueryHa
 RED: Writing test When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException
 
 [Shows test code]
-Test file: test/Paramore.Darker.Tests/When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException.cs
+Test file: test/Paramore.Darker.Core.Tests/When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException.cs
 
 Running test...
 Test fails: "QueryHandlerNotFoundException not found"
@@ -243,7 +243,7 @@ GREEN: Implementing QueryHandlerNotFoundException and handler lookup logic
 
 Running tests...
 - When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException PASSED
-- All tests in Paramore.Darker.Tests PASSED
+- All tests in Paramore.Darker.Core.Tests PASSED
 
 REFACTOR: Extracting handler resolution into dedicated method
 

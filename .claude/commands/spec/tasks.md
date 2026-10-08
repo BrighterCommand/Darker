@@ -89,7 +89,7 @@ prompt MUST include:
 ```markdown
 - [ ] **TEST + IMPLEMENT: QueryProcessor throws when handler not registered**
   - **USE COMMAND**: `/test-first when query handler not registered should throw QueryHandlerNotFoundException`
-  - Test location: "test/Paramore.Darker.Tests"
+  - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException.cs`
   - Test should verify:
     - QueryProcessor.Execute called with unregistered query type

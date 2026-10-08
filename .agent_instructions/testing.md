@@ -185,8 +185,7 @@ A run in `review-after` that drops any of these is defective — it is not "a di
   2. **Simple implementations** (e.g. `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory`) — delegate-based, lightweight, in `src/Paramore.Darker/`. Follow Brighter's `SimpleHandlerFactory` pattern.
   3. **InMemory implementations** (e.g. `InMemoryDecoratorRegistry`) — in-memory state, suitable for testing and lightweight production use
   4. **Mocks (Moq)** — last resort, only for I/O boundaries or verifying interactions that cannot be observed through behavior
-- **Test doubles directory**: Place test-specific handler, query, and decorator doubles in `test/Paramore.Darker.Tests/TestDoubles/` following Brighter's `tests/Paramore.Brighter.Core.Tests/CommandProcessors/TestDoubles/` convention. Use the namespace `Paramore.Darker.Tests.TestDoubles`.
-- Shared test doubles (used across test projects) belong in `test/Paramore.Darker.Testing.Ports/`.
+- **Test doubles directory**: Place test-specific handler, query, and decorator doubles in the test project's `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`), following Brighter's `tests/Paramore.Brighter.Core.Tests/CommandProcessors/TestDoubles/` convention. Use the namespace `{TestProject}.TestDoubles` (e.g. `Paramore.Darker.Core.Tests.TestDoubles`).
 - Do NOT use fakes or mocks for isolating a class.
   - We use developer tests: isolation is to the most recent edit, not a class.
   - Do not inject dependencies into a constructor or property for test isolation

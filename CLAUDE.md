@@ -97,10 +97,8 @@ Darker is the query-side counterpart of [Brighter](https://github.com/BrighterCo
 6. Query flows through the pipeline: decorators -> handler -> result
 
 ### Key Components
-- **src/Paramore.Darker**: Core library with QueryProcessor, PipelineBuilder, registries
+- **src/Paramore.Darker**: Core library with QueryProcessor, PipelineBuilder, registries, and the built-in decorators: query logging (`Logging/`) and retry/fallback policies and Polly resilience pipelines (`Policies/`), merged into core by ADR 0011
 - **src/Paramore.Darker.Extensions.DependencyInjection**: Microsoft.Extensions.DependencyInjection integration
-- **src/Paramore.Darker.Policies**: Polly-based retry and circuit breaker decorators
-- **src/Paramore.Darker.QueryLogging**: Request/response logging decorator
 - **src/Paramore.Darker.Testing**: Testing utilities
 
 ### Handler Lifecycle
@@ -126,10 +124,10 @@ dotnet build Darker.slnx -c Release
 dotnet test Darker.Filter.slnf -c Release --no-build
 
 # Run tests for a specific project
-dotnet test test/Paramore.Darker.Tests/Paramore.Darker.Tests.csproj
+dotnet test test/Paramore.Darker.Core.Tests/Paramore.Darker.Core.Tests.csproj
 
 # Run a single test
-dotnet test test/Paramore.Darker.Tests/Paramore.Darker.Tests.csproj --filter "FullyQualifiedName~QueryProcessorTests.ExecutesQueries"
+dotnet test test/Paramore.Darker.Core.Tests/Paramore.Darker.Core.Tests.csproj --filter "FullyQualifiedName~QueryProcessorTests.ExecutesQueries"
 ```
 
 ### Package Management
@@ -186,7 +184,6 @@ Test projects use:
 - **xunit** for test framework
 - **Shouldly** for assertions
 - **Moq** for mocking (last resort — prefer real/Simple/InMemory implementations)
-- **Paramore.Darker.Testing.Ports**: Shared test doubles and test queries/handlers
 
 ### Test Double Preference (Real > Simple > InMemory > Mock)
 
@@ -199,7 +196,7 @@ Prefer real or lightweight implementations over mocks, following Brighter's patt
 
 ### Test Doubles Directory
 
-Place test-specific handlers, queries, and decorators in `test/Paramore.Darker.Tests/TestDoubles/` (namespace: `Paramore.Darker.Tests.TestDoubles`), following Brighter's `TestDoubles/` convention.
+Place test-specific handlers, queries, and decorators in the test project's `TestDoubles/` directory, e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/` (namespace: `Paramore.Darker.Core.Tests.TestDoubles`), following Brighter's `TestDoubles/` convention.
 
 ### When Testing QueryProcessor
 1. Create `QueryHandlerRegistry` (and `QueryHandlerRegistryAsync` for async) and register query -> handler mappings
