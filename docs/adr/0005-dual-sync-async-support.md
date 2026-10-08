@@ -1,3 +1,16 @@
+---
+id: 0005-dual-sync-async-support
+title: "Dual Sync/Async Handler Support"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Offers one IQueryHandler interface with Execute/Fallback and ExecuteAsync/FallbackAsync, plus separate QueryHandler and QueryHandlerAsync base classes that each implement one path and throw NotImplementedException for the other."
+tags:
+  - "async"
+  - "api-design"
+---
+
 # 5. Dual Sync/Async Handler Support
 
 Date: 2026-05-15

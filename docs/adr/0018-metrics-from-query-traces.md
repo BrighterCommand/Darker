@@ -1,3 +1,17 @@
+---
+id: 0018-metrics-from-query-traces
+title: "Metrics from Query Traces"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-01
+summary: "Derives metrics from query traces with an OpenTelemetry processor that records duration histograms on span end for a query meter and a DB meter, deriving counts and failures from the histogram and an error.type dimension."
+tags:
+  - "metrics"
+  - "otel"
+  - "observability"
+---
+
 # 18. Metrics from Query Traces
 
 Date: 2026-07-01

@@ -1,3 +1,17 @@
+---
+id: 0021-caching-decorator-architecture
+title: "Caching Decorator Architecture"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-20
+summary: "Adds a caching decorator over Microsoft's HybridCache that short-circuits the pipeline on a hit, with a replaceable ICacheKeyGenerator, a required expiry, an optional eviction tag via the context Bag, and hit/miss recorded as a span attribute and derived as a metric."
+tags:
+  - "decorators"
+  - "caching"
+  - "performance"
+---
+
 # 21. Caching Decorator Architecture
 
 Date: 2026-07-20

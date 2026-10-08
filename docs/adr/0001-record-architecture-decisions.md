@@ -1,3 +1,15 @@
+---
+id: 0001-record-architecture-decisions
+title: "Record Architecture Decisions"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Adopts Nygard-style Architecture Decision Records stored as numbered markdown files in docs/adr/ with a fixed Status/Context/Decision/Consequences/Alternatives template, and retroactively documents existing decisions."
+tags:
+  - "meta"
+---
+
 # 1. Record Architecture Decisions
 
 Date: 2026-05-15

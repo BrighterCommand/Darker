@@ -1,3 +1,17 @@
+---
+id: 0019-streaming-query-pipeline
+title: "Streaming Query Pipeline"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-09
+summary: "Adds a fully parallel streaming path built around IStreamQuery<TResult> (TResult is the item type) with its own handlers, decorators, factories and lifetime, expressed in Darker's Execute-style idiom."
+tags:
+  - "streaming"
+  - "pipeline"
+  - "async"
+---
+
 # 19. Streaming Query Pipeline
 
 Date: 2026-07-09

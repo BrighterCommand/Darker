@@ -1,3 +1,17 @@
+---
+id: 0011-merge-builtin-decorators
+title: "Merge Builtin Decorators (Policies and QueryLogging) Into Core"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-26
+summary: "Merges the Policies and QueryLogging side packages into core Paramore.Darker under Policies/ and Logging/ folders, mirroring Brighter's layout and relocating the FallbackPolicy types alongside."
+tags:
+  - "packaging"
+  - "decorators"
+  - "dependencies"
+---
+
 # 11. Merge Builtin Decorators (Policies and QueryLogging) Into Core
 
 Date: 2026-05-26
