@@ -24,7 +24,7 @@
 
 ### 1A — Tidy first (ADR 0022 step 1)
 
-- [ ] **STRUCTURAL: T1.1 — Extract the release steps and the lifetime loop body into private methods**
+- [x] **STRUCTURAL: T1.1 — Extract the release steps and the lifetime loop body into private methods**
   - In `src/Paramore.Darker/PipelineBuilder.cs`, `Dispose()` (currently around lines 424–460): extract the handler release, and each of the three decorator-list releases (sync, async and stream), into private methods. Do not change behaviour.
   - In `src/Paramore.Darker/QueryLifetimeScope.cs`, `Dispose()` (lines 49–60): extract the per-item disposal into a private method.
   - Guarded by the existing suite. In particular:
