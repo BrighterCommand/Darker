@@ -137,7 +137,7 @@
   - Implementation should:
     - Need no production change. T1.2 delivers this, because the child scope is a tracked item.
 
-- [ ] **TEST + IMPLEMENT: T1.9 — A throwing logging provider cannot break the never-throw guarantee (ADR 0022 risk mitigation: guarded log call)**
+- [x] **TEST + IMPLEMENT: T1.9 — A throwing logging provider cannot break the never-throw guarantee (ADR 0022 risk mitigation: guarded log call)**
   - **USE COMMAND**: `/test-first when the logging provider throws while teardown logs a fault should still return the result`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_logging_provider_throws_during_teardown_should_still_return_result.cs`
