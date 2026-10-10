@@ -1,7 +1,7 @@
 ---
 id: 0024-ambient-scope-adoption
 title: "Ambient Scope Adoption"
-status: Proposed
+status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-10-09
@@ -19,7 +19,7 @@ Date: 2026-10-09
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 

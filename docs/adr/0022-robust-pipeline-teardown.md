@@ -1,7 +1,7 @@
 ---
 id: 0022-robust-pipeline-teardown
 title: "Robust Pipeline Teardown"
-status: Proposed
+status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-10-08
@@ -19,7 +19,7 @@ Date: 2026-10-08
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
