@@ -44,8 +44,8 @@ When a query finishes, Darker releases the handler and its decorators and then d
   - FR5a — the pipeline builder and the lifetime become asynchronously disposable, the async factories gain `ReleaseAsync`, and the async and stream paths await teardown. The sync path keeps synchronous teardown.
   - NFR Reliability, Diagnosability, Parity — the teardown part of each, through the mechanisms above.
   - NFR Performance — contributes: `ReleaseAsync` returns `ValueTask`, so the DI factory's no-op release allocates nothing.
-  - Partial builds — the pipeline builder records each decorator as it is created, so a build that fails part-way still releases the decorators it already created. No tagged requirement names this case, but FR1's "every decorator" depends on it.
-  - Release through the creating factory — the pipeline builder releases each component through the factory that created it. Today the async path creates the handler through the async factory but releases it through the sync factory.
+  - Partial builds (teardown acceptance criteria) — the pipeline builder records each decorator as it is created, so a build that fails part-way still releases the decorators it already created. FR1's "every decorator" depends on it.
+  - Release through the creating factory (teardown acceptance criteria) — the pipeline builder releases each component through the factory that created it. Today the async path creates the handler through the async factory but releases it through the sync factory.
   - FR25 — contributes: the `IAmALifetime` and async factory interface changes are breaking changes for the release notes.
 - **Out of scope**
   - Where the per-query scope comes from — ADR 0023 gives the lifetime a scope handle obtained from the handler factory (FR6–FR12).
@@ -71,9 +71,9 @@ This ADR speaks of "the per-query scope" as the lifetime owns it today. ADR 0023
 
 | Situation | What the caller sees today | What is left undisposed today | After this ADR |
 | --- | --- | --- | --- |
-| Query succeeds, the handler's `Dispose` throws (Simple factory) | the `Dispose` exception, not the result | every decorator, and the per-query scope | the result, with the fault logged at Error |
+| Query succeeds, the handler's `Dispose` throws (Simple factory) | the `Dispose` exception, not the result | every decorator, and the lifetime's tracked items | the result, with the fault logged at Error |
 | Handler throws, then a release throws | the release exception, the handler's exception is lost | the remaining decorators, and the per-query scope | the handler's original exception |
-| Query succeeds, a Scoped service's `Dispose` throws inside the per-query scope (DI factory) | the `Dispose` exception, not the result | the lifetime's other tracked items | the result, with the fault logged at Error |
+| Query succeeds, a Scoped service's `Dispose` throws inside the per-query scope (DI factory) | the `Dispose` exception, not the result | the services in that scope that the container had not yet disposed | the result, with the fault logged at Error. The services the container had not reached stay undisposed, because the container does not isolate faults inside one scope |
 | Async or stream path, a Scoped service implements only `IAsyncDisposable` | an `InvalidOperationException` from the DI container's synchronous scope disposal | that service, and possibly others in the same scope | the result, with `DisposeAsync` awaited |
 | A decorator's creation or initialisation throws part-way through the build | the build exception (correct) | the decorators created before the failure | the build exception, with every created decorator released |
 | Async path with distinct sync and async handler factories | correct | nothing, but the sync factory releases a handler the async factory created | the async factory releases its own handler |
@@ -140,13 +140,14 @@ sequenceDiagram
 
 | # | During teardown | Teardown does | Diagnostic | Caller sees |
 | --- | --- | --- | --- | --- |
-| 1 | No component was created (the build failed first) | skips the releases, disposes the lifetime | none | the build exception |
+| 1 | No component was created (creating the handler failed) | skips the releases, disposes the lifetime | none | the build exception |
 | 2 | A release throws or faults | continues with the next release | Error, with the component type | the result or the handler's exception |
 | 3 | Every release throws | disposes the lifetime | one Error per fault | the result or the handler's exception |
 | 4 | A tracked item's disposal throws or faults | continues with the next tracked item | Error, with the item type | the result or the handler's exception |
 | 5 | Teardown runs a second time on the same lifetime | does nothing | none | unchanged |
 | 6 | The async path holds a tracked item that implements `IAsyncDisposable` | awaits `DisposeAsync` | none | the result or the handler's exception |
 | 7 | The sync path holds a tracked item that implements only `IAsyncDisposable` | the item's container throws, teardown continues | Error, with the item type | the result or the handler's exception |
+| 8 | The build failed after the handler was created, for example in a decorator's creation or initialisation | releases the handler and each decorator created so far, then disposes the lifetime | Error, per release fault | the build exception |
 
 The load-bearing invariants read directly off the diagram and the table:
 
@@ -155,14 +156,16 @@ The load-bearing invariants read directly off the diagram and the table:
 - Neither `Dispose` nor `DisposeAsync` on the pipeline builder or the lifetime ever throws or faults. The `using` or `finally` that runs them therefore cannot replace what the pipeline produced.
 - The async and stream paths await every asynchronous release and disposal. The sync path never blocks on one.
 - Teardown takes no cancellation token. A cancelled query is still torn down completely.
-- Each component is released through the factory that created it.
+- Each component is released through the factory that created it, and a build that fails part-way releases the components it already created (row 8).
+- Darker's fault boundaries stop at the scope. Disposing the per-query scope is one step. How the container disposes the services inside that scope, and what it does when one of them throws, is the container's: Microsoft DI stops at the first fault, so services it has not reached stay undisposed.
 
 Requirements satisfied by these invariants:
 
 - FR1, FR2, FR3 — the fault boundaries and the lifetime-last order.
 - FR4 — rows 4 and 5.
 - FR5, FR5a — one rule set, run synchronously or awaited.
-- Acceptance criteria for teardown — rows 2, 3 and 6, on each path.
+- NFR Reliability — the lifetime-last order, within the limit the last invariant states.
+- Acceptance criteria for teardown — rows 2, 3 and 6 on each path; row 4 for a Scoped service whose `Dispose` throws; row 8 for partial builds; the sixth invariant for release through the creating factory.
 
 ### Where the pieces live
 
@@ -253,7 +256,7 @@ public interface IQueryHandlerDecoratorFactoryAsync
 
 | Member | Input | Output | Error conditions |
 | --- | --- | --- | --- |
-| `ReleaseAsync` (handler) | the handler, possibly null after a failed build; the lifetime | `ValueTask` | an implementation may throw or fault. The pipeline builder contains and logs the fault. Must tolerate a null handler |
+| `ReleaseAsync` (handler) | the handler, never null; the lifetime | `ValueTask` | an implementation may throw or fault. The pipeline builder contains and logs the fault. The pipeline builder calls it only for a handler it created (row 1) |
 | `ReleaseAsync<T>` (decorator) | the decorator; the lifetime | `ValueTask` | as above |
 
 `ReleaseAsync` replaces `Release` on the two async interfaces. The Simple factories await `DisposeAsync` on a component that implements `IAsyncDisposable`, and otherwise call `Dispose`. The DI factory returns a completed `ValueTask` and does nothing, because the per-query scope owns Scoped and Transient disposal. ADR 0023 adds `CreatePipelineScope` to the two handler factory interfaces; it does not change `ReleaseAsync`.
@@ -317,8 +320,8 @@ Teardown cannot know which exceptions a user's `Dispose` raises. A filtered catc
 Each behavioural step starts with a failing test, through `/test-first`. Tests use real registries, `ServiceCollection`-built providers and the Simple factories, and follow the `When_..._should_...` naming of `test/Paramore.Darker.Core.Tests` and `test/Paramore.Darker.Extensions.Tests`.
 
 1. **Structural.** In `src/Paramore.Darker/PipelineBuilder.cs:424-460`, extract the handler release and each decorator-list release from `Dispose` into private methods, with no change in behaviour. In `src/Paramore.Darker/QueryLifetimeScope.cs:49-60`, extract the loop body into a private method. The full suite stays green.
-2. **Behavioural — lifetime isolation (FR4).** `QueryLifetimeScope.Dispose` wraps each tracked item's `Dispose` in its own try/catch, logs at Error with the item's type through a static `ApplicationLogging.CreateLogger<QueryLifetimeScope>()` logger, and keeps the existing disposed flag. Tests: a throwing tracked item does not stop the others, and a second `Dispose` does nothing.
-3. **Behavioural — sync teardown (FR1–FR3 on `Execute`).** `PipelineBuilder.Dispose` wraps each release in its own try/catch and logs at Error with `component.GetType()`. The lifetime's disposal moves outside every release's try/catch, as the final statement. The log call sits inside the catch, and a failure of the log call is itself caught, so a throwing logging provider cannot break the guarantee. Tests: a handler whose `Dispose` throws still sees its decorators released and its Scoped dependency disposed; a throwing handler plus a throwing release surfaces the handler's exception; a successful query plus a throwing release returns its result.
+2. **Behavioural — lifetime isolation (FR4).** `QueryLifetimeScope.Dispose` wraps each tracked item's `Dispose` in its own try/catch, logs at Error with the item's type through a static `ApplicationLogging.CreateLogger<QueryLifetimeScope>()` logger, and keeps the existing disposed flag. Tests drive the lifetime through `IQueryProcessor`, with a test handler factory that attaches recording disposables through the public `IAmALifetime.Add`: a throwing tracked item does not stop the others, and a second disposal does nothing. `QueryLifetimeScope` is internal and is not tested directly.
+3. **Behavioural — sync teardown (FR1–FR3 on `Execute`).** `PipelineBuilder.Dispose` wraps each release in its own try/catch and logs at Error with `component.GetType()`. The lifetime's disposal moves outside every release's try/catch, as the final statement. The log call sits inside the catch, and a failure of the log call is itself caught, so a throwing logging provider cannot break the guarantee. Tests with the Simple factories: a handler whose `Dispose` throws still sees its decorators released and the lifetime disposed, observed through a recording disposable that the test's handler factory attaches with `lifetime.Add` (ADR 0023 step 4 moves this observation to a recording handle); a throwing handler plus a throwing release surfaces the handler's exception; a successful query plus a throwing release returns its result. Test with the DI factory: a Scoped service whose `Dispose` throws inside the per-query scope still lets the query return its result, and the fault is logged at Error.
 4. **Behavioural — partial builds.** In `GetDecorators` (`PipelineBuilder.cs:241-271`), `GetDecoratorsAsync` (`:388-422`) and `GetStreamDecorators` (`:326-365`), assign the decorator list to its field before the loop and add each decorator immediately after `Create`, before `InitializeFromAttributeParams`. Test: a decorator whose initialisation throws leaves earlier decorators released.
 5. **Structural — add the async seams.** Add `IAsyncDisposable` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Add `ReleaseAsync` beside `Release` on `IQueryHandlerFactoryAsync` (`src/Paramore.Darker/IQueryHandlerFactoryAsync.cs:8`) and `IQueryHandlerDecoratorFactoryAsync` (`src/Paramore.Darker/IQueryHandlerDecoratorFactoryAsync.cs:8`). Implement both in `SimpleHandlerFactory` (`:49-53`), `SimpleHandlerDecoratorFactory` (`:50-54`), `ServiceProviderComponentFactory` (`:54-69`), and the test doubles `RecordingHandlerFactory` and `RecordingDecoratorFactory`. Nothing calls the new members yet, so behaviour is unchanged.
 6. **Behavioural — async lifetime.** Implement `QueryLifetimeScope.DisposeAsync` with the step 2 rules, awaiting `DisposeAsync` where an item implements `IAsyncDisposable`. In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderLifetimeScope.cs:36-42`, create the scope with `CreateAsyncScope()` and add `DisposeAsync`.
@@ -332,7 +335,7 @@ Each behavioural step starts with a failing test, through `/test-first`. Tests u
 
 - A faulty `Dispose` no longer turns a successful query into a failed one (FR3).
 - The caller always sees the handler's or decorator's own exception, so diagnosis starts at the right code (FR3).
-- The per-query scope is disposed on every teardown, so a teardown fault no longer leaks a `DbContext` (FR2, NFR Reliability).
+- The per-query scope is disposed on every teardown, whatever the releases did, so a release fault no longer leaks a `DbContext` (FR2, NFR Reliability). A fault inside the scope's own disposal stays the container's to contain (see *Negative*).
 - Each teardown fault is logged at Error with the type that raised it (NFR Diagnosability).
 - The async and stream paths dispose `IAsyncDisposable`-only services without blocking a thread (FR5a).
 - The three query paths share one rule set (FR5, NFR Parity).
@@ -343,7 +346,7 @@ Each behavioural step starts with a failing test, through `/test-first`. Tests u
 
 - Custom implementations of `IQueryHandlerFactoryAsync` and `IQueryHandlerDecoratorFactoryAsync` must replace `Release` with `ReleaseAsync`, and custom `IAmALifetime` implementations must add `DisposeAsync`. Both are V5 breaking changes.
 - Teardown faults appear only in logs. They are not on the query span, and a host with no logging provider never sees them (`src/Paramore.Darker/Logging/ApplicationLogging.cs:7`).
-- Darker isolates faults between the items its lifetime tracks, but not inside one DI scope. When one service's `Dispose` throws, the container may leave the rest of that scope's services undisposed.
+- Darker isolates its own teardown steps, but not the container's disposal of the services inside one scope. When one Scoped or Transient service's `Dispose` throws, Microsoft DI stops disposing that scope. Services it had not reached stay undisposed, possibly including a `DbContext` that the throwing handler depends on, because the container disposes in reverse creation order. The fault is logged and the result still returns.
 - The sync path still cannot dispose a service that implements only `IAsyncDisposable`. The container throws, teardown logs the fault, and the service is not disposed.
 - A user with distinct sync and async handler factories sees the handler's release move from the sync factory to the async factory on `ExecuteAsync`.
 - The async paths pay for an extra state machine at teardown. `ValueTask` keeps the no-op DI release free of allocation.

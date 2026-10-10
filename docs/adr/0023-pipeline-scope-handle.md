@@ -41,8 +41,8 @@ When a query uses Scoped or Transient handlers, Darker resolves the handler and 
   - FR7: the two handler factory interfaces gain `CreatePipelineScope()`. The DI factory returns null for Singleton handlers and a new owned scope for Scoped and Transient handlers.
   - FR8: `IAmALifetime` gains `PipelineScope`, which is set by its constructor and never changes. The pipeline builder asks the handler factory for the scope before it creates the lifetime. Every factory reads the scope from the lifetime.
   - FR9: the DI factory's `ConditionalWeakTable` goes. The factory keeps only its constructor arguments.
-  - FR10: the DI factory throws `ConfigurationException` when it must create a Scoped or Transient component and the lifetime carries no recognised scope. It never falls back to the root provider.
-  - FR11: the handler and every decorator read the same handle from the same lifetime. Each query gets its own lifetime and its own handle.
+  - FR10: the DI factory throws `ConfigurationException` when it must create a Scoped or Transient component and the lifetime carries no recognised scope. It never falls back to the root provider. The guard sits inside the internal factory, and `AddDarker` always supplies a scope the factory recognises, so the guard is not reachable through the public surface.
+  - FR11 (owned scopes): the handler and every decorator read the same handle from the same lifetime. Each query gets its own lifetime, and each owned scope belongs to exactly one lifetime. ADR 0024 covers FR11 under adoption, including per-query decorator instances.
   - FR12: `SimpleHandlerFactory` returns null from `CreatePipelineScope()`. `SimpleHandlerDecoratorFactory` ignores the handle.
   - NFR Concurrency: the factory holds no per-query state, and each owned scope belongs to exactly one lifetime.
   - NFR Performance (contributes): on the Singleton-handler path, `CreatePipelineScope()` returns null and allocates nothing. The lifetime also stops allocating its tracking list.
@@ -97,7 +97,7 @@ The mechanism is short. `PipelineBuilder` creates an empty `QueryLifetimeScope` 
 - Core's public abstractions name no container type (ADR 0004), so a scope in core can be a handle, but not a service provider.
 - Handlers and decorators are created through different factory roles, yet must share one scope (ADR 0014; FR11).
 - The pipeline builder chooses the handler factory once per build and calls it before any decorator factory (`src/Paramore.Darker/PipelineBuilder.cs:67`).
-- Decorators are registered with the handler lifetime, so one lifetime decision covers the whole pipeline (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs:21`).
+- Decorators need a pipeline scope exactly when the handler does: they are Singletons under a Singleton handler lifetime and resolve from the pipeline scope otherwise, so one lifetime decision covers the whole pipeline (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs:21`; ADR 0024 makes them Transient under a Scoped or Transient handler lifetime).
 - Resolving a Scoped service from the root provider is the defect ADR 0014 fixed. A silent fallback would bring it back (FR10).
 - Public factories are user-replaceable, and the Simple factories have no container (ADR 0004, ADR 0009; FR12).
 - `Paramore.Darker` targets `netstandard2.0`, which has no default interface methods, so a new interface member breaks implementers. V5 permits breaking changes.
@@ -174,7 +174,7 @@ The load-bearing invariants read directly off the diagram and the tables:
 - The pipeline scope exists before the first `Create`, and it does not change for the life of the query.
 - Exactly one factory per query creates the pipeline scope, and it is the factory that creates the handler.
 - No code can throw between `CreatePipelineScope()` returning and the lifetime holding the handle, so a handle can never escape ownership.
-- Every component of one query reads the same handle from the same lifetime. Two queries never share a lifetime, so they never share a scope.
+- Every component of one query reads the same handle from the same lifetime. Two queries never share a lifetime, so they never share an owned scope.
 - A factory never creates a scope inside `Create`. A container-backed factory that finds no recognised scope fails. It never improvises one.
 - The lifetime is the only object that disposes the pipeline scope, and it does so under ADR 0022's rules: last, in its own fault boundary, never throwing, awaited on the async and stream paths, and at most once.
 
@@ -183,10 +183,10 @@ Requirements satisfied by these invariants:
 - FR7, FR8: the first two invariants and the path table.
 - FR9: no factory creates or remembers a scope inside `Create`.
 - FR10: rows 3 and 4.
-- FR11, NFR Concurrency: the fourth invariant.
+- FR11 for owned scopes, NFR Concurrency for owned scopes: the fourth invariant. ADR 0024 covers the borrowed case.
 - FR12: the Simple factories return null and ignore the handle (row 1 has no Simple equivalent, because Simple factories never resolve from a container).
 - NFR Parity: the path table.
-- Pipeline scope handle acceptance criteria: the fourth invariant, and rows 3 and 4.
+- Pipeline scope handle acceptance criteria: the fourth invariant for shared and isolated instances; the fifth invariant for a factory with no per-query state; row 2 and ADR 0022's teardown for the criterion that nothing resolves from the root.
 
 ### Where the pieces live
 
@@ -354,7 +354,7 @@ A handle with no resolution members keeps core container-agnostic (FR6). It also
 
 #### Why only the handler factory creates the scope?
 
-A query has one pipeline scope, so one role must supply it. The handler factory is the factory every query uses exactly once, and the pipeline builder calls it before any decorator factory. In Darker's DI wiring one instance plays all four roles, and decorators are registered with the handler lifetime. The handler factory's decision therefore already covers the decorators. If decorator factories could also supply a scope, the pipeline builder would need a rule for which factory wins, and a reader could not tell from the interface which one Darker asks.
+A query has one pipeline scope, so one role must supply it. The handler factory is the factory every query uses exactly once, and the pipeline builder calls it before any decorator factory. In Darker's DI wiring one instance plays all four roles, and decorators need a pipeline scope exactly when the handler does (ADR 0024 sets their registration lifetime). The handler factory's decision therefore already covers the decorators. If decorator factories could also supply a scope, the pipeline builder would need a rule for which factory wins, and a reader could not tell from the interface which one Darker asks.
 
 The consequence is a fail-fast mix. Suppose a handler factory returns null, and a container-backed decorator factory then needs a Scoped or Transient decorator. The decorator factory finds no recognised scope and throws `ConfigurationException` (FR10). Darker's own types cannot form this mix: the DI factory is internal, and `AddDarker` wires it into every slot. The rule therefore binds user-written container-backed factories that follow the same contract.
 
@@ -381,17 +381,17 @@ This ADR builds on ADR 0022, so ADR 0022 is implemented first. Line numbers refe
 1. **Structural: add the handle.** Add `src/Paramore.Darker/IAmAScope.cs`. Make `ServiceProviderLifetimeScope` (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderLifetimeScope.cs:36`) implement `IAmAScope`. After ADR 0022 it is already `IDisposable` and `IAsyncDisposable`. Nothing uses the interface yet.
 2. **Structural: add `CreatePipelineScope`.** Add the member to `IQueryHandlerFactory` (`src/Paramore.Darker/IQueryHandlerFactory.cs:5`) and `IQueryHandlerFactoryAsync` (`src/Paramore.Darker/IQueryHandlerFactoryAsync.cs:5`). Return null from `SimpleHandlerFactory` (`src/Paramore.Darker/SimpleHandlerFactory.cs:32`), `FactoryFuncWrapper` (`src/Paramore.Darker/Builder/FactoryFuncWrapper.cs:25`), `RecordingHandlerFactory` (`test/Paramore.Darker.Core.Tests/TestDoubles/RecordingHandlerFactory.cs:16`) and, for now, `ServiceProviderComponentFactory`. The pipeline builder does not call the member yet.
 3. **Structural: choose the handler factory once.** In `PipelineBuilder`, extract the factory choice that `ResolveHandlerAsync` (`src/Paramore.Darker/PipelineBuilder.cs:220`) and `ResolveStreamHandler` (`:378-380`) make inline into one decision taken at the start of each build. ADR 0022 step 7 already records the creating factory for release. Reuse that record. Behaviour is unchanged.
-4. **Behavioural: the lifetime carries the handle.** Add `PipelineScope` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Give `QueryLifetimeScope` (`src/Paramore.Darker/QueryLifetimeScope.cs:34`) a constructor that takes the handle. Dispose the handle under ADR 0022's rules after any tracked items. In `Build` (`PipelineBuilder.cs:62`), `BuildAsync` (`:123`) and `BuildStream` (`:277`), create the lifetime as `new QueryLifetimeScope(chosenFactory.CreatePipelineScope())`, in one expression. Tests in `test/Paramore.Darker.Core.Tests`, with a recording handler factory that returns a recording `IAmAScope`, on each path:
+4. **Behavioural: the lifetime carries the handle.** Add `PipelineScope` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Give `QueryLifetimeScope` (`src/Paramore.Darker/QueryLifetimeScope.cs:34`) a constructor that takes the handle. Dispose the handle under ADR 0022's rules after any tracked items. In `Build` (`PipelineBuilder.cs:62`), `BuildAsync` (`:123`) and `BuildStream` (`:277`), create the lifetime as `new QueryLifetimeScope(chosenFactory.CreatePipelineScope())`, in one expression. The ADR 0022 step 2 and step 3 tests that observe disposal through `lifetime.Add` move to a recording handle here: the step 3 tests observe the handle's disposal, and the step 2 multi-item test becomes a single-handle test, because the lifetime now holds one item. Tests in `test/Paramore.Darker.Core.Tests`, with a recording handler factory that returns a recording `IAmAScope`, on each path:
    - the handler factory's and decorator factory's `Create` both receive a lifetime whose `PipelineScope` is that handle;
    - the handle is disposed once, after every release;
    - a throwing handle `Dispose` is logged and the result still returns;
    - on `BuildAsync` with no async registry, the sync factory is asked for the handle.
-5. **Behavioural: the DI factory creates and recognises the scope.** In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderComponentFactory.cs`, implement `CreatePipelineScope` by the contract table. Replace `Resolve` (`:71-78`) with a lookup of `lifetime.PipelineScope` through one private recognition method that throws `ConfigurationException` for rows 3 and 4. Delete the table (`:43-47`) and `CreateScope` (`:80-85`). Tests:
-   - rows 1–4 against the factory directly;
-   - with Singleton, `CreatePipelineScope` returns null.
+5. **Behavioural: the DI factory creates and recognises the scope.** In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderComponentFactory.cs`, implement `CreatePipelineScope` by the contract table. Replace `Resolve` (`:71-78`) with a lookup of `lifetime.PipelineScope` through one private recognition method that throws `ConfigurationException` for rows 3 and 4. Delete the table (`:43-47`) and `CreateScope` (`:80-85`). Tests, through `AddDarker` and `IQueryProcessor` only:
+   - a Singleton handler lifetime resolves the handler and Darker does not dispose it (row 1);
+   - with a Scoped or Transient handler lifetime, a disposable handler is disposed at the end of each query, so nothing was resolved from the root (row 2).
 
-   The factory is internal, so add `InternalsVisibleTo` for `Paramore.Darker.Extensions.Tests` to the DI project, and sign the test project with `Darker.snk` as `test/Paramore.Darker.Extensions.Diagnostics.Tests` does. The existing lifetime tests in `test/Paramore.Darker.Extensions.Tests` are the regression guard for FR11 and NFR Concurrency, for example the scoped-sharing and concurrent-isolation tests. They must pass unchanged.
-6. **Structural: remove `Add`.** Delete `Add` from `IAmALifetime` (`IAmALifetime.cs:35-40`) and `QueryLifetimeScope` (`QueryLifetimeScope.cs:36`, `:39-46`), together with the tracked list. Nothing calls `Add` after step 5. The suite stays green.
+   Rows 3 and 4 have no direct test. The factory is internal, `AddDarker` always supplies a scope it recognises, and `.agent_instructions/testing.md` forbids `InternalsVisibleTo` for testing. The rows are a guard against a future wiring defect, kept by code review. The existing lifetime tests in `test/Paramore.Darker.Extensions.Tests` are the regression guard for FR11 and NFR Concurrency, for example the scoped-sharing and concurrent-isolation tests. They must pass unchanged.
+6. **Structural: remove `Add`.** Delete `Add` from `IAmALifetime` (`IAmALifetime.cs:35-40`) and `QueryLifetimeScope` (`QueryLifetimeScope.cs:36`, `:39-46`), together with the tracked list. After steps 4 and 5, neither production code nor a test calls `Add`. The suite stays green.
 7. **Documentation.** Update the XML documentation on `IAmALifetime`, `IAmAScope` and the handler factory interfaces, and the summary on `ServiceProviderComponentFactory` (`:30-35`). Record the breaking changes from steps 2 and 6 in `release_notes.md`.
 
 ## Consequences
@@ -411,8 +411,8 @@ This ADR builds on ADR 0022, so ADR 0022 is implemented first. Line numbers refe
 - `IAmALifetime.Add` disappears. A custom factory that attached its own disposables to the lifetime must now return them inside a single handle from `CreatePipelineScope` (FR25).
 - The lifetime holds at most one disposable. A factory that needs several per-query resources must compose them behind one handle.
 - On the Scoped and Transient paths, a query whose handler lookup fails still creates and disposes a scope (`src/Paramore.Darker/PipelineBuilder.cs:204`).
-- A user-written handler factory that returns null, paired with a container-backed decorator factory, now throws `ConfigurationException` instead of resolving.
-- Testing the internal DI factory directly needs `InternalsVisibleTo` and a signed test project.
+- The contract for user-written container-backed factories changes: a decorator factory must resolve from `lifetime.PipelineScope`, which is null when the handler factory creates no scope, and should throw `ConfigurationException` rather than create a scope of its own.
+- The DI factory's rows 3 and 4 have no direct test. `AddDarker` never reaches them, and testing the internal factory directly would need `InternalsVisibleTo`, which the project's testing rules forbid. A regression in the guard itself goes undetected by tests and is kept by code review.
 
 ### Risks and Mitigations
 
@@ -437,7 +437,7 @@ This ADR builds on ADR 0022, so ADR 0022 is implemented first. Line numbers refe
 
 - Requirements: [specs/015-di_lifetime_conformance/requirements.md](../../specs/015-di_lifetime_conformance/requirements.md): FR6, FR7, FR8, FR9, FR10, FR11, FR12; the pipeline scope handle acceptance criteria; NFR Concurrency, Parity; contributes to FR22, FR25 and NFR Performance.
 - Related ADRs:
-  - [0014-factory-component-lifetime](0014-factory-component-lifetime.md): amended, not superseded. This ADR replaces how the per-query scope is located: Decision 1's `Add(IDisposable)` surface, and Decision 3's lazy attachment of the child scope through `IAmALifetime.Add`. It also adds a member to Decision 2's handler factory interfaces. The supersession of ADR 0014's scope-ownership account belongs to ADR 0024.
+  - [0014-factory-component-lifetime](0014-factory-component-lifetime.md): amended, not superseded. This ADR replaces how the per-query scope is located: Decision 1's `Add(IDisposable)` surface, and Decision 3's lazy attachment of the child scope through `IAmALifetime.Add`. It also adds a member to Decision 2's handler factory interfaces, and makes Decision 4's claim that handler and decorators share one scope "independent of how many factory objects exist" true by moving the scope onto the lifetime. The supersession of ADR 0014's scope-ownership account belongs to ADR 0024.
   - [0022-robust-pipeline-teardown](0022-robust-pipeline-teardown.md): sibling. This ADR amends its `IAmALifetime` contract by removing `Add`. Its teardown rules apply unchanged to the pipeline scope.
   - 0024 (ambient scope adoption): sibling. It widens scope recognition and adds borrowed scopes.
   - [0019-streaming-query-pipeline](0019-streaming-query-pipeline.md): the stream path asks its handler factory for the scope on the first `MoveNextAsync`.

@@ -5,7 +5,7 @@ status: Proposed
 author:
   - "Ian Cooper"
 created: 2026-10-09
-summary: "When the affinity is JoinAmbient and HandlerLifetime is Scoped, the DI factory's CreatePipelineScope() adopts the ambient scope offered by a registered IAmAScopeProvider, after a probe, wrapping it in a non-owning handle so Darker never disposes it; otherwise it falls back to an owned scope with a once-per-container Warning. A new Paramore.Darker.Extensions.AspNetCore package adds AddDarkerRequestScope(), which offers HttpContext.RequestServices; the affinity registered with the provider overrides DarkerOptions.DefaultScopeAffinity (default AlwaysNew)."
+summary: "When the affinity is JoinAmbient (default AlwaysNew) and HandlerLifetime is Scoped, the DI factory's CreatePipelineScope() adopts a probed ambient scope from a registered IAmAScopeProvider in a non-owning handle Darker never disposes, and otherwise creates an owned scope, warning once per container only on misconfiguration; decorators become Transient under a Scoped or Transient handler lifetime, so no two queries share one. A new Paramore.Darker.Extensions.AspNetCore package adds AddDarkerRequestScope(), which offers HttpContext.RequestServices."
 tags:
   - "lifetime"
   - "di"
@@ -42,11 +42,13 @@ In an ASP.NET Core application, the controller and the Brighter command handlers
 - **Parent requirement**: [specs/015-di_lifetime_conformance/requirements.md](../../specs/015-di_lifetime_conformance/requirements.md), issue #380 under #377.
 - **In scope**
   - FR13: core gains `IAmAScopeProvider` with `GetAmbient(ScopeAffinity)`, and the `ScopeAffinity` enum with `AlwaysNew` (the default value) and `JoinAmbient`.
-  - FR14: `DarkerOptions` gains `DefaultScopeAffinity`, default `AlwaysNew`. With `AlwaysNew`, or with no scope provider registered, the DI factory does not ask any provider and creates an owned scope as today.
-  - FR15: the DI factory's `CreatePipelineScope()` follows the decision ladder. It adopts only for `JoinAmbient`, a Scoped handler lifetime, an offered `IAmAServiceProviderScope` and a passing probe. Every other case falls back to an owned scope, and a fallback that signals a misconfiguration logs one Warning per reason per container.
+  - FR14: `DarkerOptions` gains `DefaultScopeAffinity`, default `AlwaysNew`. With `AlwaysNew`, or with no scope provider registered, the DI factory does not ask any provider and behaves as today: an owned scope for Scoped and Transient handlers, none for Singleton.
+  - FR15: the DI factory's `CreatePipelineScope()` follows the decision ladder. It adopts only for `JoinAmbient`, a Scoped handler lifetime, an offered `IAmAServiceProviderScope` and a passing probe. Every other case keeps the non-adopting behaviour: an owned scope, or none for a Singleton handler lifetime (row 1). A fallback caused by misconfiguration logs one Warning per reason per container. A provider that offers nothing logs nothing, because that is the normal answer outside a request.
   - FR16: a scope provider that throws surfaces as `AmbientScopeSourceException`, which wraps the original exception.
-  - FR17: the DI factory wraps every adopted scope in an internal non-owning handle whose disposal does nothing. Declined scopes are dropped, not disposed. Resolution from a borrowed scope that its owner has already disposed throws `ConfigurationException`, which wraps the `ObjectDisposedException`.
+  - FR17: the DI factory wraps every adopted scope in an internal non-owning handle whose disposal does nothing. Declined scopes are dropped, not disposed. An ambient scope already disposed when the pipeline is built fails the probe and is declined with a Warning (row 11). Disposal of a borrowed scope after the probe is its owner's responsibility, and surfaces unwrapped as `ObjectDisposedException`: from the container while the pipeline is built, or from the user's own services after it.
   - FR18: decorators resolve from the same pipeline scope as the handler, owned or borrowed. This follows from ADR 0023, because every component reads the one handle on the lifetime.
+  - FR11 (adoption part), NFR Concurrency: the DI decorator registry registers decorators Transient when the handler lifetime is Scoped or Transient, so each query creates its own decorator instances, even when several queries share one borrowed scope. Under a Singleton handler lifetime decorators stay Singletons (see *Out of scope*).
+  - API that no tagged requirement names. `AddDarkerScopeProvider<TProvider>(affinity)` is the public registration for any scope provider: `AddDarkerRequestScope` needs it to register the affinity, and FR19's non-ASP.NET providers need it as their opt-in (*Why `AddDarkerScopeProvider` in the DI package?*). The DI package's `Description` still reads "ASP.NET Core integration for Darker", which would mislead beside a real ASP.NET Core package, so step 2 corrects it.
   - FR19: the seam names no ASP.NET Core type. Any provider registered through `AddDarkerScopeProvider<TProvider>()`, such as an `AsyncLocal`-backed one, is adopted by the same ladder.
   - FR20: the new package `Paramore.Darker.Extensions.AspNetCore` provides `AddDarkerRequestScope(ScopeAffinity affinity = ScopeAffinity.JoinAmbient)`. It registers `IHttpContextAccessor`, an HTTP-context scope provider and the affinity, and adds no middleware.
   - FR21: the scope provider is a singleton that reads the ambient `HttpContext` through `IHttpContextAccessor` on each query, so adoption does not depend on the provider that built the processor. It works with Singleton and Scoped `QueryProcessorLifetime`.
@@ -55,7 +57,7 @@ In an ASP.NET Core application, the controller and the Brighter command handlers
   - NFR Diagnosability (adoption part): each fallback Warning names its reason.
   - FR23 (contributes): this ADR states the corrected guidance in *The corrected guidance*. The spec's documentation tasks own the edits to `CLAUDE.md` and the README.
   - FR24 (contributes): the new package must be listed in `CLAUDE.md`, `CONTRIBUTING.md` and `.agent_instructions/project_structure.md`. The documentation tasks own the edits.
-  - FR25 (contributes): the new package, the new option and the corrected guidance go into `release_notes.md`. This ADR adds no breaking change.
+  - FR25 (contributes): the new package, the new option, the new public types, the decorator registration change, the sharing of Scoped handler instances under `JoinAmbient` and the corrected guidance go into `release_notes.md`. This ADR changes no existing public signature. The decorator registration change is behavioural.
 - **Out of scope**
   - Teardown order, fault boundaries, the never-throw rule and asynchronous disposal: ADR 0022.
   - The scope handle, `CreatePipelineScope()` and the shape of the lifetime and factory interfaces: ADR 0023.
@@ -66,6 +68,7 @@ In an ASP.NET Core application, the controller and the Brighter command handlers
   - Containers other than Microsoft.Extensions.DependencyInjection: ADR 0006.
   - ASP.NET Core middleware for the request scope: excluded by FR20.
   - A per-query or per-handler affinity: not required. The affinity is per processor, like `HandlerLifetime`.
+  - Decorator instances under a Singleton handler lifetime: they stay Singletons, shared by every query with the same result type, as today. A separate issue.
 
 ### Where this ADR sits
 
@@ -83,7 +86,7 @@ ADR 0023 makes `CreatePipelineScope()` the one point per query where the pipelin
 
 | Configuration | Scope the query handler resolves from | Same `DbContext` as the controller? | Who disposes it |
 | --- | --- | --- | --- |
-| Default: `QueryProcessorLifetime = Singleton`, any handler lifetime | a new scope from the root | no | Darker, after the query |
+| Default: `QueryProcessorLifetime = Singleton`, Scoped or Transient handler lifetime | a new scope from the root | no | Darker, after the query |
 | `QueryProcessorLifetime = Scoped` (the documented EF Core advice) | a new scope from the request scope's `IServiceScopeFactory`, which is a sibling of the request scope, not a child | no | Darker, after the query |
 | After this ADR: `AddDarkerRequestScope()` and `HandlerLifetime = Scoped` | the request scope itself | yes | ASP.NET Core, at the end of the request |
 | After this ADR: `AddDarkerRequestScope()` and `HandlerLifetime = Transient` | a new scope from the captured provider, as today | no | Darker, after the query |
@@ -102,11 +105,11 @@ The mechanism is Microsoft DI's scope model. `IServiceScopeFactory` is registere
 - Microsoft DI creates every scope as a child of the root, so Darker cannot create a scope that shares the request's Scoped instances (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderLifetimeScope.cs:38`).
 - The DI package targets `netstandard2.0` and must not depend on ASP.NET Core (ADR 0007, `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj:3`).
 - Core names no container type (ADR 0004), so the core seam can offer a scope handle but not a service provider.
-- The default handler lifetime is Transient, and ADR 0014 promises that Darker disposes Transient components after each query (`src/Paramore.Darker.Extensions.DependencyInjection/DarkerOptions.cs:9`).
-- Decorators are registered with the handler lifetime, so one adoption decision covers the whole pipeline (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs:21`).
+- The default handler lifetime is Transient, and ADR 0014 promises that Darker disposes Transient handlers after each query (`src/Paramore.Darker.Extensions.DependencyInjection/DarkerOptions.cs:9`).
+- Decorators resolve from the pipeline scope whenever the handler does, so one adoption decision covers the whole pipeline. They are registered with the handler lifetime and closed over `IQuery<TResult>`, not over the concrete query type, so a Scoped decorator is one instance for every query in a scope that has the same result type (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs:21`, `src/Paramore.Darker/PipelineBuilder.cs:253`).
 - `AddDarker` builds `DarkerOptions` eagerly inside its own call, so a later registration cannot write into those options (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionExtensions.cs:19-20`).
 - A scope provider is user-replaceable, so Darker cannot assume that the scope it offers has a harmless `Dispose`.
-- The pipeline sets per-query state on each handler and decorator instance, so a shared instance is unsafe under concurrency (`src/Paramore.Darker/PipelineBuilder.cs:70`).
+- The pipeline sets per-query state on each handler and decorator instance: `Context`, and a decorator's attribute parameters. A shared instance is therefore unsafe under concurrency (`src/Paramore.Darker/PipelineBuilder.cs:70`, `:260`, `:263`).
 - The stream path builds its pipeline on the first `MoveNextAsync`, which can run after the request has ended (ADR 0019, `src/Paramore.Darker/QueryProcessor.cs:160`).
 - Brighter users already call `AddBrighterRequestScope()`. Darker cannot share Brighter's types (requirements, Constraints), so the two libraries need parallel opt-ins.
 - ADR 0023 lets this ADR add borrowed scopes without reshaping the lifetime or the factory interfaces.
@@ -115,7 +118,7 @@ The mechanism is Microsoft DI's scope model. `IServiceScopeFactory` is registere
 
 **When the affinity is `JoinAmbient` and the handler lifetime is Scoped, the DI factory adopts the ambient scope that a registered scope provider offers, if the scope passes a probe, and wraps it in a handle that Darker never disposes; in every other case it creates and owns a scope as before.**
 
-The decision is made once per query, in the DI factory's `CreatePipelineScope()`. Core gains only the seam: a scope provider role, the affinity enum and an exception for a failing provider. The DI package gains the capability to resolve from an offered scope, the option, a registration method for any scope provider, and the adoption ladder. A new ASP.NET Core package supplies the provider that offers `HttpContext.RequestServices` and the one-call opt-in `AddDarkerRequestScope()`. Ownership follows creation: Darker disposes the scopes it creates and never disposes a scope it was offered.
+The decision is made once per query, in the DI factory's `CreatePipelineScope()`. Core gains only the seam: a scope provider role, the affinity enum and an exception for a failing provider. The DI package gains the capability to resolve from an offered scope, the option, a registration method for any scope provider, and the adoption ladder. A new ASP.NET Core package supplies the provider that offers `HttpContext.RequestServices` and the one-call opt-in `AddDarkerRequestScope()`. Ownership follows creation: Darker disposes the scopes it creates and never disposes a scope it was offered. Because one borrowed scope can serve many queries, the DI package registers decorators Transient under a Scoped or Transient handler lifetime, so queries that share a scope still never share a decorator.
 
 ### The mechanism, end to end
 
@@ -168,7 +171,32 @@ The DI factory evaluates these rows in order in `CreatePipelineScope()`. The fir
 | 11 | A probe resolution throws, for example `ObjectDisposedException` | owned scope. Declined | Warning, once per container, with the exception type |
 | 12 | Otherwise | borrowed scope: the offered scope, wrapped in a non-owning handle | none |
 
-Rows 1 to 4 depend only on the configuration, so the factory evaluates them once, when it is constructed, and logs their Warnings then. Only rows 5 to 12 run per query, and only when adoption is enabled. *Implementation Approach* step 4 gives the ordered code that implements this table.
+Rows 1 to 4 depend only on the configuration, so the factory evaluates them once, when it is constructed, and logs their Warnings then. Only rows 5 to 12 run per query, and only when adoption is enabled. *Implementation Approach* steps 4 to 8 give the ordered code that implements this table.
+
+The load-bearing invariants read directly off the diagram and the tables:
+
+- Darker disposes a scope only if it created that scope. Every adopted scope reaches the lifetime inside a handle whose disposal does nothing, whatever the offered scope's own `Dispose` does.
+- A declined scope is dropped without disposal.
+- Darker adopts only for a Scoped handler lifetime, so the per-query disposal of Transient handlers (ADR 0014) does not change.
+- Darker never resolves Scoped or Transient components from the root provider, either by adoption (row 9) or by fallback (ADR 0023).
+- With `AlwaysNew`, or with no provider, no provider code runs. A faulty provider cannot fail a query that did not ask to join an ambient scope.
+- The handler and every decorator of one query resolve from the same handle (ADR 0023), owned or borrowed.
+- No two queries share a decorator instance unless the handler lifetime is Singleton. Queries that share a borrowed scope share its Scoped services, including a Scoped handler instance of the same handler type, as every other consumer of that scope does.
+- Each fallback Warning is logged at most once per reason per container, and only a misconfiguration logs one.
+
+Requirements satisfied by these invariants:
+
+- FR11 (adoption part), NFR Concurrency: the seventh invariant.
+- FR13: rows 5 and 6 use `GetAmbient(ScopeAffinity)`.
+- FR14: rows 3 and 4, and *How the affinity is chosen*.
+- FR15: rows 1 to 12. Row 6 logs nothing because no ambient scope is not a misconfiguration.
+- FR16: row 5.
+- FR17: the first two invariants, and row 11 for a scope already disposed when the pipeline is built.
+- FR18: the sixth invariant.
+- FR19: rows 5 to 12 apply to any registered provider.
+- FR20, FR21: *Where the ambient scope is read*.
+- NFR Performance: rows 1 to 4 run once per factory, and the last invariant.
+- Ambient adoption acceptance criteria: row 12 (same instance, not disposed), rows 3 and 4 (no opt-in, or `AlwaysNew`), row 6 (outside a request, no Warning), *Where the ambient scope is read* (both processor lifetimes), FR19 (`AsyncLocal` provider), rows 1 and 2 (Transient or Singleton does not adopt, one Warning), row 11 (a disposed scope is declined), the seventh invariant (distinct decorator instances).
 
 #### How the affinity is chosen
 
@@ -188,42 +216,6 @@ The DI factory resolves `IAmAScopeProvider` once, when the processor is built, n
 
 On the stream path, the ambient scope is read on the first `MoveNextAsync`. ASP.NET Core enumerates a returned `IAsyncEnumerable` while it writes the response, so the request scope is still current. An enumeration that starts after the request has ended finds no `HttpContext`, and row 6 gives it an owned scope.
 
-The load-bearing invariants read directly off the diagram and the tables:
-
-- Darker disposes a scope only if it created that scope. Every adopted scope reaches the lifetime inside a handle whose disposal does nothing, whatever the offered scope's own `Dispose` does.
-- A declined scope is dropped without disposal.
-- Darker adopts only for a Scoped handler lifetime, so the per-query disposal of Transient components (ADR 0014) does not change.
-- Darker never resolves Scoped or Transient components from the root provider, either by adoption (row 9) or by fallback (ADR 0023).
-- With `AlwaysNew`, or with no provider, no provider code runs. A faulty provider cannot fail a query that did not ask to join an ambient scope.
-- The handler and every decorator of one query resolve from the same handle (ADR 0023), owned or borrowed.
-- Each fallback Warning is logged at most once per reason per container.
-
-Requirements satisfied by these invariants:
-
-- FR13: rows 5 and 6 use `GetAmbient(ScopeAffinity)`.
-- FR14: rows 3 and 4, and *How the affinity is chosen*.
-- FR15: rows 1 to 12.
-- FR16: row 5.
-- FR17: the first two invariants, and the `ConfigurationException` in *Key Components*.
-- FR18: the sixth invariant.
-- FR19: rows 5 to 12 apply to any registered provider.
-- FR20, FR21: *Where the ambient scope is read*.
-- NFR Performance: rows 1 to 4 run once per factory, and the last invariant.
-- Ambient adoption acceptance criteria: row 12 (same instance, not disposed), rows 3 and 4 (no opt-in, or `AlwaysNew`), row 6 (outside a request), *Where the ambient scope is read* (both processor lifetimes), FR19 (`AsyncLocal` provider), rows 1 and 2 (Transient or Singleton does not adopt).
-
-#### The corrected guidance
-
-The documentation tasks (FR23) replace the "make `QueryProcessor` Scoped for EF Core" advice with this rule. A Scoped `QueryProcessor` does not share the request's `DbContext`. To share it, register Darker with Scoped handlers and opt in to the request scope:
-
-```csharp
-services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
-    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly);
-services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore
-services.AddBrighterRequestScope();  // Brighter's own opt-in, if Brighter is used
-```
-
-The two opt-in calls are independent. Brighter's `AmbientScopeSuppression` does not govern Darker.
-
 ### Where the pieces live
 
 ```mermaid
@@ -241,13 +233,13 @@ flowchart TB
         BSS["BorrowedServiceProviderScope — new, internal"]
         SPLS["ServiceProviderLifetimeScope — changed: implements IAmAServiceProviderScope"]
         DIAG["AdoptionDiagnostics, ScopeAffinityRegistration — new, internal"]
+        DREG["ServiceCollectionDecoratorRegistry — changed: Transient decorators unless the handler lifetime is Singleton"]
     end
     subgraph core["Paramore.Darker"]
         PROV["IAmAScopeProvider — new"]
         AFF["ScopeAffinity — new"]
         EX["AmbientScopeSourceException — new"]
         SCOPE["IAmAScope — from ADR 0023"]
-        CE["ConfigurationException — changed: inner-exception constructor"]
     end
     subgraph aspfx["Microsoft.AspNetCore.App — framework reference"]
         HCA["IHttpContextAccessor, HttpContext.RequestServices"]
@@ -269,7 +261,6 @@ flowchart TB
     CF --> SPLS
     CF --> DIAG
     CF --> EX
-    CF --> CE
     BSS --> SPS
     SPLS --> SPS
     SPLS --> SSF
@@ -293,6 +284,7 @@ Dependencies point from the new package into the DI package and core, and from t
 | Owns a child DI scope | `ServiceProviderLifetimeScope` (internal) | Exposes the child scope's provider; disposes the child scope (ADR 0022) | knowing, doing | `AsyncServiceScope` |
 | Reports fallbacks once per container | `AdoptionDiagnostics` (internal) | Knows which fallback reasons it has reported; logs each reason once at Warning; identifies the container in which this Darker registration exists | knowing, doing | `ILogger` |
 | Carries a registered affinity | `ScopeAffinityRegistration` (internal) | Knows the affinity registered with the scope provider | knowing | `ScopeAffinity` |
+| Registers decorators | `ServiceCollectionDecoratorRegistry` | Decides each decorator's registration lifetime from the handler lifetime: Singleton under a Singleton handler lifetime, Transient otherwise | deciding, doing | `IServiceCollection` |
 | Registers a scope provider | `ServiceCollectionExtensions.AddDarkerScopeProvider` | Registers a provider and its affinity in the container | doing | `IServiceCollection` |
 | Offers the request scope | `HttpContextScopeProvider` (internal) | Reads the current `HttpContext`; offers its `RequestServices`, or nothing | knowing | `IHttpContextAccessor`, `HttpRequestScope` |
 | Adapts the request scope | `HttpRequestScope` (internal) | Exposes `RequestServices`; does nothing on disposal | knowing | `IServiceProvider` |
@@ -383,7 +375,7 @@ namespace Paramore.Darker.Exceptions
 }
 ```
 
-The message names the provider type. The exception lives in core beside `ConfigurationException` and `RoutingException`, because the seam it reports on is a core role. `ConfigurationException` gains a `(string message, Exception innerException)` constructor, so it can wrap the `ObjectDisposedException` of a borrowed scope.
+The message names the provider type. The exception lives in core beside `ConfigurationException` and `RoutingException`, because the seam it reports on is a core role.
 
 #### `ServiceProviderComponentFactory` (internal)
 
@@ -391,9 +383,17 @@ The message names the provider type. The exception lives in core beside `Configu
 | --- | --- | --- | --- |
 | constructor | the captured provider; the handler lifetime; the scope provider or null; the effective affinity; the container's `AdoptionDiagnostics` | the factory | none. Evaluates rows 1 to 4 and logs their Warnings through `AdoptionDiagnostics` |
 | `CreatePipelineScope` | none | null, an owned `ServiceProviderLifetimeScope`, or a `BorrowedServiceProviderScope` (rows 1 to 12) | `AmbientScopeSourceException` (row 5). `InvalidOperationException` from the container when an owned scope cannot be created (ADR 0023) |
-| `Create` (handler and decorator) | the component type; the lifetime | the component | `ConfigurationException` for a missing or unrecognised scope (ADR 0023). `ConfigurationException` wrapping `ObjectDisposedException` when the scope has been disposed |
+| `Create` (handler and decorator) | the component type; the lifetime | the component | `ConfigurationException` for a missing or unrecognised scope (ADR 0023). Any other exception from the container, including `ObjectDisposedException`, propagates unchanged |
 
-The probe for rows 8 to 11 resolves only singleton services, so it creates nothing. A borrowed scope can be disposed by its owner after the build. The factory resolves nothing after the build, so the factory cannot report that case. The first Scoped service that the handler uses after disposal throws `ObjectDisposedException` in user code.
+The probe for rows 8 to 11 resolves only singleton services, so it creates nothing. An ambient scope that is already disposed when the pipeline is built fails the probe and is declined (row 11). A borrowed scope can also be disposed by its owner after the probe. The factory does not wrap the resulting `ObjectDisposedException`: during the build it comes from the container's resolution, and after the build from the first Scoped service that the handler uses, in user code (FR17).
+
+#### `ServiceCollectionDecoratorRegistry`
+
+| Member | Input | Output | Error conditions |
+| --- | --- | --- | --- |
+| `Register` | the open decorator type | none | none. Registers the decorator as a Singleton when the handler lifetime is Singleton, and as Transient when it is Scoped or Transient |
+
+A Transient decorator still resolves from the pipeline scope, owned or borrowed, so its Scoped dependencies are the scope's. Only the decorator instance itself is per query. Under an owned scope the change is visible only to a pipeline that applies the same decorator type twice: it now gets two instances, where a Scoped registration gave it one instance initialised twice.
 
 #### `ServiceCollectionExtensions.AddDarkerScopeProvider` and `DarkerOptions.DefaultScopeAffinity`
 
@@ -435,28 +435,41 @@ namespace Paramore.Darker.Extensions.AspNetCore
 
 The new package's name differs from `Paramore.Darker.AspNetCore`, the old name of the DI package that ADR 0007 renamed. The old package had no ASP.NET Core dependency. The new package exists only because it does have one.
 
+#### The corrected guidance
+
+The documentation tasks (FR23) replace the "make `QueryProcessor` Scoped for EF Core" advice with this rule. A Scoped `QueryProcessor` does not share the request's `DbContext`. To share it, register Darker with Scoped handlers and opt in to the request scope:
+
+```csharp
+services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
+    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly);
+services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore
+services.AddBrighterRequestScope();  // Brighter's own opt-in, if Brighter is used
+```
+
+The two opt-in calls are independent. Brighter's `AmbientScopeSuppression` does not govern Darker.
+
 #### Where each type is touched
 
 | Assembly | Type | Change |
 | --- | --- | --- |
 | `Paramore.Darker` | `IAmAScopeProvider`, `ScopeAffinity` | new |
 | `Paramore.Darker` | `AmbientScopeSourceException` | new, in `Paramore.Darker.Exceptions` |
-| `Paramore.Darker` | `ConfigurationException` | gains a `(message, innerException)` constructor |
 | `Paramore.Darker.Extensions.DependencyInjection` | `IAmAServiceProviderScope` | new |
 | `Paramore.Darker.Extensions.DependencyInjection` | `DarkerOptions` | gains `DefaultScopeAffinity` |
 | `Paramore.Darker.Extensions.DependencyInjection` | `ServiceCollectionExtensions` | gains `AddDarkerScopeProvider`. `AddDarker` registers `AdoptionDiagnostics`. `BuildQueryProcessor` resolves the scope provider, the affinity registration and `AdoptionDiagnostics`, and passes them to the factory |
-| `Paramore.Darker.Extensions.DependencyInjection` | `ServiceProviderComponentFactory` | applies the decision ladder; recognises `IAmAServiceProviderScope`; wraps `ObjectDisposedException` |
+| `Paramore.Darker.Extensions.DependencyInjection` | `ServiceProviderComponentFactory` | applies the decision ladder; recognises `IAmAServiceProviderScope` |
+| `Paramore.Darker.Extensions.DependencyInjection` | `ServiceCollectionDecoratorRegistry` | registers decorators Transient unless the handler lifetime is Singleton |
 | `Paramore.Darker.Extensions.DependencyInjection` | `ServiceProviderLifetimeScope` | implements `IAmAServiceProviderScope` |
 | `Paramore.Darker.Extensions.DependencyInjection` | `BorrowedServiceProviderScope`, `AdoptionDiagnostics`, `ScopeAffinityRegistration` | new, internal |
 | `Paramore.Darker.Extensions.AspNetCore` | `DarkerRequestScopeServiceCollectionExtensions`, `HttpContextScopeProvider`, `HttpRequestScope` | new package |
 
-These stay deliberately unchanged. `IAmAScope`, `IAmALifetime`, `QueryLifetimeScope`, `PipelineBuilder<TResult>` and the four factory interfaces keep the shapes ADR 0022 and ADR 0023 give them. Teardown order and fault handling stay as ADR 0022 states. The Simple factories and `QueryProcessorBuilder` do not change, and they never adopt. The defaults of `HandlerLifetime` (Transient) and `QueryProcessorLifetime` (Singleton) do not change. An owned scope is still created from the captured provider's `IServiceScopeFactory`, so a Scoped `QueryProcessor` without the opt-in still gets a sibling scope. Singleton components still resolve from the captured provider and are never disposed by Darker (ADR 0014). `Paramore.Darker` and the DI package keep `netstandard2.0;net8.0;net9.0`.
+These stay deliberately unchanged. `ConfigurationException` gains no constructor. `IAmAScope`, `IAmALifetime`, `QueryLifetimeScope`, `PipelineBuilder<TResult>` and the four factory interfaces keep the shapes ADR 0022 and ADR 0023 give them. Teardown order and fault handling stay as ADR 0022 states. The Simple factories and `QueryProcessorBuilder` do not change, and they never adopt. The defaults of `HandlerLifetime` (Transient) and `QueryProcessorLifetime` (Singleton) do not change. An owned scope is still created from the captured provider's `IServiceScopeFactory`, so a Scoped `QueryProcessor` without the opt-in still gets a sibling scope. Singleton components still resolve from the captured provider and are never disposed by Darker (ADR 0014). `Paramore.Darker` and the DI package keep `netstandard2.0;net8.0;net9.0`.
 
 ### Technology Choices
 
 #### Why a non-owning handle, rather than trusting the offered scope's `Dispose`?
 
-The lifetime disposes whatever handle it holds (ADR 0023). If the factory passed an offered scope straight to the lifetime, Darker's ownership would depend on each provider's `Dispose`. A third-party provider could offer an `IServiceScope` adapter whose `Dispose` really disposes the scope, and Darker would then dispose a request scope during the request. The wrapper makes "Darker disposes only what it creates" true in the DI package, whatever the provider does. The wrapper also needs no change to the lifetime, and costs one small allocation on the adoption path, which replaces the allocation of a child scope.
+The lifetime disposes whatever handle it holds (ADR 0023). If the factory passed an offered scope straight to the lifetime, Darker's ownership would depend on each provider's `Dispose`. A third-party provider could offer an `IServiceScope` adapter whose `Dispose` really disposes the scope, and Darker would then dispose a request scope during the request. The wrapper makes "Darker disposes only what it creates" true in the DI package, whatever the provider does. The wrapper also needs no change to the lifetime. On the adoption path the provider's offered scope and Darker's wrapper cost two small allocations, which replace the allocation of a child scope.
 
 #### Why is the provider not asked when the affinity is `AlwaysNew`?
 
@@ -476,13 +489,21 @@ The DI package serves console apps, workers and MAUI apps. ADR 0007 renamed it t
 
 #### Why adopt only for a Scoped handler lifetime?
 
-A Transient component resolved from the request scope is tracked by the request scope and disposed at the end of the request, not at the end of the query. Adoption would break ADR 0014's promise that Darker disposes Transient components after each query. A Singleton handler has no pipeline scope to adopt. Scoped is the lifetime whose meaning, one instance per unit of work, matches a request.
+A Transient handler resolved from the request scope is tracked by the request scope and disposed at the end of the request, not at the end of the query. Adoption would break ADR 0014's promise that Darker disposes Transient handlers after each query. A Singleton handler has no pipeline scope to adopt. Scoped is the lifetime whose meaning, one instance per unit of work, matches a request.
+
+Decorators are a different case. Under a Scoped handler lifetime they are Transient, so under adoption the request scope tracks a disposable decorator until the request ends. Darker's own decorators are not disposable, and *Negative* records the cost for a user's decorator.
 
 #### Why probe and fall back, rather than fail?
 
 FR15 requires a fallback. A provider may legitimately offer nothing usable in some contexts, for example a test host or a background service in the same process. A failure there would turn a configuration mismatch into failed queries. The probe protects the two things a fallback must never give up: no Scoped resolution from the root, and no resolution from a container that does not hold Darker's registrations. The Warning makes each mismatch visible once.
 
 The root test uses Microsoft DI's behaviour: the root answers both `IServiceProvider` and `IServiceScopeFactory` with the root scope, while a request scope answers `IServiceProvider` with itself. The same-container test compares the `AdoptionDiagnostics` singleton that the offered provider resolves with the one the factory holds. Both tests resolve only singletons.
+
+#### Why register decorators Transient, rather than share them through the scope?
+
+A decorator carries per-query state that the pipeline sets: `Context`, and the parameters of the attribute that applied it. It holds nothing that should outlive one query. The pipeline closes each decorator over `IQuery<TResult>`, not over the concrete query type, so a Scoped decorator is one instance for every query in a scope with the same result type. Under an owned scope a scope serves one query, so that sharing never shows. A borrowed scope serves the whole request, so two concurrent queries of unrelated types could swap exception filters in `FallbackPolicyDecorator`, which is registered by default, and write the fallback cause into each other's `Context`. That failure is silent, so documentation cannot make it safe. A Transient registration gives each query its own instance and still resolves the decorator's dependencies from the pipeline scope. Brighter takes the same route further, registering every handler Transient and leaving the configured lifetime to its factories (Brighter ADR 0072).
+
+The Singleton handler lifetime keeps Singleton decorators. It has no pipeline scope, so Transient decorators would resolve from the root provider, and the root keeps every disposable Transient it creates until the application ends. The sharing it already has is out of scope here.
 
 #### Why latch the Warning per container, rather than per factory or statically?
 
@@ -492,7 +513,7 @@ With a Scoped `QueryProcessorLifetime`, the container builds a new factory for e
 
 This ADR builds on ADR 0022 and ADR 0023, which are implemented first. Line numbers refer to the code before those ADRs land. Each behavioural step starts with a failing test, through `/test-first`. Tests use real `ServiceCollection`-built providers and real registries, follow the `When_..._should_...` naming, and capture logs with `test/Paramore.Darker.Extensions.Tests/Logging/LoggerCaptureFixture.cs`.
 
-1. **Structural: core seam.** Add `src/Paramore.Darker/IAmAScopeProvider.cs` and `src/Paramore.Darker/ScopeAffinity.cs`, using `#nullable enable annotations` as ADR 0023 does. Add `src/Paramore.Darker/Exceptions/AmbientScopeSourceException.cs`. Add a `(string message, Exception innerException)` constructor to `ConfigurationException` (`src/Paramore.Darker/Exceptions/ConfigurationException.cs:7`). Nothing uses them yet.
+1. **Structural: core seam.** Add `src/Paramore.Darker/IAmAScopeProvider.cs` and `src/Paramore.Darker/ScopeAffinity.cs`, using `#nullable enable annotations` as ADR 0023 does. Add `src/Paramore.Darker/Exceptions/AmbientScopeSourceException.cs`. Nothing uses them yet.
 2. **Structural: widen recognition.** Add `IAmAServiceProviderScope` to the DI package. Make `ServiceProviderLifetimeScope` implement it by exposing its child scope's provider as `Services`. Change the factory's recognition method from ADR 0023 to test for `IAmAServiceProviderScope` and resolve through `Services`. Only owned scopes exist, so behaviour is unchanged. Correct the misleading package description "ASP.NET Core integration for Darker" (`src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj:4`).
 3. **Structural: configuration plumbing.** Add `DefaultScopeAffinity` to `DarkerOptions` (`src/Paramore.Darker.Extensions.DependencyInjection/DarkerOptions.cs:10`). Add internal `ScopeAffinityRegistration` and `AdoptionDiagnostics`. Register `AdoptionDiagnostics` with `TryAddSingleton` in `AddDarker` (`ServiceCollectionExtensions.cs:13-32`). Add `AddDarkerScopeProvider<TProvider>`. In `BuildQueryProcessor` (`:34-57`), resolve the provider, the registration and `AdoptionDiagnostics`, compute the effective affinity, and pass all three to the factory constructor (`:45`). The factory stores them and does not use them yet. `AdoptionDiagnostics` creates its logger at first use, after `BuildQueryProcessor` has set `ApplicationLogging.LoggerFactory` (`:43`).
 4. **Behavioural: rows 1 to 4.** In the factory constructor, compute whether adoption is enabled, and log the configuration Warnings once through `AdoptionDiagnostics`. The ordered code is: Singleton returns null; adoption disabled returns an owned scope; otherwise ask the provider (step 5). Tests in `test/Paramore.Darker.Extensions.Tests`:
@@ -507,8 +528,12 @@ This ADR builds on ADR 0022 and ADR 0023, which are implemented first. Line numb
    - after the query, the ambient scope's disposable Scoped dependency is not disposed, and the ambient scope still resolves;
    - an offered scope whose own `Dispose` records calls is never disposed.
    The existing tests, including `When_two_queries_run_concurrently_should_isolate_scopes.cs`, must pass unchanged.
-7. **Behavioural: rows 7 to 11, the probe.** Implement the null, root, same-container and resolution-fault checks, each declining with a reason through `AdoptionDiagnostics`. Tests: a non-`IAmAServiceProviderScope`, a null `Services`, the root provider (both `BuildServiceProvider()` and a root captured through a singleton factory delegate), a scope from a second container, and a disposed scope each give an owned scope, leave the offered scope undisposed, and log one Warning naming the reason across many queries.
-8. **Behavioural: a disposed borrowed scope during the build.** In the factory's resolution, catch `ObjectDisposedException` and throw `ConfigurationException` wrapping it. Test: an offered scope whose provider passes the probe but throws `ObjectDisposedException` when resolving the handler type surfaces `ConfigurationException`.
+7. **Behavioural: decorators per query (FR11).** In `ServiceCollectionDecoratorRegistry` (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs:21`), register each decorator Transient when the handler lifetime is Scoped or Transient, and Singleton when it is Singleton. Tests through `AddDarker`, with the `AsyncLocal` test provider from step 6 and `HandlerLifetime = Scoped`:
+   - two queries of different types with the same result type, in one ambient scope, get distinct `FallbackPolicyDecorator` instances, and each decorator's Scoped dependency is the ambient scope's instance;
+   - two queries of one handler type in one ambient scope resolve the same handler instance. This pins the documented sharing as a known contract;
+   - with an owned scope, a handler and its decorator still share one Scoped instance;
+   - with a Singleton handler lifetime, a decorator is the same instance across queries, as today.
+8. **Behavioural: rows 7 to 11, the probe.** Implement the null, root, same-container and resolution-fault checks, each declining with a reason through `AdoptionDiagnostics`. Tests: a non-`IAmAServiceProviderScope`, a null `Services`, the root provider (both `BuildServiceProvider()` and a root captured through a singleton factory delegate), a scope from a second container, and a disposed scope each give an owned scope, leave the offered scope undisposed, and log one Warning naming the reason across many queries.
 9. **Structural: the new projects.** Create `src/Paramore.Darker.Extensions.AspNetCore/Paramore.Darker.Extensions.AspNetCore.csproj` with `net8.0;net9.0`, `<Nullable>enable</Nullable>`, `<FrameworkReference Include="Microsoft.AspNetCore.App" />` and a project reference to the DI package, following `src/Paramore.Darker.Caching/Paramore.Darker.Caching.csproj`. It inherits signing from `src/Directory.Build.props`. Create `test/Paramore.Darker.Extensions.AspNetCore.Tests` on `net8.0;net9.0` with the same `FrameworkReference` and the test packages of `test/Paramore.Darker.Extensions.Tests`. Add both projects to the `/src/` and `/test/` folders of `Darker.slnx` and to `Darker.Filter.slnf`. No `Directory.Packages.props` entry is needed. The tests use `DefaultHttpContext`, not `TestServer`.
 10. **Behavioural: `AddDarkerRequestScope`.** Implement `DarkerRequestScopeServiceCollectionExtensions`, `HttpContextScopeProvider` and `HttpRequestScope`. Tests set a `DefaultHttpContext` whose `RequestServices` is a scope of the built provider on the registered `IHttpContextAccessor`:
     - with `HandlerLifetime = Scoped`, the handler resolves the same Scoped instance as `RequestServices`, and Darker does not dispose it;
@@ -517,7 +542,7 @@ This ADR builds on ADR 0022 and ADR 0023, which are implemented first. Line numb
     - `AddDarkerRequestScope(ScopeAffinity.AlwaysNew)` gives an owned scope;
     - a Transient handler lifetime does not adopt;
     - `AddDarkerRequestScope` before and after `AddDarker` behave the same.
-11. **Documentation and release notes.** Update XML documentation on every new public type and on `DarkerOptions.DefaultScopeAffinity`. Apply *The corrected guidance* to `CLAUDE.md` "Handler Lifecycle" (`CLAUDE.md:104-108`) and "ASP.NET Core Registration" (`:166-172`), and to the README's EF Core warning (`README.md:25-31`). List the new package in `CLAUDE.md` Key Components (`:99-102`), `CONTRIBUTING.md` Project Structure (`:345-366`) and `.agent_instructions/project_structure.md:4`. `samples/SampleMinimalApi` is an ASP.NET Core minimal API and is the natural place for a usage example. The documentation tasks decide whether it gains one. Record in `release_notes.md` the new package, `DefaultScopeAffinity`, `AddDarkerScopeProvider`, the new core types, and the corrected EF Core guidance.
+11. **Documentation and release notes.** Update XML documentation on every new public type and on `DarkerOptions.DefaultScopeAffinity`. Apply *The corrected guidance* to `CLAUDE.md` "Handler Lifecycle" (`CLAUDE.md:104-108`) and "ASP.NET Core Registration" (`:166-172`), and to the README's EF Core warning (`README.md:25-31`). List the new package in `CLAUDE.md` Key Components (`:99-102`), `CONTRIBUTING.md` Project Structure (`:345-366`) and `.agent_instructions/project_structure.md:4`. `samples/SampleMinimalApi` is an ASP.NET Core minimal API and is the natural place for a usage example. The documentation tasks decide whether it gains one. Add XML documentation to `ScopeAffinity.JoinAmbient` and `AddDarkerRequestScope` stating that queries in one ambient scope share its Scoped services, including a Scoped handler instance, so concurrent queries in one request need `AlwaysNew`. Record in `release_notes.md` the new package, `DefaultScopeAffinity`, `AddDarkerScopeProvider`, the new core types, the decorator registration change, the sharing of Scoped handler instances under `JoinAmbient`, and the corrected EF Core guidance.
 
 ## Consequences
 
@@ -531,22 +556,25 @@ This ADR builds on ADR 0022 and ADR 0023, which are implemented first. Line numb
 - The DI package keeps its framework-neutral dependencies. Only ASP.NET Core applications take the new package (FR20).
 - The documentation stops recommending a Scoped `QueryProcessor` for a benefit it does not give (FR23).
 - On the adoption path, Darker no longer creates and disposes a child scope per query.
+- No two queries share a decorator instance under a Scoped or Transient handler lifetime, even within one request (FR11). A pipeline that applies the same decorator type twice now gets two instances.
 
 ### Negative
 
 - Concurrent queries in one request, for example under `Task.WhenAll`, share the request's Scoped services under `JoinAmbient`. EF Core's `DbContext` rejects concurrent operations, so such queries fail where they succeeded with owned scopes.
-- A Scoped handler or decorator instance is shared by every query of the same type in one request. The pipeline sets `Context` on that instance per query (`src/Paramore.Darker/PipelineBuilder.cs:70`), so two concurrent queries of one type in one request race on it.
+- A Scoped handler instance is shared by every query of the same handler type in one ambient scope. The pipeline sets `Context` on that instance per query (`src/Paramore.Darker/PipelineBuilder.cs:70`), so two concurrent queries of one handler type in one request race on it, silently. Brighter accepts the same hazard for its handlers under `JoinAmbient` (Brighter ADR 0072).
+- Under adoption, a disposable decorator is tracked by the request scope and disposed when the request ends, not when the query ends. Darker's own decorators are not disposable.
 - On the `JoinAmbient` path, each query pays for a provider call and three singleton resolutions in the probe. The probe cannot be cached per scope, because that would be per-query state on the factory (ADR 0023).
 - The provider's affinity parameter always receives `JoinAmbient` in this ADR.
 - An application that uses Darker and Brighter makes two opt-in calls, and Brighter's suppression rules do not reach Darker.
-- A borrowed scope that its owner disposes after the build surfaces as `ObjectDisposedException` from the user's own services, not as Darker's `ConfigurationException`.
+- A borrowed scope that its owner disposes after the probe surfaces as an unwrapped `ObjectDisposedException`: from the container while the pipeline is built, or from the user's own services after it.
 - The probe's root test relies on Microsoft DI's resolution of `IServiceProvider` and `IServiceScopeFactory`, which the container documents only implicitly.
 - Darker gains a package to build, sign, test and release.
 
 ### Risks and Mitigations
 
-- **Risk:** a user enables `JoinAmbient` and runs queries concurrently within one request. **Mitigation:** the documentation states that adopted Scoped services are shared across the request, as they are for the controller, and that concurrent queries need `AlwaysNew`.
-- **Risk:** a future Microsoft DI version changes how the root answers `IServiceProvider`, and the root test passes for the root. **Mitigation:** step 7 tests the root test against a real root and a real root captured by a singleton factory delegate, so a container upgrade that changes the behaviour fails the build.
+- **Risk:** a user enables `JoinAmbient` and runs queries concurrently within one request, and a shared `DbContext` fails loudly. **Mitigation:** the documentation and the XML documentation on `ScopeAffinity.JoinAmbient` and `AddDarkerRequestScope` state that adopted Scoped services are shared across the request, as they are for the controller, and that concurrent queries need `AlwaysNew`.
+- **Risk:** two concurrent queries of one handler type in one request share a Scoped handler instance and silently swap `Context`. **Mitigation:** under a Scoped handler lifetime decorators are never shared (step 7), so the hazard is confined to the handler. The same documentation names it, and a step 7 test pins the shared handler instance so the behaviour is a known contract rather than an accident.
+- **Risk:** a future Microsoft DI version changes how the root answers `IServiceProvider`, and the root test passes for the root. **Mitigation:** step 8 tests the root test against a real root and a real root captured by a singleton factory delegate, so a container upgrade that changes the behaviour fails the build.
 - **Risk:** a user registers the scope provider as Scoped while the processor is Singleton, so `BuildQueryProcessor` resolves it from the root. **Mitigation:** `AddDarkerScopeProvider` registers the provider as a singleton. A direct Scoped registration is a lifetime-validation case for issue #305.
 - **Risk:** a stream is enumerated after its request has ended, and the user expects the request's `DbContext`. **Mitigation:** row 6 gives the stream an owned scope, so it never resolves from a disposed request scope. The documentation states that the stream path reads the ambient scope on the first `MoveNextAsync`.
 - **Risk:** the Warning is lost because no logging provider is configured. **Mitigation:** the fallback is always safe, and the Warning is a diagnostic, not a guard.
@@ -560,14 +588,18 @@ This ADR builds on ADR 0022 and ADR 0023, which are implemented first. Line numb
 5. **Add an ownership flag to `IAmAScope` or the lifetime, and let the lifetime skip disposal of borrowed scopes.** The flag reshapes the types that ADR 0023 fixes, and adds a branch to teardown that ADR 0022 keeps simple. A non-owning handle gives the same result with no change to either. Rejected.
 6. **Ask the provider for every affinity, as Brighter does.** Under `AlwaysNew`, a throwing provider would fail queries, which FR14 forbids, and the default path would pay for the call. Rejected.
 7. **Write the affinity through into `DarkerOptions`, as Brighter ADR 0076's `ScopeAffinityOverride` does.** `AddDarker` builds its options inside its own call, so the result would depend on call order, or the options would have to become a container service. Darker's single registration path makes a resolution-time registration enough. Rejected.
-8. **Adopt for Transient handlers as well.** The request scope would hold Transient components until the request ends, which breaks ADR 0014's per-query disposal. Rejected.
+8. **Adopt for Transient handlers as well.** The request scope would hold Transient handlers until the request ends, which breaks ADR 0014's per-query disposal. Rejected.
 9. **Throw when an offered scope fails the probe.** FR15 requires a fallback, and a host that offers an unusable scope in some contexts would fail its queries. Rejected.
 10. **Latch the Warning per factory, or in a static field.** A per-factory latch logs once per request under a Scoped processor. A static latch leaks across containers in one process. Rejected.
 11. **Put `AddDarkerRequestScope` in the old `Paramore.Darker.AspNetCore` package name.** ADR 0007 retired that name for the DI package, and reusing it would confuse users upgrading from it. Rejected.
+12. **Keep decorators on the handler lifetime, and document the sharing.** A Scoped decorator is shared by every query in the request with the same result type, whatever the query type, and `FallbackPolicyDecorator` is registered by default. Two unrelated queries could silently swap exception filters and write into each other's `Context`. Documentation cannot make a silent failure safe. Rejected.
+13. **Create the handler and decorators per query with `ActivatorUtilities` against the borrowed provider.** Each query would get its own instances wired to the request's services. But Darker would then have to dispose instances the container does not track, and the design would depart from Brighter's. A Transient registration gives decorators the same isolation from the container itself. Rejected.
+14. **Register decorators Transient under a Singleton handler lifetime too.** A Singleton handler lifetime has no pipeline scope, so the decorators would resolve from the root provider, which keeps every disposable Transient it creates until the application ends. Rejected.
+15. **Wrap an `ObjectDisposedException` from a borrowed scope in `ConfigurationException`.** A scope already disposed at the build fails the probe and is declined (row 11), so the wrap would cover only a race between the probe and `Create`. It would also re-type an `ObjectDisposedException` that a handler's constructor throws for its own reasons. Rejected.
 
 ## References
 
-- Requirements: [specs/015-di_lifetime_conformance/requirements.md](../../specs/015-di_lifetime_conformance/requirements.md): FR13, FR14, FR15, FR16, FR17, FR18, FR19, FR20, FR21; FR22 (supersession part); the ambient adoption acceptance criteria; NFR Performance and Diagnosability (adoption part); contributes to FR23, FR24, FR25.
+- Requirements: [specs/015-di_lifetime_conformance/requirements.md](../../specs/015-di_lifetime_conformance/requirements.md): FR11 (adoption part), FR13, FR14, FR15, FR16, FR17, FR18, FR19, FR20, FR21; FR22 (supersession part); the ambient adoption acceptance criteria; NFR Performance, Concurrency and Diagnosability (adoption part); contributes to FR23, FR24, FR25.
 - Related ADRs:
   - [0014-factory-component-lifetime](0014-factory-component-lifetime.md): partially superseded. This ADR supersedes its account of scope ownership and its "`QueryProcessorLifetime = Scoped` interaction" paragraph in Decision 3, which wrongly states that scopes nest. Its other decisions stay in force.
   - [0022-robust-pipeline-teardown](0022-robust-pipeline-teardown.md): sibling. Its teardown rules apply unchanged to a borrowed handle.
