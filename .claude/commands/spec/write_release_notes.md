@@ -110,8 +110,10 @@ Check `specs/{dir}/.adr-list` and `specs/{dir}/requirements.md`.
       text}) — released notes are not rewritten. Move the section under the first ## heading by
       hand, or delete it, and re-run.`
     - **Yes**: hold its full extent — from its `###` heading line to the line before the next
-      heading of any depth (or end of file) — for Step 6's replacement (row 8). Skip the rest of
-      this step.
+      `###` or `##` heading (or end of file), so its own `####` subsections are part of it — for
+      Step 6's replacement (row 8). Within the held extent, note every `####` subsection other than
+      `#### Breaking changes` — its heading line through the line before the next heading of any
+      depth — as a *hand-written subsection*, in order. Skip the rest of this step.
   - **None marked for the target**: continue below.
 - When no section is marked for the target, find every `###` heading **within the first section's
   range from Step 2 only** (row 7 is scoped to the first heading, unlike the marker search above)
@@ -182,13 +184,14 @@ Build the section text:
   statement (or `tasks.md`), never copied verbatim from an ADR's implementation detail.
 - **`#### Breaking changes`**, followed by Step 5's held item list — one top-level `- ` bullet per
   item — or `No breaking changes.`
-- No further `####` subsection is added; free-text subsections are for a person to add by hand and
-  this command never writes one.
+- No further `####` subsection is written by this command; free-text subsections are for a person
+  to add by hand. When **replacing**, append every hand-written subsection Step 4 noted, verbatim
+  and in its original order, after the breaking-changes list, so a re-run never deletes them.
 
 Apply the write with **one** `Edit` on `release_notes.md`:
 
 - **Replacing** (row 8): the `old_string` is the held section's full extent from Step 4 (its
-  `###` heading line through the line before the next heading), read first with `Read` so the
+  `###` heading line through the line before the next `###` or `##` heading), read first with `Read` so the
   `Edit` has content to match against; the `new_string` is the section text above. Every byte
   outside that span is therefore left untouched.
 - **Inserting** (row 9): the `old_string` is the first `##` heading's own line, read first with
