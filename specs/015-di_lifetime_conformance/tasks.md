@@ -52,7 +52,7 @@
     - Wrap each tracked item's `Dispose` in its own try/catch, inside the private method extracted in T1.1. Log at Error with `item.GetType()`.
     - Keep the existing `_disposed` flag.
 
-- [ ] **CHARACTERISE: T1.3 — Disposing the lifetime a second time does nothing**
+- [x] **CHARACTERISE: T1.3 — Disposing the lifetime a second time does nothing**
   - **USE COMMAND**: `/test-first when the lifetime is disposed twice should dispose each tracked item only once`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_lifetime_is_disposed_twice_should_dispose_tracked_items_once.cs`
