@@ -36,7 +36,7 @@
 
 ### 1B — Lifetime fault isolation (ADR 0022 step 2, FR4)
 
-- [ ] **TEST + IMPLEMENT: T1.2 — A tracked lifetime item that throws on Dispose does not stop the other tracked items being disposed, and is logged at Error**
+- [x] **TEST + IMPLEMENT: T1.2 — A tracked lifetime item that throws on Dispose does not stop the other tracked items being disposed, and is logged at Error**
   - **USE COMMAND**: `/test-first when a tracked lifetime item throws on dispose should dispose the other tracked items and log the fault at Error with the item type`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_tracked_lifetime_item_throws_on_dispose_should_dispose_the_others_and_log_error.cs`
