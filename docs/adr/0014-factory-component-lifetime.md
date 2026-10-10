@@ -20,6 +20,8 @@ Date: 2026-06-08
 
 Accepted
 
+Partially superseded. [0024-ambient-scope-adoption](0024-ambient-scope-adoption.md) supersedes this ADR's account of scope ownership, and the "`QueryProcessorLifetime = Scoped` interaction" paragraph in Decision 3 is incorrect: Microsoft DI scopes do not nest, so a Scoped `QueryProcessor` gets a sibling scope, not a child of the request scope. [0022-robust-pipeline-teardown](0022-robust-pipeline-teardown.md) amends the teardown account in Decision 5, and [0023-pipeline-scope-handle](0023-pipeline-scope-handle.md) amends how the per-query scope is located in Decisions 1 and 3. The lifetime-aware factories, the rule that Singletons resolve from the captured provider and are never disposed by Darker, and the per-query scope for Scoped and Transient handlers remain in force.
+
 ## Context
 
 **Parent Requirement**: [specs/008-factory_component_lifetime/requirements.md](../../specs/008-factory_component_lifetime/requirements.md)

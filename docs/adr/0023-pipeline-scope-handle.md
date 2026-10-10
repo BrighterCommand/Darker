@@ -159,7 +159,7 @@ A factory that receives a lifetime decides what to do with the handle. The DI fa
 | 1 | Handler lifetime is Singleton | resolves from its captured provider and ignores the handle | the component |
 | 2 | Scoped or Transient, and `PipelineScope` is a recognised scope | resolves from that scope | the component |
 | 3 | Scoped or Transient, and `PipelineScope` is null, or the lifetime is null | throws | `ConfigurationException` naming the component type and the handler lifetime |
-| 4 | Scoped or Transient, and `PipelineScope` is a scope the DI package did not create | throws | `ConfigurationException` naming the component type and the handle's type |
+| 4 | Scoped or Transient, and `PipelineScope` is not a recognised scope | throws | `ConfigurationException` naming the component type and the handle's type |
 
 The pipeline builder handles failures around the scope itself:
 
