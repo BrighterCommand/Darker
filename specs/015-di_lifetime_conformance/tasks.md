@@ -109,7 +109,7 @@
   - Implementation should:
     - Need no production change. T1.5 delivers this.
 
-- [ ] **CHARACTERISE: T1.7 — When every release throws, each fault is logged once, the lifetime is disposed and the result returns (ADR 0022 row 3)**
+- [x] **CHARACTERISE: T1.7 — When every release throws, each fault is logged once, the lifetime is disposed and the result returns (ADR 0022 row 3)**
   - **USE COMMAND**: `/test-first when every release throws on Execute should log one Error per fault, dispose the lifetime and return the result`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_every_release_throws_should_log_each_fault_and_dispose_lifetime.cs`
