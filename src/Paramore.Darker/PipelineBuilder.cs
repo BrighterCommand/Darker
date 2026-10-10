@@ -435,7 +435,20 @@ namespace Paramore.Darker
             _lifetime?.Dispose();
         }
 
-        private void ReleaseHandler() => _handlerFactory?.Release(_handler, _lifetime);
+        private void ReleaseHandler()
+            => TryRelease(_handler, () => _handlerFactory?.Release(_handler, _lifetime));
+
+        private void TryRelease(object component, Action release)
+        {
+            try
+            {
+                release();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error releasing pipeline component of type {ComponentType}", component?.GetType());
+            }
+        }
 
         private void ReleaseDecorators()
         {
@@ -443,7 +456,7 @@ namespace Paramore.Darker
             {
                 foreach (var decorator in _decorators)
                 {
-                    _decoratorFactory.Release(decorator, _lifetime);
+                    TryRelease(decorator, () => _decoratorFactory.Release(decorator, _lifetime));
                 }
             }
         }
@@ -454,7 +467,7 @@ namespace Paramore.Darker
             {
                 foreach (var decorator in _asyncDecorators)
                 {
-                    _decoratorFactoryAsync?.Release(decorator, _lifetime);
+                    TryRelease(decorator, () => _decoratorFactoryAsync?.Release(decorator, _lifetime));
                 }
             }
         }
@@ -465,10 +478,13 @@ namespace Paramore.Darker
             {
                 foreach (var decorator in _streamDecorators)
                 {
-                    if (_decoratorFactoryAsync != null)
-                        _decoratorFactoryAsync.Release(decorator, _lifetime);
-                    else
-                        _decoratorFactory?.Release(decorator, _lifetime);
+                    TryRelease(decorator, () =>
+                    {
+                        if (_decoratorFactoryAsync != null)
+                            _decoratorFactoryAsync.Release(decorator, _lifetime);
+                        else
+                            _decoratorFactory?.Release(decorator, _lifetime);
+                    });
                 }
             }
         }
