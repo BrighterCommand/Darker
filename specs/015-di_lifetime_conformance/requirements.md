@@ -45,13 +45,13 @@ Bring Darker's lifetime handling into line with Brighter's scoped-lifetime work 
 - **FR8** — The lifetime carries the pipeline scope, fixed when the lifetime is created. Handler and decorator factories resolve components from that scope.
 - **FR9** — Factories hold **no per-query state** (the lifetime-keyed table is removed).
 - **FR10** — Asking a container-backed factory to create a non-Singleton component without a pipeline scope it recognises fails fast with a `ConfigurationException`; there is no silent fallback to the root provider.
-- **FR11** — The handler and all decorators of one query resolve from one pipeline scope. Concurrent queries never share an owned scope. Whenever `HandlerLifetime` is Scoped or Transient, each query gets its own decorator instances, even when several queries share one adopted ambient scope. Under `JoinAmbient`, concurrent queries in one ambient scope share that scope's Scoped services, including a Scoped handler instance of the same handler type, as every other consumer of the scope does.
+- **FR11** — The handler and all decorators of one query resolve from one pipeline scope. Concurrent queries never share an owned scope. Whenever `HandlerLifetime` is Scoped or Transient, each query gets its own instances of the decorators Darker registers, even when several queries share one adopted ambient scope. Under `JoinAmbient`, concurrent queries in one ambient scope share that scope's Scoped services, including a Scoped handler instance of the same handler type, as every other consumer of the scope does.
 - **FR12** — `SimpleHandlerFactory` and `SimpleHandlerDecoratorFactory` (no container) continue to work; they supply no container scope.
 
 #### Ambient scope adoption (#380)
 
 - **FR13** — Core exposes an ambient scope provider seam (`IAmAScopeProvider`) that can offer an ambient scope for a requested `ScopeAffinity`, and a `ScopeAffinity` enum with `AlwaysNew` (default) and `JoinAmbient`.
-- **FR14** — `DarkerOptions` gains `DefaultScopeAffinity`, defaulting to `ScopeAffinity.AlwaysNew`. With the default, or with no provider registered, behaviour is unchanged: Darker creates and owns a per-query scope for Scoped and Transient handlers.
+- **FR14** — `DarkerOptions` gains `DefaultScopeAffinity`, defaulting to `ScopeAffinity.AlwaysNew`. With the default, or with no provider registered, scope behaviour is unchanged: Darker creates and owns a per-query scope for Scoped and Transient handlers. (The decorator registration change of FR11 applies regardless.)
 - **FR15** — Darker adopts an ambient scope only when **all** hold: affinity is `JoinAmbient`; `HandlerLifetime` is `Scoped`; a provider offers a scope; the offered scope exposes an `IServiceProvider` (`IAmAServiceProviderScope`); and that provider is usable (not null, not the root provider, Darker is registered in it, resolution does not throw). Otherwise Darker keeps its non-adopting behaviour: an owned scope, or no scope for a Singleton `HandlerLifetime`. A fallback caused by misconfiguration (`JoinAmbient` with a non-Scoped `HandlerLifetime`, `JoinAmbient` with no provider registered, or an offered scope that fails one of the checks above) logs a Warning once per reason (latched, not per query). A provider that offers no scope, for example outside a request, is the normal case and logs nothing.
 - **FR16** — A failure inside the ambient scope provider is surfaced as an `AmbientScopeSourceException` wrapping the original exception.
 - **FR17** — **Ownership:** Darker disposes a scope it created; it never disposes an adopted or declined ambient scope. An ambient scope that is already disposed when the pipeline is built is declined, with a Warning (FR15). Disposal of a borrowed scope after the probe is its owner's responsibility, and surfaces unwrapped as `ObjectDisposedException`: from the container while the pipeline is built, or from the user's own services after it.
@@ -73,7 +73,7 @@ Bring Darker's lifetime handling into line with Brighter's scoped-lifetime work 
 - **Reliability:** on every failure path in teardown, Darker still disposes the pipeline scope it owns; no teardown fault in a component Darker releases leaks that scope. Faults inside one DI scope's disposal of its own services are the container's to contain (see Constraints).
 - **Diagnosability:** release failures logged at Error with the component type; a misconfiguration fallback logged at Warning with the reason.
 - **Parity:** sync, async and stream pipelines behave the same for teardown and scope handling.
-- **Concurrency:** concurrent queries never share an owned scope, and never share a decorator instance unless `HandlerLifetime` is Singleton.
+- **Concurrency:** concurrent queries never share an owned scope, and never share a decorator instance that Darker registered unless `HandlerLifetime` is Singleton.
 
 ### Constraints and Assumptions
 

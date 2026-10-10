@@ -64,7 +64,7 @@ When a query uses Scoped or Transient handlers, Darker resolves the handler and 
 | --- | --- |
 | 0022 | Teardown releases every component independently, disposes the per-query scope last, and never throws — synchronously on the sync path, asynchronously on the async and stream paths. |
 | **0023** *(this one)* | The pipeline obtains its scope from the handler factory up front (`CreatePipelineScope()`) and carries it on the lifetime as an `IAmAScope` handle, replacing the factory-held `ConditionalWeakTable`. |
-| 0024 | A Scoped handler may adopt an ambient scope (`ScopeAffinity.JoinAmbient`, `IAmAScopeProvider`, `Paramore.Darker.Extensions.AspNetCore`) instead of creating its own; Darker disposes only scopes it created. |
+| 0024 | A Scoped handler may adopt an ambient scope (`ScopeAffinity.JoinAmbient`, `IAmAScopeProvider`, `Paramore.Darker.Extensions.AspNetCore`) instead of creating its own; Darker disposes only scopes it created; decorators are created per query whenever the handler lifetime is Scoped or Transient. |
 
 Darker disposes exactly the scopes it creates, after it has released every component resolved from them, and a teardown fault never reaches the caller.
 
@@ -294,7 +294,7 @@ public interface IAmALifetime : IDisposable, IAsyncDisposable
 | `Dispose` | none | none | never throws. Disposes `PipelineScope` in its own fault boundary and logs a fault at Error with the scope's type. Does nothing when `PipelineScope` is null. A second call does nothing (ADR 0022) |
 | `DisposeAsync` | none | `ValueTask` | never faults. Same rules, awaiting `PipelineScope.DisposeAsync` |
 
-`Add(IDisposable)` is removed. `QueryLifetimeScope` stays internal and takes the handle through its constructor, `QueryLifetimeScope(IAmAScope? pipelineScope)`. The constructor only assigns the handle and cannot throw.
+`Add(IDisposable)` is removed. `QueryLifetimeScope` stays internal and takes the handle through its constructor, `QueryLifetimeScope(IAmAScope? pipelineScope, ILogger logger)`, where the logger is the pipeline builder's (ADR 0022 step 2). The constructor only assigns the handle and cannot throw.
 
 #### `IQueryHandlerFactory` and `IQueryHandlerFactoryAsync`
 
@@ -381,7 +381,7 @@ This ADR builds on ADR 0022, so ADR 0022 is implemented first. Line numbers refe
 1. **Structural: add the handle.** Add `src/Paramore.Darker/IAmAScope.cs`. Make `ServiceProviderLifetimeScope` (`src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderLifetimeScope.cs:36`) implement `IAmAScope`. After ADR 0022 it is already `IDisposable` and `IAsyncDisposable`. Nothing uses the interface yet.
 2. **Structural: add `CreatePipelineScope`.** Add the member to `IQueryHandlerFactory` (`src/Paramore.Darker/IQueryHandlerFactory.cs:5`) and `IQueryHandlerFactoryAsync` (`src/Paramore.Darker/IQueryHandlerFactoryAsync.cs:5`). Return null from `SimpleHandlerFactory` (`src/Paramore.Darker/SimpleHandlerFactory.cs:32`), `FactoryFuncWrapper` (`src/Paramore.Darker/Builder/FactoryFuncWrapper.cs:25`), `RecordingHandlerFactory` (`test/Paramore.Darker.Core.Tests/TestDoubles/RecordingHandlerFactory.cs:16`) and, for now, `ServiceProviderComponentFactory`. The pipeline builder does not call the member yet.
 3. **Structural: choose the handler factory once.** In `PipelineBuilder`, extract the factory choice that `ResolveHandlerAsync` (`src/Paramore.Darker/PipelineBuilder.cs:220`) and `ResolveStreamHandler` (`:378-380`) make inline into one decision taken at the start of each build. ADR 0022 step 7 already records the creating factory for release. Reuse that record. Behaviour is unchanged.
-4. **Behavioural: the lifetime carries the handle.** Add `PipelineScope` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Give `QueryLifetimeScope` (`src/Paramore.Darker/QueryLifetimeScope.cs:34`) a constructor that takes the handle. Dispose the handle under ADR 0022's rules after any tracked items. In `Build` (`PipelineBuilder.cs:62`), `BuildAsync` (`:123`) and `BuildStream` (`:277`), create the lifetime as `new QueryLifetimeScope(chosenFactory.CreatePipelineScope())`, in one expression. The ADR 0022 step 2 and step 3 tests that observe disposal through `lifetime.Add` move to a recording handle here: the step 3 tests observe the handle's disposal, and the step 2 multi-item test becomes a single-handle test, because the lifetime now holds one item. Tests in `test/Paramore.Darker.Core.Tests`, with a recording handler factory that returns a recording `IAmAScope`, on each path:
+4. **Behavioural: the lifetime carries the handle.** Add `PipelineScope` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Give `QueryLifetimeScope` (`src/Paramore.Darker/QueryLifetimeScope.cs:34`) a constructor that takes the handle. Dispose the handle under ADR 0022's rules after any tracked items. In `Build` (`PipelineBuilder.cs:62`), `BuildAsync` (`:123`) and `BuildStream` (`:277`), create the lifetime as `new QueryLifetimeScope(chosenFactory.CreatePipelineScope(), _logger)`, in one expression. The ADR 0022 step 2 and step 3 tests that observe disposal through `lifetime.Add` move to a recording handle here: the step 3 tests observe the handle's disposal, and the step 2 multi-item test becomes a single-handle test, because the lifetime now holds one item. Tests in `test/Paramore.Darker.Core.Tests`, with a recording handler factory that returns a recording `IAmAScope`, on each path:
    - the handler factory's and decorator factory's `Create` both receive a lifetime whose `PipelineScope` is that handle;
    - the handle is disposed once, after every release;
    - a throwing handle `Dispose` is logged and the result still returns;
@@ -408,7 +408,7 @@ This ADR builds on ADR 0022, so ADR 0022 is implemented first. Line numbers refe
 ### Negative
 
 - Every implementer of `IQueryHandlerFactory` or `IQueryHandlerFactoryAsync` must add `CreatePipelineScope`. This is a V5 breaking change (FR25).
-- `IAmALifetime.Add` disappears. A custom factory that attached its own disposables to the lifetime must now return them inside a single handle from `CreatePipelineScope` (FR25).
+- `IAmALifetime.Add` disappears. A custom handler factory that attached its own disposables to the lifetime must now return them inside a single handle from `CreatePipelineScope`. A custom decorator factory has no `CreatePipelineScope`, so it disposes its own per-query resources in `Release` or `ReleaseAsync` (FR25).
 - The lifetime holds at most one disposable. A factory that needs several per-query resources must compose them behind one handle.
 - On the Scoped and Transient paths, a query whose handler lookup fails still creates and disposes a scope (`src/Paramore.Darker/PipelineBuilder.cs:204`).
 - The contract for user-written container-backed factories changes: a decorator factory must resolve from `lifetime.PipelineScope`, which is null when the handler factory creates no scope, and should throw `ConfigurationException` rather than create a scope of its own.

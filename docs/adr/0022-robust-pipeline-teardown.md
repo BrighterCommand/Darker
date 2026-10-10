@@ -61,7 +61,7 @@ When a query finishes, Darker releases the handler and its decorators and then d
 | --- | --- |
 | **0022** *(this one)* | Teardown releases every component independently, disposes the per-query scope last, and never throws — synchronously on the sync path, asynchronously on the async and stream paths. |
 | 0023 | The pipeline obtains its scope from the handler factory up front (`CreatePipelineScope()`) and carries it on the lifetime as an `IAmAScope` handle, replacing the factory-held `ConditionalWeakTable`. |
-| 0024 | A Scoped handler may adopt an ambient scope (`ScopeAffinity.JoinAmbient`, `IAmAScopeProvider`, `Paramore.Darker.Extensions.AspNetCore`) instead of creating its own; Darker disposes only scopes it created. |
+| 0024 | A Scoped handler may adopt an ambient scope (`ScopeAffinity.JoinAmbient`, `IAmAScopeProvider`, `Paramore.Darker.Extensions.AspNetCore`) instead of creating its own; Darker disposes only scopes it created; decorators are created per query whenever the handler lifetime is Scoped or Transient. |
 
 Darker disposes exactly the scopes it creates, after it has released every component resolved from them, and a teardown fault never reaches the caller.
 
@@ -140,7 +140,7 @@ sequenceDiagram
 
 | # | During teardown | Teardown does | Diagnostic | Caller sees |
 | --- | --- | --- | --- | --- |
-| 1 | No component was created (creating the handler failed) | skips the releases, disposes the lifetime | none | the build exception |
+| 1 | No component was created (creating the handler failed, or the build never started) | skips the releases, disposes the lifetime if one exists | none | the build exception, or the exception that stopped the build starting |
 | 2 | A release throws or faults | continues with the next release | Error, with the component type | the result or the handler's exception |
 | 3 | Every release throws | disposes the lifetime | one Error per fault | the result or the handler's exception |
 | 4 | A tracked item's disposal throws or faults | continues with the next tracked item | Error, with the item type | the result or the handler's exception |
@@ -272,20 +272,21 @@ internal sealed class PipelineBuilder<TResult> : IDisposable, IAsyncDisposable
 | `Dispose` | none | none | never throws. Releases the handler and each decorator through the sync release of the factory that created it, then disposes the lifetime |
 | `DisposeAsync` | none | `ValueTask` | never faults. Releases each component through the factory that created it, awaiting `ReleaseAsync` where that factory is async, then awaits the lifetime's `DisposeAsync` |
 
-The processor calls `Dispose` only after `Build`, and `DisposeAsync` only after `BuildAsync` or `BuildStream`.
+The processor calls `Dispose` on the sync path and `DisposeAsync` on the async and stream paths. Teardown tolerates a builder that never built, because creating the query context or the span threw first: with no lifetime and no components it does nothing (row 1).
 
 #### Where each type is touched
 
 | Assembly | Type | Change |
 | --- | --- | --- |
 | `Paramore.Darker` | `IAmALifetime` | adds `IAsyncDisposable`; documents the never-throw and idempotency contract |
-| `Paramore.Darker` | `QueryLifetimeScope` | per-item fault boundary and Error logging in `Dispose`; new `DisposeAsync`; one disposed flag shared by both |
+| `Paramore.Darker` | `QueryLifetimeScope` | per-item fault boundary and Error logging in `Dispose`, through a logger the pipeline builder passes in; new `DisposeAsync`; one disposed flag shared by both |
 | `Paramore.Darker` | `IQueryHandlerFactoryAsync`, `IQueryHandlerDecoratorFactoryAsync` | `Release` replaced by `ReleaseAsync` returning `ValueTask` |
 | `Paramore.Darker` | `SimpleHandlerFactory`, `SimpleHandlerDecoratorFactory` | implement `ReleaseAsync` |
 | `Paramore.Darker` | `PipelineBuilder<TResult>` | per-item fault boundary; lifetime disposed last; new `DisposeAsync`; records each decorator as it is created; remembers the factory that created the handler |
 | `Paramore.Darker` | `QueryProcessor` | `await using` on `ExecuteAsync`; awaited `DisposeAsync` in the `ExecuteStream` `finally` |
 | `Paramore.Darker.Extensions.DependencyInjection` | `ServiceProviderComponentFactory` | implements `ReleaseAsync` as a no-op |
 | `Paramore.Darker.Extensions.DependencyInjection` | `ServiceProviderLifetimeScope` | creates an `AsyncServiceScope`; adds `IAsyncDisposable` |
+| test | `RecordingHandlerFactory`, `RecordingDecoratorFactory` | implement `ReleaseAsync` |
 
 These stay deliberately unchanged. The sync factory interfaces, `IQueryHandlerFactory` and `IQueryHandlerDecoratorFactory`, keep `Release`, and `FactoryFuncWrapper` keeps its sync-only behaviour. Every `Create` member keeps its shape. The release order — handler first, then decorators in creation order — does not change. The pipeline builder still creates the lifetime before the first `Create` (ADR 0014). The processor still ends the span before teardown (ADR 0017). The stream path still builds lazily on the first `MoveNextAsync` (ADR 0019). The factory-held `ConditionalWeakTable` and the question of scope ownership are untouched here; ADR 0023 and ADR 0024 decide them.
 
@@ -320,7 +321,7 @@ Teardown cannot know which exceptions a user's `Dispose` raises. A filtered catc
 Each behavioural step starts with a failing test, through `/test-first`. Tests use real registries, `ServiceCollection`-built providers and the Simple factories, and follow the `When_..._should_...` naming of `test/Paramore.Darker.Core.Tests` and `test/Paramore.Darker.Extensions.Tests`.
 
 1. **Structural.** In `src/Paramore.Darker/PipelineBuilder.cs:424-460`, extract the handler release and each decorator-list release from `Dispose` into private methods, with no change in behaviour. In `src/Paramore.Darker/QueryLifetimeScope.cs:49-60`, extract the loop body into a private method. The full suite stays green.
-2. **Behavioural — lifetime isolation (FR4).** `QueryLifetimeScope.Dispose` wraps each tracked item's `Dispose` in its own try/catch, logs at Error with the item's type through a static `ApplicationLogging.CreateLogger<QueryLifetimeScope>()` logger, and keeps the existing disposed flag. Tests drive the lifetime through `IQueryProcessor`, with a test handler factory that attaches recording disposables through the public `IAmALifetime.Add`: a throwing tracked item does not stop the others, and a second disposal does nothing. `QueryLifetimeScope` is internal and is not tested directly.
+2. **Behavioural — lifetime isolation (FR4).** `QueryLifetimeScope.Dispose` wraps each tracked item's `Dispose` in its own try/catch, logs at Error with the item's type, and keeps the existing disposed flag. The lifetime logs through the pipeline builder's logger, which `PipelineBuilder<TResult>` passes to the `QueryLifetimeScope` constructor at each `new QueryLifetimeScope` (`PipelineBuilder.cs:62`, `:123`, `:277`). That logger is a static per closed `TResult`, so a test isolates the lifetime's log entries by giving its query its own result type, exactly as it does for the builder's (`test/Paramore.Darker.Extensions.Tests/Logging/LoggerCaptureFixture.cs`). A static logger of its own on the non-generic `QueryLifetimeScope` would be captured once per test process, by whichever test ran first. Tests drive the lifetime through `IQueryProcessor`, with a test handler factory that attaches recording disposables through the public `IAmALifetime.Add`: a throwing tracked item does not stop the others, and a second disposal does nothing. `QueryLifetimeScope` is internal and is not tested directly.
 3. **Behavioural — sync teardown (FR1–FR3 on `Execute`).** `PipelineBuilder.Dispose` wraps each release in its own try/catch and logs at Error with `component.GetType()`. The lifetime's disposal moves outside every release's try/catch, as the final statement. The log call sits inside the catch, and a failure of the log call is itself caught, so a throwing logging provider cannot break the guarantee. Tests with the Simple factories: a handler whose `Dispose` throws still sees its decorators released and the lifetime disposed, observed through a recording disposable that the test's handler factory attaches with `lifetime.Add` (ADR 0023 step 4 moves this observation to a recording handle); a throwing handler plus a throwing release surfaces the handler's exception; a successful query plus a throwing release returns its result. Test with the DI factory: a Scoped service whose `Dispose` throws inside the per-query scope still lets the query return its result, and the fault is logged at Error.
 4. **Behavioural — partial builds.** In `GetDecorators` (`PipelineBuilder.cs:241-271`), `GetDecoratorsAsync` (`:388-422`) and `GetStreamDecorators` (`:326-365`), assign the decorator list to its field before the loop and add each decorator immediately after `Create`, before `InitializeFromAttributeParams`. Test: a decorator whose initialisation throws leaves earlier decorators released.
 5. **Structural — add the async seams.** Add `IAsyncDisposable` to `IAmALifetime` (`src/Paramore.Darker/IAmALifetime.cs:33`). Add `ReleaseAsync` beside `Release` on `IQueryHandlerFactoryAsync` (`src/Paramore.Darker/IQueryHandlerFactoryAsync.cs:8`) and `IQueryHandlerDecoratorFactoryAsync` (`src/Paramore.Darker/IQueryHandlerDecoratorFactoryAsync.cs:8`). Implement both in `SimpleHandlerFactory` (`:49-53`), `SimpleHandlerDecoratorFactory` (`:50-54`), `ServiceProviderComponentFactory` (`:54-69`), and the test doubles `RecordingHandlerFactory` and `RecordingDecoratorFactory`. Nothing calls the new members yet, so behaviour is unchanged.
@@ -356,7 +357,7 @@ Each behavioural step starts with a failing test, through `/test-first`. Tests u
 - **Risk:** a swallowed fault hides a real defect, such as a connection that never closes. **Mitigation:** each fault is logged at Error with the component type, and tests assert the log entry.
 - **Risk:** a throwing logging provider breaks the never-throw guarantee. **Mitigation:** the log call inside each catch is itself guarded (Implementation Approach step 3).
 - **Risk:** a user calls `Execute` with a Scoped service that implements only `IAsyncDisposable` and expects it to be disposed. **Mitigation:** the Error log names the type, and the release notes state that such services need `ExecuteAsync`.
-- **Risk:** the static logger captures the logger factory at type initialisation, before `AddDarker` sets `ApplicationLogging.LoggerFactory`. **Mitigation:** the pattern is the one `PipelineBuilder` already uses, and the logger types are first used during a query, after registration.
+- **Risk:** the static logger captures the logger factory at type initialisation, before `AddDarker` sets `ApplicationLogging.LoggerFactory`. **Mitigation:** in an application the logger types are first used during a query, after registration. In a test process that builds many containers, the first capture wins, so the lifetime borrows the builder's per-`TResult` logger (step 2) and each test that asserts a teardown log uses a result type of its own.
 
 ## Alternatives Considered
 
