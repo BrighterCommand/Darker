@@ -54,9 +54,11 @@ namespace Paramore.Darker
             _disposed = true;
 
             for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
-                _trackedDisposables[i].Dispose();
+                DisposeItem(_trackedDisposables[i]);
 
             _trackedDisposables.Clear();
         }
+
+        private static void DisposeItem(IDisposable item) => item.Dispose();
     }
 }

@@ -425,8 +425,20 @@ namespace Paramore.Darker
         {
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
-            _handlerFactory?.Release(_handler, _lifetime);
+            ReleaseHandler();
+            ReleaseDecorators();
+            ReleaseAsyncDecorators();
+            ReleaseStreamDecorators();
 
+            // Dispose the per-query lifetime last, after releasing the handler and decorators, so
+            // any resources it owns (e.g. a child service scope) are torn down once per query.
+            _lifetime?.Dispose();
+        }
+
+        private void ReleaseHandler() => _handlerFactory?.Release(_handler, _lifetime);
+
+        private void ReleaseDecorators()
+        {
             if (_decorators != null && _decorators.Any())
             {
                 foreach (var decorator in _decorators)
@@ -434,7 +446,10 @@ namespace Paramore.Darker
                     _decoratorFactory.Release(decorator, _lifetime);
                 }
             }
+        }
 
+        private void ReleaseAsyncDecorators()
+        {
             if (_asyncDecorators != null && _asyncDecorators.Any())
             {
                 foreach (var decorator in _asyncDecorators)
@@ -442,7 +457,10 @@ namespace Paramore.Darker
                     _decoratorFactoryAsync?.Release(decorator, _lifetime);
                 }
             }
+        }
 
+        private void ReleaseStreamDecorators()
+        {
             if (_streamDecorators != null && _streamDecorators.Any())
             {
                 foreach (var decorator in _streamDecorators)
@@ -453,10 +471,6 @@ namespace Paramore.Darker
                         _decoratorFactory?.Release(decorator, _lifetime);
                 }
             }
-
-            // Dispose the per-query lifetime last, after releasing the handler and decorators, so
-            // any resources it owns (e.g. a child service scope) are torn down once per query.
-            _lifetime?.Dispose();
         }
     }
 }
