@@ -59,7 +59,7 @@ namespace Paramore.Darker
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope();
+            _lifetime = new QueryLifetimeScope(_logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
@@ -120,7 +120,7 @@ namespace Paramore.Darker
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope();
+            _lifetime = new QueryLifetimeScope(_logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
@@ -274,7 +274,7 @@ namespace Paramore.Darker
             IStreamQuery<TResult> query, IQueryContext queryContext,
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
-            _lifetime = new QueryLifetimeScope();
+            _lifetime = new QueryLifetimeScope(_logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);

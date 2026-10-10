@@ -23,6 +23,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Paramore.Darker
 {
@@ -33,8 +34,14 @@ namespace Paramore.Darker
     /// </summary>
     internal sealed class QueryLifetimeScope : IAmALifetime
     {
+        private readonly ILogger _logger;
         private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
         private bool _disposed;
+
+        public QueryLifetimeScope(ILogger logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         /// <inheritdoc />
         public void Add(IDisposable disposable)
@@ -59,6 +66,16 @@ namespace Paramore.Darker
             _trackedDisposables.Clear();
         }
 
-        private static void DisposeItem(IDisposable item) => item.Dispose();
+        private void DisposeItem(IDisposable item)
+        {
+            try
+            {
+                item.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error disposing tracked lifetime item of type {ItemType}", item.GetType());
+            }
+        }
     }
 }
