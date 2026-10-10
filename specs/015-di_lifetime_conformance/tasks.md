@@ -81,7 +81,7 @@
 
 ### 1C — Sync teardown isolation (ADR 0022 step 3, FR1–FR3 on `Execute`)
 
-- [ ] **TEST + IMPLEMENT: T1.5 — When the handler's Dispose throws (Simple factory), the decorators are still released, the lifetime is still disposed and the query returns its result**
+- [x] **TEST + IMPLEMENT: T1.5 — When the handler's Dispose throws (Simple factory), the decorators are still released, the lifetime is still disposed and the query returns its result**
   - **USE COMMAND**: `/test-first when the handler's dispose throws on Execute should still release the decorators, dispose the lifetime, return the result and log at Error`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_handler_dispose_throws_should_release_decorators_and_dispose_lifetime.cs`
