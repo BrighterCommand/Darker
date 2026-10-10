@@ -96,7 +96,7 @@
     - In `PipelineBuilder.Dispose`, wrap each release (the handler, then each decorator in creation order) in its own try/catch. Log at Error with `component.GetType()`.
     - Move `_lifetime?.Dispose()` outside every release's try/catch, as the final statement.
 
-- [ ] **CHARACTERISE: T1.6 — A handler that throws plus a release that throws: the caller sees the handler's exception**
+- [x] **CHARACTERISE: T1.6 — A handler that throws plus a release that throws: the caller sees the handler's exception**
   - **USE COMMAND**: `/test-first when the handler throws and its release also throws on Execute should surface the handler's original exception`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_handler_throws_and_release_throws_should_surface_handler_exception.cs`
