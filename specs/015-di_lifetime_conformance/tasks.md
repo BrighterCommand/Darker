@@ -123,7 +123,7 @@
   - Implementation should:
     - Need no production change. T1.5 delivers this.
 
-- [ ] **CHARACTERISE: T1.8 — With the DI factory, a Scoped service whose Dispose throws inside the per-query scope: the query returns its result and the fault is logged at Error**
+- [x] **CHARACTERISE: T1.8 — With the DI factory, a Scoped service whose Dispose throws inside the per-query scope: the query returns its result and the fault is logged at Error**
   - **USE COMMAND**: `/test-first when a scoped service throws on dispose inside the per-query scope should return the result and log the fault at Error`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scoped_service_dispose_throws_should_return_result_and_log_error.cs`
