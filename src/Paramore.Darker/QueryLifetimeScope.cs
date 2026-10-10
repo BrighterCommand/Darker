@@ -74,7 +74,20 @@ namespace Paramore.Darker
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error disposing tracked lifetime item of type {ItemType}", item.GetType());
+                TryLogTeardownFault(e, item);
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee.
+        private void TryLogTeardownFault(Exception fault, IDisposable item)
+        {
+            try
+            {
+                _logger.LogError(fault, "Error disposing tracked lifetime item of type {ItemType}", item.GetType());
+            }
+            catch
+            {
+                // Nothing safe left to do: the fault could not be reported.
             }
         }
     }

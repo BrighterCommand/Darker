@@ -446,7 +446,20 @@ namespace Paramore.Darker
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error releasing pipeline component of type {ComponentType}", component?.GetType());
+                TryLogTeardownFault(e, component);
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee.
+        private static void TryLogTeardownFault(Exception fault, object component)
+        {
+            try
+            {
+                _logger.LogError(fault, "Error releasing pipeline component of type {ComponentType}", component?.GetType());
+            }
+            catch
+            {
+                // Nothing safe left to do: the fault could not be reported.
             }
         }
 
