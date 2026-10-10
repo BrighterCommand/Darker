@@ -65,7 +65,7 @@
   - Implementation should:
     - Need no production change. The `_disposed` flag kept in T1.2 already delivers this (FR4 idempotency).
 
-- [ ] **CHARACTERISE: T1.4 — On Execute, a Scoped service that implements only IAsyncDisposable is logged at Error and the query still returns (ADR 0022 row 7; risk mitigation)**
+- [x] **CHARACTERISE: T1.4 — On Execute, a Scoped service that implements only IAsyncDisposable is logged at Error and the query still returns (ADR 0022 row 7; risk mitigation)**
   - **USE COMMAND**: `/test-first when Execute tears down a scope holding an IAsyncDisposable-only service should log the container fault at Error and return the result`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_sync_teardown_meets_async_only_disposable_should_log_error_and_return_result.cs`
