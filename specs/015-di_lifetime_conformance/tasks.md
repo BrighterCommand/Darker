@@ -303,7 +303,7 @@
 
 ### 1G — Remove the old async Release (ADR 0022 step 8)
 
-- [ ] **STRUCTURAL: T1.18 — Remove Release from IQueryHandlerFactoryAsync and IQueryHandlerDecoratorFactoryAsync**
+- [x] **STRUCTURAL: T1.18 — Remove Release from IQueryHandlerFactoryAsync and IQueryHandlerDecoratorFactoryAsync**
   - Delete `Release` from both async interfaces, and from the async role of:
     - `SimpleHandlerFactory` and `SimpleHandlerDecoratorFactory`;
     - `ServiceProviderComponentFactory`;
