@@ -331,7 +331,7 @@
     - partial-build releases.
   - Use `/spec:write_release_notes` if any of these needs correcting.
 
-- [ ] **VERIFY: T1.20 — Phase 1 checkpoint**
+- [x] **VERIFY: T1.20 — Phase 1 checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release` with no new warnings.
   - Run `dotnet test Darker.Filter.slnf -c Release --no-build`, green on net8.0 and net9.0.
   - Confirm that the existing cancellation and failure lifetime tests in `test/Paramore.Darker.Extensions.Tests` pass unchanged, for example `When_pipeline_fails_should_dispose_dependency.cs` (teardown takes no cancellation token).
