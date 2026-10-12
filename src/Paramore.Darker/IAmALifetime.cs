@@ -29,6 +29,12 @@ namespace Paramore.Darker
     /// Owns the lifetime of objects created for a single query pipeline execution.
     /// Disposed by the <see cref="PipelineBuilder{TResult}"/> when the pipeline completes,
     /// including when it completes by throwing or being cancelled.
+    /// <para>
+    /// Teardown is contained: <see cref="IDisposable.Dispose"/> and <see cref="IAsyncDisposable.DisposeAsync"/>
+    /// never throw. Each tracked item is disposed in its own fault boundary, newest first, and a fault
+    /// from one item is logged at Error without stopping the others. Disposal is idempotent across both
+    /// forms: once either has run, the other does nothing, and each item is disposed at most once.
+    /// </para>
     /// </summary>
     public interface IAmALifetime : IDisposable, IAsyncDisposable
     {
