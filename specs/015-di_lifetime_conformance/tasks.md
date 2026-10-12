@@ -222,7 +222,7 @@
   - Implementation should:
     - Need no production change. T1.13 delivers this, because the child scope is a tracked item. This completes the DI teardown-fault acceptance criterion on all three paths (T1.8 is `Execute`).
 
-- [ ] **TEST + IMPLEMENT: T1.14 — On ExecuteAsync and ExecuteStream, the handler is released by the factory that created it**
+- [x] **TEST + IMPLEMENT: T1.14 — On ExecuteAsync and ExecuteStream, the handler is released by the factory that created it**
   - **USE COMMAND**: `/test-first when ExecuteAsync or ExecuteStream completes should release the handler through the async factory that created it`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_async_query_completes_should_release_handler_through_creating_factory.cs`
