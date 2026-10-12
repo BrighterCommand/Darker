@@ -179,7 +179,7 @@
 
 > ADR 0022 step 6 (async lifetime) has no behaviour that is observable through the public surface until step 7 wires `DisposeAsync` into the processor. T1.12 therefore drives both steps from the first async test.
 
-- [ ] **TEST + IMPLEMENT: T1.12 — On ExecuteAsync and ExecuteStream, a Scoped dependency that implements only IAsyncDisposable is disposed, and its DisposeAsync is awaited**
+- [x] **TEST + IMPLEMENT: T1.12 — On ExecuteAsync and ExecuteStream, a Scoped dependency that implements only IAsyncDisposable is disposed, and its DisposeAsync is awaited**
   - **USE COMMAND**: `/test-first when ExecuteAsync or ExecuteStream completes with a scoped IAsyncDisposable-only dependency should await its DisposeAsync`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_async_query_completes_with_async_only_disposable_should_await_dispose_async.cs`
