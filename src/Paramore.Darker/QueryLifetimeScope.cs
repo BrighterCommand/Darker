@@ -67,12 +67,23 @@ namespace Paramore.Darker
             _trackedDisposables.Clear();
         }
 
-        // Temporary forward to the synchronous path; replaced by a true async teardown in T1.12.
         /// <inheritdoc />
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            Dispose();
-            return default;
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
+            {
+                if (_trackedDisposables[i] is IAsyncDisposable asyncDisposable)
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                else
+                    _trackedDisposables[i].Dispose();
+            }
+
+            _trackedDisposables.Clear();
         }
 
         private void DisposeItem(IDisposable item)

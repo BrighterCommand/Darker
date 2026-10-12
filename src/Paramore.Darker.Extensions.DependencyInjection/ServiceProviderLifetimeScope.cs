@@ -22,6 +22,7 @@ THE SOFTWARE. */
 #endregion
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -33,12 +34,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// <see cref="IServiceScopeFactory"/>, which yields a correctly-rooted scope even when the
     /// captured provider is the root container (the default Singleton <c>QueryProcessor</c>).
     /// </summary>
-    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IDisposable
+    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IDisposable, IAsyncDisposable
     {
-        private readonly IServiceScope _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        private readonly AsyncServiceScope _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
         public object Resolve(Type componentType) => _scope.ServiceProvider.GetService(componentType);
 
         public void Dispose() => _scope.Dispose();
+
+        public ValueTask DisposeAsync() => _scope.DisposeAsync();
     }
 }

@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace Paramore.Darker
 {
-    internal sealed class PipelineBuilder<TResult> : IDisposable
+    internal sealed class PipelineBuilder<TResult> : IDisposable, IAsyncDisposable
     {
         private const string ExecuteMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute);
         private const string ExecuteAsyncMethodName = nameof(IQueryHandlerAsync<IQuery<TResult>, TResult>.ExecuteAsync);
@@ -432,16 +432,30 @@ namespace Paramore.Darker
 
         public void Dispose()
         {
+            ReleaseComponents();
+
+            // Dispose the per-query lifetime last, after releasing the handler and decorators, so
+            // any resources it owns (e.g. a child service scope) are torn down once per query.
+            _lifetime?.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            ReleaseComponents();
+
+            // As in Dispose, the lifetime goes last; here its asynchronous disposal is awaited.
+            if (_lifetime != null)
+                await _lifetime.DisposeAsync().ConfigureAwait(false);
+        }
+
+        private void ReleaseComponents()
+        {
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
             ReleaseHandler();
             ReleaseDecorators();
             ReleaseAsyncDecorators();
             ReleaseStreamDecorators();
-
-            // Dispose the per-query lifetime last, after releasing the handler and decorators, so
-            // any resources it owns (e.g. a child service scope) are torn down once per query.
-            _lifetime?.Dispose();
         }
 
         private void ReleaseHandler()
