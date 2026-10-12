@@ -464,14 +464,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
             ReleaseHandler();
-            ReleaseDecoratorComponents();
-        }
-
-        private void ReleaseDecoratorComponents()
-        {
             ReleaseDecorators();
-            ReleaseAsyncDecorators();
-            ReleaseStreamDecorators();
         }
 
         // Nothing to release when the build failed before a handler was created.
@@ -574,34 +567,6 @@ namespace Paramore.Darker
                 foreach (var decorator in _decorators)
                 {
                     TryRelease(decorator, () => _decoratorFactory.Release(decorator, _lifetime));
-                }
-            }
-        }
-
-        private void ReleaseAsyncDecorators()
-        {
-            if (_asyncDecorators != null && _asyncDecorators.Any())
-            {
-                foreach (var decorator in _asyncDecorators)
-                {
-                    TryRelease(decorator, () => _decoratorFactoryAsync?.Release(decorator, _lifetime));
-                }
-            }
-        }
-
-        private void ReleaseStreamDecorators()
-        {
-            if (_streamDecorators != null && _streamDecorators.Any())
-            {
-                foreach (var decorator in _streamDecorators)
-                {
-                    TryRelease(decorator, () =>
-                    {
-                        if (_decoratorFactoryAsync != null)
-                            _decoratorFactoryAsync.Release(decorator, _lifetime);
-                        else
-                            _decoratorFactory?.Release(decorator, _lifetime);
-                    });
                 }
             }
         }
