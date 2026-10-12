@@ -248,7 +248,7 @@
   - Implementation should:
     - In `PipelineBuilder.DisposeAsync`, release `_asyncDecorators` and `_streamDecorators` through `await _decoratorFactoryAsync.ReleaseAsync(...)` when an async decorator factory is configured. Fall back to the sync `Release` otherwise. Keep each awaited release in its own fault boundary with the guarded Error log, as in T1.14.
 
-- [ ] **CHARACTERISE: T1.16 — Async teardown isolates each release: a faulting ReleaseAsync does not stop the other releases or the lifetime disposal, and the result returns**
+- [x] **CHARACTERISE: T1.16 — Async teardown isolates each release: a faulting ReleaseAsync does not stop the other releases or the lifetime disposal, and the result returns**
   - **USE COMMAND**: `/test-first when a release faults during async teardown should still release the other components, dispose the lifetime, return the result and log each fault at Error`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_release_faults_during_async_teardown_should_release_others_and_dispose_lifetime.cs`
