@@ -165,7 +165,7 @@
 
 ### 1E — Async seams (ADR 0022 step 5)
 
-- [ ] **STRUCTURAL: T1.11 — Add IAsyncDisposable to IAmALifetime and ReleaseAsync beside Release on the async factory interfaces**
+- [x] **STRUCTURAL: T1.11 — Add IAsyncDisposable to IAmALifetime and ReleaseAsync beside Release on the async factory interfaces**
   - `src/Paramore.Darker/IAmALifetime.cs`: extend `IAsyncDisposable`. `Microsoft.Bcl.AsyncInterfaces` supplies it on netstandard2.0.
   - `QueryLifetimeScope`: implement `DisposeAsync` as a temporary forward to `Dispose`. T1.12 replaces it.
   - `src/Paramore.Darker/IQueryHandlerFactoryAsync.cs` and `IQueryHandlerDecoratorFactoryAsync.cs`: add `ValueTask ReleaseAsync(...)` beside `Release`.
