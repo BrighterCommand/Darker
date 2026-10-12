@@ -195,7 +195,7 @@
     - Add `PipelineBuilder<TResult> : IAsyncDisposable`. `DisposeAsync` reuses T1.5's guarded sync release helpers unchanged, then awaits the lifetime's `DisposeAsync` last. It takes no cancellation token. `ReleaseAsync` wiring comes in T1.14 and T1.15; null-tolerance comes in T1.17a.
     - In `src/Paramore.Darker/QueryProcessor.cs`, replace `using` with `await using (pipelineBuilder.ConfigureAwait(false))` in `ExecuteAsync` (~line 104). In the `ExecuteStream` `finally` (~line 168), replace `pipelineBuilder.Dispose()` with `await pipelineBuilder.DisposeAsync().ConfigureAwait(false)`.
 
-- [ ] **TEST + IMPLEMENT: T1.13 — On the async paths, a tracked lifetime item whose DisposeAsync faults does not stop the others and is logged at Error**
+- [x] **TEST + IMPLEMENT: T1.13 — On the async paths, a tracked lifetime item whose DisposeAsync faults does not stop the others and is logged at Error**
   - **USE COMMAND**: `/test-first when a tracked lifetime item faults in DisposeAsync on ExecuteAsync or ExecuteStream should dispose the other items and log the fault at Error`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_tracked_item_dispose_async_faults_should_dispose_the_others_and_log_error.cs`
