@@ -31,6 +31,7 @@ namespace Paramore.Darker
         private readonly IStreamQueryHandlerRegistry _streamHandlerRegistry;
 
         private IQueryHandler _handler;
+        private IQueryHandlerFactoryAsync _handlerCreatedByAsyncFactory; // null when the sync factory created the handler
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> _decorators;
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
         private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> _streamDecorators;
@@ -231,6 +232,8 @@ namespace Paramore.Darker
                 if (handler == null)
                     throw new ConfigurationException($"Async handler could not be created for type: {handlerType.FullName}");
 
+                _handlerCreatedByAsyncFactory = _handlerFactoryAsync;
+
                 return (handlerType, handler);
             }
 
@@ -388,6 +391,9 @@ namespace Paramore.Darker
             if (handler == null)
                 throw new ConfigurationException($"Stream handler could not be created for type: {handlerType.FullName}");
 
+            if (_handlerFactoryAsync != null)
+                _handlerCreatedByAsyncFactory = _handlerFactoryAsync;
+
             return (handlerType, handler);
         }
 
@@ -441,7 +447,10 @@ namespace Paramore.Darker
 
         public async ValueTask DisposeAsync()
         {
-            ReleaseComponents();
+            _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
+
+            await ReleaseHandlerAsync().ConfigureAwait(false);
+            ReleaseDecoratorComponents();
 
             // As in Dispose, the lifetime goes last; here its asynchronous disposal is awaited.
             if (_lifetime != null)
@@ -453,6 +462,11 @@ namespace Paramore.Darker
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
             ReleaseHandler();
+            ReleaseDecoratorComponents();
+        }
+
+        private void ReleaseDecoratorComponents()
+        {
             ReleaseDecorators();
             ReleaseAsyncDecorators();
             ReleaseStreamDecorators();
@@ -460,6 +474,30 @@ namespace Paramore.Darker
 
         private void ReleaseHandler()
             => TryRelease(_handler, () => _handlerFactory?.Release(_handler, _lifetime));
+
+        // Release through the factory that created the handler: the async factory when one did, else the sync one.
+        private async ValueTask ReleaseHandlerAsync()
+        {
+            if (_handlerCreatedByAsyncFactory == null)
+            {
+                ReleaseHandler();
+                return;
+            }
+
+            await TryReleaseAsync(_handler, () => _handlerCreatedByAsyncFactory.ReleaseAsync(_handler, _lifetime)).ConfigureAwait(false);
+        }
+
+        private static async ValueTask TryReleaseAsync(object component, Func<ValueTask> release)
+        {
+            try
+            {
+                await release().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, component);
+            }
+        }
 
         private void TryRelease(object component, Action release)
         {
