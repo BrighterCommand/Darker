@@ -275,7 +275,7 @@
   - Implementation should:
     - Need no production change. T1.14 delivers this.
 
-- [ ] **CHARACTERISE: T1.16a — On the async paths, a throwing logging provider cannot break the never-throw guarantee (ADR 0022 risk mitigation: guarded log call)**
+- [x] **CHARACTERISE: T1.16a — On the async paths, a throwing logging provider cannot break the never-throw guarantee (ADR 0022 risk mitigation: guarded log call)**
   - **USE COMMAND**: `/test-first when the logging provider throws while async teardown logs a fault should still return the result on ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_logging_provider_throws_during_async_teardown_should_still_return_result.cs`
