@@ -151,7 +151,7 @@
 
 ### 1D — Partial builds (ADR 0022 step 4)
 
-- [ ] **TEST + IMPLEMENT: T1.10 — A decorator whose creation or initialisation throws: the caller sees that exception, and the decorators created before it are released**
+- [x] **TEST + IMPLEMENT: T1.10 — A decorator whose creation or initialisation throws: the caller sees that exception, and the decorators created before it are released**
   - **USE COMMAND**: `/test-first when a decorator's creation or initialisation throws should surface that exception and release the decorators created before it on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_decorator_initialisation_throws_should_release_decorators_created_before_it.cs`
