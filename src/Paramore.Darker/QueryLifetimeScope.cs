@@ -76,14 +76,24 @@ namespace Paramore.Darker
             _disposed = true;
 
             for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
-            {
-                if (_trackedDisposables[i] is IAsyncDisposable asyncDisposable)
-                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                else
-                    _trackedDisposables[i].Dispose();
-            }
+                await DisposeItemAsync(_trackedDisposables[i]).ConfigureAwait(false);
 
             _trackedDisposables.Clear();
+        }
+
+        private async ValueTask DisposeItemAsync(IDisposable item)
+        {
+            try
+            {
+                if (item is IAsyncDisposable asyncDisposable)
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                else
+                    item.Dispose();
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, item);
+            }
         }
 
         private void DisposeItem(IDisposable item)
