@@ -474,12 +474,21 @@ namespace Paramore.Darker
             ReleaseStreamDecorators();
         }
 
+        // Nothing to release when the build failed before a handler was created.
         private void ReleaseHandler()
-            => TryRelease(_handler, () => _handlerFactory?.Release(_handler, _lifetime));
+        {
+            if (_handler == null)
+                return;
+
+            TryRelease(_handler, () => _handlerFactory?.Release(_handler, _lifetime));
+        }
 
         // Release through the factory that created the handler: the async factory when one did, else the sync one.
         private async ValueTask ReleaseHandlerAsync()
         {
+            if (_handler == null)
+                return;
+
             if (_handlerCreatedByAsyncFactory == null)
             {
                 ReleaseHandler();
