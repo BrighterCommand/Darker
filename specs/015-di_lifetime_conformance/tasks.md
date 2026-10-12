@@ -262,7 +262,7 @@
   - Implementation should:
     - Need no production change. T1.12, T1.14 and T1.15 deliver this.
 
-- [ ] **CHARACTERISE: T1.17 — On the async paths, a handler that throws plus a release that faults: the caller sees the handler's exception**
+- [x] **CHARACTERISE: T1.17 — On the async paths, a handler that throws plus a release that faults: the caller sees the handler's exception**
   - **USE COMMAND**: `/test-first when the handler throws and its release faults on ExecuteAsync or ExecuteStream should surface the handler's original exception`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_async_handler_throws_and_release_faults_should_surface_handler_exception.cs`
