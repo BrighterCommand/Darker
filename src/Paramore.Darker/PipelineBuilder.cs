@@ -450,7 +450,9 @@ namespace Paramore.Darker
             _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
 
             await ReleaseHandlerAsync().ConfigureAwait(false);
-            ReleaseDecoratorComponents();
+            ReleaseDecorators();
+            await ReleaseAsyncDecoratorsAsync().ConfigureAwait(false);
+            await ReleaseStreamDecoratorsAsync().ConfigureAwait(false);
 
             // As in Dispose, the lifetime goes last; here its asynchronous disposal is awaited.
             if (_lifetime != null)
@@ -485,6 +487,38 @@ namespace Paramore.Darker
             }
 
             await TryReleaseAsync(_handler, () => _handlerCreatedByAsyncFactory.ReleaseAsync(_handler, _lifetime)).ConfigureAwait(false);
+        }
+
+        private async ValueTask ReleaseAsyncDecoratorsAsync()
+        {
+            if (_asyncDecorators == null)
+                return;
+
+            foreach (var decorator in _asyncDecorators)
+            {
+                await TryReleaseAsync(decorator, () => _decoratorFactoryAsync != null
+                    ? _decoratorFactoryAsync.ReleaseAsync(decorator, _lifetime)
+                    : ReleaseSync(() => _decoratorFactory?.Release(decorator, _lifetime))).ConfigureAwait(false);
+            }
+        }
+
+        private async ValueTask ReleaseStreamDecoratorsAsync()
+        {
+            if (_streamDecorators == null)
+                return;
+
+            foreach (var decorator in _streamDecorators)
+            {
+                await TryReleaseAsync(decorator, () => _decoratorFactoryAsync != null
+                    ? _decoratorFactoryAsync.ReleaseAsync(decorator, _lifetime)
+                    : ReleaseSync(() => _decoratorFactory?.Release(decorator, _lifetime))).ConfigureAwait(false);
+            }
+        }
+
+        private static ValueTask ReleaseSync(Action release)
+        {
+            release();
+            return default;
         }
 
         private static async ValueTask TryReleaseAsync(object component, Func<ValueTask> release)
