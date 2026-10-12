@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
@@ -24,5 +25,7 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         }
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime) => lifetime.Dispose();
+
+        public ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime) => lifetime.DisposeAsync();
     }
 }

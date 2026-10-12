@@ -23,6 +23,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -57,6 +58,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             // never disposed by Darker. Nothing to do here.
         }
 
+        public ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime) => default;
+
         public T Create<T>(Type decoratorType, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
             return (T) Resolve(decoratorType, lifetime);
@@ -67,6 +70,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             // Scoped/Transient teardown is owned by the lifetime's child scope; Singletons are
             // never disposed by Darker. Nothing to do here.
         }
+
+        public ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator => default;
 
         private object Resolve(Type componentType, IAmALifetime lifetime)
         {

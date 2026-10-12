@@ -30,7 +30,7 @@ namespace Paramore.Darker
     /// Disposed by the <see cref="PipelineBuilder{TResult}"/> when the pipeline completes,
     /// including when it completes by throwing or being cancelled.
     /// </summary>
-    public interface IAmALifetime : IDisposable
+    public interface IAmALifetime : IDisposable, IAsyncDisposable
     {
         /// <summary>
         /// Tracks a per-query disposable (for example a child service scope) so that it is

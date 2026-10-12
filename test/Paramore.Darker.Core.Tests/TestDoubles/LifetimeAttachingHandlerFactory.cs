@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
@@ -29,6 +30,14 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
             if (handler is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        public async ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime)
+        {
+            if (handler is IAsyncDisposable asyncDisposable)
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            else if (handler is IDisposable disposable)
                 disposable.Dispose();
         }
     }

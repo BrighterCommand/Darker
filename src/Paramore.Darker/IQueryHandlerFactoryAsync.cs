@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Paramore.Darker
 {
@@ -6,5 +7,6 @@ namespace Paramore.Darker
     {
         IQueryHandler Create(Type handlerType, IAmALifetime lifetime);
         void Release(IQueryHandler handler, IAmALifetime lifetime);
+        ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime);
     }
 }

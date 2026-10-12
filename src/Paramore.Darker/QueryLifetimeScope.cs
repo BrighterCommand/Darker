@@ -23,6 +23,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Paramore.Darker
@@ -64,6 +65,14 @@ namespace Paramore.Darker
                 DisposeItem(_trackedDisposables[i]);
 
             _trackedDisposables.Clear();
+        }
+
+        // Temporary forward to the synchronous path; replaced by a true async teardown in T1.12.
+        /// <inheritdoc />
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return default;
         }
 
         private void DisposeItem(IDisposable item)
