@@ -288,7 +288,7 @@
   - Implementation should:
     - Need no production change. T1.13, T1.14 and T1.15 route every async teardown log through the T1.9 helper.
 
-- [ ] **TEST + IMPLEMENT: T1.17a — Teardown skips the releases when no component was created, and tolerates a builder that never built (ADR 0022 row 1)**
+- [x] **TEST + IMPLEMENT: T1.17a — Teardown skips the releases when no component was created, and tolerates a builder that never built (ADR 0022 row 1)**
   - **USE COMMAND**: `/test-first when the query context cannot be created or the handler lookup fails should surface that exception, never release a null handler and not throw from teardown on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_no_component_was_created_should_skip_releases_and_surface_build_exception.cs`
