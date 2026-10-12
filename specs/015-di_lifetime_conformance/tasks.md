@@ -313,7 +313,7 @@
 
 ### 1H — Documentation and checkpoint (ADR 0022 step 9)
 
-- [ ] **DOC: T1.19 — XML documentation for the teardown contract, and a release-notes check for ADR 0022**
+- [x] **DOC: T1.19 — XML documentation for the teardown contract, and a release-notes check for ADR 0022**
   - On `IAmALifetime`, document that `Dispose`/`DisposeAsync`:
     - never throw;
     - dispose each item in its own fault boundary and log each fault at Error;
