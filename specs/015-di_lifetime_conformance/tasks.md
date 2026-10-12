@@ -237,7 +237,7 @@
     - In `DisposeAsync`, release through that factory: `await ReleaseAsync` for an async factory, `Release` for the sync fallback. Keep the awaited release inside the same per-release fault boundary, with the guarded Error log, that T1.5 gave the sync release. Changing what is called must not remove the isolation.
     - Update `test/Paramore.Darker.Core.Tests/QueryProcessorAsyncTests.cs` lines ~24–29 (the comment) and ~61 (`_handlerFactoryAsync.ReleaseCount(handler).ShouldBe(0)`) to assert release through the async factory.
 
-- [ ] **TEST + IMPLEMENT: T1.15 — On the async paths, the Simple factories await DisposeAsync on an IAsyncDisposable handler and decorator**
+- [x] **TEST + IMPLEMENT: T1.15 — On the async paths, the Simple factories await DisposeAsync on an IAsyncDisposable handler and decorator**
   - **USE COMMAND**: `/test-first when ExecuteAsync or ExecuteStream completes with IAsyncDisposable handler and decorator created by the Simple factories should await their DisposeAsync`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_async_query_completes_should_await_dispose_async_on_simple_factory_components.cs`
