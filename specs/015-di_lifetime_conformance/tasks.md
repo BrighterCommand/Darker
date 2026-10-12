@@ -208,7 +208,7 @@
   - Implementation should:
     - In `QueryLifetimeScope.DisposeAsync`, wrap each item's disposal in its own fault boundary and log at Error with the item type through the guarded helper from T1.9 (`TryLogTeardownFault`).
 
-- [ ] **CHARACTERISE: T1.13a — With the DI factory on ExecuteAsync and ExecuteStream, a Scoped service whose DisposeAsync faults inside the per-query scope: the result returns and the fault is logged at Error**
+- [x] **CHARACTERISE: T1.13a — With the DI factory on ExecuteAsync and ExecuteStream, a Scoped service whose DisposeAsync faults inside the per-query scope: the result returns and the fault is logged at Error**
   - **USE COMMAND**: `/test-first when a scoped service faults in DisposeAsync inside the per-query scope on ExecuteAsync or ExecuteStream should return the result and log the fault at Error`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scoped_service_dispose_async_faults_should_return_result_and_log_error.cs`
