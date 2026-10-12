@@ -248,6 +248,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecorator<IQuery<TResult>, TResult>>();
+            _decorators = decorators; // visible to Dispose even if building throws part-way
             foreach (var attribute in attributes)
             {
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
@@ -257,12 +258,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} decorators", decorators.Count);
@@ -333,6 +336,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} stream query handler attributes", attributes.Count);
 
             var decorators = new List<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>();
+            _streamDecorators = decorators; // visible to Dispose even if building throws part-way
 
             foreach (var attribute in attributes)
             {
@@ -351,12 +355,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Stream decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising stream decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} stream decorators", decorators.Count);
@@ -395,6 +401,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} async query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>();
+            _asyncDecorators = decorators; // visible to Dispose even if building throws part-way
 
             if (_decoratorFactoryAsync == null)
                 return decorators;
@@ -408,12 +415,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising async decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} async decorators", decorators.Count);
