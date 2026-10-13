@@ -34,7 +34,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// <see cref="IServiceScopeFactory"/>, which yields a correctly-rooted scope even when the
     /// captured provider is the root container (the default Singleton <c>QueryProcessor</c>).
     /// </summary>
-    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IDisposable, IAsyncDisposable
+    internal sealed class ServiceProviderLifetimeScope(IServiceProvider serviceProvider) : IAmAScope
     {
         private readonly AsyncServiceScope _scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
