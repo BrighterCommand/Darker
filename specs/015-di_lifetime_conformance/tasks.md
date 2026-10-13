@@ -357,7 +357,7 @@
     - any other test implementer, for example the factory used in `When_executing_sync_query_with_tracer_should_create_and_end_query_span.cs`.
   - The pipeline builder does not call the member yet. Guarded by the full suite.
 
-- [ ] **STRUCTURAL: T2.3 — Choose the handler factory once per build**
+- [x] **STRUCTURAL: T2.3 — Choose the handler factory once per build**
   - In `PipelineBuilder`, extract into one decision at the start of `Build`, `BuildAsync` and `BuildStream` the inline choice that `ResolveHandlerAsync` and `ResolveStreamHandler` make between the async and sync handler factory. Reuse the "creating factory" record from T1.14.
   - Behaviour is unchanged. Guarded by T1.14, `QueryProcessorAsyncTests.cs`, `When_query_processor_has_both_sync_and_async_handlers_should_dispatch_to_correct_pipeline.cs` and the stream tests.
 
