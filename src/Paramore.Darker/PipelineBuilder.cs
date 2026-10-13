@@ -36,6 +36,7 @@ namespace Paramore.Darker
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
         private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> _streamDecorators;
         private IAmALifetime _lifetime;
+        private IQueryHandlerFactoryAsync _chosenAsyncFactory; // the async factory chosen for this build; null when the sync factory is used
 
         public PipelineBuilder(
             IQueryHandlerRegistry handlerRegistry,
@@ -61,6 +62,7 @@ namespace Paramore.Darker
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
             _lifetime = new QueryLifetimeScope(_logger);
+            _chosenAsyncFactory = null;
 
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
@@ -122,6 +124,7 @@ namespace Paramore.Darker
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
             _lifetime = new QueryLifetimeScope(_logger);
+            _chosenAsyncFactory = _handlerRegistryAsync != null ? _handlerFactoryAsync : null;
 
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
@@ -218,7 +221,7 @@ namespace Paramore.Darker
 
         private (Type handlerType, IQueryHandler handler) ResolveHandlerAsync(Type queryType, IQuery query, IQueryContext context)
         {
-            if (_handlerRegistryAsync != null && _handlerFactoryAsync != null)
+            if (_chosenAsyncFactory != null)
             {
                 _logger.LogDebug("Looking up handler type in async handler registry...");
                 var handlerType = _handlerRegistryAsync.Get(queryType, query, context);
@@ -228,11 +231,11 @@ namespace Paramore.Darker
                 _logger.LogDebug("Found handler type for {QueryType} in async handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
                 _logger.LogDebug("Resolving async handler instance...");
-                var handler = _handlerFactoryAsync.Create(handlerType, _lifetime);
+                var handler = _chosenAsyncFactory.Create(handlerType, _lifetime);
                 if (handler == null)
                     throw new ConfigurationException($"Async handler could not be created for type: {handlerType.FullName}");
 
-                _handlerCreatedByAsyncFactory = _handlerFactoryAsync;
+                _handlerCreatedByAsyncFactory = _chosenAsyncFactory;
 
                 return (handlerType, handler);
             }
@@ -281,6 +284,7 @@ namespace Paramore.Darker
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             _lifetime = new QueryLifetimeScope(_logger);
+            _chosenAsyncFactory = _handlerFactoryAsync;
 
             var queryType = query.GetType();
             _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);
@@ -384,15 +388,15 @@ namespace Paramore.Darker
 
             _logger.LogDebug("Found stream handler type for {QueryType}: {HandlerType}", queryType.Name, handlerType.Name);
 
-            var handler = _handlerFactoryAsync != null
-                ? _handlerFactoryAsync.Create(handlerType, _lifetime)
+            var handler = _chosenAsyncFactory != null
+                ? _chosenAsyncFactory.Create(handlerType, _lifetime)
                 : _handlerFactory?.Create(handlerType, _lifetime);
 
             if (handler == null)
                 throw new ConfigurationException($"Stream handler could not be created for type: {handlerType.FullName}");
 
-            if (_handlerFactoryAsync != null)
-                _handlerCreatedByAsyncFactory = _handlerFactoryAsync;
+            if (_chosenAsyncFactory != null)
+                _handlerCreatedByAsyncFactory = _chosenAsyncFactory;
 
             return (handlerType, handler);
         }
