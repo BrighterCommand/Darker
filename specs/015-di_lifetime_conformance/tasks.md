@@ -347,7 +347,7 @@
   - Make `ServiceProviderLifetimeScope` implement it. After T1.12 it is already sync- and async-disposable.
   - Nothing uses the interface yet. Guarded by the full suite.
 
-- [ ] **STRUCTURAL: T2.2 — Add CreatePipelineScope() to the handler factory interfaces, returning null everywhere for now**
+- [x] **STRUCTURAL: T2.2 — Add CreatePipelineScope() to the handler factory interfaces, returning null everywhere for now**
   - Add `IAmAScope? CreatePipelineScope()` to `src/Paramore.Darker/IQueryHandlerFactory.cs` and `IQueryHandlerFactoryAsync.cs`. Use the `#nullable enable annotations` pattern of `IQueryContext.cs`.
   - Return null from:
     - `SimpleHandlerFactory`;
