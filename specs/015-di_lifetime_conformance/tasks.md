@@ -363,7 +363,7 @@
 
 ### 2B — The lifetime carries the handle (ADR 0023 step 4, FR7, FR8, FR12)
 
-- [ ] **TEST + IMPLEMENT: T2.4 — The handler factory's handle is the PipelineScope that every handler and decorator Create receives**
+- [x] **TEST + IMPLEMENT: T2.4 — The handler factory's handle is the PipelineScope that every handler and decorator Create receives**
   - **USE COMMAND**: `/test-first when the handler factory supplies a pipeline scope should pass a lifetime carrying that handle to the handler and every decorator Create on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_handler_factory_supplies_pipeline_scope_should_carry_it_on_the_lifetime.cs`
