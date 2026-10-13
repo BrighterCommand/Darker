@@ -1,3 +1,4 @@
+#nullable enable annotations
 #region Licence
 /* The MIT License (MIT)
 Copyright © 2024 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
@@ -39,10 +40,14 @@ namespace Paramore.Darker
         private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
         private bool _disposed;
 
-        public QueryLifetimeScope(ILogger logger)
+        public QueryLifetimeScope(IAmAScope? pipelineScope, ILogger logger)
         {
+            PipelineScope = pipelineScope;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        /// <inheritdoc />
+        public IAmAScope? PipelineScope { get; }
 
         /// <inheritdoc />
         public void Add(IDisposable disposable)

@@ -56,13 +56,17 @@ namespace Paramore.Darker
             _streamHandlerRegistry = streamHandlerRegistry;
         }
 
+        // Asks the factory chosen for this build, and only that factory, for the pipeline scope.
+        private IAmAScope CreatePipelineScope()
+            => _chosenAsyncFactory != null ? _chosenAsyncFactory.CreatePipelineScope() : _handlerFactory?.CreatePipelineScope();
+
         public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext,
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope(_logger);
             _chosenAsyncFactory = null;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
@@ -123,8 +127,8 @@ namespace Paramore.Darker
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope(_logger);
             _chosenAsyncFactory = _handlerRegistryAsync != null ? _handlerFactoryAsync : null;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
@@ -283,8 +287,8 @@ namespace Paramore.Darker
             IStreamQuery<TResult> query, IQueryContext queryContext,
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
-            _lifetime = new QueryLifetimeScope(_logger);
             _chosenAsyncFactory = _handlerFactoryAsync;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);

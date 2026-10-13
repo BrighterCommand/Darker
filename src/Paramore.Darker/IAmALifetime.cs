@@ -1,3 +1,4 @@
+#nullable enable annotations
 #region Licence
 /* The MIT License (MIT)
 Copyright © 2024 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
@@ -38,6 +39,12 @@ namespace Paramore.Darker
     /// </summary>
     public interface IAmALifetime : IDisposable, IAsyncDisposable
     {
+        /// <summary>
+        /// The handle on the scope that owns this pipeline's components, as supplied by the handler factory,
+        /// or <c>null</c> when the factory has no per-query scope. Fixed for the life of the pipeline.
+        /// </summary>
+        IAmAScope? PipelineScope { get; }
+
         /// <summary>
         /// Tracks a per-query disposable (for example a child service scope) so that it is
         /// disposed when the pipeline completes.
