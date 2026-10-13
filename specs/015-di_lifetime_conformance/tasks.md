@@ -342,7 +342,7 @@
 
 ### 2A — Structural seams (ADR 0023 steps 1–3)
 
-- [ ] **STRUCTURAL: T2.1 — Add the IAmAScope handle**
+- [x] **STRUCTURAL: T2.1 — Add the IAmAScope handle**
   - Add `src/Paramore.Darker/IAmAScope.cs`: `public interface IAmAScope : IDisposable, IAsyncDisposable { }`.
   - Make `ServiceProviderLifetimeScope` implement it. After T1.12 it is already sync- and async-disposable.
   - Nothing uses the interface yet. Guarded by the full suite.
