@@ -1,3 +1,4 @@
+#nullable enable annotations
 #region Licence
 /* The MIT License (MIT)
 Copyright © 2024 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
@@ -51,6 +52,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         {
             return (IQueryHandler) Resolve(handlerType, lifetime);
         }
+
+        public IAmAScope? CreatePipelineScope() => null;
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {

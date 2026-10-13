@@ -1,3 +1,4 @@
+#nullable enable annotations
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,6 +27,8 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
 
             return _create(handlerType);
         }
+
+        public IAmAScope? CreatePipelineScope() => null;
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {

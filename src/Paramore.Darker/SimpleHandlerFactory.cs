@@ -1,3 +1,4 @@
+#nullable enable annotations
 #region Licence
 /* The MIT License (MIT)
 Copyright © 2024 Ian Cooper <ian_hammond_cooper@yahoo.co.uk>
@@ -45,6 +46,8 @@ namespace Paramore.Darker
 
         /// <inheritdoc />
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
+
+        public IAmAScope? CreatePipelineScope() => null;
 
         /// <inheritdoc />
         public void Release(IQueryHandler handler, IAmALifetime lifetime)

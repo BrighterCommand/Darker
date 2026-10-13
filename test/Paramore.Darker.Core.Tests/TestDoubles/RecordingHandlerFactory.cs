@@ -1,3 +1,4 @@
+#nullable enable annotations
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         public int ReleaseCount(IQueryHandler handler) => _released.Count(r => ReferenceEquals(r, handler));
 
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _create(handlerType);
+
+        public IAmAScope? CreatePipelineScope() => null;
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
