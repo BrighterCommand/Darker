@@ -446,7 +446,7 @@
 
 ### 2C — Migrate the ADR 0022 tests to the recording handle (ADR 0023 step 4)
 
-- [ ] **CHARACTERISE: T2.10 — Move the Phase 1 teardown tests from lifetime.Add to a recording IAmAScope handle, and prove each migrated test can still fail**
+- [x] **CHARACTERISE: T2.10 — Move the Phase 1 teardown tests from lifetime.Add to a recording IAmAScope handle, and prove each migrated test can still fail**
   - **USE COMMAND**: `/test-first characterise the Phase 1 teardown tests against a recording pipeline scope handle instead of lifetime.Add`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: the migrated files below. No new behaviour file.
