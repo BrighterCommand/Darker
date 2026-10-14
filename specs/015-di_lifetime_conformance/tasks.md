@@ -392,7 +392,7 @@
     - In `QueryLifetimeScope.Dispose`/`DisposeAsync`, dispose `PipelineScope`, after any remaining tracked items, through the same per-item fault-boundary method from T1.2 (sync) and T1.13 (async), with its guarded Error log.
     - Do nothing when `PipelineScope` is null.
 
-- [ ] **CHARACTERISE: T2.6 — A pipeline scope whose disposal throws is logged at Error, and the query still returns**
+- [x] **CHARACTERISE: T2.6 — A pipeline scope whose disposal throws is logged at Error, and the query still returns**
   - **USE COMMAND**: `/test-first when the pipeline scope handle throws on dispose should log the fault at Error and still return the result on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_pipeline_scope_dispose_throws_should_log_error_and_return_result.cs`
