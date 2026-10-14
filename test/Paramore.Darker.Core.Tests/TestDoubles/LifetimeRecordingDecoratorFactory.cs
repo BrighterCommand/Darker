@@ -11,7 +11,10 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
     /// </summary>
     internal sealed class LifetimeRecordingDecoratorFactory : IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
     {
+        private readonly TeardownEventLog _log;
         private readonly List<IAmALifetime> _lifetimesSeen = new List<IAmALifetime>();
+
+        public LifetimeRecordingDecoratorFactory(TeardownEventLog log = null) => _log = log;
 
         /// <summary>The lifetimes passed to <see cref="Create{T}"/>, in call order.</summary>
         public IReadOnlyList<IAmALifetime> LifetimesSeen => _lifetimesSeen;
@@ -23,9 +26,12 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         }
 
         public void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
-        {
-        }
+            => _log?.Record(TeardownEventLog.DECORATOR_RELEASED);
 
-        public ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator => default;
+        public ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
+        {
+            _log?.Record(TeardownEventLog.DECORATOR_RELEASED);
+            return default;
+        }
     }
 }

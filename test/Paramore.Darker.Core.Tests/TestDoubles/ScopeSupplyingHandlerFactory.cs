@@ -11,8 +11,11 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
     /// </summary>
     internal sealed class ScopeSupplyingHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
     {
+        private readonly TeardownEventLog _log;
         private readonly List<RecordingScope> _scopesCreated = new List<RecordingScope>();
         private readonly List<IAmALifetime> _lifetimesSeen = new List<IAmALifetime>();
+
+        public ScopeSupplyingHandlerFactory(TeardownEventLog log = null) => _log = log;
 
         /// <summary>The scopes returned from <see cref="CreatePipelineScope"/>, in call order.</summary>
         public IReadOnlyList<RecordingScope> ScopesCreated => _scopesCreated;
@@ -22,7 +25,7 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
 
         public IAmAScope? CreatePipelineScope()
         {
-            var scope = new RecordingScope();
+            var scope = new RecordingScope(_log);
             _scopesCreated.Add(scope);
             return scope;
         }
@@ -33,10 +36,12 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
             return (IQueryHandler)Activator.CreateInstance(handlerType)!;
         }
 
-        public void Release(IQueryHandler handler, IAmALifetime lifetime)
-        {
-        }
+        public void Release(IQueryHandler handler, IAmALifetime lifetime) => _log?.Record(TeardownEventLog.HANDLER_RELEASED);
 
-        public ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime) => default;
+        public ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime)
+        {
+            _log?.Record(TeardownEventLog.HANDLER_RELEASED);
+            return default;
+        }
     }
 }

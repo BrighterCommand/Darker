@@ -70,6 +70,9 @@ namespace Paramore.Darker
                 DisposeItem(_trackedDisposables[i]);
 
             _trackedDisposables.Clear();
+
+            if (PipelineScope != null)
+                DisposeItem(PipelineScope);
         }
 
         /// <inheritdoc />
@@ -84,6 +87,9 @@ namespace Paramore.Darker
                 await DisposeItemAsync(_trackedDisposables[i]).ConfigureAwait(false);
 
             _trackedDisposables.Clear();
+
+            if (PipelineScope != null)
+                await DisposeItemAsync(PipelineScope).ConfigureAwait(false);
         }
 
         private async ValueTask DisposeItemAsync(IDisposable item)
