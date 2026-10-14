@@ -418,7 +418,7 @@
   - Implementation should:
     - Need no production change. T2.3 and T2.4 deliver this.
 
-- [ ] **CHARACTERISE: T2.8 — If CreatePipelineScope throws, the caller sees that exception (ADR 0023 row 5)**
+- [x] **CHARACTERISE: T2.8 — If CreatePipelineScope throws, the caller sees that exception (ADR 0023 row 5)**
   - **USE COMMAND**: `/test-first when the handler factory's CreatePipelineScope throws should surface that exception on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_create_pipeline_scope_throws_should_surface_that_exception.cs`
