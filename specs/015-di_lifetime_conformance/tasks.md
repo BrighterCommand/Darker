@@ -405,7 +405,7 @@
   - Implementation should:
     - Need no production change. T2.5 delivers this.
 
-- [ ] **CHARACTERISE: T2.7 — Each path asks the factory that will create the handler for the pipeline scope**
+- [x] **CHARACTERISE: T2.7 — Each path asks the factory that will create the handler for the pipeline scope**
   - **USE COMMAND**: `/test-first when BuildAsync has no async registry or BuildStream has no async factory should ask the sync handler factory for the pipeline scope`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_async_path_falls_back_to_sync_factory_should_ask_it_for_the_pipeline_scope.cs`
