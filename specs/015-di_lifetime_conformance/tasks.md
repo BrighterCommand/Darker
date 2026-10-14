@@ -379,7 +379,7 @@
     - In `Build`, `BuildAsync` and `BuildStream`, create the lifetime as `new QueryLifetimeScope(chosenFactory.CreatePipelineScope(), _logger)` in one expression (ADR 0023 risk mitigation: the handle can never escape).
     - Do not dispose the handle yet. T2.5 adds that.
 
-- [ ] **TEST + IMPLEMENT: T2.5 — The pipeline scope is disposed exactly once, after every release**
+- [x] **TEST + IMPLEMENT: T2.5 — The pipeline scope is disposed exactly once, after every release**
   - **USE COMMAND**: `/test-first when a query completes should dispose the pipeline scope handle once after the handler and every decorator are released on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_query_completes_should_dispose_pipeline_scope_once_after_every_release.cs`
