@@ -481,7 +481,7 @@
   - Implementation should:
     - Need no production change. This pins the behaviour that T2.13 must preserve.
 
-- [ ] **CHARACTERISE: T2.12 — With a Singleton handler lifetime, the handler is resolved and Darker never disposes it (ADR 0023 row 1)**
+- [x] **CHARACTERISE: T2.12 — With a Singleton handler lifetime, the handler is resolved and Darker never disposes it (ADR 0023 row 1)**
   - **USE COMMAND**: `/test-first when handler lifetime is singleton should resolve the same handler each query and never dispose it on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_handler_lifetime_is_singleton_should_resolve_handler_and_never_dispose_it.cs`
