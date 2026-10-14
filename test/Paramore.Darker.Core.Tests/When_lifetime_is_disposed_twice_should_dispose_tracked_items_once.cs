@@ -11,7 +11,7 @@ namespace Paramore.Darker.Core.Tests
         public void When_factory_disposes_the_lifetime_and_the_pipeline_disposes_it_again_should_dispose_each_item_once()
         {
             // Arrange
-            var recorder = new RecordingDisposable("tracked", new List<string>());
+            var recorder = new RecordingScope();
 
             var registry = new QueryHandlerRegistry();
             registry.Register<LifetimeIsolationQuery, LifetimeIsolationResult, LifetimeIsolationQueryHandler>();

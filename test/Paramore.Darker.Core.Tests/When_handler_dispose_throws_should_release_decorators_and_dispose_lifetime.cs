@@ -23,7 +23,7 @@ namespace Paramore.Darker.Core.Tests
         {
             // Arrange
             var fault = new InvalidOperationException("handler failed to dispose");
-            var recorder = new RecordingDisposable("lifetime-item", new List<string>());
+            var recorder = new RecordingScope();
             var created = new List<IQueryHandlerDecorator>();
 
             var registry = new QueryHandlerRegistry();

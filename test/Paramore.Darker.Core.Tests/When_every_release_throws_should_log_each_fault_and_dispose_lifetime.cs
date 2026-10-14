@@ -25,7 +25,7 @@ namespace Paramore.Darker.Core.Tests
             var handlerFault = new InvalidOperationException("handler release failed");
             var firstDecoratorFault = new InvalidOperationException("first decorator release failed");
             var secondDecoratorFault = new InvalidOperationException("second decorator release failed");
-            var recorder = new RecordingDisposable("lifetime-item", new List<string>());
+            var recorder = new RecordingScope();
 
             var registry = new QueryHandlerRegistry();
             registry.Register<EveryReleaseThrowsQuery, EveryReleaseThrowsResult, EveryReleaseThrowsQueryHandler>();

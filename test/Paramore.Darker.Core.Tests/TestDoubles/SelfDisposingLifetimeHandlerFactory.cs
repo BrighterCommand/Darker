@@ -5,27 +5,26 @@ using System.Threading.Tasks;
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
     /// <summary>
-    /// A handler factory that attaches a disposable to the pipeline's <see cref="IAmALifetime"/> on create,
+    /// A handler factory that supplies a pipeline scope handle,
     /// and disposes the lifetime itself on release, ahead of the pipeline builder's own final dispose.
     /// </summary>
     internal sealed class SelfDisposingLifetimeHandlerFactory : IQueryHandlerFactory, IQueryHandlerFactoryAsync
     {
         private readonly Func<Type, IQueryHandler> _create;
-        private readonly IDisposable _toAttach;
+        private readonly IAmAScope _scope;
 
-        public SelfDisposingLifetimeHandlerFactory(Func<Type, IQueryHandler> create, IDisposable toAttach)
+        public SelfDisposingLifetimeHandlerFactory(Func<Type, IQueryHandler> create, IAmAScope scope)
         {
             _create = create ?? throw new ArgumentNullException(nameof(create));
-            _toAttach = toAttach;
+            _scope = scope;
         }
 
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime)
         {
-            lifetime.Add(_toAttach);
             return _create(handlerType);
         }
 
-        public IAmAScope? CreatePipelineScope() => null;
+        public IAmAScope? CreatePipelineScope() => _scope;
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime) => lifetime.Dispose();
 

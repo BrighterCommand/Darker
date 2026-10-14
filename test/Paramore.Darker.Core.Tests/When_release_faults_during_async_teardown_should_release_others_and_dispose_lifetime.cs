@@ -24,7 +24,7 @@ namespace Paramore.Darker.Core.Tests
         {
             // Arrange — only the handler's DisposeAsync faults
             var handlerFault = new InvalidOperationException("handler release failed asynchronously");
-            var lifetimeItem = new RecordingDisposable("lifetime-item", new List<string>());
+            var lifetimeItem = new RecordingScope();
             var created = new List<IRecordsAsyncDisposal>();
             var processor = AsyncProcessor<HandlerFaultsTag>(handlerFault, new Exception[] { null, null }, lifetimeItem, created);
 
@@ -35,7 +35,7 @@ namespace Paramore.Darker.Core.Tests
             result.Value.ShouldBe(AsyncReleaseFaultHandler<HandlerFaultsTag>.RESULT);
             created.Count.ShouldBe(3);
             created.ShouldAllBe(c => c.DisposeAsyncCount == 1);
-            lifetimeItem.DisposeCount.ShouldBe(1);
+            lifetimeItem.DisposeAsyncCount.ShouldBe(1);
 
             // Assert — one Error, naming the handler type
             var errors = ErrorsFor(handlerFault);
@@ -50,7 +50,7 @@ namespace Paramore.Darker.Core.Tests
             var handlerFault = new InvalidOperationException("handler release failed asynchronously");
             var firstDecoratorFault = new InvalidOperationException("first decorator release failed asynchronously");
             var secondDecoratorFault = new InvalidOperationException("second decorator release failed asynchronously");
-            var lifetimeItem = new RecordingDisposable("lifetime-item", new List<string>());
+            var lifetimeItem = new RecordingScope();
             var created = new List<IRecordsAsyncDisposal>();
             var processor = AsyncProcessor<EveryComponentFaultsTag>(
                 handlerFault, new Exception[] { firstDecoratorFault, secondDecoratorFault }, lifetimeItem, created);
@@ -62,7 +62,7 @@ namespace Paramore.Darker.Core.Tests
             result.Value.ShouldBe(AsyncReleaseFaultHandler<EveryComponentFaultsTag>.RESULT);
             created.Count.ShouldBe(3);
             created.ShouldAllBe(c => c.DisposeAsyncCount == 1);
-            lifetimeItem.DisposeCount.ShouldBe(1);
+            lifetimeItem.DisposeAsyncCount.ShouldBe(1);
 
             // Assert — one Error per fault, each naming its component's type
             var faults = new[] { handlerFault, firstDecoratorFault, secondDecoratorFault };
@@ -83,7 +83,7 @@ namespace Paramore.Darker.Core.Tests
         {
             // Arrange — only the handler's DisposeAsync faults
             var handlerFault = new InvalidOperationException("stream handler release failed asynchronously");
-            var lifetimeItem = new RecordingDisposable("lifetime-item", new List<string>());
+            var lifetimeItem = new RecordingScope();
             var created = new List<IRecordsAsyncDisposal>();
 
             Func<Type, IQueryHandler> createHandler = _ => Track(created, new StreamReleaseFaultHandler<StreamHandlerFaultsTag>(handlerFault));
@@ -109,7 +109,7 @@ namespace Paramore.Darker.Core.Tests
             items.Count.ShouldBe(2);
             created.Count.ShouldBe(3);
             created.ShouldAllBe(c => c.DisposeAsyncCount == 1);
-            lifetimeItem.DisposeCount.ShouldBe(1);
+            lifetimeItem.DisposeAsyncCount.ShouldBe(1);
 
             // Assert — one Error, naming the handler type
             var errors = ErrorsFor(handlerFault);
@@ -118,7 +118,7 @@ namespace Paramore.Darker.Core.Tests
         }
 
         private static QueryProcessor AsyncProcessor<TTag>(
-            Exception handlerFault, Exception[] decoratorFaults, RecordingDisposable lifetimeItem, List<IRecordsAsyncDisposal> created)
+            Exception handlerFault, Exception[] decoratorFaults, RecordingScope lifetimeItem, List<IRecordsAsyncDisposal> created)
         {
             Func<Type, IQueryHandler> createHandler = _ => Track(created, new AsyncReleaseFaultHandler<TTag>(handlerFault));
             var handlerFactory = new LifetimeAttachingHandlerFactory(createHandler, lifetimeItem);
