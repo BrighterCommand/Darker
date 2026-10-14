@@ -492,7 +492,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **STRUCTURAL: T2.13 — The DI factory creates the scope up front, resolves only from a recognised handle, fails fast, and holds no per-query state**
+- [x] **STRUCTURAL: T2.13 — The DI factory creates the scope up front, resolves only from a recognised handle, fails fast, and holds no per-query state**
   - In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceProviderComponentFactory.cs`:
     - implement `CreatePipelineScope()`: null for a Singleton handler lifetime, otherwise `new ServiceProviderLifetimeScope(serviceProvider)`;
     - replace `Resolve` with a lookup of `lifetime.PipelineScope` through one private recognition method. The method tests for `ServiceProviderLifetimeScope` and throws `ConfigurationException` for a null lifetime or handle (row 3, naming the component type and handler lifetime) and for an unrecognised handle (row 4, naming the handle type);
