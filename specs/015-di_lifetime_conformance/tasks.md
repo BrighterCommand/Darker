@@ -431,7 +431,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T2.9 — A build that fails after the scope exists still disposes the scope (ADR 0023 row 6; risk mitigation: a handle never escapes ownership)**
+- [x] **CHARACTERISE: T2.9 — A build that fails after the scope exists still disposes the scope (ADR 0023 row 6; risk mitigation: a handle never escapes ownership)**
   - **USE COMMAND**: `/test-first when the handler lookup fails after the pipeline scope is created should dispose the scope and surface the lookup exception`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_handler_lookup_fails_after_scope_created_should_dispose_the_scope.cs`
