@@ -469,7 +469,7 @@
 
 > Through `AddDarker` the DI factory's observable behaviour is unchanged. Scoped and Transient components already resolve from a per-query child scope, and FR10's rows 3–4 cannot be reached. The tests below are therefore CHARACTERISE pins written **before** the rewrite. The rewrite itself is T2.13.
 
-- [ ] **CHARACTERISE: T2.11 — With a Scoped or Transient handler lifetime, nothing resolves from the root: a disposable handler is disposed at the end of each query (ADR 0023 row 2)**
+- [x] **CHARACTERISE: T2.11 — With a Scoped or Transient handler lifetime, nothing resolves from the root: a disposable handler is disposed at the end of each query (ADR 0023 row 2)**
   - **USE COMMAND**: `/test-first when handler lifetime is scoped or transient should dispose a disposable handler at the end of each query on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_handler_lifetime_is_scoped_or_transient_should_dispose_disposable_handler_each_query.cs`
