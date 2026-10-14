@@ -503,7 +503,7 @@
     - `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs`, `When_handler_lifetime_is_transient_should_create_fresh_and_dispose_after_pipeline.cs`, `When_handler_lifetime_is_singleton_should_reuse_dependency_and_not_dispose.cs`, `When_no_lifetime_configured_should_create_once_per_query_and_dispose.cs`, `When_pipeline_fails_should_dispose_dependency.cs`, `When_query_processor_is_singleton_and_dependency_is_scoped_should_resolve_and_dispose.cs` and `When_two_queries_run_concurrently_should_isolate_scopes.cs`.
   - Green before and after.
 
-- [ ] **VERIFY: T2.14 — The existing scoped-sharing and concurrent-isolation tests still guard the rewritten DI factory (FR11, NFR Concurrency)**
+- [x] **VERIFY: T2.14 — The existing scoped-sharing and concurrent-isolation tests still guard the rewritten DI factory (FR11, NFR Concurrency)**
   - Run `When_two_queries_run_concurrently_should_isolate_scopes.cs` and `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs` unchanged, green.
   - Prove they still guard the rewrite by applying each mutation to production code, observing the named failure, and reverting:
     - (a) make `CreatePipelineScope()` cache one `ServiceProviderLifetimeScope` in a field and return it on every call. The concurrent test must fail on `ReferenceEquals(queryA.HandlerDependency, queryB.HandlerDependency).ShouldBeFalse()`.
