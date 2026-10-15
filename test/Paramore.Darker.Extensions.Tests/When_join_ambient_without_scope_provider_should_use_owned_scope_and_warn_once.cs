@@ -28,7 +28,9 @@ namespace Paramore.Darker.Extensions.Tests
                 })
                 .AddHandlers(registry => registry.Register<TrackedQuery, TrackedQuery.Result, TrackedQueryHandler>());
 
-            using var provider = services.BuildServiceProvider();
+            // Not disposed: the container's LoggerFactory is now ApplicationLogging.LoggerFactory, and disposing it
+            // would break the static loggers of tests that run after this one.
+            var provider = services.BuildServiceProvider();
             var queryProcessor = provider.GetRequiredService<IQueryProcessor>();
 
             // Act

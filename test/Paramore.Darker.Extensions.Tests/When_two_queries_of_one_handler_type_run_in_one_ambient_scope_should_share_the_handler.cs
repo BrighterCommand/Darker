@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Extensions.Tests.TestDoubles;
 using Shouldly;
@@ -16,7 +18,7 @@ namespace Paramore.Darker.Extensions.Tests
             // scope, so queries that share an adopted ambient scope share the handler, as every other
             // consumer of that scope shares its Scoped services (ADR 0024). Only decorators are per query.
             var services = new ServiceCollection();
-            services.AddLogging();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddScoped<ITrackedDependency, TrackedDependency>();
             services.AddSingleton<DependencyTracker>();
             services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)

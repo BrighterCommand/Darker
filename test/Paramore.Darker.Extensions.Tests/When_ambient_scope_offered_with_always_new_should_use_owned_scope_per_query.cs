@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Extensions.Tests.TestDoubles;
 using Shouldly;
@@ -18,7 +20,7 @@ namespace Paramore.Darker.Extensions.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddLogging();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddScoped<ITrackedDependency, TrackedDependency>();
             services.AddSingleton<DependencyTracker>();
             services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)

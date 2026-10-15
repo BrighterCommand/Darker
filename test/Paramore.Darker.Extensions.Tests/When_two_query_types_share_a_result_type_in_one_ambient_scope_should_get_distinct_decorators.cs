@@ -1,5 +1,7 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Extensions.Tests.TestDoubles;
 using Shouldly;
@@ -16,7 +18,7 @@ namespace Paramore.Darker.Extensions.Tests
             // Arrange — Scoped handlers and one ambient scope; both queries return SharedRecordingResult,
             // and decorators are closed over IQuery<TResult>, so they would share a Scoped decorator
             var services = new ServiceCollection();
-            services.AddLogging();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddScoped<ITrackedDependency, TrackedDependency>();
             services.AddSingleton<DependencyTracker>();
             services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
