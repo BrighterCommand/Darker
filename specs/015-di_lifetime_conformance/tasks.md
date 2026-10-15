@@ -680,7 +680,7 @@
     - When adoption is enabled, call `GetAmbient(ScopeAffinity.JoinAmbient)` once in `CreatePipelineScope()`. Wrap any exception in `AmbientScopeSourceException` naming the provider type.
     - Return an owned scope for anything else, for now.
 
-- [ ] **CHARACTERISE: T3.10 — A provider that offers no scope gives an owned scope and logs nothing (ADR 0024 row 6)**
+- [x] **CHARACTERISE: T3.10 — A provider that offers no scope gives an owned scope and logs nothing (ADR 0024 row 6)**
   - **USE COMMAND**: `/test-first when the scope provider returns no ambient scope should use an owned scope and log no Warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scope_provider_offers_no_scope_should_use_owned_scope_without_warning.cs`
