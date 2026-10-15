@@ -531,7 +531,7 @@
 
 ### 2F — Documentation and checkpoint (ADR 0023 step 7)
 
-- [ ] **DOC: T2.17 — XML documentation for the pipeline scope handle, and a release-notes check for ADR 0023**
+- [x] **DOC: T2.17 — XML documentation for the pipeline scope handle, and a release-notes check for ADR 0023**
   - Document the following:
     - `IAmAScope`: a disposal-only capability with no resolution members.
     - `IAmALifetime.PipelineScope`: fixed at construction, null when the factory creates no scope.
