@@ -615,7 +615,7 @@
   - Implementation should:
     - Need no production change. T3.5 delivers this.
 
-- [ ] **TEST + IMPLEMENT: T3.7 — JoinAmbient with no scope provider registered falls back to an owned scope and logs one Warning**
+- [x] **TEST + IMPLEMENT: T3.7 — JoinAmbient with no scope provider registered falls back to an owned scope and logs one Warning**
   - **USE COMMAND**: `/test-first when affinity is JoinAmbient and no scope provider is registered should use an owned scope and log one Warning that no provider is registered`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_join_ambient_without_scope_provider_should_use_owned_scope_and_warn_once.cs`
