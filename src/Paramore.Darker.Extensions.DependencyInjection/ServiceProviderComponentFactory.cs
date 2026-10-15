@@ -39,7 +39,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class ServiceProviderComponentFactory(
         IServiceProvider serviceProvider,
-        ServiceLifetime handlerLifetime)
+        ServiceLifetime handlerLifetime,
+        IAmAScopeProvider? scopeProvider,
+        ScopeAffinity affinity,
+        AdoptionDiagnostics adoptionDiagnostics)
         :
             IQueryHandlerFactory, IQueryHandlerFactoryAsync,
             IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync

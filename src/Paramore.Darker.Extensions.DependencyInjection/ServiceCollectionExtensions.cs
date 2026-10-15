@@ -26,9 +26,26 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var decoratorRegistry = new ServiceCollectionDecoratorRegistry(services, options.HandlerLifetime);
             decoratorRegistry.RegisterDefaultDecorators();
 
+            services.TryAddSingleton<AdoptionDiagnostics>();
+
             services.TryAdd(new ServiceDescriptor(typeof(IQueryProcessor), provider => BuildQueryProcessor(handlerRegistry, handlerRegistryAsync, handlerRegistryStream, provider, decoratorRegistry, options), options.QueryProcessorLifetime));
 
             return new ServiceCollectionDarkerHandlerBuilder(handlerRegistry, handlerRegistryAsync, handlerRegistryStream, decoratorRegistry, services);
+        }
+
+        /// <summary>
+        /// Registers the provider that offers Darker the ambient scope, and the affinity that says whether
+        /// queries may join it. Both replace any earlier registration. The provider is a singleton.
+        /// </summary>
+        public static IServiceCollection AddDarkerScopeProvider<TProvider>(
+            this IServiceCollection services,
+            ScopeAffinity affinity = ScopeAffinity.JoinAmbient)
+            where TProvider : class, IAmAScopeProvider
+        {
+            services.Replace(ServiceDescriptor.Singleton<IAmAScopeProvider, TProvider>());
+            services.Replace(ServiceDescriptor.Singleton(new ScopeAffinityRegistration(affinity)));
+
+            return services;
         }
 
         private static QueryProcessor BuildQueryProcessor(
@@ -42,7 +59,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var loggerFactory = provider.GetService<ILoggerFactory>();
             ApplicationLogging.LoggerFactory = loggerFactory;
 
-            var componentFactory = new ServiceProviderComponentFactory(provider, options.HandlerLifetime);
+            var scopeProvider = provider.GetService<IAmAScopeProvider>();
+            var affinityRegistration = provider.GetService<ScopeAffinityRegistration>();
+            var adoptionDiagnostics = provider.GetRequiredService<AdoptionDiagnostics>();
+            var affinity = affinityRegistration?.Affinity ?? options.DefaultScopeAffinity;
+
+            var componentFactory = new ServiceProviderComponentFactory(
+                provider, options.HandlerLifetime, scopeProvider, affinity, adoptionDiagnostics);
             var policyRegistry = provider.GetService<Polly.Registry.IPolicyRegistry<string>>();
             var resiliencePipelineProvider = provider.GetService<Polly.Registry.ResiliencePipelineProvider<string>>();
             var tracer = provider.GetService<IAmADarkerTracer>();

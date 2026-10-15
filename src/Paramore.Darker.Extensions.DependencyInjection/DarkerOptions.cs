@@ -9,5 +9,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public ServiceLifetime HandlerLifetime { get; set; } = ServiceLifetime.Transient;
         public ServiceLifetime QueryProcessorLifetime { get; set; } = ServiceLifetime.Singleton;
         public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
+        public ScopeAffinity DefaultScopeAffinity { get; set; } = ScopeAffinity.AlwaysNew;
     }
 }
