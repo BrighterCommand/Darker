@@ -63,10 +63,33 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (handlerLifetime == ServiceLifetime.Singleton)
                 return null;
 
-            if (_adoptionEnabled && OfferedAmbientScope() is IAmAServiceProviderScope offered)
-                return new BorrowedServiceProviderScope(offered);
+            if (_adoptionEnabled)
+            {
+                var borrowed = Adopt(OfferedAmbientScope());
+                if (borrowed != null)
+                    return borrowed;
+            }
 
             return new ServiceProviderLifetimeScope(serviceProvider);
+        }
+
+        // Probes an offered scope and, if it passes, wraps it in a handle that never disposes it. A scope
+        // that fails the probe is declined: dropped without disposal, with one Warning per reason.
+        private IAmAScope? Adopt(IAmAScope? offered)
+        {
+            if (offered == null)
+                return null;
+
+            if (offered is not IAmAServiceProviderScope serviceProviderScope)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "no-service-provider",
+                    $"The ambient scope {offered.GetType()} exposes no service provider, so Darker cannot resolve from it. " +
+                    "Each query gets a scope of its own. Offer an IAmAServiceProviderScope to join an ambient scope.");
+                return null;
+            }
+
+            return new BorrowedServiceProviderScope(serviceProviderScope);
         }
 
         // Only reached with a provider present (the adoption configuration check guarantees it).
