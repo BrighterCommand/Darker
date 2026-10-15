@@ -746,7 +746,7 @@
 
 ### 3E — Decorators per query (ADR 0024 step 7, FR11, NFR Concurrency)
 
-- [ ] **TEST + IMPLEMENT: T3.15 — In one adopted scope, two query types that share a result type get distinct decorator instances, and each resolves the ambient Scoped services**
+- [x] **TEST + IMPLEMENT: T3.15 — In one adopted scope, two query types that share a result type get distinct decorator instances, and each resolves the ambient Scoped services**
   - **USE COMMAND**: `/test-first when two query types with the same result type run in one adopted ambient scope should create distinct decorator instances that each resolve the ambient scoped dependency`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_two_query_types_share_a_result_type_in_one_ambient_scope_should_get_distinct_decorators.cs`
