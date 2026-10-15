@@ -865,7 +865,7 @@
   - Implementation should:
     - Wrap the probe resolutions in a try/catch. On any exception, decline with a reason that names the exception type.
 
-- [ ] **CHARACTERISE: T3.24 — The fallback Warning latches once per container: across concurrent queries, across request scopes with a Scoped processor, and independently for each container (NFR Performance and Diagnosability; risk mitigation: the atomic latch)**
+- [x] **CHARACTERISE: T3.24 — The fallback Warning latches once per container: across concurrent queries, across request scopes with a Scoped processor, and independently for each container (NFR Performance and Diagnosability; risk mitigation: the atomic latch)**
   - **USE COMMAND**: `/test-first when a misconfiguration fallback recurs across concurrent queries, Scoped processors and separate containers should log the Warning once per container`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_fallback_recurs_should_log_warning_once_per_container.cs`
