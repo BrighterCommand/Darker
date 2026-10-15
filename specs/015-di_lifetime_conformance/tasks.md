@@ -853,7 +853,7 @@
   - Implementation should:
     - Compare the `AdoptionDiagnostics` singleton resolved from the offered provider with the one the factory holds.
 
-- [ ] **TEST + IMPLEMENT: T3.23 — An ambient scope already disposed when the pipeline is built is declined with one Warning (row 11; FR17 acceptance criterion)**
+- [x] **TEST + IMPLEMENT: T3.23 — An ambient scope already disposed when the pipeline is built is declined with one Warning (row 11; FR17 acceptance criterion)**
   - **USE COMMAND**: `/test-first when the offered ambient scope is already disposed should decline it, use an owned scope and warn once naming the exception type`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_offered_scope_is_already_disposed_should_decline_and_warn_once.cs`
