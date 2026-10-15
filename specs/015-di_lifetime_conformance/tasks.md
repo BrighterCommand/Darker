@@ -550,7 +550,7 @@
 
 ### 3A — Structural seams and plumbing (ADR 0024 steps 1–3)
 
-- [ ] **STRUCTURAL: T3.1 — Add the core ambient seam**
+- [x] **STRUCTURAL: T3.1 — Add the core ambient seam**
   - Add `src/Paramore.Darker/IAmAScopeProvider.cs` (`IAmAScope? GetAmbient(ScopeAffinity affinity)`) and `src/Paramore.Darker/ScopeAffinity.cs` (`AlwaysNew = 0`, `JoinAmbient`). Both use `#nullable enable annotations`.
   - Add `src/Paramore.Darker/Exceptions/AmbientScopeSourceException.cs`: sealed, with a constructor `(string message, Exception innerException)`.
   - Nothing uses them yet. Guarded by the full suite.
