@@ -787,7 +787,7 @@
   - Implementation should:
     - Need no production change. T3.15 delivers this.
 
-- [ ] **CHARACTERISE: T3.18 — With a Singleton handler lifetime, decorators stay Singleton**
+- [x] **CHARACTERISE: T3.18 — With a Singleton handler lifetime, decorators stay Singleton**
   - **USE COMMAND**: `/test-first when handler lifetime is singleton should reuse the same decorator instance across queries`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_handler_lifetime_is_singleton_should_reuse_decorator_instance.cs`
