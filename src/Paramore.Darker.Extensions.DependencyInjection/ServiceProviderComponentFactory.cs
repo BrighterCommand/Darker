@@ -63,8 +63,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (handlerLifetime == ServiceLifetime.Singleton)
                 return null;
 
-            if (_adoptionEnabled)
-                OfferedAmbientScope();
+            if (_adoptionEnabled && OfferedAmbientScope() is IAmAServiceProviderScope offered)
+                return new BorrowedServiceProviderScope(offered);
 
             return new ServiceProviderLifetimeScope(serviceProvider);
         }
