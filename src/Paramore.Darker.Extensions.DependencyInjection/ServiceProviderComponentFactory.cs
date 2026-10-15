@@ -89,6 +89,15 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return null;
             }
 
+            if (serviceProviderScope.Services == null)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "null-services",
+                    $"The ambient scope {offered.GetType()} has no service provider, so Darker cannot resolve from it. " +
+                    "Each query gets a scope of its own.");
+                return null;
+            }
+
             return new BorrowedServiceProviderScope(serviceProviderScope);
         }
 
