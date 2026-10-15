@@ -640,7 +640,7 @@
   - Implementation should:
     - Need no production change. T3.3 delivers this.
 
-- [ ] **TEST + IMPLEMENT: T3.8a — AddDarkerScopeProvider rejects a null service collection with ArgumentNullException naming the parameter**
+- [x] **TEST + IMPLEMENT: T3.8a — AddDarkerScopeProvider rejects a null service collection with ArgumentNullException naming the parameter**
   - **USE COMMAND**: `/test-first when AddDarkerScopeProvider is called on a null service collection should throw ArgumentNullException naming services`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scope_provider_registered_on_null_services_should_throw_ArgumentNullException.cs`
