@@ -47,6 +47,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             IQueryHandlerFactory, IQueryHandlerFactoryAsync,
             IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
     {
+        // Rows 1 to 4 of the decision ladder (ADR 0024) depend only on configuration, so they are
+        // evaluated once, when the factory is built.
+        private readonly bool _adoptionEnabled = EvaluateAdoption(handlerLifetime, scopeProvider, affinity, adoptionDiagnostics);
+
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime)
         {
             return (IQueryHandler) Resolve(handlerType, lifetime);
@@ -77,6 +81,27 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         public ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator => default;
+
+        private static bool EvaluateAdoption(
+            ServiceLifetime handlerLifetime,
+            IAmAScopeProvider? scopeProvider,
+            ScopeAffinity affinity,
+            AdoptionDiagnostics adoptionDiagnostics)
+        {
+            if (affinity != ScopeAffinity.JoinAmbient)
+                return false;
+
+            if (handlerLifetime != ServiceLifetime.Scoped)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "scoped-handler-lifetime",
+                    $"The scope affinity is JoinAmbient, but the handler lifetime is {handlerLifetime}. " +
+                    "Adopting an ambient scope needs a Scoped handler lifetime, so each query gets a scope of its own.");
+                return false;
+            }
+
+            return scopeProvider != null;
+        }
 
         private object Resolve(Type componentType, IAmALifetime lifetime)
         {
