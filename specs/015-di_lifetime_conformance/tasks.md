@@ -903,7 +903,7 @@
 
 ## Phase 4 — ASP.NET Core package (ADR 0024)
 
-- [ ] **SETUP: T4.1 — Create Paramore.Darker.Extensions.AspNetCore and its test project (ADR 0024 step 9)**
+- [x] **SETUP: T4.1 — Create Paramore.Darker.Extensions.AspNetCore and its test project (ADR 0024 step 9)**
   - Create `src/Paramore.Darker.Extensions.AspNetCore/Paramore.Darker.Extensions.AspNetCore.csproj`, following `src/Paramore.Darker.Caching/Paramore.Darker.Caching.csproj`, with:
     - `net8.0;net9.0` and `<Nullable>enable</Nullable>`;
     - `<FrameworkReference Include="Microsoft.AspNetCore.App" />`;
