@@ -603,7 +603,7 @@
     - In the `ServiceProviderComponentFactory` constructor, compute `adoptionEnabled` (`JoinAmbient`, Scoped, provider present). Log the configuration Warning once through `AdoptionDiagnostics` when the affinity is `JoinAmbient` but the handler lifetime is not Scoped.
     - Order `CreatePipelineScope()` as: Singleton returns null; adoption disabled returns an owned scope.
 
-- [ ] **CHARACTERISE: T3.6 — JoinAmbient with a Singleton handler lifetime does not adopt and logs one Warning**
+- [x] **CHARACTERISE: T3.6 — JoinAmbient with a Singleton handler lifetime does not adopt and logs one Warning**
   - **USE COMMAND**: `/test-first when affinity is JoinAmbient and handler lifetime is singleton should not adopt and log one Warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_join_ambient_with_singleton_handler_lifetime_should_not_adopt_and_warn_once.cs`
