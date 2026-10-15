@@ -774,7 +774,7 @@
   - Implementation should:
     - Need no production change. T3.11 delivers this.
 
-- [ ] **CHARACTERISE: T3.17 — With an owned scope, a pipeline that applies the same decorator type twice gets two decorator instances, each sharing the handler's Scoped dependency (ADR 0024: the one visible change without the opt-in)**
+- [x] **CHARACTERISE: T3.17 — With an owned scope, a pipeline that applies the same decorator type twice gets two decorator instances, each sharing the handler's Scoped dependency (ADR 0024: the one visible change without the opt-in)**
   - **USE COMMAND**: `/test-first when a handler applies the same decorator type twice under a scoped handler lifetime should create two decorator instances that share the handler's scoped dependency`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_same_decorator_type_applied_twice_should_create_two_instances.cs`
