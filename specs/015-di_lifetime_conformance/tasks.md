@@ -842,7 +842,7 @@
     - Detect the root by Microsoft DI's behaviour. The root answers `IServiceProvider` and `IServiceScopeFactory` with the root scope. A request scope answers `IServiceProvider` with itself.
     - Resolve only singletons in the probe.
 
-- [ ] **TEST + IMPLEMENT: T3.22 — A scope from a container that does not hold this Darker registration is declined (row 10)**
+- [x] **TEST + IMPLEMENT: T3.22 — A scope from a container that does not hold this Darker registration is declined (row 10)**
   - **USE COMMAND**: `/test-first when the offered ambient scope belongs to another container should decline it, use an owned scope and warn once`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_offered_scope_is_from_another_container_should_decline_and_warn_once.cs`
