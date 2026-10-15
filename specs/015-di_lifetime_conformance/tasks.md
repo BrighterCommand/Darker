@@ -540,7 +540,7 @@
   - Update the summary on `ServiceProviderComponentFactory` (lines ~30–35) so it no longer mentions the table.
   - Confirm that `release_notes.md` records the `CreatePipelineScope` addition, the removal of `Add` with `PipelineScope` added, and the custom decorator factory contract.
 
-- [ ] **VERIFY: T2.18 — Phase 2 checkpoint**
+- [x] **VERIFY: T2.18 — Phase 2 checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release --no-build`, green on net8.0 and net9.0.
   - Confirm with `grep` that the code contains no `ConditionalWeakTable` and no `IAmALifetime.Add`.
 
