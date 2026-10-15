@@ -59,7 +59,29 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         // Singletons resolve from the captured provider and Darker never disposes them, so they
         // need no per-query scope; Scoped and Transient components share one child scope per query.
         public IAmAScope? CreatePipelineScope()
-            => handlerLifetime == ServiceLifetime.Singleton ? null : new ServiceProviderLifetimeScope(serviceProvider);
+        {
+            if (handlerLifetime == ServiceLifetime.Singleton)
+                return null;
+
+            if (_adoptionEnabled)
+                OfferedAmbientScope();
+
+            return new ServiceProviderLifetimeScope(serviceProvider);
+        }
+
+        // Only reached with a provider present (the adoption configuration check guarantees it).
+        private IAmAScope? OfferedAmbientScope()
+        {
+            try
+            {
+                return scopeProvider!.GetAmbient(ScopeAffinity.JoinAmbient);
+            }
+            catch (Exception exception)
+            {
+                throw new AmbientScopeSourceException(
+                    $"The scope provider {scopeProvider!.GetType()} failed when asked for the ambient scope.", exception);
+            }
+        }
 
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {

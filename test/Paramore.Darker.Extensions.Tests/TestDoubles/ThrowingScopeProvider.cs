@@ -13,10 +13,14 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
 
         public int CallCount => Volatile.Read(ref _callCount);
 
+        /// <summary>The exception most recently thrown, so a test can check it is wrapped, not replaced.</summary>
+        public Exception Thrown { get; private set; }
+
         public IAmAScope GetAmbient(ScopeAffinity affinity)
         {
             Interlocked.Increment(ref _callCount);
-            throw new InvalidOperationException("The scope provider must not be asked when the affinity is AlwaysNew.");
+            Thrown = new InvalidOperationException("The scope provider failed.");
+            throw Thrown;
         }
     }
 }
