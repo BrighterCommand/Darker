@@ -894,7 +894,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **VERIFY: T3.26 — Phase 3 checkpoint**
+- [x] **VERIFY: T3.26 — Phase 3 checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release --no-build`, green on net8.0 and net9.0.
   - Confirm that these pass unchanged: `When_two_queries_run_concurrently_should_isolate_scopes.cs`, `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs` and `When_decorator_lifetime_configured_should_follow_same_rules_as_handler.cs`.
   - Confirm that `Paramore.Darker.Extensions.DependencyInjection.csproj` has no ASP.NET Core reference.
