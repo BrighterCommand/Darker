@@ -761,7 +761,7 @@
   - Implementation should:
     - In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDecoratorRegistry.cs` (line 21), register each decorator as `ServiceLifetime.Transient` when the handler lifetime is Scoped or Transient, and as `Singleton` when it is Singleton. Keep `TryAdd`.
 
-- [ ] **CHARACTERISE: T3.16 — Two queries of one handler type in one ambient scope share the Scoped handler instance (the documented sharing of FR11; risk mitigation: the pinned shared-handler test)**
+- [x] **CHARACTERISE: T3.16 — Two queries of one handler type in one ambient scope share the Scoped handler instance (the documented sharing of FR11; risk mitigation: the pinned shared-handler test)**
   - **USE COMMAND**: `/test-first when two queries of one handler type run in one adopted ambient scope should resolve the same scoped handler instance`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_two_queries_of_one_handler_type_run_in_one_ambient_scope_should_share_the_handler.cs`
