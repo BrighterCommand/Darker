@@ -721,7 +721,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T3.13 — With an adopted scope, decorators resolve from the same scope as the handler (FR18; the owned case is pinned by the existing sharing test)**
+- [x] **CHARACTERISE: T3.13 — With an adopted scope, decorators resolve from the same scope as the handler (FR18; the owned case is pinned by the existing sharing test)**
   - **USE COMMAND**: `/test-first when a decorated query runs with an adopted scope should resolve the decorator's scoped dependency from the same scope as the handler`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_decorated_query_runs_should_resolve_decorator_from_handler_scope.cs`
