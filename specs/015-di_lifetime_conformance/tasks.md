@@ -882,7 +882,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T3.25 — A borrowed scope disposed by its owner after the probe surfaces an unwrapped ObjectDisposedException (FR17)**
+- [x] **CHARACTERISE: T3.25 — A borrowed scope disposed by its owner after the probe surfaces an unwrapped ObjectDisposedException (FR17)**
   - **USE COMMAND**: `/test-first when the ambient scope's owner disposes it after the probe should surface ObjectDisposedException unwrapped during the build and from user services after it`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_borrowed_scope_disposed_after_probe_should_surface_ObjectDisposedException_unwrapped.cs`
