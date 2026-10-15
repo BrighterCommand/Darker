@@ -666,7 +666,7 @@
 
 ### 3C — Provider failure and absence (ADR 0024 step 5, FR16)
 
-- [ ] **TEST + IMPLEMENT: T3.9 — A scope provider that throws surfaces as AmbientScopeSourceException wrapping the original exception**
+- [x] **TEST + IMPLEMENT: T3.9 — A scope provider that throws surfaces as AmbientScopeSourceException wrapping the original exception**
   - **USE COMMAND**: `/test-first when the scope provider throws under JoinAmbient should surface AmbientScopeSourceException wrapping the provider's exception on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scope_provider_throws_should_surface_AmbientScopeSourceException.cs`
