@@ -107,6 +107,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return null;
             }
 
+            // The diagnostics are a singleton registered by AddDarker, so only a scope from this
+            // container resolves the instance this factory holds.
+            if (!ReferenceEquals(serviceProviderScope.Services.GetService(typeof(AdoptionDiagnostics)), adoptionDiagnostics))
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "other-container",
+                    $"The ambient scope {offered.GetType()} is from another container than the one Darker is registered in, " +
+                    "so Darker cannot resolve its handlers from it. Each query gets a scope of its own.");
+                return null;
+            }
+
             return new BorrowedServiceProviderScope(serviceProviderScope);
         }
 
