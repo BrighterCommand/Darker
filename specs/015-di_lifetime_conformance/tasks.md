@@ -828,7 +828,7 @@
   - Implementation should:
     - Add the null check to the probe.
 
-- [ ] **TEST + IMPLEMENT: T3.21 — An offered root provider is declined, whether it is a real root or a root captured through a singleton factory delegate (row 9; risk mitigation)**
+- [x] **TEST + IMPLEMENT: T3.21 — An offered root provider is declined, whether it is a real root or a root captured through a singleton factory delegate (row 9; risk mitigation)**
   - **USE COMMAND**: `/test-first when the offered ambient scope's provider is the root provider should decline it, use an owned scope and warn once, for both a real root and a captured root`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_offered_scope_is_the_root_provider_should_decline_and_warn_once.cs`
