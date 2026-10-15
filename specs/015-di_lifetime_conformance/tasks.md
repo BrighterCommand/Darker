@@ -524,7 +524,7 @@
 
 ### 2E — Remove `Add` (ADR 0023 step 6)
 
-- [ ] **STRUCTURAL: T2.16 — Remove IAmALifetime.Add and the tracked list**
+- [x] **STRUCTURAL: T2.16 — Remove IAmALifetime.Add and the tracked list**
   - Delete `Add` from `src/Paramore.Darker/IAmALifetime.cs`. Delete `Add` and `_trackedDisposables` from `QueryLifetimeScope`. The lifetime now disposes only `PipelineScope`, under the fault-boundary, logging and idempotency rules.
   - Precondition: T2.10 and T2.13 left no caller in production or test code.
   - Guarded by the full suite, green before and after.
