@@ -98,8 +98,22 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return null;
             }
 
+            if (IsRoot(serviceProviderScope.Services))
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "root",
+                    $"The service provider of the ambient scope {offered.GetType()} is the root, not a scope. " +
+                    "Resolving Scoped services from it would keep them for the life of the container, so each query gets a scope of its own.");
+                return null;
+            }
+
             return new BorrowedServiceProviderScope(serviceProviderScope);
         }
+
+        // Microsoft DI answers IServiceScopeFactory with the root scope from anywhere. It answers
+        // IServiceProvider with the scope it was asked, so only the root gets the same object for both.
+        private static bool IsRoot(IServiceProvider services)
+            => ReferenceEquals(services.GetService(typeof(IServiceProvider)), services.GetService(typeof(IServiceScopeFactory)));
 
         // Only reached with a provider present (the adoption configuration check guarantees it).
         private IAmAScope? OfferedAmbientScope()
