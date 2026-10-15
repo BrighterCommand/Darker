@@ -651,7 +651,7 @@
   - Implementation should:
     - Add the guard as the first statement of `AddDarkerScopeProvider`, in the style of the file's other extension methods.
 
-- [ ] **CHARACTERISE: T3.8b — A later AddDarkerScopeProvider call replaces an earlier one (ADR 0024 "How the affinity is chosen")**
+- [x] **CHARACTERISE: T3.8b — A later AddDarkerScopeProvider call replaces an earlier one (ADR 0024 "How the affinity is chosen")**
   - **USE COMMAND**: `/test-first when AddDarkerScopeProvider is called twice should use the later provider and affinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scope_provider_registered_twice_should_use_the_later_registration.cs`
