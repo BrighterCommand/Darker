@@ -588,7 +588,7 @@
   - Implementation should:
     - Need no production change. T3.3 stores the provider but does not call it. T3.9's implementation must keep this green.
 
-- [ ] **TEST + IMPLEMENT: T3.5 — JoinAmbient with a Transient handler lifetime falls back to an owned scope and logs one Warning across many queries**
+- [x] **TEST + IMPLEMENT: T3.5 — JoinAmbient with a Transient handler lifetime falls back to an owned scope and logs one Warning across many queries**
   - **USE COMMAND**: `/test-first when affinity is JoinAmbient and handler lifetime is transient should use an owned scope and log one Warning that adoption needs a scoped handler lifetime`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_join_ambient_with_transient_handler_lifetime_should_use_owned_scope_and_warn_once.cs`
