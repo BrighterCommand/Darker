@@ -695,7 +695,7 @@
 
 ### 3D — Adoption (ADR 0024 step 6, FR15 row 12, FR17, FR18, FR19)
 
-- [ ] **TEST + IMPLEMENT: T3.11 — A Scoped handler adopts an AsyncLocal-provided ambient scope, resolves its Scoped instance, and Darker never disposes it**
+- [x] **TEST + IMPLEMENT: T3.11 — A Scoped handler adopts an AsyncLocal-provided ambient scope, resolves its Scoped instance, and Darker never disposes it**
   - **USE COMMAND**: `/test-first when an AsyncLocal provider offers an ambient scope under JoinAmbient with scoped handlers should resolve the ambient scoped instance and never dispose the ambient scope on Execute`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_ambient_scope_offered_should_adopt_it_and_never_dispose_it.cs`
