@@ -806,7 +806,7 @@
 > - It asserts that the offered scope recorded no `Dispose`/`DisposeAsync`.
 > - It asserts that **exactly one** Warning names the reason.
 
-- [ ] **TEST + IMPLEMENT: T3.19 — An offered scope that exposes no service provider is declined (row 7)**
+- [x] **TEST + IMPLEMENT: T3.19 — An offered scope that exposes no service provider is declined (row 7)**
   - **USE COMMAND**: `/test-first when the offered ambient scope is not an IAmAServiceProviderScope should decline it, use an owned scope and warn once`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_offered_scope_exposes_no_service_provider_should_decline_and_warn_once.cs`
