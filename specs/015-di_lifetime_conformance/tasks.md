@@ -817,7 +817,7 @@
   - Implementation should:
     - Decline a non-`IAmAServiceProviderScope` through `AdoptionDiagnostics` with that reason, and return an owned scope. Drop the offered scope; never dispose it.
 
-- [ ] **TEST + IMPLEMENT: T3.20 — An offered scope whose Services is null is declined (row 8)**
+- [x] **TEST + IMPLEMENT: T3.20 — An offered scope whose Services is null is declined (row 8)**
   - **USE COMMAND**: `/test-first when the offered ambient scope has a null service provider should decline it, use an owned scope and warn once`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_offered_scope_has_null_services_should_decline_and_warn_once.cs`
