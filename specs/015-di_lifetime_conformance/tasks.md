@@ -732,7 +732,7 @@
   - Implementation should:
     - Need no production change. ADR 0023's single handle delivers this. The owned-scope case is already pinned by `When_handler_lifetime_is_scoped_should_share_dependency_across_handler_and_decorator.cs` (T2.14).
 
-- [ ] **CHARACTERISE: T3.14 — Without the opt-in, or with AlwaysNew, an offered ambient scope is ignored and each query gets its own owned scope**
+- [x] **CHARACTERISE: T3.14 — Without the opt-in, or with AlwaysNew, an offered ambient scope is ignored and each query gets its own owned scope**
   - **USE COMMAND**: `/test-first when an ambient scope is offered but affinity is AlwaysNew should give each query its own owned scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_ambient_scope_offered_with_always_new_should_use_owned_scope_per_query.cs`
