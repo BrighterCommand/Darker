@@ -562,7 +562,7 @@
   - Change `<Description>` in `Paramore.Darker.Extensions.DependencyInjection.csproj` (line 4) from "ASP.NET Core integration for Darker" to a Microsoft.Extensions.DependencyInjection description.
   - Only owned scopes exist, so behaviour is unchanged. Guarded by T2.11–T2.15 and the full suite.
 
-- [ ] **STRUCTURAL: T3.3 — Configuration plumbing: DefaultScopeAffinity, the affinity registration, AdoptionDiagnostics and AddDarkerScopeProvider**
+- [x] **STRUCTURAL: T3.3 — Configuration plumbing: DefaultScopeAffinity, the affinity registration, AdoptionDiagnostics and AddDarkerScopeProvider**
   - Add `public ScopeAffinity DefaultScopeAffinity { get; set; } = ScopeAffinity.AlwaysNew;` to `src/Paramore.Darker.Extensions.DependencyInjection/DarkerOptions.cs`.
   - Add the internal `ScopeAffinityRegistration`.
   - Add the internal `AdoptionDiagnostics`:
