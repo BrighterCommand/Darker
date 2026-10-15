@@ -510,7 +510,7 @@
     - (b) make the decorator `Create<T>` resolve from a fresh child scope instead of `lifetime.PipelineScope`. The sharing test must fail on its same-instance assertion.
   - No source change remains. Record both mutations and their failures in the `docs:` tick commit.
 
-- [ ] **CHARACTERISE: T2.15 — On ExecuteStream, the handler and decorator share one scope, and concurrent streams are isolated (NFR Parity for FR11)**
+- [x] **CHARACTERISE: T2.15 — On ExecuteStream, the handler and decorator share one scope, and concurrent streams are isolated (NFR Parity for FR11)**
   - **USE COMMAND**: `/test-first when stream queries run with a scoped handler lifetime should share one scoped dependency between handler and decorator and isolate concurrent streams`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_stream_queries_run_with_scoped_lifetime_should_share_within_and_isolate_between_pipelines.cs`
