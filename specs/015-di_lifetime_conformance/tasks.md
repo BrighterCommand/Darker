@@ -555,7 +555,7 @@
   - Add `src/Paramore.Darker/Exceptions/AmbientScopeSourceException.cs`: sealed, with a constructor `(string message, Exception innerException)`.
   - Nothing uses them yet. Guarded by the full suite.
 
-- [ ] **STRUCTURAL: T3.2 — Widen scope recognition to IAmAServiceProviderScope, and correct the DI package description**
+- [x] **STRUCTURAL: T3.2 — Widen scope recognition to IAmAServiceProviderScope, and correct the DI package description**
   - Add the public `IAmAServiceProviderScope : IAmAScope { IServiceProvider Services { get; } }` to `src/Paramore.Darker.Extensions.DependencyInjection/`.
   - Make `ServiceProviderLifetimeScope` implement it, exposing the child scope's provider.
   - Change the T2.13 recognition method to test for `IAmAServiceProviderScope` and resolve through `Services`.
