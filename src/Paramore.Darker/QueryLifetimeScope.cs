@@ -23,21 +23,19 @@ THE SOFTWARE. */
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Paramore.Darker
 {
     /// <summary>
-    /// The default <see cref="IAmALifetime"/> implementation. Tracks the disposables created for a
-    /// single query pipeline execution (for example a child service scope) and disposes them, in
-    /// reverse order of registration, exactly once when the pipeline completes.
+    /// The default <see cref="IAmALifetime"/> implementation. Carries the pipeline scope handle for a
+    /// single query pipeline execution (for example a child service scope) and disposes it exactly
+    /// once when the pipeline completes.
     /// </summary>
     internal sealed class QueryLifetimeScope : IAmALifetime
     {
         private readonly ILogger _logger;
-        private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
         private bool _disposed;
 
         public QueryLifetimeScope(IAmAScope? pipelineScope, ILogger logger)
@@ -50,26 +48,12 @@ namespace Paramore.Darker
         public IAmAScope? PipelineScope { get; }
 
         /// <inheritdoc />
-        public void Add(IDisposable disposable)
-        {
-            if (disposable == null)
-                throw new ArgumentNullException(nameof(disposable));
-
-            _trackedDisposables.Add(disposable);
-        }
-
-        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)
                 return;
 
             _disposed = true;
-
-            for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
-                DisposeItem(_trackedDisposables[i]);
-
-            _trackedDisposables.Clear();
 
             if (PipelineScope != null)
                 DisposeItem(PipelineScope);
@@ -82,11 +66,6 @@ namespace Paramore.Darker
                 return;
 
             _disposed = true;
-
-            for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
-                await DisposeItemAsync(_trackedDisposables[i]).ConfigureAwait(false);
-
-            _trackedDisposables.Clear();
 
             if (PipelineScope != null)
                 await DisposeItemAsync(PipelineScope).ConfigureAwait(false);

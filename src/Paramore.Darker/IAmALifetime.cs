@@ -32,9 +32,9 @@ namespace Paramore.Darker
     /// including when it completes by throwing or being cancelled.
     /// <para>
     /// Teardown is contained: <see cref="IDisposable.Dispose"/> and <see cref="IAsyncDisposable.DisposeAsync"/>
-    /// never throw. Each tracked item is disposed in its own fault boundary, newest first, and a fault
-    /// from one item is logged at Error without stopping the others. Disposal is idempotent across both
-    /// forms: once either has run, the other does nothing, and each item is disposed at most once.
+    /// never throw. The pipeline scope is disposed in its own fault boundary, and a fault from it is
+    /// logged at Error. Disposal is idempotent across both forms: once either has run, the other does
+    /// nothing, and the pipeline scope is disposed at most once.
     /// </para>
     /// </summary>
     public interface IAmALifetime : IDisposable, IAsyncDisposable
@@ -44,12 +44,5 @@ namespace Paramore.Darker
         /// or <c>null</c> when the factory has no per-query scope. Fixed for the life of the pipeline.
         /// </summary>
         IAmAScope? PipelineScope { get; }
-
-        /// <summary>
-        /// Tracks a per-query disposable (for example a child service scope) so that it is
-        /// disposed when the pipeline completes.
-        /// </summary>
-        /// <param name="disposable">The disposable to track for the lifetime of the pipeline execution.</param>
-        void Add(IDisposable disposable);
     }
 }
