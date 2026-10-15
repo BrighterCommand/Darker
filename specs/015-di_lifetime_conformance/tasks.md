@@ -710,7 +710,7 @@
     - Add the internal `BorrowedServiceProviderScope : IAmAServiceProviderScope`, which exposes the offered scope's `Services` and does nothing on `Dispose`/`DisposeAsync`.
     - In `CreatePipelineScope()`, wrap an offered `IAmAServiceProviderScope` in it. Probe checks come in T3.19–T3.23.
 
-- [ ] **CHARACTERISE: T3.12 — Adoption, and the never-dispose rule, hold on ExecuteAsync and ExecuteStream**
+- [x] **CHARACTERISE: T3.12 — Adoption, and the never-dispose rule, hold on ExecuteAsync and ExecuteStream**
   - **USE COMMAND**: `/test-first when an ambient scope is adopted on ExecuteAsync or ExecuteStream should resolve the ambient instance and never dispose the ambient scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_ambient_scope_adopted_on_async_paths_should_never_dispose_it.cs`
