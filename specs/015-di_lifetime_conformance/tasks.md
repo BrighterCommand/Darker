@@ -575,7 +575,7 @@
 
 ### 3B — Configuration rows 1–4 (ADR 0024 step 4, FR14, FR15)
 
-- [ ] **CHARACTERISE: T3.4 — With AlwaysNew, a registered provider is never asked, so even a throwing provider cannot fail a query**
+- [x] **CHARACTERISE: T3.4 — With AlwaysNew, a registered provider is never asked, so even a throwing provider cannot fail a query**
   - **USE COMMAND**: `/test-first when affinity is AlwaysNew and a throwing scope provider is registered should run the query with an owned scope and never call the provider`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_affinity_is_always_new_should_never_call_the_scope_provider.cs`
