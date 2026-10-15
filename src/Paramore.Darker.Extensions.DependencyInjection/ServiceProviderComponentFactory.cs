@@ -80,12 +80,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (handlerLifetime == ServiceLifetime.Singleton)
                 return serviceProvider.GetService(componentType);
 
-            return RecognisedScope(componentType, lifetime).Resolve(componentType);
+            return RecognisedScope(componentType, lifetime).Services.GetService(componentType);
         }
 
         // Fails fast rather than resolving from the root provider, which would leak Scoped and
         // Transient components for the life of the container.
-        private ServiceProviderLifetimeScope RecognisedScope(Type componentType, IAmALifetime lifetime)
+        private IAmAServiceProviderScope RecognisedScope(Type componentType, IAmALifetime lifetime)
         {
             var handle = lifetime?.PipelineScope;
 
@@ -94,7 +94,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                     $"Cannot resolve {componentType} with a {handlerLifetime} handler lifetime: the pipeline has no scope. " +
                     "Use the Darker handler factory that created the pipeline's scope.");
 
-            if (handle is not ServiceProviderLifetimeScope scope)
+            if (handle is not IAmAServiceProviderScope scope)
                 throw new ConfigurationException(
                     $"Cannot resolve {componentType} with a {handlerLifetime} handler lifetime: " +
                     $"the pipeline scope {handle.GetType()} was not created by this factory.");
