@@ -100,7 +100,16 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return false;
             }
 
-            return scopeProvider != null;
+            if (scopeProvider == null)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "no-scope-provider",
+                    "The scope affinity is JoinAmbient, but no scope provider is registered, " +
+                    "so each query gets a scope of its own. Register one with AddDarkerScopeProvider.");
+                return false;
+            }
+
+            return true;
         }
 
         private object Resolve(Type componentType, IAmALifetime lifetime)
