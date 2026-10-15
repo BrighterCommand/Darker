@@ -98,27 +98,46 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return null;
             }
 
-            if (IsRoot(serviceProviderScope.Services))
-            {
-                adoptionDiagnostics.WarnOnce(
-                    "root",
-                    $"The service provider of the ambient scope {offered.GetType()} is the root, not a scope. " +
-                    "Resolving Scoped services from it would keep them for the life of the container, so each query gets a scope of its own.");
-                return null;
-            }
+            return PassesProbe(offered, serviceProviderScope.Services)
+                ? new BorrowedServiceProviderScope(serviceProviderScope)
+                : null;
+        }
 
-            // The diagnostics are a singleton registered by AddDarker, so only a scope from this
-            // container resolves the instance this factory holds.
-            if (!ReferenceEquals(serviceProviderScope.Services.GetService(typeof(AdoptionDiagnostics)), adoptionDiagnostics))
+        // Resolves only singletons from the offered provider. A scope that fails is declined, with its
+        // reason logged once.
+        private bool PassesProbe(IAmAScope offered, IServiceProvider services)
+        {
+            try
             {
-                adoptionDiagnostics.WarnOnce(
-                    "other-container",
-                    $"The ambient scope {offered.GetType()} is from another container than the one Darker is registered in, " +
-                    "so Darker cannot resolve its handlers from it. Each query gets a scope of its own.");
-                return null;
-            }
+                if (IsRoot(services))
+                    return Decline(
+                        "root",
+                        $"The service provider of the ambient scope {offered.GetType()} is the root, not a scope. " +
+                        "Resolving Scoped services from it would keep them for the life of the container, so each query gets a scope of its own.");
 
-            return new BorrowedServiceProviderScope(serviceProviderScope);
+                // The diagnostics are a singleton registered by AddDarker, so only a scope from this
+                // container resolves the instance this factory holds.
+                if (!ReferenceEquals(services.GetService(typeof(AdoptionDiagnostics)), adoptionDiagnostics))
+                    return Decline(
+                        "other-container",
+                        $"The ambient scope {offered.GetType()} is from another container than the one Darker is registered in, " +
+                        "so Darker cannot resolve its handlers from it. Each query gets a scope of its own.");
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                return Decline(
+                    $"probe-fault:{exception.GetType()}",
+                    $"Darker could not probe the ambient scope {offered.GetType()}: {exception.GetType()}. " +
+                    "Each query gets a scope of its own.");
+            }
+        }
+
+        private bool Decline(string reason, string message)
+        {
+            adoptionDiagnostics.WarnOnce(reason, message);
+            return false;
         }
 
         // Microsoft DI answers IServiceScopeFactory with the root scope from anywhere. It answers
