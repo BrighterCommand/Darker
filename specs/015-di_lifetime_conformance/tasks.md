@@ -627,7 +627,7 @@
   - Implementation should:
     - In the constructor, log the no-provider reason once through `AdoptionDiagnostics` when the affinity is `JoinAmbient`, the lifetime is Scoped and no provider is registered.
 
-- [ ] **CHARACTERISE: T3.8 — A registered affinity overrides DefaultScopeAffinity, whether AddDarkerScopeProvider is called before or after AddDarker**
+- [x] **CHARACTERISE: T3.8 — A registered affinity overrides DefaultScopeAffinity, whether AddDarkerScopeProvider is called before or after AddDarker**
   - **USE COMMAND**: `/test-first when a scope provider is registered with an affinity before or after AddDarker should use the registered affinity over DefaultScopeAffinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests"
   - Test file: `When_scope_provider_registered_with_affinity_should_override_default_scope_affinity.cs`
