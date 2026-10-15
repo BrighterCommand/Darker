@@ -42,6 +42,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             ScopeAffinity affinity = ScopeAffinity.JoinAmbient)
             where TProvider : class, IAmAScopeProvider
         {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+
             services.Replace(ServiceDescriptor.Singleton<IAmAScopeProvider, TProvider>());
             services.Replace(ServiceDescriptor.Singleton(new ScopeAffinityRegistration(affinity)));
 
