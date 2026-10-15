@@ -41,7 +41,8 @@ namespace Paramore.Darker
     {
         /// <summary>
         /// The handle on the scope that owns this pipeline's components, as supplied by the handler factory,
-        /// or <c>null</c> when the factory has no per-query scope. Fixed for the life of the pipeline.
+        /// or <c>null</c> when the factory creates no per-query scope. Fixed when the lifetime is constructed,
+        /// and disposed with it.
         /// </summary>
         IAmAScope? PipelineScope { get; }
     }

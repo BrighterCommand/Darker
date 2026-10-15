@@ -28,6 +28,11 @@ namespace Paramore.Darker
     /// <summary>
     /// A handle on a scope that owns the components created for a single query pipeline execution.
     /// Disposing the handle tears the scope down.
+    /// <para>
+    /// The handle is a disposal-only capability: it has no members for resolving components. A factory
+    /// that creates the handle keeps its own way of reaching the components, and recognises its own
+    /// handle again when it is handed back as <see cref="IAmALifetime.PipelineScope"/>.
+    /// </para>
     /// </summary>
     public interface IAmAScope : IDisposable, IAsyncDisposable
     {
