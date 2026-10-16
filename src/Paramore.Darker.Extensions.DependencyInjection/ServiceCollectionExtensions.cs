@@ -35,8 +35,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the provider that offers Darker the ambient scope, and the affinity that says whether
-        /// queries may join it. Both replace any earlier registration. The provider is a singleton.
+        /// queries may join it. Both replace any earlier registration. The provider is a singleton, so it
+        /// must be safe to call concurrently. Darker never disposes a scope it returns.
         /// </summary>
+        /// <typeparam name="TProvider">The <see cref="IAmAScopeProvider"/> implementation.</typeparam>
+        /// <param name="services">The service collection.</param>
+        /// <param name="affinity">Whether queries may join the offered scope.</param>
+        /// <returns>The service collection.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="services"/> is null.</exception>
+        /// <remarks>
+        /// With <see cref="ScopeAffinity.JoinAmbient"/>, adoption requires <c>HandlerLifetime = Scoped</c>. Queries
+        /// in one ambient scope share its Scoped services, including a Scoped handler instance of the same handler
+        /// type, so concurrent queries in one request (for example under <c>Task.WhenAll</c>) need
+        /// <see cref="ScopeAffinity.AlwaysNew"/>. A streaming query reads the ambient scope on its first
+        /// <c>MoveNextAsync</c>.
+        /// </remarks>
         public static IServiceCollection AddDarkerScopeProvider<TProvider>(
             this IServiceCollection services,
             ScopeAffinity affinity = ScopeAffinity.JoinAmbient)

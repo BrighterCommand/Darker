@@ -29,11 +29,13 @@ namespace Paramore.Darker
     /// <summary>
     /// Offers Darker the scope that is ambient for the current call, such as the scope of the web request
     /// that is executing a query. Darker may adopt the offered scope instead of creating its own.
-    /// <para>
+    /// </summary>
+    /// <remarks>
     /// Darker never disposes a scope returned from <see cref="GetAmbient"/>, so a provider must not create
     /// a scope that it expects Darker to dispose. Implementations must be safe to call concurrently.
-    /// </para>
-    /// </summary>
+    /// If <see cref="GetAmbient"/> throws, Darker wraps the failure in an
+    /// <see cref="Paramore.Darker.Exceptions.AmbientScopeSourceException"/>.
+    /// </remarks>
     public interface IAmAScopeProvider
     {
         /// <summary>

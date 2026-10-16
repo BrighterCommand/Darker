@@ -31,6 +31,11 @@ namespace Paramore.Darker.Exceptions
     /// </summary>
     public sealed class AmbientScopeSourceException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmbientScopeSourceException"/> class.
+        /// </summary>
+        /// <param name="message">A message that describes the failure.</param>
+        /// <param name="innerException">The exception thrown by the <see cref="IAmAScopeProvider"/>.</param>
         public AmbientScopeSourceException(string message, Exception innerException) : base(message, innerException)
         {
         }

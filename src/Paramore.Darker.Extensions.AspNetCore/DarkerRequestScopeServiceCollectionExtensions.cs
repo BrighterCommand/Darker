@@ -35,12 +35,27 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>
         /// Offers the current HTTP request's scope (<c>HttpContext.RequestServices</c>) to Darker, so a
         /// query run inside a request resolves its handler from the same scope as the rest of the request.
-        /// Darker never disposes the request scope.
+        /// Darker never disposes the request scope. Also registers the <c>IHttpContextAccessor</c>, and replaces
+        /// any earlier scope provider registration.
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="affinity">Whether queries may join the request scope.</param>
         /// <returns>The service collection.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="services"/> is null.</exception>
+        /// <remarks>
+        /// <para>
+        /// Adoption requires <c>HandlerLifetime = Scoped</c>. The order of this call relative to
+        /// <c>AddDarker</c> does not matter.
+        /// </para>
+        /// <para>
+        /// Queries in one request share the request scope's Scoped services, including a Scoped handler instance
+        /// of the same handler type. Concurrent queries in one request (for example under <c>Task.WhenAll</c>)
+        /// need <see cref="ScopeAffinity.AlwaysNew"/>, because EF Core's <c>DbContext</c> rejects concurrent operations.
+        /// </para>
+        /// <para>
+        /// A streaming query reads the request scope on its first <c>MoveNextAsync</c>.
+        /// </para>
+        /// </remarks>
         public static IServiceCollection AddDarkerRequestScope(
             this IServiceCollection services,
             ScopeAffinity affinity = ScopeAffinity.JoinAmbient)
