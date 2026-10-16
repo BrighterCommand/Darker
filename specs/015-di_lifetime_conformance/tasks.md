@@ -999,7 +999,7 @@
   - Implementation should:
     - Need no production change.
 
-- [!] **CHARACTERISE: T4.8 — A stream enumerated after its request has ended gets an owned scope (ADR 0024 risk mitigation; ADR 0019 lazy build)** <!-- RALPH-FAILED: mutation (b) (HttpContextScopeProvider remembers the last RequestServices) leaves the test green — the remembered provider belongs to the disposed request scope, so the ADR 0024 probe declines it (probe-fault) and the stream gets an owned scope anyway. Mutation (a) went red on the not-the-request-instance assertion. Needs a human decision: revise mutation (b) or accept that the probe covers it. -->
+- [x] **CHARACTERISE: T4.8 — A stream enumerated after its request has ended gets an owned scope (ADR 0024 risk mitigation; ADR 0019 lazy build)**
   - **USE COMMAND**: `/test-first when a stream query is first enumerated after the request has ended should use an owned scope rather than the ended request scope`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_stream_enumerated_after_request_ends_should_use_owned_scope.cs`
