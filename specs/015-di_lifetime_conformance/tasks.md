@@ -951,7 +951,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T4.4 — Outside a request (no HttpContext), Darker falls back to an owned scope and logs no Warning**
+- [x] **CHARACTERISE: T4.4 — Outside a request (no HttpContext), Darker falls back to an owned scope and logs no Warning**
   - **USE COMMAND**: `/test-first when a query runs with AddDarkerRequestScope but no HttpContext should use an owned scope and log no Warning`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_query_runs_outside_a_request_should_use_owned_scope_without_warning.cs`
