@@ -937,7 +937,7 @@
     - Add the internal `HttpRequestScope : IAmAServiceProviderScope`, whose `Dispose`/`DisposeAsync` do nothing.
     - Add no middleware.
 
-- [ ] **CHARACTERISE: T4.3 — Adoption holds with both a Singleton and a Scoped QueryProcessorLifetime, across successive requests (FR21)**
+- [x] **CHARACTERISE: T4.3 — Adoption holds with both a Singleton and a Scoped QueryProcessorLifetime, across successive requests (FR21)**
   - **USE COMMAND**: `/test-first when the query processor is singleton or scoped should adopt each request's own scope across successive requests`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_query_processor_lifetime_is_singleton_or_scoped_should_adopt_each_request_scope.cs`
