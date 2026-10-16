@@ -988,7 +988,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T4.7 — AddDarkerRequestScope behaves the same whether it is called before or after AddDarker**
+- [x] **CHARACTERISE: T4.7 — AddDarkerRequestScope behaves the same whether it is called before or after AddDarker**
   - **USE COMMAND**: `/test-first when AddDarkerRequestScope is called before or after AddDarker should adopt the request scope either way`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_request_scope_registered_before_or_after_AddDarker_should_adopt_either_way.cs`
