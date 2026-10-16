@@ -1013,7 +1013,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **DOC: T4.9 — XML documentation on every new public type of ADR 0024, including the sharing warnings (ADR 0024 step 11, XML part; risk mitigations)**
+- [x] **DOC: T4.9 — XML documentation on every new public type of ADR 0024, including the sharing warnings (ADR 0024 step 11, XML part; risk mitigations)**
   - Document the following:
     - `IAmAScopeProvider`: must be safe to call concurrently. Darker never disposes what it returns.
     - `ScopeAffinity` and its values. `AlwaysNew` is the default and zero.
