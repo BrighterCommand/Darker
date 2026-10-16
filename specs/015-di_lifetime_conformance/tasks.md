@@ -964,7 +964,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T4.5 — AddDarkerRequestScope(ScopeAffinity.AlwaysNew) gives an owned scope inside a request**
+- [x] **CHARACTERISE: T4.5 — AddDarkerRequestScope(ScopeAffinity.AlwaysNew) gives an owned scope inside a request**
   - **USE COMMAND**: `/test-first when AddDarkerRequestScope is called with AlwaysNew should use an owned scope inside a request`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_request_scope_registered_with_always_new_should_use_owned_scope.cs`
