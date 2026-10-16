@@ -919,7 +919,7 @@
   - Add no `Directory.Packages.props` entry.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds.
 
-- [ ] **TEST + IMPLEMENT: T4.2 — Within one request, AddDarkerRequestScope with HandlerLifetime = Scoped gives the query handler the same Scoped instance as HttpContext.RequestServices, and Darker does not dispose it**
+- [x] **TEST + IMPLEMENT: T4.2 — Within one request, AddDarkerRequestScope with HandlerLifetime = Scoped gives the query handler the same Scoped instance as HttpContext.RequestServices, and Darker does not dispose it**
   - **USE COMMAND**: `/test-first when a query runs inside an HTTP request with AddDarkerRequestScope and scoped handlers should resolve the same scoped instance as RequestServices and not dispose it on Execute, ExecuteAsync and ExecuteStream`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_query_runs_inside_a_request_should_share_request_scoped_services.cs`
