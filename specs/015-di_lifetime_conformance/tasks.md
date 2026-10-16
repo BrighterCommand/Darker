@@ -1028,7 +1028,7 @@
     - the stream path reads the ambient scope on the first `MoveNextAsync`.
   - `dotnet build` produces no missing-XML-doc warnings for the new public types.
 
-- [ ] **VERIFY: T4.10 — Phase 4 checkpoint**
+- [x] **VERIFY: T4.10 — Phase 4 checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release --no-build`, green on net8.0 and net9.0, including `Paramore.Darker.Extensions.AspNetCore.Tests`.
   - Run `dotnet pack src/Paramore.Darker.Extensions.AspNetCore -c Release` and confirm that the package is produced and signed.
 
