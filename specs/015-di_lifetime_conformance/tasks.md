@@ -975,7 +975,7 @@
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T4.6 — A Transient or Singleton HandlerLifetime with AddDarkerRequestScope does not adopt, and logs one Warning**
+- [x] **CHARACTERISE: T4.6 — A Transient or Singleton HandlerLifetime with AddDarkerRequestScope does not adopt, and logs one Warning**
   - **USE COMMAND**: `/test-first when AddDarkerRequestScope is used with a transient or singleton handler lifetime should not adopt the request scope and should log one Warning`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests"
   - Test file: `When_request_scope_used_with_non_scoped_handler_lifetime_should_not_adopt_and_warn_once.cs`
