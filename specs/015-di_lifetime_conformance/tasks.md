@@ -1076,7 +1076,7 @@
     - the corrected EF Core guidance.
   - Correct any drift with `/spec:write_release_notes`.
 
-- [ ] **VERIFY: T5.9 — Final checkpoint**
+- [x] **VERIFY: T5.9 — Final checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release` and `dotnet test Darker.Filter.slnf -c Release --no-build`. The full suite must be green on net8.0 and net9.0.
   - Confirm that no project contains `InternalsVisibleTo` for a test assembly.
   - Confirm that no test drives an internal type directly.
