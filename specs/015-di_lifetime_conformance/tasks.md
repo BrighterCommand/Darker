@@ -1036,7 +1036,7 @@
 
 ## Phase 5 — Documentation and release
 
-- [ ] **DOC: T5.1 — Correct CLAUDE.md "Handler Lifecycle" and "ASP.NET Core Registration" (FR23)**
+- [x] **DOC: T5.1 — Correct CLAUDE.md "Handler Lifecycle" and "ASP.NET Core Registration" (FR23)**
   - In `CLAUDE.md` "Handler Lifecycle" (~lines 104–108):
     - Replace "With ASP.NET Core + EF Core: QueryProcessor must be Scoped". State that a Scoped `QueryProcessor` gets a sibling scope and does **not** share the request's `DbContext`, and that `HandlerLifetime = Scoped` plus `AddDarkerRequestScope()` does.
     - Describe teardown as isolated, scope-last and never-throwing.
