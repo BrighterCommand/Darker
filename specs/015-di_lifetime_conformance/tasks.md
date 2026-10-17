@@ -1055,7 +1055,7 @@
 - [x] **DOC: T5.4 — Add the new package to CONTRIBUTING.md Project Structure (FR24)**
   - In `CONTRIBUTING.md` "Project Structure" (~lines 345–366), add `Paramore.Darker.Extensions.AspNetCore` under `src/` and `Paramore.Darker.Extensions.AspNetCore.Tests` to the `test/` list.
 
-- [ ] **DOC: T5.5 — Add the new package to .agent_instructions/project_structure.md (FR24)**
+- [x] **DOC: T5.5 — Add the new package to .agent_instructions/project_structure.md (FR24)**
   - Add the `src/Paramore.Darker.Extensions.AspNetCore/` line after the DI package line (line 4).
 
 - [ ] **DOC: T5.6 — Decide on a SampleMinimalApi usage example (ADR 0024 step 11 leaves this to the documentation tasks)**
