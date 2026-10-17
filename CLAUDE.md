@@ -99,6 +99,7 @@ Darker is the query-side counterpart of [Brighter](https://github.com/BrighterCo
 ### Key Components
 - **src/Paramore.Darker**: Core library with QueryProcessor, PipelineBuilder, registries, and the built-in decorators: query logging (`Logging/`) and retry/fallback policies and Polly resilience pipelines (`Policies/`), merged into core by ADR 0011
 - **src/Paramore.Darker.Extensions.DependencyInjection**: Microsoft.Extensions.DependencyInjection integration
+- **src/Paramore.Darker.Extensions.AspNetCore**: ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`) so Scoped handlers share the request's scope; net8.0+
 - **src/Paramore.Darker.Testing**: Testing utilities
 
 ### Handler Lifecycle
