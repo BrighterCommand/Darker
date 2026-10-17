@@ -1052,7 +1052,7 @@
     - Brighter's `AddBrighterRequestScope()` alongside it;
     - a one-line note that concurrent queries in one request need `AlwaysNew`.
 
-- [ ] **DOC: T5.4 — Add the new package to CONTRIBUTING.md Project Structure (FR24)**
+- [x] **DOC: T5.4 — Add the new package to CONTRIBUTING.md Project Structure (FR24)**
   - In `CONTRIBUTING.md` "Project Structure" (~lines 345–366), add `Paramore.Darker.Extensions.AspNetCore` under `src/` and `Paramore.Darker.Extensions.AspNetCore.Tests` to the `test/` list.
 
 - [ ] **DOC: T5.5 — Add the new package to .agent_instructions/project_structure.md (FR24)**
