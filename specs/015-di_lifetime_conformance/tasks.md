@@ -1058,7 +1058,7 @@
 - [x] **DOC: T5.5 — Add the new package to .agent_instructions/project_structure.md (FR24)**
   - Add the `src/Paramore.Darker.Extensions.AspNetCore/` line after the DI package line (line 4).
 
-- [ ] **DOC: T5.6 — Decide on a SampleMinimalApi usage example (ADR 0024 step 11 leaves this to the documentation tasks)**
+- [x] **DOC: T5.6 — Decide on a SampleMinimalApi usage example (ADR 0024 step 11 leaves this to the documentation tasks)**
   - Decide whether `samples/SampleMinimalApi` gains an `AddDarkerRequestScope()` call with `HandlerLifetime = Scoped`.
   - Recommendation: add it only if the sample already has a Scoped resource to share. Otherwise record "no sample change; the README and CLAUDE.md carry the example" in the PR description.
   - If it is added, `dotnet build Darker.Filter.slnf` must stay green.
