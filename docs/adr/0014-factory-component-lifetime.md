@@ -5,7 +5,7 @@ status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-06-08
-summary: "Makes handler and decorator factories lifetime-aware via a per-query IAmALifetime owning a child IServiceScope that PipelineBuilder creates and disposes, resolving Singleton from a shared cache and Scoped/Transient from the child scope."
+summary: "Makes handler and decorator factories lifetime-aware via a per-query IAmALifetime owning a child IServiceScope that PipelineBuilder creates and disposes, resolving Singleton from a shared cache and Scoped/Transient from the child scope. Partially superseded by ADR 0022 (teardown), 0023 (scope handle) and 0024 (scope ownership and ambient adoption); remains Accepted."
 tags:
   - "lifetime"
   - "di"
