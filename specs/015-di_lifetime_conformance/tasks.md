@@ -1046,7 +1046,7 @@
 - [x] **DOC: T5.2 — List the new package in CLAUDE.md Key Components (FR24)**
   - Add `src/Paramore.Darker.Extensions.AspNetCore`: the ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`), net8.0+. Place it beside the DI package entry (~lines 99–102).
 
-- [ ] **DOC: T5.3 — Replace the README's EF Core warning (FR23)**
+- [x] **DOC: T5.3 — Replace the README's EF Core warning (FR23)**
   - In `README.md` (~lines 25–31), replace the "QueryProcessor must also be registered as Scoped" warning and snippet with the corrected guidance:
     - `HandlerLifetime = Scoped` plus `services.AddDarkerRequestScope()` from `Paramore.Darker.Extensions.AspNetCore`;
     - Brighter's `AddBrighterRequestScope()` alongside it;
