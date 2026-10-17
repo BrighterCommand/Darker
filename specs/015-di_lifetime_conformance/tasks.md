@@ -1043,7 +1043,7 @@
     - Describe the pipeline scope as created by the handler factory and carried on the lifetime.
   - In "ASP.NET Core Registration" (~lines 166–172), replace the `QueryProcessorLifetime = Scoped // Required for EF Core` example with ADR 0024's *The corrected guidance* snippet. It shows `AddDarkerRequestScope()` beside Brighter's `AddBrighterRequestScope()` and notes that the two opt-ins are independent.
 
-- [ ] **DOC: T5.2 — List the new package in CLAUDE.md Key Components (FR24)**
+- [x] **DOC: T5.2 — List the new package in CLAUDE.md Key Components (FR24)**
   - Add `src/Paramore.Darker.Extensions.AspNetCore`: the ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`), net8.0+. Place it beside the DI package entry (~lines 99–102).
 
 - [ ] **DOC: T5.3 — Replace the README's EF Core warning (FR23)**
