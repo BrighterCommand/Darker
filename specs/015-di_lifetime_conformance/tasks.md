@@ -1067,7 +1067,7 @@
   - Confirm that ADRs 0022, 0023 and 0024 are Accepted, that ADR 0014's Status section records the partial supersession, and that the frontmatter and `docs/adr/index.md` agree.
   - `index.md` currently lists 0014 as plain "Accepted". If the index should show the partial supersession, update it with `/adr:write_adr_metadata`.
 
-- [ ] **DOC: T5.8 — Check that the release_notes.md spec 015 section matches what was built (FR25)**
+- [x] **DOC: T5.8 — Check that the release_notes.md spec 015 section matches what was built (FR25)**
   - Walk the `<!-- spec: 015-di_lifetime_conformance -->` section of `release_notes.md` against the merged code and the tasks above. Check each of these:
     - every breaking change: `ReleaseAsync`; `IAsyncDisposable`; `CreatePipelineScope`; `Add` removed and `PipelineScope` added; the container-backed decorator factory contract;
     - every behavioural change: never-throw teardown; release through the creating factory; Simple `DisposeAsync`; partial-build releases; Transient decorators;
