@@ -1063,7 +1063,7 @@
   - Recommendation: add it only if the sample already has a Scoped resource to share. Otherwise record "no sample change; the README and CLAUDE.md carry the example" in the PR description.
   - If it is added, `dotnet build Darker.Filter.slnf` must stay green.
 
-- [ ] **DOC: T5.7 — Confirm the ADR record for FR22**
+- [x] **DOC: T5.7 — Confirm the ADR record for FR22**
   - Confirm that ADRs 0022, 0023 and 0024 are Accepted, that ADR 0014's Status section records the partial supersession, and that the frontmatter and `docs/adr/index.md` agree.
   - `index.md` currently lists 0014 as plain "Accepted". If the index should show the partial supersession, update it with `/adr:write_adr_metadata`.
 
