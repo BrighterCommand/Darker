@@ -49,7 +49,7 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(ProcessorQueryHandlerAsync)] = handler;
 
             // Act
-            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id));
+            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             result.ShouldBe(id);
@@ -76,7 +76,7 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(RecordingQueryHandlerAsync<ProcessorIntQuery, int>)] = handlerB;
 
             // Act
-            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id));
+            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             result.ShouldBe(id);                            // matching handler ran with the expected query
@@ -97,7 +97,7 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(RecordingQueryHandlerAsync<ProcessorQuery, Guid>)] = handlerA;
 
             // Act
-            await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new ProcessorQuery(id)));
+            await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken));
 
             // Assert
             handlerA.FallbackCount.ShouldBe(0);

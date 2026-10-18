@@ -2,17 +2,6 @@ using System;
 
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
-    internal sealed class ThrowingDisposeQuery : IQuery<ThrowingDisposeResult>
-    {
-    }
-
-    internal sealed class ThrowingDisposeResult
-    {
-        public ThrowingDisposeResult(string value) => Value = value;
-
-        public string Value { get; }
-    }
-
     /// <summary>A decorated handler whose <see cref="Dispose"/> throws the supplied fault.</summary>
     internal sealed class ThrowingDisposeQueryHandler : QueryHandler<ThrowingDisposeQuery, ThrowingDisposeResult>, IDisposable
     {

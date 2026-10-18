@@ -2,17 +2,6 @@ using System;
 
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
-    internal sealed class EveryReleaseThrowsQuery : IQuery<EveryReleaseThrowsResult>
-    {
-    }
-
-    internal sealed class EveryReleaseThrowsResult
-    {
-        public EveryReleaseThrowsResult(string value) => Value = value;
-
-        public string Value { get; }
-    }
-
     /// <summary>A handler carrying two decorators; its own <see cref="Dispose"/> throws as well.</summary>
     internal sealed class EveryReleaseThrowsQueryHandler : QueryHandler<EveryReleaseThrowsQuery, EveryReleaseThrowsResult>, IDisposable
     {

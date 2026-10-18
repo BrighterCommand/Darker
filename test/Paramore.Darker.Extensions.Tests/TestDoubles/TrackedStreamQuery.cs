@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Paramore.Darker.Extensions.Tests.TestDoubles
@@ -31,54 +27,5 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
         public void SignalStarted() => _started.TrySetResult(true);
 
         public void Release() => _release.TrySetResult(true);
-    }
-
-    public sealed class TrackedStreamQueryHandler : StreamQueryHandler<TrackedStreamQuery, string>
-    {
-        private readonly ITrackedDependency _dependency;
-
-        public TrackedStreamQueryHandler(ITrackedDependency dependency) => _dependency = dependency;
-
-        [TrackedStreamDecorator(1)]
-        public override async IAsyncEnumerable<string> ExecuteAsync(
-            TrackedStreamQuery query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            query.HandlerDependency = _dependency;
-            query.SignalStarted();
-            await query.ReleaseGate.ConfigureAwait(false);
-            yield return "item";
-        }
-    }
-
-    public sealed class TrackedStreamDecorator<TQuery, TResult> : IStreamQueryHandlerDecorator<TQuery, TResult>
-        where TQuery : IStreamQuery<TResult>
-    {
-        private readonly ITrackedDependency _dependency;
-
-        public TrackedStreamDecorator(ITrackedDependency dependency) => _dependency = dependency;
-
-        public IQueryContext Context { get; set; }
-
-        public void InitializeFromAttributeParams(object[] attributeParams) { }
-
-        public IAsyncEnumerable<TResult> Execute(
-            TQuery query,
-            Func<TQuery, CancellationToken, IAsyncEnumerable<TResult>> next,
-            CancellationToken cancellationToken)
-        {
-            if (query is TrackedStreamQuery tracked)
-                tracked.DecoratorDependency = _dependency;
-            return next(query, cancellationToken);
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class TrackedStreamDecoratorAttribute : StreamQueryHandlerAttribute
-    {
-        public TrackedStreamDecoratorAttribute(int step) : base(step) { }
-
-        public override object[] GetAttributeParams() => [];
-
-        public override Type GetDecoratorType() => typeof(TrackedStreamDecorator<,>);
     }
 }

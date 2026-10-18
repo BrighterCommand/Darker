@@ -2,14 +2,6 @@ using System;
 
 namespace Paramore.Darker.Core.Tests.TestDoubles
 {
-    internal sealed class ThrowingExecuteAndDisposeQuery : IQuery<ThrowingExecuteAndDisposeResult>
-    {
-    }
-
-    internal sealed class ThrowingExecuteAndDisposeResult
-    {
-    }
-
     /// <summary>A handler that throws from <see cref="Execute"/> and again from <see cref="Dispose"/>.</summary>
     internal sealed class ThrowingExecuteAndDisposeQueryHandler
         : QueryHandler<ThrowingExecuteAndDisposeQuery, ThrowingExecuteAndDisposeResult>, IDisposable
