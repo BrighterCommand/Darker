@@ -455,7 +455,7 @@ namespace Paramore.Darker
 
         public async ValueTask DisposeAsync()
         {
-            _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
+            TryLogTeardownStart();
 
             await ReleaseHandlerAsync().ConfigureAwait(false);
             ReleaseDecorators();
@@ -469,7 +469,7 @@ namespace Paramore.Darker
 
         private void ReleaseComponents()
         {
-            _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
+            TryLogTeardownStart();
 
             ReleaseHandler();
             ReleaseDecorators();
@@ -552,6 +552,19 @@ namespace Paramore.Darker
             catch (Exception e)
             {
                 TryLogTeardownFault(e, component);
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee, even before any release runs.
+        private static void TryLogTeardownStart()
+        {
+            try
+            {
+                _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
+            }
+            catch
+            {
+                // Nothing safe left to do: the message could not be written, and teardown must still run.
             }
         }
 
