@@ -48,6 +48,7 @@ namespace Paramore.Darker
         /// <inheritdoc />
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
 
+        /// <inheritdoc />
         public IAmAScope? CreatePipelineScope() => null;
 
         /// <inheritdoc />
