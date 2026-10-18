@@ -29,16 +29,11 @@ namespace Paramore.Darker.Extensions.AspNetCore
     /// Offers the current request's scope, read from the <see cref="IHttpContextAccessor"/> on every call
     /// because the provider is a singleton that outlives any one request.
     /// </summary>
-    internal sealed class HttpContextScopeProvider : IAmAScopeProvider
+    internal sealed class HttpContextScopeProvider(IHttpContextAccessor httpContextAccessor) : IAmAScopeProvider
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public HttpContextScopeProvider(IHttpContextAccessor httpContextAccessor)
-            => _httpContextAccessor = httpContextAccessor;
-
         public IAmAScope? GetAmbient(ScopeAffinity affinity)
         {
-            var context = _httpContextAccessor.HttpContext;
+            var context = httpContextAccessor.HttpContext;
             return context == null ? null : new HttpRequestScope(context.RequestServices);
         }
     }

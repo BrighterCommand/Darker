@@ -31,11 +31,9 @@ namespace Paramore.Darker.Extensions.AspNetCore
     /// A non-owning handle on the request's service provider. ASP.NET Core owns the request scope, so
     /// disposing the handle does nothing.
     /// </summary>
-    internal sealed class HttpRequestScope : IAmAServiceProviderScope
+    internal sealed class HttpRequestScope(IServiceProvider services) : IAmAServiceProviderScope
     {
-        public HttpRequestScope(IServiceProvider services) => Services = services;
-
-        public IServiceProvider Services { get; }
+        public IServiceProvider Services { get; } = services;
 
         public void Dispose() { }
 
