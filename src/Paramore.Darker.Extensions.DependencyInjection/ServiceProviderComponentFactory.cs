@@ -90,26 +90,24 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return null;
             }
 
-            if (serviceProviderScope.Services == null)
-            {
-                adoptionDiagnostics.WarnOnce(
-                    "null-services",
-                    $"The ambient scope {offered.GetType()} has no service provider, so Darker cannot resolve from it. " +
-                    "Each query gets a scope of its own.");
-                return null;
-            }
-
-            return PassesProbe(offered, serviceProviderScope.Services)
+            return PassesProbe(offered, serviceProviderScope)
                 ? new BorrowedServiceProviderScope(serviceProviderScope)
                 : null;
         }
 
-        // Resolves only singletons from the offered provider. A scope that fails is declined, with its
-        // reason logged once.
-        private bool PassesProbe(IAmAScope offered, IServiceProvider services)
+        // Resolves only singletons from the offered provider. A scope that fails, including one whose
+        // Services getter throws, is declined with its reason logged once.
+        private bool PassesProbe(IAmAScope offered, IAmAServiceProviderScope offeredScope)
         {
             try
             {
+                var services = offeredScope.Services;
+                if (services == null)
+                    return Decline(
+                        "null-services",
+                        $"The ambient scope {offered.GetType()} has no service provider, so Darker cannot resolve from it. " +
+                        "Each query gets a scope of its own.");
+
                 if (IsRoot(services))
                     return Decline(
                         "root",
