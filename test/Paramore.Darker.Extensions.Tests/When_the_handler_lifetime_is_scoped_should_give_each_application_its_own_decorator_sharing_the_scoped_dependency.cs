@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_same_decorator_type_applied_twice_should_create_two_instances
+    public class SameDecoratorTypeAppliedTwiceTests
     {
         [Fact]
         public void When_the_handler_lifetime_is_scoped_should_give_each_application_its_own_decorator_sharing_the_scoped_dependency()

@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_join_ambient_with_transient_handler_lifetime_should_use_owned_scope_and_warn_once
+    public class JoinAmbientWithTransientHandlerLifetimeTests
     {
         [Fact]
         public void When_executing_many_queries_with_a_transient_handler_should_use_an_owned_scope_each_and_log_one_warning()

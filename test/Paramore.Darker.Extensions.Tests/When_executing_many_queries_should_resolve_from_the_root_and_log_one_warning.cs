@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_join_ambient_with_singleton_handler_lifetime_should_not_adopt_and_warn_once
+    public class JoinAmbientWithSingletonHandlerLifetimeTests
     {
         [Fact]
         public void When_executing_many_queries_should_resolve_from_the_root_and_log_one_warning()

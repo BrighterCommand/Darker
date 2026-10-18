@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_decorated_query_runs_should_resolve_decorator_from_handler_scope
+    public class DecoratorResolvedFromHandlerScopeTests
     {
         [Fact]
         public void When_executing_with_an_adopted_scope_should_give_handler_and_decorator_the_ambient_instance()

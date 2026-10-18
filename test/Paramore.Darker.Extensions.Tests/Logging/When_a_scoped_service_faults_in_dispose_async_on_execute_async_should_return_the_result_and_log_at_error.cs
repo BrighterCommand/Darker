@@ -11,11 +11,11 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests.Logging
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_scoped_service_dispose_async_faults_should_return_result_and_log_error
+    public class ScopedServiceDisposeAsyncFaultsTests
     {
         private readonly LoggerCaptureFixture _logs;
 
-        public When_scoped_service_dispose_async_faults_should_return_result_and_log_error(LoggerCaptureFixture logs)
+        public ScopedServiceDisposeAsyncFaultsTests(LoggerCaptureFixture logs)
         {
             _logs = logs;
         }

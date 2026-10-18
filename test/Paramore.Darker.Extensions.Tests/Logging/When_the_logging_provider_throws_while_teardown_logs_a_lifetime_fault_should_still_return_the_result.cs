@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests.Logging
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_logging_provider_throws_during_teardown_should_still_return_result
+    public class LoggingProviderThrowsDuringTeardownTests
     {
         [Fact]
         public void When_the_logging_provider_throws_while_teardown_logs_a_lifetime_fault_should_still_return_the_result()

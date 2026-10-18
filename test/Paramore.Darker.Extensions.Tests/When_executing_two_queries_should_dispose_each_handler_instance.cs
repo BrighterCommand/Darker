@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_handler_lifetime_is_scoped_or_transient_should_dispose_disposable_handler_each_query
+    public class HandlerLifetimeIsScopedOrTransientTests
     {
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]

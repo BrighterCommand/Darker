@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_handler_lifetime_is_singleton_should_reuse_decorator_instance
+    public class SingletonHandlerLifetimeDecoratorReuseTests
     {
         [Fact]
         public void When_executing_two_queries_should_use_the_same_decorator_instance()

@@ -12,7 +12,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_fallback_recurs_should_log_warning_once_per_container
+    public class WarningLatchPerContainerTests
     {
         private const int CONCURRENT_QUERIES = 20;
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_affinity_is_always_new_should_never_call_the_scope_provider
+    public class AffinityIsAlwaysNewTests
     {
         [Fact]
         public void When_a_throwing_scope_provider_is_registered_should_run_the_query_with_an_owned_scope()

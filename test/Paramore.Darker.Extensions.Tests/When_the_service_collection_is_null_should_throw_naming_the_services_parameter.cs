@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_scope_provider_registered_on_null_services_should_throw_ArgumentNullException
+    public class ScopeProviderRegisteredOnNullServicesTests
     {
         [Fact]
         public void When_the_service_collection_is_null_should_throw_naming_the_services_parameter()

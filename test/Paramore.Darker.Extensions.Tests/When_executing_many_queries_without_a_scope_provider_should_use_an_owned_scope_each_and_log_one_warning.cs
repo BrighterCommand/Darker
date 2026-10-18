@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_join_ambient_without_scope_provider_should_use_owned_scope_and_warn_once
+    public class JoinAmbientWithoutScopeProviderTests
     {
         [Fact]
         public void When_executing_many_queries_without_a_scope_provider_should_use_an_owned_scope_each_and_log_one_warning()

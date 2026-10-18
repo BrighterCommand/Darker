@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_two_query_types_share_a_result_type_in_one_ambient_scope_should_get_distinct_decorators
+    public class TwoQueryTypesShareAResultTypeInOneAmbientScopeTests
     {
         [Fact]
         public void When_both_run_in_one_adopted_scope_should_create_a_decorator_each_resolving_the_ambient_dependency()

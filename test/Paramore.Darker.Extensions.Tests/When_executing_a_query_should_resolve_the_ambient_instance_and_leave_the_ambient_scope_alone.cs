@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_ambient_scope_offered_should_adopt_it_and_never_dispose_it
+    public class AmbientScopeOfferedTests
     {
         [Fact]
         public void When_executing_a_query_should_resolve_the_ambient_instance_and_leave_the_ambient_scope_alone()

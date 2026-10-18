@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_scope_provider_registered_with_affinity_should_override_default_scope_affinity
+    public class ScopeProviderRegisteredWithAffinityTests
     {
         // A Transient handler lifetime makes JoinAmbient log the Scoped-lifetime Warning, so the Warning
         // count shows which affinity is effective: one Warning means JoinAmbient, none means AlwaysNew.

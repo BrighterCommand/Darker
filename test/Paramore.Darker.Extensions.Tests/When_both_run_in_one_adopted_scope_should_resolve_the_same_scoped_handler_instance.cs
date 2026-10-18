@@ -9,7 +9,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_two_queries_of_one_handler_type_run_in_one_ambient_scope_should_share_the_handler
+    public class TwoQueriesOfOneHandlerTypeRunInOneAmbientScopeTests
     {
         [Fact]
         public void When_both_run_in_one_adopted_scope_should_resolve_the_same_scoped_handler_instance()

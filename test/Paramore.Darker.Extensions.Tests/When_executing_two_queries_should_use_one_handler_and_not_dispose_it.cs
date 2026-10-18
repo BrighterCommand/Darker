@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_handler_lifetime_is_singleton_should_resolve_handler_and_never_dispose_it
+    public class SingletonHandlerLifetimeResolutionTests
     {
         [Fact]
         public void When_executing_two_queries_should_use_one_handler_and_not_dispose_it()

@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_scope_provider_registered_twice_should_use_the_later_registration
+    public class ScopeProviderRegisteredTwiceTests
     {
         [Fact]
         public void When_AddDarkerScopeProvider_is_called_twice_should_use_the_later_provider_and_keep_one_registration_of_each()

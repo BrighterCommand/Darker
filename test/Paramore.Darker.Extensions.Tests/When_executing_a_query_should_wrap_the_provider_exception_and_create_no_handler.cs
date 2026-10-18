@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_scope_provider_throws_should_surface_AmbientScopeSourceException
+    public class ScopeProviderFaultTests
     {
         [Fact]
         public void When_executing_a_query_should_wrap_the_provider_exception_and_create_no_handler()

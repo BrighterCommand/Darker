@@ -10,11 +10,11 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests.Logging
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_sync_teardown_meets_async_only_disposable_should_log_error_and_return_result
+    public class SyncTeardownMeetsAsyncOnlyDisposableTests
     {
         private readonly LoggerCaptureFixture _logs;
 
-        public When_sync_teardown_meets_async_only_disposable_should_log_error_and_return_result(LoggerCaptureFixture logs)
+        public SyncTeardownMeetsAsyncOnlyDisposableTests(LoggerCaptureFixture logs)
         {
             _logs = logs;
         }

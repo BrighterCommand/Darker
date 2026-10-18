@@ -7,7 +7,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_offered_scope_is_already_disposed_should_decline_and_warn_once
+    public class OfferedScopeIsAlreadyDisposedTests
     {
         [Fact]
         public async Task When_the_ambient_scope_was_disposed_before_the_queries_should_use_owned_scopes_and_log_one_warning()

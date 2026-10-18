@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_scope_provider_offers_no_scope_should_use_owned_scope_without_warning
+    public class ScopeProviderOffersNoScopeTests
     {
         [Fact]
         public void When_no_scope_is_ambient_should_use_an_owned_scope_each_query_and_log_no_warning()

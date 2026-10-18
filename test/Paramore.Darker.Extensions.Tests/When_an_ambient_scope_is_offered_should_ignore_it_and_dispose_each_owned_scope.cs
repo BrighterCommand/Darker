@@ -9,7 +9,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_ambient_scope_offered_with_always_new_should_use_owned_scope_per_query
+    public class AmbientScopeOfferedWithAlwaysNewTests
     {
         // (a) registered with an explicit AlwaysNew; (b) registered directly as the service, so only the
         // default affinity (AlwaysNew) applies

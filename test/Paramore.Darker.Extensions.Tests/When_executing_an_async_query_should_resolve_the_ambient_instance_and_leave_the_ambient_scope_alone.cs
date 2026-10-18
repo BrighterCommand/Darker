@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_ambient_scope_adopted_on_async_paths_should_never_dispose_it
+    public class AmbientScopeAdoptedOnAsyncPathsTests
     {
         [Fact]
         public async Task When_executing_an_async_query_should_resolve_the_ambient_instance_and_leave_the_ambient_scope_alone()

@@ -11,11 +11,11 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests.Logging
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_async_query_completes_with_async_only_disposable_should_await_dispose_async
+    public class AsyncQueryCompletesWithAsyncOnlyDisposableTests
     {
         private readonly LoggerCaptureFixture _logs;
 
-        public When_async_query_completes_with_async_only_disposable_should_await_dispose_async(LoggerCaptureFixture logs)
+        public AsyncQueryCompletesWithAsyncOnlyDisposableTests(LoggerCaptureFixture logs)
         {
             _logs = logs;
         }

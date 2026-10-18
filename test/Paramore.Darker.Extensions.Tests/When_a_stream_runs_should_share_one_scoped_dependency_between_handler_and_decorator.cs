@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Paramore.Darker.Extensions.Tests
 {
-    public class When_stream_queries_run_with_scoped_lifetime_should_share_within_and_isolate_between_pipelines
+    public class StreamQueriesRunWithScopedLifetimeTests
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
 

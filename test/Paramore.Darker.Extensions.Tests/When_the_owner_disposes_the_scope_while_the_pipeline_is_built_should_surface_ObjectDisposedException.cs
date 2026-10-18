@@ -10,7 +10,7 @@ using Xunit;
 namespace Paramore.Darker.Extensions.Tests
 {
     [Collection("DarkerHostBootstrap")]
-    public class When_borrowed_scope_disposed_after_probe_should_surface_ObjectDisposedException_unwrapped
+    public class BorrowedScopeDisposedAfterProbeTests
     {
         [Fact]
         public void When_the_owner_disposes_the_scope_while_the_pipeline_is_built_should_surface_ObjectDisposedException()
