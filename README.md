@@ -22,14 +22,14 @@ public void ConfigureServices(IServiceCollection services)
     services.AddMvc();
 }
 ```
-**WARNING** if you are using EFCore the DBContext DI Lifetime is scoped, for Darker to play nicely with EFCore and DI the QueryProcessor must also be registration as Scoped
+**EF Core and the request scope.** EF Core registers the `DbContext` as Scoped. A Scoped `QueryProcessor` gets a sibling scope, so it does **not** share the request's `DbContext`. To share it, use Scoped handlers and opt in to the request scope with the `Paramore.Darker.Extensions.AspNetCore` package:
 ```csharp
- services.AddDarker(options =>
-                {
-                    //EFCore by default registers Context as scoped, which forces the QueryProcessorLifetime to also be scoped
-                    options.QueryProcessorLifetime = ServiceLifetime.Scoped;
-                })
+services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
+    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly);
+services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore
+services.AddBrighterRequestScope();  // Brighter's own opt-in, if you also use Brighter
 ```
+The two opt-in calls are independent. Queries in one request share its Scoped services, so concurrent queries in one request need `ScopeAffinity.AlwaysNew`.
 
 This example uses the query logging and policy decorators, which are built into the core
 [Paramore.Darker](https://www.nuget.org/packages/Paramore.Darker) package.

@@ -2,6 +2,7 @@
 
 - `src/Paramore.Darker/` - Core framework (QueryProcessor, PipelineBuilder, registries), including the built-in decorators: query logging in `Logging/`, and retry/fallback policies and Polly resilience pipelines in `Policies/` (merged into core by ADR 0011)
 - `src/Paramore.Darker.Extensions.DependencyInjection/` - Microsoft.Extensions.DependencyInjection integration
+- `src/Paramore.Darker.Extensions.AspNetCore/` - ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`)
 - `src/Paramore.Darker.Testing/` - Testing utilities
 - `test/` - Test suites organized by component
 

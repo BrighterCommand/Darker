@@ -22,9 +22,8 @@ namespace Paramore.Darker.Core.Tests
             _handlerRegistryAsync = new QueryHandlerRegistryAsync();
 
             // Two separate recording factories: the async pipeline CREATES the handler via
-            // the async slot but RELEASES it via the sync slot (PipelineBuilder), so the
-            // async factory genuinely never sees Release. A shared instance would record a
-            // release via the sync slot and break the async "Release Never" assertion.
+            // the async slot and RELEASES it through that same slot, so the async factory records
+            // the release and the sync factory never sees it.
             _handlerFactory = new RecordingHandlerFactory(handlerType => _handlers[handlerType]);
             _handlerFactoryAsync = new RecordingHandlerFactory(handlerType => _handlers[handlerType]);
 
@@ -50,15 +49,15 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(ProcessorQueryHandlerAsync)] = handler;
 
             // Act
-            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id));
+            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             result.ShouldBe(id);
             handler.Context.ShouldNotBeNull();
             handler.Context.Bag.ShouldContainKeyAndValue("id", id);
-            // Async asserts Never (unlike the sync file's Once): the async pipeline releases
-            // via the sync slot, so the async factory never records this handler's release.
-            _handlerFactoryAsync.ReleaseCount(handler).ShouldBe(0);
+            // The async pipeline releases through the async factory that created the handler.
+            _handlerFactoryAsync.ReleaseCount(handler).ShouldBe(1);
+            _handlerFactory.ReleaseCount(handler).ShouldBe(0);
         }
 
         [Fact]
@@ -77,7 +76,7 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(RecordingQueryHandlerAsync<ProcessorIntQuery, int>)] = handlerB;
 
             // Act
-            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id));
+            var result = await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
             result.ShouldBe(id);                            // matching handler ran with the expected query
@@ -98,7 +97,7 @@ namespace Paramore.Darker.Core.Tests
             _handlers[typeof(RecordingQueryHandlerAsync<ProcessorQuery, Guid>)] = handlerA;
 
             // Act
-            await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new ProcessorQuery(id)));
+            await Assert.ThrowsAsync<FormatException>(async () => await _queryProcessor.ExecuteAsync(new ProcessorQuery(id), cancellationToken: TestContext.Current.CancellationToken));
 
             // Assert
             handlerA.FallbackCount.ShouldBe(0);

@@ -5,7 +5,7 @@ status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-06-08
-summary: "Makes handler and decorator factories lifetime-aware via a per-query IAmALifetime owning a child IServiceScope that PipelineBuilder creates and disposes, resolving Singleton from a shared cache and Scoped/Transient from the child scope."
+summary: "Makes handler and decorator factories lifetime-aware via a per-query IAmALifetime owning a child IServiceScope that PipelineBuilder creates and disposes, resolving Singleton from a shared cache and Scoped/Transient from the child scope. Partially superseded by ADR 0022 (teardown), 0023 (scope handle) and 0024 (scope ownership and ambient adoption); remains Accepted."
 tags:
   - "lifetime"
   - "di"
@@ -19,6 +19,8 @@ Date: 2026-06-08
 ## Status
 
 Accepted
+
+Partially superseded. [0024-ambient-scope-adoption](0024-ambient-scope-adoption.md) supersedes this ADR's account of scope ownership, and the "`QueryProcessorLifetime = Scoped` interaction" paragraph in Decision 3 is incorrect: Microsoft DI scopes do not nest, so a Scoped `QueryProcessor` gets a sibling scope, not a child of the request scope. [0022-robust-pipeline-teardown](0022-robust-pipeline-teardown.md) amends Decisions 1, 2 and 5: `IAmALifetime` gains `IAsyncDisposable`, the async factories' `Release` becomes `ReleaseAsync`, and teardown isolates each release. [0023-pipeline-scope-handle](0023-pipeline-scope-handle.md) amends Decisions 1, 2 and 3: the lifetime carries the pipeline scope instead of `Add`, the handler factories gain `CreatePipelineScope`, and the scope is no longer attached lazily. ADR 0023 also makes Decision 4's claim that handler and decorators share one scope "independent of how many factory objects exist" true; before it, the scope table sat on each factory instance. The lifetime-aware factories, the rule that Singletons resolve from the captured provider and are never disposed by Darker, and the per-query scope for Scoped and Transient handlers remain in force.
 
 ## Context
 

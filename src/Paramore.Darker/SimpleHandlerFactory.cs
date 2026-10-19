@@ -21,7 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 #endregion
 
+#nullable enable annotations
+
 using System;
+using System.Threading.Tasks;
 
 namespace Paramore.Darker
 {
@@ -46,9 +49,21 @@ namespace Paramore.Darker
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime) => _factory(handlerType);
 
         /// <inheritdoc />
+        public IAmAScope? CreatePipelineScope() => null;
+
+        /// <inheritdoc />
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
             if (handler is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        /// <inheritdoc />
+        public async ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime)
+        {
+            if (handler is IAsyncDisposable asyncDisposable)
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            else if (handler is IDisposable disposable)
                 disposable.Dispose();
         }
     }

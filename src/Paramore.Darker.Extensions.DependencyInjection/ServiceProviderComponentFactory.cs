@@ -21,9 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 #endregion
 
+#nullable enable annotations
+
 using System;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
@@ -31,31 +34,137 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// Single DI-backed factory for both handlers and decorators, sync and async. Merging the
     /// formerly separate handler and decorator factories lets a Singleton dependency injected into
     /// both a handler and a decorator share one singleton cache, and lets handler and decorator
-    /// read the same per-query child scope (owned by the <see cref="IAmALifetime"/>).
+    /// read the same per-query child scope. That scope is created up front by
+    /// <see cref="CreatePipelineScope"/> and reaches every <c>Create</c> call as
+    /// <see cref="IAmALifetime.PipelineScope"/>, so the factory holds no per-query state.
     /// </summary>
     internal sealed class ServiceProviderComponentFactory(
         IServiceProvider serviceProvider,
-        ServiceLifetime handlerLifetime)
+        ServiceLifetime handlerLifetime,
+        IAmAScopeProvider? scopeProvider,
+        ScopeAffinity affinity,
+        AdoptionDiagnostics adoptionDiagnostics)
         :
             IQueryHandlerFactory, IQueryHandlerFactoryAsync,
             IQueryHandlerDecoratorFactory, IQueryHandlerDecoratorFactoryAsync
     {
-        // Keyed on the per-query lifetime token so all Create calls of one execution (handler and
-        // its decorators) share a single child scope — without holding per-query state in a mutable
-        // field on this shared singleton factory. Weak keys let the table entry be collected once the
-        // token is gone; the scope itself is disposed by the token (via IAmALifetime.Add), not here.
-        private readonly ConditionalWeakTable<IAmALifetime, ServiceProviderLifetimeScope> _scopes = new();
+        // Rows 1 to 4 of the decision ladder (ADR 0024) depend only on configuration, so they are
+        // evaluated once, when the factory is built.
+        private readonly bool _adoptionEnabled = EvaluateAdoption(handlerLifetime, scopeProvider, affinity, adoptionDiagnostics);
 
         public IQueryHandler Create(Type handlerType, IAmALifetime lifetime)
         {
             return (IQueryHandler) Resolve(handlerType, lifetime);
         }
 
+        // Singletons resolve from the captured provider and Darker never disposes them, so they
+        // need no per-query scope; Scoped and Transient components share one child scope per query.
+        public IAmAScope? CreatePipelineScope()
+        {
+            if (handlerLifetime == ServiceLifetime.Singleton)
+                return null;
+
+            if (_adoptionEnabled)
+            {
+                var borrowed = Adopt(OfferedAmbientScope());
+                if (borrowed != null)
+                    return borrowed;
+            }
+
+            return new ServiceProviderLifetimeScope(serviceProvider);
+        }
+
+        // Probes an offered scope and, if it passes, wraps it in a handle that never disposes it. A scope
+        // that fails the probe is declined: dropped without disposal, with one Warning per reason.
+        private IAmAScope? Adopt(IAmAScope? offered)
+        {
+            if (offered == null)
+                return null;
+
+            if (offered is not IAmAServiceProviderScope serviceProviderScope)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "no-service-provider",
+                    $"The ambient scope {offered.GetType()} exposes no service provider, so Darker cannot resolve from it. " +
+                    "Each query gets a scope of its own. Offer an IAmAServiceProviderScope to join an ambient scope.");
+                return null;
+            }
+
+            return PassesProbe(offered, serviceProviderScope)
+                ? new BorrowedServiceProviderScope(serviceProviderScope)
+                : null;
+        }
+
+        // Resolves only singletons from the offered provider. A scope that fails, including one whose
+        // Services getter throws, is declined with its reason logged once.
+        private bool PassesProbe(IAmAScope offered, IAmAServiceProviderScope offeredScope)
+        {
+            try
+            {
+                var services = offeredScope.Services;
+                if (services == null)
+                    return Decline(
+                        "null-services",
+                        $"The ambient scope {offered.GetType()} has no service provider, so Darker cannot resolve from it. " +
+                        "Each query gets a scope of its own.");
+
+                if (IsRoot(services))
+                    return Decline(
+                        "root",
+                        $"The service provider of the ambient scope {offered.GetType()} is the root, not a scope. " +
+                        "Resolving Scoped services from it would keep them for the life of the container, so each query gets a scope of its own.");
+
+                // The diagnostics are a singleton registered by AddDarker, so only a scope from this
+                // container resolves the instance this factory holds.
+                if (!ReferenceEquals(services.GetService(typeof(AdoptionDiagnostics)), adoptionDiagnostics))
+                    return Decline(
+                        "other-container",
+                        $"The ambient scope {offered.GetType()} is from another container than the one Darker is registered in, " +
+                        "so Darker cannot resolve its handlers from it. Each query gets a scope of its own.");
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                return Decline(
+                    $"probe-fault:{exception.GetType()}",
+                    $"Darker could not probe the ambient scope {offered.GetType()}: {exception.GetType()}. " +
+                    "Each query gets a scope of its own.");
+            }
+        }
+
+        private bool Decline(string reason, string message)
+        {
+            adoptionDiagnostics.WarnOnce(reason, message);
+            return false;
+        }
+
+        // Microsoft DI answers IServiceScopeFactory with the root scope from anywhere. It answers
+        // IServiceProvider with the scope it was asked, so only the root gets the same object for both.
+        private static bool IsRoot(IServiceProvider services)
+            => ReferenceEquals(services.GetService(typeof(IServiceProvider)), services.GetService(typeof(IServiceScopeFactory)));
+
+        // Only reached with a provider present (the adoption configuration check guarantees it).
+        private IAmAScope? OfferedAmbientScope()
+        {
+            try
+            {
+                return scopeProvider!.GetAmbient(ScopeAffinity.JoinAmbient);
+            }
+            catch (Exception exception)
+            {
+                throw new AmbientScopeSourceException(
+                    $"The scope provider {scopeProvider!.GetType()} failed when asked for the ambient scope.", exception);
+            }
+        }
+
         public void Release(IQueryHandler handler, IAmALifetime lifetime)
         {
-            // Scoped/Transient teardown is owned by the lifetime's child scope; Singletons are
+            // Scoped/Transient teardown is owned by the pipeline scope; Singletons are
             // never disposed by Darker. Nothing to do here.
         }
+
+        public ValueTask ReleaseAsync(IQueryHandler handler, IAmALifetime lifetime) => default;
 
         public T Create<T>(Type decoratorType, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
@@ -64,8 +173,40 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
-            // Scoped/Transient teardown is owned by the lifetime's child scope; Singletons are
+            // Scoped/Transient teardown is owned by the pipeline scope; Singletons are
             // never disposed by Darker. Nothing to do here.
+        }
+
+        public ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator => default;
+
+        private static bool EvaluateAdoption(
+            ServiceLifetime handlerLifetime,
+            IAmAScopeProvider? scopeProvider,
+            ScopeAffinity affinity,
+            AdoptionDiagnostics adoptionDiagnostics)
+        {
+            if (affinity != ScopeAffinity.JoinAmbient)
+                return false;
+
+            if (handlerLifetime != ServiceLifetime.Scoped)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "scoped-handler-lifetime",
+                    $"The scope affinity is JoinAmbient, but the handler lifetime is {handlerLifetime}. " +
+                    "Adopting an ambient scope needs a Scoped handler lifetime, so each query gets a scope of its own.");
+                return false;
+            }
+
+            if (scopeProvider == null)
+            {
+                adoptionDiagnostics.WarnOnce(
+                    "no-scope-provider",
+                    "The scope affinity is JoinAmbient, but no scope provider is registered, " +
+                    "so each query gets a scope of its own. Register one with AddDarkerScopeProvider.");
+                return false;
+            }
+
+            return true;
         }
 
         private object Resolve(Type componentType, IAmALifetime lifetime)
@@ -73,14 +214,25 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (handlerLifetime == ServiceLifetime.Singleton)
                 return serviceProvider.GetService(componentType);
 
-            var scope = _scopes.GetValue(lifetime, CreateScope);
-            return scope.Resolve(componentType);
+            return RecognisedScope(componentType, lifetime).Services.GetService(componentType);
         }
 
-        private ServiceProviderLifetimeScope CreateScope(IAmALifetime lifetime)
+        // Fails fast rather than resolving from the root provider, which would leak Scoped and
+        // Transient components for the life of the container.
+        private IAmAServiceProviderScope RecognisedScope(Type componentType, IAmALifetime lifetime)
         {
-            var scope = new ServiceProviderLifetimeScope(serviceProvider);
-            lifetime.Add(scope);
+            var handle = lifetime?.PipelineScope;
+
+            if (handle == null)
+                throw new ConfigurationException(
+                    $"Cannot resolve {componentType} with a {handlerLifetime} handler lifetime: the pipeline has no scope. " +
+                    "Use the Darker handler factory that created the pipeline's scope.");
+
+            if (handle is not IAmAServiceProviderScope scope)
+                throw new ConfigurationException(
+                    $"Cannot resolve {componentType} with a {handlerLifetime} handler lifetime: " +
+                    $"the pipeline scope {handle.GetType()} was not created by this factory.");
+
             return scope;
         }
     }

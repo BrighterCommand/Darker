@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <Description>ASP.NET Core request scope integration for Darker: lets query handlers share the HTTP request's scoped services</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+</Project>

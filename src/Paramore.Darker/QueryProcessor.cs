@@ -101,9 +101,10 @@ namespace Paramore.Darker
 
         public async Task<TResult> ExecuteAsync<TResult>(IQuery<TResult> query, IQueryContext queryContext = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var pipelineBuilder = new PipelineBuilder<TResult>(
+            var pipelineBuilder = new PipelineBuilder<TResult>(
                 _handlerRegistry, _handlerFactory, _decoratorFactory,
-                _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync))
+                _handlerRegistryAsync, _handlerFactoryAsync, _decoratorFactoryAsync);
+            await using (pipelineBuilder.ConfigureAwait(false))
             {
                 if (queryContext == null)
                     queryContext = _queryContextFactory.Create();
@@ -165,7 +166,7 @@ namespace Paramore.Darker
                 }
                 finally { _tracer?.EndSpan(span); }
             }
-            finally { pipelineBuilder.Dispose(); }
+            finally { await pipelineBuilder.DisposeAsync().ConfigureAwait(false); }
         }
 
         private void InitQueryContext(IQueryContext queryContext)

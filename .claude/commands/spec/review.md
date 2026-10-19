@@ -59,6 +59,8 @@ Read ALL documents the sub-agent will need. The sub-agent gets a clean context �
   the canonical skeleton, readability rules, diagram rules and pre-commit checks that the
   *Structure and Readability* criteria in Step 4 grade against, and § *Writing tone for design
   documents* is the tone contract. The sub-agent reads it itself.
+- Pass the path to `.agent_instructions/testing.md`. The *Testing Plan* criteria in Step 4 grade
+  each ADR's Implementation Approach against it; the sub-agent reads it itself.
 - **Even when reviewing a single ADR, read the whole `.adr-list` set.** Two of the design criteria
   — the sibling map and the unifying sentence — are properties of the set, not of one file, and
   cannot be judged from one ADR alone.
@@ -163,6 +165,16 @@ You are a skeptical reviewer. Assume the design has problems — your job is to 
 **Completeness:**
 - Is the error handling strategy explicit?
 - Are concurrency/threading concerns addressed where relevant?
+
+**Testing Plan** (grade against `.agent_instructions/testing.md` — read it, do not paraphrase it
+from memory):
+- Does every test the Implementation Approach plans reach the code through the public surface? A
+  plan that adds `InternalsVisibleTo`, signs a test project to become a friend assembly, or drives an
+  internal class directly breaks an explicit project rule, whatever reason the ADR gives.
+- Do the planned test doubles follow Real > Simple > InMemory > Mock, and live in `TestDoubles/`?
+- Is every acceptance criterion the ADR claims to satisfy reachable by a public-surface test? An AC
+  that only an internal test could reach is a requirements problem, not a testing-plan detail —
+  say so rather than accepting the workaround.
 
 **Structure and Readability:**
 
@@ -401,6 +413,7 @@ Tell the sub-agent to produce output in this exact format:
 - **A mermaid diagram that does not render IS High (70-85)** — it is a broken artefact that reads as perfectly fine, so nothing else will catch it before it ships.
 - **An ADR that references a participant in the authoring conversation** ("at the user's direction", "the user explicitly chose") **IS Medium-High (65-75)** — it fails the document's only audience, and once the ADR is Accepted the sentence tends to stay.
 - **A stale `### Where this ADR sits` map** — one that omits a sibling added after it was written — **IS Medium-High (60-75)**. A reader who finds a map stale once stops trusting every other map in the corpus.
+- **A testing plan that breaks an explicit `testing.md` rule** (for example `InternalsVisibleTo` for testing) **IS High (70-80)**, even when the ADR records the exception and its reason. The ADR cannot waive a project rule; the owner decides whether the rule or the design changes, so the review must surface it, not accept it.
 
 Calibrating the structure criteria specifically — they are about navigability, not conformity:
 - Heading **order or nesting level** drifting from the siblings is Medium-High (60-75): it breaks the reader's ability to navigate the next ADR using what they learned on this one.

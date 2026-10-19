@@ -99,13 +99,16 @@ Darker is the query-side counterpart of [Brighter](https://github.com/BrighterCo
 ### Key Components
 - **src/Paramore.Darker**: Core library with QueryProcessor, PipelineBuilder, registries, and the built-in decorators: query logging (`Logging/`) and retry/fallback policies and Polly resilience pipelines (`Policies/`), merged into core by ADR 0011
 - **src/Paramore.Darker.Extensions.DependencyInjection**: Microsoft.Extensions.DependencyInjection integration
+- **src/Paramore.Darker.Extensions.AspNetCore**: ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`) so Scoped handlers share the request's scope; net8.0+
 - **src/Paramore.Darker.Testing**: Testing utilities
 
 ### Handler Lifecycle
 - Handlers are created per-query via `IQueryHandlerFactory`
 - Decorators are created per-query via `IQueryHandlerDecoratorFactory`
-- Both are released after pipeline execution in `PipelineBuilder.Dispose()`
-- With ASP.NET Core + EF Core: QueryProcessor must be Scoped (matches DbContext lifetime)
+- Both are released after pipeline execution in `PipelineBuilder.Dispose()` / `DisposeAsync()` (async and stream paths await it)
+- Teardown is isolated, scope-last and never-throwing: each release is its own fault boundary (a failure is logged at Error, never thrown, and never masks the query's own exception), and the pipeline scope is disposed last, unconditionally
+- The pipeline scope is created by the chosen handler factory (`CreatePipelineScope()`, null for Singleton) and carried on the `IAmALifetime`; the lifetime disposes only that scope
+- With ASP.NET Core + EF Core: a Scoped `QueryProcessor` gets a sibling scope and does **not** share the request's `DbContext`. Set `HandlerLifetime = Scoped` and call `AddDarkerRequestScope()` (ADR 0024) to share it
 
 ## Development Commands
 
@@ -165,13 +168,14 @@ public override async Task<TResult> ExecuteAsync(...)
 
 ### ASP.NET Core Registration
 ```csharp
-services.AddDarker(options => {
-    options.QueryProcessorLifetime = ServiceLifetime.Scoped; // Required for EF Core
-})
-.AddHandlersFromAssemblies(typeof(MyHandler).Assembly)  // Scans for handlers
-.AddJsonQueryLogging()                                   // Adds logging decorator
-.AddDefaultPolicies();                                   // Adds retry/fallback policies
+services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
+    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly)  // Scans for handlers
+    .AddJsonQueryLogging()                                   // Adds logging decorator
+    .AddDefaultPolicies();                                   // Adds retry/fallback policies
+services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore: join the request's scope (shares its DbContext)
+services.AddBrighterRequestScope();  // Brighter's own opt-in, if Brighter is used
 ```
+The two opt-in calls are independent; Brighter's `AmbientScopeSuppression` does not govern Darker. Queries in one request share its Scoped services, so concurrent queries in one request need `ScopeAffinity.AlwaysNew`. A Scoped `QueryProcessorLifetime` is not needed for EF Core.
 
 ### Exception Handling
 - `TargetInvocationException` is unwrapped via `ExceptionDispatchInfo.Capture().Throw()`

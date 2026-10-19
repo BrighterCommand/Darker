@@ -350,6 +350,8 @@ this project you agree to abide by its terms. The code of conduct is from the
     pipelines), streaming queries, and observability.
   - `Paramore.Darker.Extensions.DependencyInjection` — integration with
     `Microsoft.Extensions.DependencyInjection`, including handler assembly scanning.
+  - `Paramore.Darker.Extensions.AspNetCore` — the ASP.NET Core request-scope opt-in
+    (`AddDarkerRequestScope`), so Scoped handlers share the request's scope.
   - `Paramore.Darker.Extensions.Diagnostics` — wires Darker's tracing and metrics into OpenTelemetry.
   - `Paramore.Darker.Caching` — the query result caching decorator.
   - `Paramore.Darker.Validation` — the provider-agnostic validation decorator, with
@@ -357,7 +359,7 @@ this project you agree to abide by its terms. The code of conduct is from the
     providers.
   - `Paramore.Darker.Testing` — helpers for testing code that uses Darker.
 - `test/` — test projects, partitioned to match the libraries (`Paramore.Darker.Core.Tests`,
-  `Paramore.Darker.Extensions.Tests`, `Paramore.Darker.Caching.Tests`, the validation test projects,
+  `Paramore.Darker.Extensions.Tests`, `Paramore.Darker.Extensions.AspNetCore.Tests`, `Paramore.Darker.Caching.Tests`, the validation test projects,
   and so on), plus `Paramore.Darker.Tests.AOT` for trimming/AOT compatibility,
   and `Paramore.Darker.Benchmarks`.
 - `samples/` — `SampleMinimalApi` (an ASP.NET Core minimal API) and `SampleMauiTestApp`.
