@@ -15,7 +15,7 @@ Today the following only fail, or silently misbehave, at first execution:
 - Only public handlers are supported. A handler is the public facade of a module and is tested through that facade. Assembly scanning skips non-public types, so a handler declared `internal` is silently never registered. Registering an internal handler explicitly is also unsupported.
 - Decorator attributes carry a `Step` number that orders the pipeline (the decorator with the lowest `Step` is outermost and runs first). Two decorators with the same step have no defined order, and an ordering can leave a decorator unable to do its job.
 - Lifetime and scope configuration (spec 015, #377) can be coherent-looking but inert or unsafe, and none of it is reported:
-  - `JoinAmbient` is requested but `HandlerLifetime` is not `Scoped`, so the request scope can never be adopted.
+  - `JoinAmbient` is requested but `HandlerLifetime` is not `Scoped`, or no scope provider is registered, so the request scope can never be adopted.
   - A handler or decorator configured `Singleton` takes a constructor dependency registered `Scoped` (a captive dependency).
   - More than one `IAmAScopeProvider` implementation is registered, and only one is used.
 
@@ -26,11 +26,11 @@ Brighter solves the same problem with an opt-in `ValidatePipelines()` that runs 
 An opt-in `ValidatePipelines()` call on the Darker builder that registers a startup validator. When the host starts, the validator checks every registered query pipeline and the lifetime/scope configuration, and reports every problem it finds, not just the first. Errors stop the host from starting (by default); warnings are logged and never block.
 
 ```csharp
+services.AddDarkerRequestScope();
 services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
     .AddHandlersFromAssemblies(typeof(MyHandler).Assembly)
     .AddDefaultPolicies()
     .ValidatePipelines();   // call last
-services.AddDarkerRequestScope();
 ```
 
 The validator is also available to inject and call on demand, returning a result object, so a test or a health check can use it.
@@ -64,7 +64,7 @@ The validator is also available to inject and call on demand, returning a result
 - Two decorator attributes on the same handler method with the same `Step` are reported (warning), since their order is undefined.
 - A decorator ordering that makes a decorator ineffective is reported. The specific ordering rules (for example fallback relative to retry) are decided in design and listed in the ADR.
 
-**FR10 — Inert scope opt-in (error).** `DefaultScopeAffinity` or a registered scope affinity is `JoinAmbient` (including via `AddDarkerRequestScope()`), but `HandlerLifetime` is not `Scoped`.
+**FR10 — Inert scope opt-in (error).** `DefaultScopeAffinity` or a registered scope affinity is `JoinAmbient` (including via `AddDarkerRequestScope()`), but `HandlerLifetime` is not `Scoped`, or no (unkeyed) `IAmAScopeProvider` is registered. Either way the opt-in cannot take effect.
 
 **FR11 — Captive dependency (warning).** A handler or decorator whose configured lifetime is `Singleton` takes a constructor dependency whose service registration is `Scoped`.
 
