@@ -1,7 +1,7 @@
 ---
 id: 0026-lifetime-scope-validation
 title: "Lifetime Scope Validation"
-status: Proposed
+status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-10-21
@@ -19,7 +19,7 @@ Date: 2026-10-21
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
