@@ -48,7 +48,7 @@ Darker builds each query pipeline lazily, the first time a query of that type ru
   - FR8 — rules `HandlerMatchesPath` and `DecoratorAttributeKind`. The rule `PipelineDescribable` serves FR3 and FR8 together: it reports a pipeline whose Execute method is ambiguous, whose attributes cannot be read or whose decorator type is null or cannot be closed, so the describer never throws for a misconfiguration.
   - FR9 — rules `DuplicateStep` and `DecoratorOrdering`. `DecoratorOrdering` reads an extensible table of outer/inner pairs.
   - FR13 (pipeline part) — the README gains a `ValidatePipelines()` section that lists the pipeline rules. ADR 0026 owns the lifetime-rule guidance.
-  - FR14 (pipeline part) — evaluation is lazy, at host start, over the live registries and the built provider. The pipeline findings therefore do not depend on the call order. The documentation still tells users to call `ValidatePipelines()` last. ADR 0026 decides the same question for the lifetime findings.
+  - FR14 (pipeline part) — evaluation is lazy, at host start, over the live registries and the built provider. The pipeline findings therefore do not depend on the call order. The documentation still tells users to call `ValidatePipelines()` last. ADR 0026's lifetime findings read a call-time snapshot, so for them the order matters.
   - NFR opt-in and non-breaking — no existing public member changes. The new registry capability is a separate interface, and the existing interfaces gain no members.
   - NFR startup cost — reflection runs once, inside the validator. `PipelineBuilder` per-query work is unchanged.
   - NFR no side effects — validation reads types, attributes and registrations. It never creates a handler, a decorator or a scope, and it never calls `Execute`, `ExecuteAsync` or `InitializeFromAttributeParams`.
@@ -74,7 +74,7 @@ Darker builds each query pipeline lazily, the first time a query of that type ru
 | ADR | Decides |
 |-----|---------|
 | **0025 Pipeline Validation at Startup** *(this one)* | **The validation architecture (Specification copy, validator, result, exception, hosted service, `ValidatePipelines()`), the resolvability probe, and the pipeline rules FR6–FR9.** |
-| 0026 Lifetime Scope Validation *(planned)* | The three lifetime and scope rules (inert `JoinAmbient` is an error, Singleton-captures-Scoped is a warning, duplicate `IAmAScopeProvider` is a warning). A second validator in the DI package evaluates them over the service registrations. Where it evaluates them is decided in 0026. |
+| [0026 Lifetime Scope Validation](0026-lifetime-scope-validation.md) | The three lifetime and scope rules (inert `JoinAmbient` is an error, Singleton-captures-Scoped is a warning, duplicate `IAmAScopeProvider` is a warning). A second validator in the DI package evaluates them at host start, over a snapshot of the service descriptors taken when `ValidatePipelines()` is called, so for these findings `ValidatePipelines()` must be called last. |
 
 Every validator evaluates Specification rules over a read-only view of the configuration, reports every finding into one combined result, and never executes a query or creates a component.
 
@@ -357,7 +357,7 @@ The service answers from the built provider, so it sees every registration, incl
 
 #### Why evaluate lazily at host start rather than snapshot at call time
 
-Brighter snapshots service descriptors when `ValidatePipelines()` is called, so Brighter users must call it last. Darker's pipeline facts live in mutable registry objects. The runtime `IQueryProcessor` factory uses the same objects (`ServiceCollectionExtensions.cs`). If `ValidatePipelines()` captures references to those registries and builds the validator in a factory delegate, the validator sees every registration made before the provider was built. The pipeline findings therefore cannot depend on call order, which satisfies the pipeline part of FR14. The README still tells users to call `ValidatePipelines()` last. That position matches Brighter, and ADR 0026 must state whether its evaluation keeps the same independence.
+Brighter snapshots service descriptors when `ValidatePipelines()` is called, so Brighter users must call it last. Darker's pipeline facts live in mutable registry objects. The runtime `IQueryProcessor` factory uses the same objects (`ServiceCollectionExtensions.cs`). If `ValidatePipelines()` captures references to those registries and builds the validator in a factory delegate, the validator sees every registration made before the provider was built. The pipeline findings therefore cannot depend on call order, which satisfies the pipeline part of FR14. The README still tells users to call `ValidatePipelines()` last. That position matches Brighter, and ADR 0026 does not keep that independence: it snapshots descriptors at call time, because the descriptor list is not reachable from the built provider.
 
 #### Why the DI package references Microsoft.Extensions.Hosting.Abstractions rather than a separate hosting package
 
@@ -483,7 +483,7 @@ Each behavioural step follows `/test-first` (`.agent_instructions/testing.md`). 
   - [0020-validation-decorator-architecture](0020-validation-decorator-architecture.md) — request validation, a different concern
   - [0021-caching-decorator-architecture](0021-caching-decorator-architecture.md) — decorator placement is a choice, so no Cache ordering row ships
   - [0022-robust-pipeline-teardown](0022-robust-pipeline-teardown.md), [0023-pipeline-scope-handle](0023-pipeline-scope-handle.md), [0024-ambient-scope-adoption](0024-ambient-scope-adoption.md) — the runtime lifetime model, which validation deliberately never enters
-  - 0026 Lifetime Scope Validation (planned) — FR10–FR12 and the lifetime part of FR13
+  - [0026-lifetime-scope-validation](0026-lifetime-scope-validation.md) — FR10–FR12 and the lifetime part of FR13
 - External references:
   - Brighter ADR 0053 "Pipeline Validation and Diagnostic Report at Startup" (`Brighter/docs/adr/0053-pipeline-validation-at-startup.md`), ADR 0064 "Validate Pipeline Assembly Scanning and Validation-Provider Registration", ADR 0074 "Where the scope-configuration rules are evaluated"
   - Brighter sources: `src/Paramore.Brighter/{Specification,AndSpecification,OrSpecification,NotSpecification,ISpecificationVisitor,ValidationResultCollector,ValidationResult,ValidationError,ValidationSeverity,IAmASubscriberRegistryInspector}.cs`. `src/Paramore.Brighter/Validation/{PipelineValidator,HandlerPipelineValidationRules,HandlerPipelineDescription,PipelineStepDescription,PipelineValidationResult,PipelineValidationException,IAmAPipelineValidator,IAmATransformerResolvabilityProbe,ValidationProviderRegistrations}.cs`. `src/Paramore.Brighter.Extensions.DependencyInjection/{BrighterPipelineValidationExtensions,BrighterPipelineValidationOptions,BrighterValidationHostedService}.cs` and its csproj, which references `Microsoft.Extensions.Hosting.Abstractions`.
