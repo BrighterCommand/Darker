@@ -27,7 +27,7 @@ Spec 015 lets an application choose a handler lifetime, a scope affinity and a s
 
 ### Terms
 
-- **Finding**, **rule**: see ADR 0025's *Terms*.
+- **Finding**, **rule**: see ADR 0025's *Terms*. Here a rule is evaluated over a scope configuration or a component record, not over a pipeline description.
 - **Affinity**, **scope provider**, **adopt**, **ambient scope**: see ADR 0024's *Terms*. *How the affinity is chosen* in ADR 0024 defines the **effective affinity**.
 - **Component** — a query handler or a query decorator. A handler implements `IQueryHandler`, and a decorator implements `IQueryHandlerDecorator`.
 - **Configured lifetime** — the lifetime with which Darker obtains a component. *Why a component counts as Singleton when either lifetime says so* specifies it.
@@ -135,7 +135,7 @@ The validator reads its inputs at two different moments, and each moment is chos
 | 1 | The descriptor is keyed | Not a candidate. Darker resolves components unkeyed |
 | 2 | The descriptor has no `ImplementationType`, because a factory delegate or an instance registered it. An instance's runtime type does not count | Not a candidate. The rule cannot know the constructor |
 | 3 | The service type differs from the implementation type (an alias such as an interface registration), or the implementation type implements neither `IQueryHandler` nor `IQueryHandlerDecorator` | Not a candidate. Darker registers and resolves each component by its own type |
-| 4 | The descriptor is not the effective descriptor for its service type | Not a candidate. The container resolves the effective one |
+| 4 | The descriptor is not the effective descriptor for its own service type and key (a later descriptor with the same type and key replaces it) | Not a candidate. The container resolves the effective one |
 | 5 | `HandlerLifetime` is not Singleton, and the descriptor's lifetime is not Singleton | Not inspected |
 | 6 | The type has no public constructor with parameters, or two public constructors share the widest parameter count | Not inspected |
 | 7 | A parameter carries `[FromKeyedServices(key)]` with an explicit key. A parameterless attribute or a null-key lookup falls through to row 8, because Darker resolves components unkeyed | Read the last keyed descriptor for the parameter type and that key |
@@ -151,8 +151,10 @@ The mechanism holds these invariants:
 - **The snapshot is a copy.** `ServiceDescriptor` is immutable, so a new list of the same descriptor references is a true copy. Later additions to the service collection, and later removals, do not change it.
 - **The last call wins.** Each `ValidatePipelines()` call retakes the snapshot. The registration of validators happens once, as in ADR 0025. A second call therefore yields one set of lifetime findings, taken from the later state of the service collection. This matches ADR 0025, where the last call sets `throwOnError`.
 - **The rules read what the runtime reads, as of the snapshot.** The affinity is the last `ScopeAffinityRegistration`, otherwise `DefaultScopeAffinity`, as `BuildQueryProcessor` computes it. The scope provider in use is the last unkeyed `IAmAScopeProvider`. Each component is judged by its effective descriptor.
-- **A misconfiguration never throws out of `Validate`.** Constructor reflection runs inside the rule's predicate. If the predicate throws, `Specification<T>` converts the exception into a `RuleEvaluationFailed` finding (ADR 0025). That finding is an Error, even when the failing rule is a Warning.
-- **Order is deterministic.** `InertScopeAffinity` comes first, then `DuplicateScopeProvider`, then `CaptiveDependency`. `CaptiveDependency` findings follow snapshot order, then parameter order. `ValidateAll` places this validator's findings after the pipeline findings.
+- **A misconfiguration never throws out of `Validate`.** Constructor reflection runs inside the rule's evaluator. If the evaluator throws, `Specification<T>` converts the exception into a `RuleEvaluationFailed` finding (ADR 0025). That finding is an Error, even when the failing rule is a Warning.
+- **`CaptiveDependency` yields one finding for each Scoped parameter.** It uses `Specification<T>`'s result-evaluator form, which returns a list of results for one component, as Brighter's rule does. The predicate form returns at most one finding for each entity, and would hide a second Scoped parameter of the same component.
+- **Order is deterministic within each severity list.** The rules are evaluated in the order `InertScopeAffinity`, `DuplicateScopeProvider`, `CaptiveDependency`. `InertScopeAffinity` is an Error, so it follows the pipeline Errors. `DuplicateScopeProvider` comes before `CaptiveDependency` in the Warnings, after the pipeline Warnings. `CaptiveDependency` findings follow snapshot order, then parameter order. `ValidateAll` places this validator's findings after the pipeline findings of the same severity.
+- **The snapshot is written during composition and read-only afterwards.** `Capture` runs inside `ValidatePipelines()`, before the host starts. A hand-built provider must not see `ValidatePipelines()` called after it is built. `Validate` only reads the snapshot and builds its own fresh specifications, so concurrent on-demand `ValidateAll` calls are safe.
 
 ### Where the pieces live
 
@@ -216,10 +218,10 @@ Every dependency points inward. The DI package depends on core, and the ASP.NET 
 
 | Rule identifier | Severity | FR | Fails when | Message names |
 |---|---|---|---|---|
-| `InertScopeAffinity` | Error | FR10 | The effective affinity is `JoinAmbient`, and `HandlerLifetime` is not `Scoped` or no unkeyed `IAmAScopeProvider` is registered | The affinity's source: `DarkerOptions.DefaultScopeAffinity`, or the scope provider type registered with it. Every cause that applies, in one finding: the `HandlerLifetime` value with the advice to set `ServiceLifetime.Scoped`, and the missing provider with the advice to call `AddDarkerScopeProvider` (or `AddDarkerRequestScope()` in ASP.NET Core). The advice to use `AlwaysNew` if joining is not wanted. The link |
+| `InertScopeAffinity` | Error | FR10 | The effective affinity is `JoinAmbient`, and `HandlerLifetime` is not `Scoped` or no unkeyed `IAmAScopeProvider` is registered | The affinity's source: `DarkerOptions.DefaultScopeAffinity`, or the scope provider in use, which is the last unkeyed `IAmAScopeProvider` descriptor, rendered as in `DuplicateScopeProvider`. Every cause that applies, in one finding: the `HandlerLifetime` value with the advice to set `ServiceLifetime.Scoped`, and the missing provider with the advice to call `AddDarkerScopeProvider` (or `AddDarkerRequestScope()` in ASP.NET Core). The advice to use `AlwaysNew` if joining is not wanted. The link |
 | `CaptiveDependency` | Warning | FR11 | A candidate component counts as Singleton, and the descriptor read for one of its constructor parameters is Scoped | Handler or decorator, and its type. Why it counts as Singleton. The parameter's name and type. The advice to register that type Singleton or Transient, or to change the component's lifetime. The link |
-| `DuplicateScopeProvider` | Warning | FR12 | The unkeyed `IAmAScopeProvider` descriptors name more than one distinct implementation | Every implementation. The one that Darker uses, which is the last registered. The advice to keep one provider and register it with `AddDarkerScopeProvider` or `AddDarkerRequestScope`. The link |
-| `RuleEvaluationFailed` | Error | FR3 | A rule's predicate throws, through ADR 0025's `Specification<T>` catch path | The entity and the exception message |
+| `DuplicateScopeProvider` | Warning | FR12 | The unkeyed `IAmAScopeProvider` descriptors name more than one distinct implementation | Every implementation, each rendered as below. The one that Darker uses, which is the last registered. The advice to keep one provider and register it with `AddDarkerScopeProvider` or `AddDarkerRequestScope`. The link |
+| `RuleEvaluationFailed` | Error | FR3 | A rule's predicate or evaluator throws, through ADR 0025's `Specification<T>` catch path | The entity and the exception message |
 
 Each rule has a `Source` string. `InertScopeAffinity` uses `"Scope affinity"`, and `DuplicateScopeProvider` uses `"Scope provider registration"`. `CaptiveDependency` uses `"Handler 'X'"` or `"Decorator 'X'"`. The link is `https://github.com/BrighterCommand/Darker/blob/master/README.md#` followed by the lower-case rule identifier. The anchor is the one that GitHub generates for a README heading that is the rule identifier.
 
@@ -227,7 +229,7 @@ Each rule has a `Source` string. `InertScopeAffinity` uses `"Scope affinity"`, a
 
 - A descriptor with an implementation type contributes that type.
 - An instance descriptor contributes the instance's runtime type.
-- A factory descriptor contributes its position, and counts as distinct from every other descriptor, because its type is unknown.
+- A factory descriptor contributes its position, and counts as distinct from every other descriptor, because its type is unknown. Messages render it as "a factory registration at position N", where N is the 1-based position among the unkeyed `IAmAScopeProvider` descriptors, also when it is the one Darker uses.
 
 The same type registered twice is not a finding. Keyed descriptors are ignored, because Darker resolves the provider unkeyed.
 
@@ -242,7 +244,7 @@ The same type registered twice is not a finding. Keyed descriptors are ignored, 
 | Member | Input | Output | Error conditions |
 |---|---|---|---|
 | constructor | `ServiceRegistrationSnapshot` | — | `ArgumentNullException` for a null snapshot |
-| `Validate` | — | `PipelineValidationResult` with this ADR's findings only | Never throws for a finding. A throwing predicate becomes `RuleEvaluationFailed` |
+| `Validate` | — | `PipelineValidationResult` with this ADR's findings only | Never throws for a finding. A throwing rule becomes `RuleEvaluationFailed` |
 
 #### `ServiceRegistrationSnapshot` (internal)
 
@@ -267,7 +269,7 @@ The same type registered twice is not a finding. Keyed descriptors are ignored, 
 | DI package | `ScopeConfigurationValidator`, `ServiceRegistrationSnapshot`, `DescriptorRecord`, `ScopeConfiguration`, `ComponentRegistration`, `ComponentConstructorSelector`, `ScopeConfigurationRules` | New, internal |
 | DI package | `ValidatePipelines` extension (ADR 0025) | Captures the snapshot on every call. Registers the second validator within the once-only registration |
 | DI package | `ServiceCollectionDarkerHandlerBuilder` | Takes and exposes the `DarkerOptions` instance internally, beside the registries that ADR 0025 exposes |
-| DI package | `ServiceCollectionExtensions.AddDarker` | Passes the options object to the builder. No behaviour change |
+| DI package | `ServiceCollectionExtensions.AddDarker` | Passes the options object to the builder. No behaviour change. This is an exception to ADR 0025's "deliberately unchanged" list, which names `ServiceCollectionExtensions` |
 | AspNetCore package | `AddDarkerRequestScope` | Documentation only: the XML remarks drop "The order of this call relative to `AddDarker` does not matter" and say to call it before `ValidatePipelines()` |
 | DI package | `AddDarkerScopeProvider` | Documentation only: the XML remarks say to call it before `ValidatePipelines()` |
 | README | — | One section for each lifetime rule, headed by its rule identifier. The "call `ValidatePipelines()` last" rule. The existing EF Core snippet moves `AddDarkerRequestScope()` before the chain |
@@ -353,7 +355,7 @@ Steps, in commit order:
 
 1. **Structural — the builder carries the options.** Add a `DarkerOptions` parameter to `ServiceCollectionDarkerHandlerBuilder`'s constructor (`ServiceCollectionDarkerHandlerBuilder.cs:17`), with an internal `Options` property. Pass `options` from `AddDarker` (`ServiceCollectionExtensions.cs:33`). Run the existing suite before and after. No behaviour changes.
 2. **Behavioural — snapshot and validator skeleton.** Add `ServiceRegistrationSnapshot` and `ScopeConfigurationValidator`, with an empty rule list. `Capture` copies the list with `new List<ServiceDescriptor>(services)`. In `ValidatePipelines`, capture on every call. Inside ADR 0025's once-only branch, register the snapshot instance and then `AddSingleton<IAmAPipelineValidator>(sp => new ScopeConfigurationValidator(snapshot))`, after the pipeline validator. A later call finds the snapshot through its descriptor's `ImplementationInstance` and captures again. Tests:
-   - `ValidatePipelines()` registers two `IAmAPipelineValidator` descriptors, the pipeline validator and the lifetime validator, the descriptor count being the observable fact, which is why `ValidateAll` runs both;
+   - `ValidatePipelines()` registers two `IAmAPipelineValidator` descriptors. `GetServices<IAmAPipelineValidator>()` returns the public `PipelineValidator` first, then the lifetime validator;
    - calling `ValidatePipelines()` twice registers two validators in total, not three.
 3. **Behavioural — `InertScopeAffinity`.** Add `DescriptorRecord`, `ScopeConfiguration` and `ScopeConfigurationRules` with the rule identifier, the README link and the rule. `Capture` reads `ImplementationType` and `ImplementationInstance` only when `IsKeyedService` is false, and `KeyedImplementationType` and `KeyedImplementationInstance` otherwise. In `Microsoft.Extensions.DependencyInjection.Abstractions` 10.0.10 the keyed properties throw `InvalidOperationException` on an unkeyed descriptor, and the unkeyed properties return null on a keyed one. The snapshot members that return a record arrive in the step whose test first needs them. The effective affinity is the last unkeyed `ScopeAffinityRegistration` instance, otherwise `Options.DefaultScopeAffinity`, as at `ServiceCollectionExtensions.cs:79-81`. Tests:
    - `AddDarkerScopeProvider<T>(JoinAmbient)` with a Transient `HandlerLifetime` yields the Error, naming `T` and `Transient`;
@@ -373,23 +375,25 @@ Steps, in commit order:
    - a keyed provider beside one unkeyed provider yields nothing;
    - a provider registered with `AddDarkerScopeProvider` and then replaced through the same API yields nothing;
    - a warning alone never blocks host start.
-5. **Behavioural — `CaptiveDependency`.** Add `ComponentRegistration`, `ComponentConstructorSelector` and the rule. The rule factory takes the snapshot. Constructor reflection runs inside the predicate, so a throw becomes `RuleEvaluationFailed`, and no bespoke `try` or `catch` is added. Tests, one commit for each group:
+5. **Behavioural — `CaptiveDependency`.** Add `ComponentRegistration`, `ComponentConstructorSelector` and the rule. The rule factory takes the snapshot. The rule uses the result-evaluator constructor of `Specification<T>`, returning one result for each Scoped parameter. Constructor reflection runs inside that evaluator, so a throw becomes `RuleEvaluationFailed`, and no bespoke `try` or `catch` is added. Tests, one commit for each group:
    - a Singleton `HandlerLifetime` and a handler that takes a Scoped dependency yield the Warning;
+   - a Singleton handler with two Scoped parameters yields two Warnings, in parameter order;
    - an open-generic decorator registered through `RegisterDecorator` under a Singleton `HandlerLifetime`, taking a Scoped dependency, yields the Warning, naming the decorator;
    - a Transient `HandlerLifetime` with the handler registered Singleton before `AddDarker` yields the Warning;
    - a Transient or Scoped dependency, an `IServiceProvider` parameter and an unregistered parameter yield nothing;
-   - with a Transient `HandlerLifetime`, a keyed component registration with a Scoped dependency, and a Singleton component registered by factory delegate or by instance before `AddDarker`, yield nothing (rows 1 and 2);
+   - with a Transient `HandlerLifetime`, a keyed Singleton component registration with a Scoped dependency yields nothing (row 1), and a Singleton component registered by factory delegate or by instance before `AddDarker` yields nothing (row 2);
    - with a Transient `HandlerLifetime`, `AddSingleton<H>()` before `AddDarker` and then `AddTransient<H>()` yields nothing, because only the last descriptor is effective (row 4);
    - a Singleton handler that takes `IRepository<Order>`, with the open generic `IRepository<>` registered Scoped, yields the Warning naming the parameter (row 9);
    - an interface registration `AddSingleton<IQueryHandlerAsync<Q, R>, H>()` beside the Transient registration of `H` that Darker uses yields nothing;
    - a `[FromKeyedServices("k")]` parameter bound to a keyed Singleton, beside an unkeyed Scoped registration of the same type, yields nothing, and bound to a keyed Scoped registration yields the Warning (row 7). A parameterless `[FromKeyedServices]` is read as an unkeyed lookup (row 8);
-   - two equal-width public constructors yield nothing.
+   - two equal-width public constructors yield nothing;
+   - a handler whose constructor reflection throws inside the evaluator (a type whose parameter fails to load) yields a `RuleEvaluationFailed` Error with its rule identifier set, and no `CaptiveDependency` finding.
 6. **Behavioural — snapshot semantics and side effects.** Tests:
    - a Scoped dependency added after `ValidatePipelines()` is not reported. This pins the "call it last" rule;
    - a scope provider added between two `ValidatePipelines()` calls is seen, through the second call's snapshot;
    - validation creates nothing, using a handler and a scope provider whose constructors record that they ran;
    - several lifetime mistakes appear in one combined result, beside a pipeline finding (FR3);
-   - one finding from each rule appears in the stated order, `InertScopeAffinity` then `DuplicateScopeProvider` then `CaptiveDependency`, after the pipeline findings.
+   - with one pipeline Error and one pipeline Warning beside an `InertScopeAffinity` Error, a `DuplicateScopeProvider` Warning and a `CaptiveDependency` Warning, the lifetime findings follow the pipeline findings in each list, and `DuplicateScopeProvider` precedes `CaptiveDependency` in the Warnings.
 7. **Documentation and sample.** These are the only documentation edits, and they land together in one commit. In ADR 0025's README section, add one `####` heading for each rule, named by its identifier. Each heading states the cause and the fix. State that `ValidatePipelines()` must be called last, after `AddDarker`, handler registration, `AddDarkerScopeProvider` or `AddDarkerRequestScope`, and the registrations of handlers' dependencies. Show the scope provider registered before the chain that ends in `ValidatePipelines()`, or `ValidatePipelines()` called on the held builder as the final statement, and move `AddDarkerRequestScope()` before the chain in the existing EF Core snippet. List the cases that the captive rule cannot see. Correct the XML remarks of `AddDarkerRequestScope`, and add the call-order sentence to those of `AddDarkerScopeProvider`. Update `samples/SampleMinimalApi/Program.cs` to register the request scope first and end the chain with `ValidatePipelines()`.
 
 ## Consequences
