@@ -56,7 +56,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 1 — Specification pattern copy (ADR 0025 step 1)
 
-- [ ] **STRUCTURAL: T1.1 — Copy Brighter's Specification types into core, in `Paramore.Darker.Specifications` (ADR 0025 step 1; Constraints: copy, do not reference; NFR core purity, NFR multi-target)**
+- [x] **STRUCTURAL: T1.1 — Copy Brighter's Specification types into core, in `Paramore.Darker.Specifications` (ADR 0025 step 1; Constraints: copy, do not reference; NFR core purity, NFR multi-target)**
   - Copy these files from `Brighter/src/Paramore.Brighter/` (the sibling checkout `../Brighter`) into `src/Paramore.Darker/Specifications/`:
     - `Specification.cs`, which also holds `ISpecification<T>`;
     - `AndSpecification.cs`, `OrSpecification.cs`, `NotSpecification.cs`;
