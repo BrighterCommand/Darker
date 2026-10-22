@@ -18,7 +18,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public void Register(Type decoratorType)
         {
-            _services.TryAdd(new ServiceDescriptor(decoratorType, decoratorType, _optionsHandlerLifetime));
+            // A Scoped or Transient handler lifetime means queries may share a scope (an adopted ambient
+            // scope), and the pipeline sets per-query state on each decorator, so every query needs its own.
+            var decoratorLifetime = _optionsHandlerLifetime == ServiceLifetime.Singleton
+                ? ServiceLifetime.Singleton
+                : ServiceLifetime.Transient;
+
+            _services.TryAdd(new ServiceDescriptor(decoratorType, decoratorType, decoratorLifetime));
         }
         
         public void RegisterDefaultDecorators()

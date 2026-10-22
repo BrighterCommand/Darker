@@ -1,3 +1,17 @@
+---
+id: 0016-pipeline-attribute-memoization
+title: "Memoise Ordered Decorator Attributes Per Handler Type"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-06-24
+summary: "Memoises the ordered decorator attributes per handler Type in static ConcurrentDictionary caches (separate for sync and async) inside PipelineBuilder attribute discovery, leaving instance creation and wiring uncached."
+tags:
+  - "performance"
+  - "pipeline"
+  - "concurrency"
+---
+
 # 16. Memoise Ordered Decorator Attributes Per Handler Type
 
 Date: 2026-06-24

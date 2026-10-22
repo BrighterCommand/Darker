@@ -12,7 +12,7 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 
 | Skill | Purpose | Usage |
 |-------|---------|-------|
-| `/test-first` | TDD with mandatory approval | `/test-first <behavior description>` |
+| `/test-first` | TDD with an approval gate (armed by default) | `/test-first <behavior description>` |
 | `/tidy-first` | Separate refactoring from features | `/tidy-first <change description>` |
 | `/adr` | Create Architecture Decision Record | `/adr <title>` |
 | `/bugfix:*` | Diagnosis-first bug workflow (Confirm gate) | `/bugfix:triage [issue \| description]` |
@@ -41,8 +41,9 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 | `/spec:approve` | Approve phases | `/spec:approve <phase> [adr-number]` |
 | `/spec:review` | Review phases | `/spec:review [phase] [adr-number]` |
 | `/spec:switch` | Switch to different spec | `/spec:switch <spec-name>` |
-| `/spec:ralph-tasks` | Generate unattended TDD tasks | `/spec:ralph-tasks` |
-| `/spec:ralph-implement` | Unattended TDD implementation | `/spec:ralph-implement [count]` |
+| `/spec:write_release_notes` | Write the spec's marked section in `release_notes.md` | `/spec:write_release_notes [spec-id]` |
+| `/spec:gear` | Report or shift the TDD review gear | `/spec:gear [review-before\|review-after] ["section"] [--because "..."]` |
+| `/spec:ralph-implement` | Unattended TDD implementation over the approved `tasks.md` | `/spec:ralph-implement [count]` |
 
 ## Quick Reference Card
 
@@ -61,7 +62,7 @@ BUGFIX (DIAGNOSIS-FIRST)
 TEST-DRIVEN DEVELOPMENT
    /test-first <behavior>
    Write test -> Approve -> Implement -> Refactor
-   Enforces mandatory approval before implementation
+   Approval before implementation — armed by default (shift with /spec:gear)
    Example: /test-first when query handler throws it should invoke fallback policy
 
 REFACTORING
@@ -85,8 +86,9 @@ SPECIFICATION WORKFLOW
    /spec:approve <phase>         -> Approve phase
 
 RALPH LOOP (UNATTENDED)
-   /spec:ralph-tasks              -> Generate ralph tasks (standalone, from approved design)
-   /spec:ralph-implement [count]  -> Unattended self-driving loop (opus + auto mode)
+   /spec:gear review-after        -> Upshift: disarm the per-test pause (scoped, with a reason)
+   /spec:ralph-implement [count]  -> Unattended self-driving loop over tasks.md (opus + auto mode)
+   /spec:gear review-before       -> Downshift: loop stops after current task, nothing unwound
 ```
 
 ## Decision Tree: Which Skill Should I Use?
@@ -124,7 +126,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 **Enforces**:
 - Red-Green-Refactor TDD cycle
-- **MANDATORY approval before implementation**
+- **Approval before implementation** — armed by default; a standalone `/test-first` is always gated
 - BDD-style test naming (`When_X_should_Y`)
 - One test per file
 - Developer tests (not unit tests)
@@ -139,6 +141,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 - Dash-case file naming
 - Linking to parent requirements
 - Tracking in spec's `.adr-list`
+- YAML frontmatter (see `adr_frontmatter.md`) and a regenerated `docs/adr/index.md`
 
 **Reference**: [documentation.md](documentation.md)
 
@@ -236,19 +239,18 @@ Each skill enforces specific practices from `.agent_instructions/`:
 ### Workflow 5: Ralph Loop (Unattended)
 
 ```bash
-# 1. Complete spec workflow up to an APPROVED DESIGN (no tasks step needed for this path)
-#    /spec:requirements -> /spec:approve requirements -> /spec:design -> /spec:approve design
+# 1. Complete the spec workflow through to an APPROVED TASK LIST
+#    /spec:requirements -> /spec:design -> /spec:tasks -> /spec:review tasks -> /spec:approve tasks
 
-# 2. Generate ralph-tasks directly from the approved design
-/spec:ralph-tasks
+# 2. Upshift the review gear (scoped, with a reason) once the task shape is settled
+/spec:gear review-after "Phase 2 — Cache key generation (behaviour)" --because "shape is settled"
 
-# 3. Review ralph-tasks.md in your IDE
-
-# 4. Switch to opus + enable auto mode, then run the self-driving loop
+# 3. Switch to opus + enable auto mode, then run the self-driving loop over tasks.md
 /model opus
 /spec:ralph-implement          # choose the bound: tasks / turns / budget
 
-# 5. Stop if needed
+# 4. Take back per-test review, or stop outright
+/spec:gear review-before       # loop stops after the current task; resume with /spec:implement
 touch RALPH_STOP               # unattended kill-switch (or press Esc for a pending wake-up)
 
 # 6. Review results

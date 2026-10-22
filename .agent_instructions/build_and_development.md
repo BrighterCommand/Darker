@@ -23,13 +23,13 @@ dotnet build src/Paramore.Darker/Paramore.Darker.csproj
 dotnet test Darker.Filter.slnf -c Release --no-build
 
 # Run tests for specific project
-dotnet test test/Paramore.Darker.Tests/
+dotnet test test/Paramore.Darker.Core.Tests/
 
 # Run tests matching pattern
-dotnet test test/Paramore.Darker.Tests/ --filter "FullyQualifiedName~QueryProcessorTests"
+dotnet test test/Paramore.Darker.Core.Tests/ --filter "FullyQualifiedName~QueryProcessorTests"
 
 # Run a single test
-dotnet test test/Paramore.Darker.Tests/Paramore.Darker.Tests.csproj --filter "FullyQualifiedName~QueryProcessorTests.ExecutesQueries"
+dotnet test test/Paramore.Darker.Core.Tests/Paramore.Darker.Core.Tests.csproj --filter "FullyQualifiedName~QueryProcessorTests.ExecutesQueries"
 ```
 
 ## Running Samples

@@ -1,3 +1,17 @@
+---
+id: 0017-query-tracing-and-database-spans
+title: "Query Tracing and Database Spans"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-01
+summary: "Introduces an Observability namespace with DarkerTracer, InstrumentationOptions and DB spans; QueryProcessor owns the query span, PipelineBuilder emits step events, and a Diagnostics package wires the source into OpenTelemetry."
+tags:
+  - "observability"
+  - "otel"
+  - "tracing"
+---
+
 # 17. Query Tracing and Database Spans
 
 Date: 2026-07-01

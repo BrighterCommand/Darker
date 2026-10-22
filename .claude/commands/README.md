@@ -7,7 +7,7 @@ This directory contains Claude Code skills (slash commands) that enforce Darker'
 Skills are invoked using slash commands in Claude Code:
 
 ```bash
-/test-first <behavior description>    # TDD with mandatory approval
+/test-first <behavior description>    # TDD with an approval gate (armed by default)
 /adr <title>                          # Create Architecture Decision Record
 /tidy-first <change description>      # Separate structural from behavioral changes
 /bugfix:triage <issue | description>  # Diagnosis-first bug workflow (Confirm gate)
@@ -19,7 +19,7 @@ Skills are invoked using slash commands in Claude Code:
 
 **Command**: `/test-first <behavior description>`
 
-**Purpose**: Enforces TDD workflow with mandatory user approval before implementation.
+**Purpose**: Enforces TDD workflow with user approval before implementation (the gate is armed by default).
 
 **When to use**:
 - Adding new behavior or functionality
@@ -37,7 +37,7 @@ Skills are invoked using slash commands in Claude Code:
 /test-first when query handler throws it should invoke fallback policy
 ```
 
-**Why it matters**: The approval step is MANDATORY per testing.md when working with AI. This skill enforces that requirement, preventing implementation before you validate the test specification.
+**Why it matters**: The approval step is armed by default per testing.md when working with AI, and only a deliberate `/spec:gear` shift disarms it for a spec. This skill enforces that requirement, preventing implementation before you validate the test specification.
 
 Documentation: [.claude/commands/tdd/README.md](tdd/README.md)
 
@@ -141,18 +141,20 @@ Documentation: [.claude/commands/bugfix/README.md](bugfix/README.md)
 - **`/bugfix:*`** - Diagnosis-first bug workflow (Triage → Confirm → Test-first → Fix → Verify)
 
 ### Documentation Skills
-- **`/adr`** - Architecture Decision Records
+- **`/adr`** - Architecture Decision Records (stamps YAML frontmatter, regenerates `docs/adr/index.md`)
+- **`read_adr_metadata`** / **`write_adr_metadata`** - Find prior-art ADRs from frontmatter; add or update an ADR's frontmatter and status
 
 ### Specification Workflow Skills
 - **`/spec:requirements`** - Capture requirements
 - **`/spec:design`** - Create design ADRs
-- **`/spec:tasks`** - Break down implementation (attended path)
-- **`/spec:implement`** - TDD implementation (attended path)
-- **`/spec:ralph-tasks`** - Generate unattended TDD tasks (standalone, from approved design)
-- **`/spec:ralph-implement`** - Unattended self-driving TDD loop (opus + auto mode)
-- **`/spec:status`** - Show spec status
-- **`/spec:approve`** - Approve phases (prompts the attended/unattended fork at design)
+- **`/spec:tasks`** - Break down implementation into the single `tasks.md`
+- **`/spec:implement`** - TDD implementation, one task at a time (honours the review gear)
+- **`/spec:ralph-implement`** - Unattended self-driving TDD loop over the same `tasks.md` (opus + auto mode, `review-after` gear)
+- **`/spec:gear`** - Report or shift the TDD review gear (`review-before` / `review-after`)
+- **`/spec:status`** - Show spec status (including the review gear)
+- **`/spec:approve`** - Approve phases
 - **`/spec:review`** - Review phases
+- **`/spec:write_release_notes`** - Write or replace the spec's marked section in `release_notes.md`
 
 Documentation: [.claude/commands/spec/README.md](spec/README.md)
 
@@ -213,7 +215,7 @@ These core skills enforce Darker's mandatory engineering practices:
 
 | Skill | Enforces | Creates |
 |-------|----------|---------|
-| `/test-first` | TDD with approval | Tests -> Implementation -> Refactoring |
+| `/test-first` | TDD with an approval gate (armed by default) | Tests -> Implementation -> Refactoring |
 | `/adr` | Documented decisions | Numbered ADR files |
 | `/tidy-first` | Structural/behavioral separation | Two commits: refactor + feat |
 | `/bugfix:*` | Confirm root cause before fixing | Bug record + regression test + scoped `fix:` commit |

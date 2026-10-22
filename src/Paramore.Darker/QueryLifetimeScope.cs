@@ -21,29 +21,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 #endregion
 
+#nullable enable annotations
+
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Paramore.Darker
 {
     /// <summary>
-    /// The default <see cref="IAmALifetime"/> implementation. Tracks the disposables created for a
-    /// single query pipeline execution (for example a child service scope) and disposes them, in
-    /// reverse order of registration, exactly once when the pipeline completes.
+    /// The default <see cref="IAmALifetime"/> implementation. Carries the pipeline scope handle for a
+    /// single query pipeline execution (for example a child service scope) and disposes it exactly
+    /// once when the pipeline completes.
     /// </summary>
     internal sealed class QueryLifetimeScope : IAmALifetime
     {
-        private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
+        private readonly ILogger _logger;
         private bool _disposed;
 
-        /// <inheritdoc />
-        public void Add(IDisposable disposable)
+        public QueryLifetimeScope(IAmAScope? pipelineScope, ILogger logger)
         {
-            if (disposable == null)
-                throw new ArgumentNullException(nameof(disposable));
-
-            _trackedDisposables.Add(disposable);
+            PipelineScope = pipelineScope;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        /// <inheritdoc />
+        public IAmAScope? PipelineScope { get; }
 
         /// <inheritdoc />
         public void Dispose()
@@ -53,10 +56,60 @@ namespace Paramore.Darker
 
             _disposed = true;
 
-            for (var i = _trackedDisposables.Count - 1; i >= 0; i--)
-                _trackedDisposables[i].Dispose();
+            if (PipelineScope != null)
+                DisposeItem(PipelineScope);
+        }
 
-            _trackedDisposables.Clear();
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            if (PipelineScope != null)
+                await DisposeItemAsync(PipelineScope).ConfigureAwait(false);
+        }
+
+        private async ValueTask DisposeItemAsync(IDisposable item)
+        {
+            try
+            {
+                if (item is IAsyncDisposable asyncDisposable)
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                else
+                    item.Dispose();
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, item);
+            }
+        }
+
+        private void DisposeItem(IDisposable item)
+        {
+            try
+            {
+                item.Dispose();
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, item);
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee.
+        private void TryLogTeardownFault(Exception fault, IDisposable item)
+        {
+            try
+            {
+                _logger.LogError(fault, "Error disposing tracked lifetime item of type {ItemType}", item.GetType());
+            }
+            catch
+            {
+                // Nothing safe left to do: the fault could not be reported.
+            }
         }
     }
 }

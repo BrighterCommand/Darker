@@ -1,3 +1,16 @@
+---
+id: 0020-agreement-dispatch-handler-routing
+title: "Agreement Dispatch: Content- and Context-Based Handler Routing"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-14
+summary: "Models every registration as a handler route and gives the registry a single instance-aware lookup, so type-based registration and agreement dispatch (content- and context-based handler selection) are two implementations of one routing role."
+tags:
+  - "dispatch"
+  - "architecture"
+---
+
 # 20. Agreement Dispatch: Content- and Context-Based Handler Routing
 
 Date: 2026-07-14

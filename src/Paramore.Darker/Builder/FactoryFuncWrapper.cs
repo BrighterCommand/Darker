@@ -1,3 +1,4 @@
+#nullable enable annotations
 using System;
 
 namespace Paramore.Darker.Builder
@@ -26,6 +27,8 @@ namespace Paramore.Darker.Builder
         {
             return (IQueryHandler) _func(handlerType);
         }
+
+        IAmAScope? IQueryHandlerFactory.CreatePipelineScope() => null;
 
         void IQueryHandlerFactory.Release(IQueryHandler handler, IAmALifetime lifetime)
         {

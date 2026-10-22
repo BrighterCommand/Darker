@@ -1,3 +1,17 @@
+---
+id: 0006-remove-third-party-di-packages
+title: "Remove Third-Party DI Container Integration Packages"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Removes the SimpleInjector and LightInject integration packages and keeps only the Microsoft.Extensions.DependencyInjection-based package as the single supported DI integration."
+tags:
+  - "di"
+  - "packaging"
+  - "dependencies"
+---
+
 # 6. Remove Third-Party DI Container Integration Packages
 
 Date: 2026-05-15

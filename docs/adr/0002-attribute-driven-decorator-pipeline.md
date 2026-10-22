@@ -1,3 +1,17 @@
+---
+id: 0002-attribute-driven-decorator-pipeline
+title: "Attribute-Driven Decorator Pipeline for Query Handling"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "Cross-cutting concerns are declared as step-ordered attributes on a handler's Execute/ExecuteAsync method and composed by PipelineBuilder into a decorator chain (highest step outermost), with each decorator receiving next and fallback delegates."
+tags:
+  - "pipeline"
+  - "decorators"
+  - "architecture"
+---
+
 # 2. Attribute-Driven Decorator Pipeline for Query Handling
 
 Date: 2026-05-15

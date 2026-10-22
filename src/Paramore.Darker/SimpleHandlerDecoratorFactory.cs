@@ -22,6 +22,7 @@ THE SOFTWARE. */
 #endregion
 
 using System;
+using System.Threading.Tasks;
 
 namespace Paramore.Darker
 {
@@ -50,6 +51,15 @@ namespace Paramore.Darker
         public void Release<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
         {
             if (handler is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        /// <inheritdoc />
+        public async ValueTask ReleaseAsync<T>(T handler, IAmALifetime lifetime) where T : IQueryHandlerDecorator
+        {
+            if (handler is IAsyncDisposable asyncDisposable)
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            else if (handler is IDisposable disposable)
                 disposable.Dispose();
         }
     }

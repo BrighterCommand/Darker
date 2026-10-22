@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(grep:*), Bash(test:*), Bash(find:*), Bash(touch:*), Bash(ls:*),  Bash(echo:*), Read, Write, Glob
+allowed-tools: Bash(cat:*), Bash(grep:*), Bash(test:*), Bash(find:*), Bash(touch:*), Bash(ls:*),  Bash(echo:*), Read, Write, Glob, Agent, AskUserQuestion
 description: Create implementation task list
 ---
 
@@ -7,26 +7,68 @@ description: Create implementation task list
 
 Current spec directory: specs/
 
+**Workflow**: Issue -> Requirements -> ADR(s) -> **Tasks** -> Tests -> Code
+
+**Sub-agent**: Drafting the task list is delegated to a sub-agent
+(`subagent_type: "Plan"`, **`model: "opus"`**). `Plan` has no `Write`/`Edit`/`NotebookEdit`,
+which makes it much harder to accidentally write the file (the prompt still forbids writing
+via `Bash`), while still allowing Read/Glob/Grep to verify file paths. The sub-agent reads the
+requirements and ADRs and RETURNS the task list as text. The main agent validates coverage and
+writes `tasks.md`. See `.claude/commands/spec/README.md` → "Sub-agents & model policy".
+
 ## Your Task
 
-First, read specs/.current-spec to determine the active specification directory.
+### Step 1: Gather Context
 
-1. Verify design is approved (look for .design-approved file in the spec directory)
-2. Create tasks.md with:
-   - Detailed task list with checkboxes
-   - Task dependencies
-   - Risk mitigation tasks
-3. Each task should be specific and actionable
-4. A task MUST represent implementing a behavior and NOT an implementation detail
-5. Use markdown checkboxes: `- [ ] Task description`
+1. Read `specs/.current-spec` to determine the active specification directory.
+2. Verify design is approved: check for `.design-approved` in the spec directory. If
+   missing, tell the user to run `/spec:approve design` first and exit.
+3. Read `specs/{current-spec}/requirements.md` (the FRs/ACs the tasks must cover).
+4. Read `specs/{current-spec}/.adr-list` and each ADR from `docs/adr/` (the design
+   decisions the tasks must implement).
 
-Organize tasks to enable incremental development and testing.
+If `requirements.md` or any listed ADR is missing, stop and tell the user. Do NOT launch
+the sub-agent with missing inputs.
 
-## CRITICAL: TDD Task Format
+### Step 2: Launch Sub-Agent to Draft the Task List
 
-**MANDATORY**: When creating TEST tasks, you MUST format them to enforce `/test-first` skill usage:
+**Verify inputs with the user before launching (MAIN agent).** The `Plan` sub-agent is
+one-shot and has no `AskUserQuestion` — it cannot ask the user anything once launched. So
+before launching, review the requirements and ADRs for ambiguity or open decisions that
+affect decomposition (how granular the tasks should be, sequencing/dependencies, scope
+boundaries between what's in and out of this spec) and resolve them with the user via
+`AskUserQuestion`. Then launch the sub-agent with the clarified inputs folded in. All user
+interaction stays in the main agent — never the sub-agent.
 
-### Task Template
+Launch an `Agent` with `subagent_type: "Plan"` and **`model: "opus"`**. The
+prompt MUST include:
+
+1. The full text of `requirements.md`.
+2. The full text of each ADR (or their paths to read).
+3. The task-drafting rules and the **mandatory TDD task format** below — everything from
+   *Task-drafting rules* through *Coverage cross-reference*.
+4. An explicit instruction: **RETURN the complete task list as markdown text. Do NOT write
+   any file.** The sub-agent may use Read/Glob/Grep to verify only the **existing** paths it
+   cites — code/classes and ADRs a task references. The **new** test and implementation files a
+   task plans to create do NOT exist yet and MUST NOT be Glob-verified or flagged as missing;
+   they are expected to be absent.
+
+#### Task-drafting rules (include in the sub-agent prompt)
+
+- Produce `tasks.md` content with:
+  - A detailed task list with markdown checkboxes (`- [ ] Task description`)
+  - Explicit task dependencies
+  - Risk-mitigation tasks
+- Each task MUST be specific and actionable.
+- A task MUST represent implementing a **behavior**, NOT an implementation detail.
+- Organize tasks to enable incremental development and testing.
+- Order tasks so dependencies come first; structural/tidy tasks before behavioral ones.
+
+#### CRITICAL: TDD Task Format (include verbatim in the sub-agent prompt)
+
+**MANDATORY**: When creating TEST tasks, you MUST format them to enforce `/test-first` skill usage.
+
+##### Task Template
 
 ```markdown
 - [ ] **TEST + IMPLEMENT: [Behavior description]**
@@ -36,39 +78,88 @@ Organize tasks to enable incremental development and testing.
   - Test should verify:
     - [verification point 1]
     - [verification point 2]
-  - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
+  - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - [implementation point 1 with specific file/line numbers where applicable]
     - [implementation point 2]
 ```
 
-### Example Task
+##### Example Task
 
 ```markdown
 - [ ] **TEST + IMPLEMENT: QueryProcessor throws when handler not registered**
   - **USE COMMAND**: `/test-first when query handler not registered should throw QueryHandlerNotFoundException`
-  - Test location: "test/Paramore.Darker.Tests"
+  - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException.cs`
   - Test should verify:
     - QueryProcessor.Execute called with unregistered query type
     - QueryHandlerNotFoundException thrown with descriptive message
     - Exception includes the query type name
-  - **STOP HERE - WAIT FOR USER APPROVAL in IDE before implementing**
+  - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - In QueryProcessor.Execute() check handler registry for query type
     - Throw QueryHandlerNotFoundException if no handler found
     - Include query type name in exception message
 ```
 
-### Why This Format?
+##### Why This Format?
 
 1. **Visible command**: The `/test-first` command is prominently displayed
-2. **Stop sign**: The STOP HERE makes the approval gate unmissable
+2. **Stop sign**: The ⛔ and "STOP HERE" make the approval gate unmissable
 3. **Single task**: Combines TEST + IMPLEMENT so workflow is clear
 4. **Complete context**: All details needed for test and implementation
 5. **IDE review**: Explicitly states user will review in IDE, not CLI
 
-### DO NOT Format Tasks Like This
+##### The gate line and the review gear
+
+Write the `⛔` line on **every** behavioral task. It states the default: the gate is armed unless
+the spec has been deliberately shifted into the `review-after` gear (see [`gear.md`](gear.md) and
+Brighter's [ADR 0071](https://github.com/BrighterCommand/Brighter/blob/master/docs/adr/0071-tdd-review-gear.md)).
+
+Do **not** try to encode the gear in `tasks.md` — no per-task or per-phase "no gate" annotations,
+and no omitting the `⛔` line for tasks you expect to run unattended. `tasks.md` is frozen once
+`.tasks-approved` lands, so a gear written into it could not be shifted afterwards without lifting
+that freeze. The gear lives in the untracked `specs/{spec}/.current-gear` file and is shifted with
+`/spec:gear`. The `⛔` line is a statement of the default, not a per-task switch.
+
+Do keep **section headings** meaningful and stable, though: `/spec:gear` can scope a gear to a
+single heading, so a well-named section ("Phase 2 — Cache key generation (behaviour)", "Task 6-11 —
+Provider coverage") is what makes a narrow, self-expiring gear shift possible. Any heading
+convention works — `## Phase N`, `## Task N`, a named group — and the depth does not matter; a scope
+can also be a `tasks N-M` range. What does not work is a single flat `## Tasks` heading over forty
+tasks, because there is then nothing to scope to short of the whole spec.
+
+##### Task-type tag form (required)
+
+Every task checkbox opens its bold lead-in with exactly one tag, followed immediately by a colon,
+with any task id after the colon — one template line per tag:
+
+```markdown
+- [ ] **TEST + IMPLEMENT: T1.1 — …**
+- [ ] **CHARACTERISE: T1.2 — …**
+- [ ] **STRUCTURAL: T1.3 — …**
+- [ ] **SETUP: T1.4 — …**
+- [ ] **DOC: T1.5 — …**
+- [ ] **VERIFY: T1.6 — …**
+```
+
+The tag must come first, immediately after `**`. `/spec:ralph-implement` dispatches on the leading
+label, and skips (marks `- [!]`) any task whose label it does not recognise — see the drifted form
+in the *DO NOT* block below.
+
+- **`TEST + IMPLEMENT`** — the normal behavioral task, using the template above.
+- **`CHARACTERISE`** — a test for behavior an earlier task may already deliver (common when a spec
+  takes one task per acceptance criterion). Use the same template, plus a **named RED mutation**: a
+  `🔁 RED mutation:` bullet naming the temporary change to *production* code that must make the
+  test fail, and the assertion it must fail on. A green-on-arrival test is then proved able to fail
+  without being weakened or rewritten (see `.agent_instructions/testing.md` → *When a new test
+  passes on first run*).
+- **`STRUCTURAL`** — a Tidy First change: no new test, existing suite green before and after.
+- **`SETUP`** — project/config/package scaffolding; no test, but the build must succeed.
+- **`DOC`** — documentation only.
+- **`VERIFY`** — a checkpoint that runs named checks and should need no source change.
+
+##### DO NOT Format Tasks Like This
 
 BAD - Separates test and implementation:
 ```markdown
@@ -81,3 +172,56 @@ BAD - Separates test and implementation:
 ```
 
 This format allows Claude to skip the approval by treating them as independent tasks.
+
+BAD - Puts the task id before the tag:
+```markdown
+- [ ] **T1.1 — STRUCTURAL: Extract shared helper**
+```
+
+This drifts from the tag-first form above. `/spec:ralph-implement` does not recognise it as a
+`STRUCTURAL` task and will skip it.
+
+#### Coverage cross-reference (include in the sub-agent prompt)
+
+- Map EVERY functional requirement (FR-N) from `requirements.md` to at least one task.
+  List any FR with no task.
+- Map EVERY ADR decision to at least one task. List any decision with no task.
+- Flag any task that does not trace back to a requirement or ADR decision (scope creep).
+
+### Step 3: Validate Coverage and Write the File
+
+After the sub-agent returns:
+
+1. **Validate** before writing. The sub-agent owns the coverage mapping (its "Coverage
+   cross-reference" output); the main agent **sanity-checks** that report rather than
+   re-deriving it:
+   - The sub-agent's coverage report lists every FR and every ADR decision against a task,
+     with no gaps flagged. Spot-check a couple of entries against `requirements.md` or the
+     ADRs rather than re-mapping the whole set; if the report flags any uncovered FR/decision
+     or is missing, send it back to the sub-agent. This is deliberately a **sampling check, not
+     full verification** — the exhaustive adversarial coverage review is `/spec:review tasks`,
+     which the user is prompted to run before approval.
+   - Each behavioral task uses the `TEST + IMPLEMENT` template with `/test-first` and the
+     `⛔ APPROVAL GATE` line — none are split into separate TEST/IMPLEMENT tasks, and none omit
+     the gate line.
+   - Every task opens with its tag, tag first; every `CHARACTERISE` task names its RED mutation.
+   - No task is an implementation detail rather than a behavior.
+   - If coverage is incomplete or a task is malformed, ask the sub-agent to revise (or fix
+     it yourself) before writing.
+
+2. **Write** the validated task list to `specs/{current-spec}/tasks.md` using the Write tool.
+
+### Step 4: Next Steps
+
+Remind the user to:
+- Review `tasks.md`
+- Run `/spec:review tasks` for an adversarial coverage review, then
+- `/spec:approve tasks` when ready to begin implementation.
+
+`tasks.md` is the **single** task list, and both drivers run it:
+- `/spec:implement` — one task at a time, approval gate armed by default.
+- `/spec:ralph-implement` — a self-driving unattended loop over the same list, in the
+  `review-after` gear.
+
+The choice between them is a gear change (`/spec:gear`), not a different task list — so do not
+draft tasks "for unattended execution". Draft them once, well.

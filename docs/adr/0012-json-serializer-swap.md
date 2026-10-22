@@ -1,3 +1,17 @@
+---
+id: 0012-json-serializer-swap
+title: "Swap Newtonsoft.Json for System.Text.Json in the Query Logging Decorator"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-29
+summary: "Replaces Newtonsoft.Json with System.Text.Json in the query logging decorator, configured through a mutable static QueryLoggingJsonOptions (IgnoreCycles default) with AOT/trim warnings suppressed and left to the consumer."
+tags:
+  - "serialization"
+  - "logging"
+  - "dependencies"
+---
+
 # 12. Swap Newtonsoft.Json for System.Text.Json in the Query Logging Decorator
 
 Date: 2026-05-29

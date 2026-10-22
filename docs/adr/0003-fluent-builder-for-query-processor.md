@@ -1,3 +1,16 @@
+---
+id: 0003-fluent-builder-for-query-processor
+title: "Fluent Builder with Interface Progression for QueryProcessor Construction"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-15
+summary: "QueryProcessor is constructed through a fluent QueryProcessorBuilder using interface progression (INeedHandlers, INeedAQueryContext, IBuildTheQueryProcessor) so the required construction order is enforced at compile time."
+tags:
+  - "api-design"
+  - "configuration"
+---
+
 # 3. Fluent Builder with Interface Progression for QueryProcessor Construction
 
 Date: 2026-05-15

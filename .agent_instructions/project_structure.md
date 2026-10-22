@@ -1,9 +1,8 @@
 # Project Structure
 
-- `src/Paramore.Darker/` - Core framework (QueryProcessor, PipelineBuilder, registries)
+- `src/Paramore.Darker/` - Core framework (QueryProcessor, PipelineBuilder, registries), including the built-in decorators: query logging in `Logging/`, and retry/fallback policies and Polly resilience pipelines in `Policies/` (merged into core by ADR 0011)
 - `src/Paramore.Darker.Extensions.DependencyInjection/` - Microsoft.Extensions.DependencyInjection integration
-- `src/Paramore.Darker.Policies/` - Polly-based retry and circuit breaker decorators
-- `src/Paramore.Darker.QueryLogging/` - Request/response logging decorator
+- `src/Paramore.Darker.Extensions.AspNetCore/` - ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`)
 - `src/Paramore.Darker.Testing/` - Testing utilities
 - `test/` - Test suites organized by component
 
@@ -11,7 +10,7 @@
 
 - **Test Framework**: xUnit with Moq for mocking and Shouldly for assertions
 - **Test Patterns**: Behavior-driven test naming
-- **Test Doubles**: `Paramore.Darker.Testing.Ports` provides test queries and handlers
+- **Test Doubles**: each test project keeps its test-specific queries, handlers and decorators in its own `TestDoubles/` directory (e.g. `test/Paramore.Darker.Core.Tests/TestDoubles/`)
 
 ## Package Management
 

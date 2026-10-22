@@ -11,6 +11,7 @@
       "src\\Paramore.Darker.Validation.FluentValidation\\Paramore.Darker.Validation.FluentValidation.csproj",
       "src\\Paramore.Darker.Validation.DataAnnotations\\Paramore.Darker.Validation.DataAnnotations.csproj",
       "src\\Paramore.Darker.Caching\\Paramore.Darker.Caching.csproj",
+      "src\\Paramore.Darker.Extensions.AspNetCore\\Paramore.Darker.Extensions.AspNetCore.csproj",
       "test\\Paramore.Darker.Benchmarks\\Paramore.Darker.Benchmarks.csproj",
       "test\\Paramore.Darker.Tests.AOT\\Paramore.Darker.Tests.AOT.csproj",
       "test\\Paramore.Darker.Core.Tests\\Paramore.Darker.Core.Tests.csproj",
@@ -19,7 +20,8 @@
       "test\\Paramore.Darker.Validation.Tests\\Paramore.Darker.Validation.Tests.csproj",
       "test\\Paramore.Darker.Validation.FluentValidation.Tests\\Paramore.Darker.Validation.FluentValidation.Tests.csproj",
       "test\\Paramore.Darker.Validation.DataAnnotations.Tests\\Paramore.Darker.Validation.DataAnnotations.Tests.csproj",
-      "test\\Paramore.Darker.Caching.Tests\\Paramore.Darker.Caching.Tests.csproj"
+      "test\\Paramore.Darker.Caching.Tests\\Paramore.Darker.Caching.Tests.csproj",
+      "test\\Paramore.Darker.Extensions.AspNetCore.Tests\\Paramore.Darker.Extensions.AspNetCore.Tests.csproj"
     ]
   }
 }

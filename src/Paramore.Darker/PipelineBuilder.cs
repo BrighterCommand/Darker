@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace Paramore.Darker
 {
-    internal sealed class PipelineBuilder<TResult> : IDisposable
+    internal sealed class PipelineBuilder<TResult> : IDisposable, IAsyncDisposable
     {
         private const string ExecuteMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute);
         private const string ExecuteAsyncMethodName = nameof(IQueryHandlerAsync<IQuery<TResult>, TResult>.ExecuteAsync);
@@ -31,10 +31,12 @@ namespace Paramore.Darker
         private readonly IStreamQueryHandlerRegistry _streamHandlerRegistry;
 
         private IQueryHandler _handler;
+        private IQueryHandlerFactoryAsync _handlerCreatedByAsyncFactory; // null when the sync factory created the handler
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> _decorators;
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> _asyncDecorators;
         private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> _streamDecorators;
         private IAmALifetime _lifetime;
+        private IQueryHandlerFactoryAsync _chosenAsyncFactory; // the async factory chosen for this build; null when the sync factory is used
 
         public PipelineBuilder(
             IQueryHandlerRegistry handlerRegistry,
@@ -54,12 +56,17 @@ namespace Paramore.Darker
             _streamHandlerRegistry = streamHandlerRegistry;
         }
 
+        // Asks the factory chosen for this build, and only that factory, for the pipeline scope.
+        private IAmAScope CreatePipelineScope()
+            => _chosenAsyncFactory != null ? _chosenAsyncFactory.CreatePipelineScope() : _handlerFactory?.CreatePipelineScope();
+
         public Func<IQuery<TResult>, TResult> Build(IQuery<TResult> query, IQueryContext queryContext,
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope();
+            _chosenAsyncFactory = null;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building pipeline for {QueryType}", queryType.Name);
@@ -120,7 +127,8 @@ namespace Paramore.Darker
         {
             // Create the per-query lifetime before any Create call so a partial build still has an
             // owner for any resources (e.g. a child service scope) attached during resolution.
-            _lifetime = new QueryLifetimeScope();
+            _chosenAsyncFactory = _handlerRegistryAsync != null ? _handlerFactoryAsync : null;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building and executing async pipeline for {QueryType}", queryType.Name);
@@ -217,7 +225,7 @@ namespace Paramore.Darker
 
         private (Type handlerType, IQueryHandler handler) ResolveHandlerAsync(Type queryType, IQuery query, IQueryContext context)
         {
-            if (_handlerRegistryAsync != null && _handlerFactoryAsync != null)
+            if (_chosenAsyncFactory != null)
             {
                 _logger.LogDebug("Looking up handler type in async handler registry...");
                 var handlerType = _handlerRegistryAsync.Get(queryType, query, context);
@@ -227,9 +235,11 @@ namespace Paramore.Darker
                 _logger.LogDebug("Found handler type for {QueryType} in async handler registry: {HandlerType}", queryType.Name, handlerType.Name);
 
                 _logger.LogDebug("Resolving async handler instance...");
-                var handler = _handlerFactoryAsync.Create(handlerType, _lifetime);
+                var handler = _chosenAsyncFactory.Create(handlerType, _lifetime);
                 if (handler == null)
                     throw new ConfigurationException($"Async handler could not be created for type: {handlerType.FullName}");
+
+                _handlerCreatedByAsyncFactory = _chosenAsyncFactory;
 
                 return (handlerType, handler);
             }
@@ -248,6 +258,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecorator<IQuery<TResult>, TResult>>();
+            _decorators = decorators; // visible to Dispose even if building throws part-way
             foreach (var attribute in attributes)
             {
                 var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
@@ -257,12 +268,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} decorators", decorators.Count);
@@ -274,7 +287,8 @@ namespace Paramore.Darker
             IStreamQuery<TResult> query, IQueryContext queryContext,
             InstrumentationOptions instrumentationOptions = InstrumentationOptions.None)
         {
-            _lifetime = new QueryLifetimeScope();
+            _chosenAsyncFactory = _handlerFactoryAsync;
+            _lifetime = new QueryLifetimeScope(CreatePipelineScope(), _logger);
 
             var queryType = query.GetType();
             _logger.LogInformation("Building stream pipeline for {QueryType}", queryType.Name);
@@ -333,6 +347,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} stream query handler attributes", attributes.Count);
 
             var decorators = new List<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>();
+            _streamDecorators = decorators; // visible to Dispose even if building throws part-way
 
             foreach (var attribute in attributes)
             {
@@ -351,12 +366,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Stream decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising stream decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} stream decorators", decorators.Count);
@@ -375,12 +392,15 @@ namespace Paramore.Darker
 
             _logger.LogDebug("Found stream handler type for {QueryType}: {HandlerType}", queryType.Name, handlerType.Name);
 
-            var handler = _handlerFactoryAsync != null
-                ? _handlerFactoryAsync.Create(handlerType, _lifetime)
+            var handler = _chosenAsyncFactory != null
+                ? _chosenAsyncFactory.Create(handlerType, _lifetime)
                 : _handlerFactory?.Create(handlerType, _lifetime);
 
             if (handler == null)
                 throw new ConfigurationException($"Stream handler could not be created for type: {handlerType.FullName}");
+
+            if (_chosenAsyncFactory != null)
+                _handlerCreatedByAsyncFactory = _chosenAsyncFactory;
 
             return (handlerType, handler);
         }
@@ -395,6 +415,7 @@ namespace Paramore.Darker
             _logger.LogDebug("Found {AttributesCount} async query handler attributes", attributes.Count);
 
             var decorators = new List<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>();
+            _asyncDecorators = decorators; // visible to Dispose even if building throws part-way
 
             if (_decoratorFactoryAsync == null)
                 return decorators;
@@ -408,12 +429,14 @@ namespace Paramore.Darker
                 if (decorator == null)
                     throw new ConfigurationException($"Decorator could not be created for type: {decoratorType.FullName}. Ensure it is registered in the decorator registry.");
 
+                // Track it now, so Dispose releases it even if initialisation throws.
+                decorators.Add(decorator);
+
                 decorator.Context = queryContext;
 
                 _logger.LogDebug("Initialising async decorator from attribute params...");
                 decorator.InitializeFromAttributeParams(attribute.GetAttributeParams());
 
-                decorators.Add(decorator);
             }
 
             _logger.LogDebug("Finished initialising {DecoratorsCount} async decorators", decorators.Count);
@@ -423,40 +446,150 @@ namespace Paramore.Darker
 
         public void Dispose()
         {
-            _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
-
-            _handlerFactory?.Release(_handler, _lifetime);
-
-            if (_decorators != null && _decorators.Any())
-            {
-                foreach (var decorator in _decorators)
-                {
-                    _decoratorFactory.Release(decorator, _lifetime);
-                }
-            }
-
-            if (_asyncDecorators != null && _asyncDecorators.Any())
-            {
-                foreach (var decorator in _asyncDecorators)
-                {
-                    _decoratorFactoryAsync?.Release(decorator, _lifetime);
-                }
-            }
-
-            if (_streamDecorators != null && _streamDecorators.Any())
-            {
-                foreach (var decorator in _streamDecorators)
-                {
-                    if (_decoratorFactoryAsync != null)
-                        _decoratorFactoryAsync.Release(decorator, _lifetime);
-                    else
-                        _decoratorFactory?.Release(decorator, _lifetime);
-                }
-            }
+            ReleaseComponents();
 
             // Dispose the per-query lifetime last, after releasing the handler and decorators, so
             // any resources it owns (e.g. a child service scope) are torn down once per query.
             _lifetime?.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            TryLogTeardownStart();
+
+            await ReleaseHandlerAsync().ConfigureAwait(false);
+            ReleaseDecorators();
+            await ReleaseAsyncDecoratorsAsync().ConfigureAwait(false);
+            await ReleaseStreamDecoratorsAsync().ConfigureAwait(false);
+
+            // As in Dispose, the lifetime goes last; here its asynchronous disposal is awaited.
+            if (_lifetime != null)
+                await _lifetime.DisposeAsync().ConfigureAwait(false);
+        }
+
+        private void ReleaseComponents()
+        {
+            TryLogTeardownStart();
+
+            ReleaseHandler();
+            ReleaseDecorators();
+        }
+
+        // Nothing to release when the build failed before a handler was created.
+        private void ReleaseHandler()
+        {
+            if (_handler == null)
+                return;
+
+            TryRelease(_handler, () => _handlerFactory?.Release(_handler, _lifetime));
+        }
+
+        // Release through the factory that created the handler: the async factory when one did, else the sync one.
+        private async ValueTask ReleaseHandlerAsync()
+        {
+            if (_handler == null)
+                return;
+
+            if (_handlerCreatedByAsyncFactory == null)
+            {
+                ReleaseHandler();
+                return;
+            }
+
+            await TryReleaseAsync(_handler, () => _handlerCreatedByAsyncFactory.ReleaseAsync(_handler, _lifetime)).ConfigureAwait(false);
+        }
+
+        private async ValueTask ReleaseAsyncDecoratorsAsync()
+        {
+            if (_asyncDecorators == null)
+                return;
+
+            foreach (var decorator in _asyncDecorators)
+            {
+                await TryReleaseAsync(decorator, () => _decoratorFactoryAsync != null
+                    ? _decoratorFactoryAsync.ReleaseAsync(decorator, _lifetime)
+                    : ReleaseSync(() => _decoratorFactory?.Release(decorator, _lifetime))).ConfigureAwait(false);
+            }
+        }
+
+        private async ValueTask ReleaseStreamDecoratorsAsync()
+        {
+            if (_streamDecorators == null)
+                return;
+
+            foreach (var decorator in _streamDecorators)
+            {
+                await TryReleaseAsync(decorator, () => _decoratorFactoryAsync != null
+                    ? _decoratorFactoryAsync.ReleaseAsync(decorator, _lifetime)
+                    : ReleaseSync(() => _decoratorFactory?.Release(decorator, _lifetime))).ConfigureAwait(false);
+            }
+        }
+
+        private static ValueTask ReleaseSync(Action release)
+        {
+            release();
+            return default;
+        }
+
+        private static async ValueTask TryReleaseAsync(object component, Func<ValueTask> release)
+        {
+            try
+            {
+                await release().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, component);
+            }
+        }
+
+        private void TryRelease(object component, Action release)
+        {
+            try
+            {
+                release();
+            }
+            catch (Exception e)
+            {
+                TryLogTeardownFault(e, component);
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee, even before any release runs.
+        private static void TryLogTeardownStart()
+        {
+            try
+            {
+                _logger.LogDebug("Disposing pipeline; releasing handler and decorators.");
+            }
+            catch
+            {
+                // Nothing safe left to do: the message could not be written, and teardown must still run.
+            }
+        }
+
+        // A faulty logging provider must not break the never-throw teardown guarantee.
+        private static void TryLogTeardownFault(Exception fault, object component)
+        {
+            try
+            {
+                _logger.LogError(fault, "Error releasing pipeline component of type {ComponentType}", component?.GetType());
+            }
+            catch
+            {
+                // Nothing safe left to do: the fault could not be reported.
+            }
+        }
+
+        private void ReleaseDecorators()
+        {
+            if (_decorators != null && _decorators.Any())
+            {
+                foreach (var decorator in _decorators)
+                {
+                    TryRelease(decorator, () => _decoratorFactory.Release(decorator, _lifetime));
+                }
+            }
         }
     }
 }

@@ -1,3 +1,15 @@
+---
+id: 0013-migrate-legacy-tests-to-test-doubles
+title: "Migrate Legacy Tests to Simple/InMemory Doubles and a TestDoubles Directory"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-06-05
+summary: "Migrates legacy Moq-based tests to Simple/InMemory doubles and recording doubles, and keeps two distinct directories: Exported/ for scanned public handlers and TestDoubles/ for internal doubles."
+tags:
+  - "testing"
+---
+
 # 13. Migrate Legacy Tests to Simple/InMemory Doubles and a TestDoubles Directory
 
 Date: 2026-06-05

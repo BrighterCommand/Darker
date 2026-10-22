@@ -1,3 +1,16 @@
+---
+id: 0020-validation-decorator-architecture
+title: "Validation Decorator Architecture"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-07-18
+summary: "Adds a provider-agnostic template-method validation decorator in core (ValidateQuery attribute, QueryValidationError/Exception) with FluentValidation and DataAnnotations provider packages mapped in DI via Brighter-style Use* extensions."
+tags:
+  - "validation"
+  - "decorators"
+---
+
 # 20. Validation Decorator Architecture
 
 Date: 2026-07-18

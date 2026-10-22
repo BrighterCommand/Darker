@@ -1,3 +1,16 @@
+---
+id: 0009-simple-and-inmemory-factory-implementations
+title: "Simple and InMemory Factory Implementations for Testing and Lightweight Usage"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-18
+summary: "Adds public delegate-based SimpleHandlerFactory, SimpleHandlerDecoratorFactory and InMemory registry/context-factory implementations to core, following Brighter, for testing and DI-free usage."
+tags:
+  - "testing"
+  - "di"
+---
+
 # 9. Simple and InMemory Factory Implementations for Testing and Lightweight Usage
 
 Date: 2026-05-18

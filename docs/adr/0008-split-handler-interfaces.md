@@ -1,3 +1,17 @@
+---
+id: 0008-split-handler-interfaces
+title: "Split Handler Interfaces into Separate Sync and Async Types"
+status: Accepted
+author:
+  - "Ian Cooper"
+created: 2026-05-18
+summary: "Splits handler, decorator, attribute and infrastructure types into fully separate sync and async hierarchies (IQueryHandler vs IQueryHandlerAsync), so no type serves both execution paths."
+tags:
+  - "async"
+  - "api-design"
+  - "architecture"
+---
+
 # 8. Split Handler Interfaces into Separate Sync and Async Types
 
 Date: 2026-05-18
