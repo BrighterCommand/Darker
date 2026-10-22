@@ -20,8 +20,10 @@ namespace Paramore.Darker.Core.Tests
             syncRegistry.Register<SyncTestQuery, SyncTestQuery.Result, RetryableQueryHandler>();
 
             var handlerFactory = new SimpleHandlerFactory(type => handler);
+#pragma warning disable CS0618 // Exercise legacy retry support retained until V6.
             var decoratorFactory = new SimpleHandlerDecoratorFactory(
                 type => new RetryableQueryDecorator<IQuery<SyncTestQuery.Result>, SyncTestQuery.Result>());
+#pragma warning restore CS0618
             var decoratorRegistry = new InMemoryDecoratorRegistry();
 
             var handlerConfiguration = new HandlerConfiguration(

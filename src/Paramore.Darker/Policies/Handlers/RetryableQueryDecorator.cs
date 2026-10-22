@@ -7,6 +7,7 @@ using Polly.Registry;
 
 namespace Paramore.Darker.Policies.Handlers
 {
+    [Obsolete("Use UseResiliencePipelineHandler<TQuery, TResult> instead. RetryableQueryDecorator<TQuery, TResult> will be removed in V6.", error: false)]
     public class RetryableQueryDecorator<TQuery, TResult> : IQueryHandlerDecorator<TQuery, TResult>
         where TQuery : IQuery<TResult>
     {

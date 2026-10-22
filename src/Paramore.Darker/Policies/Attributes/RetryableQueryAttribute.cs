@@ -4,6 +4,7 @@ using Paramore.Darker.Policies.Handlers;
 namespace Paramore.Darker.Policies.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
+    [Obsolete("Use UseResiliencePipelineAttribute instead. RetryableQueryAttribute will be removed in V6.", error: false)]
     public sealed class RetryableQueryAttribute : QueryHandlerAttribute
     {
         private readonly string _policyName;
