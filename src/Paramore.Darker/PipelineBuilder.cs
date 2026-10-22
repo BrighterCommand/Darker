@@ -74,10 +74,7 @@ namespace Paramore.Darker
             _handler.Context = queryContext;
 
             var executeMethodInfo = ResolveMethod(PipelineAttributeReader.FindExecute(handlerType));
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
-                "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(StreamQueryHandlerAttribute),
-                "Sync handler has stream attribute(s) on Execute. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+            ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Sync);
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
@@ -139,10 +136,7 @@ namespace Paramore.Darker
             if (executeAsyncMethodInfo == null)
                 throw new ConfigurationException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
 
-            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(QueryHandlerAttribute),
-                "Async handler has sync attribute(s) on ExecuteAsync. Use async attributes (e.g. QueryHandlerAttributeAsync) for async handlers, or switch to a sync handler with Execute.");
-            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(StreamQueryHandlerAttribute),
-                "Async handler has stream attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, HandlerPath.Async);
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
@@ -193,11 +187,12 @@ namespace Paramore.Darker
             return lookup.Method;
         }
 
-        private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, Type wrongAttributeType, string message)
+        private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, HandlerPath path)
         {
-            var mismatchedAttributes = methodInfo.GetCustomAttributes(wrongAttributeType, true);
-            if (mismatchedAttributes.Length > 0)
-                throw new ConfigurationException(message);
+            var check = PipelineAttributeReader.CheckAttributeKinds(methodInfo, path);
+            check.Failure?.Rethrow();
+            if (check.Message != null)
+                throw new ConfigurationException(check.Message);
         }
 
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType, IQuery query, IQueryContext context)
@@ -298,10 +293,7 @@ namespace Paramore.Darker
             if (executeMethodInfo == null)
                 throw new ConfigurationException($"Handler {handlerType.FullName} does not implement a stream ExecuteAsync(TQuery, CancellationToken). Ensure it implements IStreamQueryHandler.");
 
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttribute),
-                "Stream handler has sync attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
-                "Stream handler has async attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+            ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Stream);
 
             _streamDecorators = GetStreamDecorators(executeMethodInfo, queryContext);
 

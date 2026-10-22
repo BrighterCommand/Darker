@@ -67,6 +67,30 @@ namespace Paramore.Darker
         public AttributeReadFailure? Failure { get; } = failure;
     }
 
+    /// <summary>The kind of handler a pipeline is read for. It decides which decorator attribute kinds are wrong.</summary>
+    internal enum HandlerPath
+    {
+        /// <summary>A sync handler: <c>Execute</c> with <see cref="QueryHandlerAttribute"/> decorators.</summary>
+        Sync,
+
+        /// <summary>An async handler: <c>ExecuteAsync</c> with <see cref="QueryHandlerAttributeAsync"/> decorators.</summary>
+        Async,
+
+        /// <summary>A stream handler: <c>ExecuteAsync</c> with <see cref="StreamQueryHandlerAttribute"/> decorators.</summary>
+        Stream
+    }
+
+    /// <summary>
+    /// The outcome of checking a handler method for another path's decorator attributes: the message of the first
+    /// wrong kind found, or null when there is none, or the failure that stopped the attributes being read.
+    /// </summary>
+    internal sealed class WrongKindCheck(string? message, AttributeReadFailure? failure)
+    {
+        public string? Message { get; } = message;
+
+        public AttributeReadFailure? Failure { get; } = failure;
+    }
+
     /// <summary>One decorator attribute with its closed decorator type, or the failure that prevented closing it.</summary>
     internal sealed class DecoratorEntry<TAttribute>(TAttribute attribute, Type? decoratorType, AttributeReadFailure? failure)
         where TAttribute : Attribute
@@ -144,6 +168,53 @@ namespace Paramore.Darker
             }
 
             return new DecoratorEntries<TAttribute>(attributes.Select(attribute => Close(attribute, queryType, resultType, decoratorTypeOf)).ToList(), null);
+        }
+
+        /// <summary>
+        /// Checks that <paramref name="method"/> carries no decorator attributes belonging to another path, in the
+        /// order the builder has always checked them, and returns the message for the first wrong kind found.
+        /// </summary>
+        public static WrongKindCheck CheckAttributeKinds(MemberInfo? method, HandlerPath path)
+        {
+            try
+            {
+                foreach (var (wrongAttributeType, message) in WrongKindsFor(path))
+                {
+                    if (method!.GetCustomAttributes(wrongAttributeType, true).Length > 0)
+                        return new WrongKindCheck(message, null);
+                }
+
+                return new WrongKindCheck(null, null);
+            }
+            catch (Exception ex)
+            {
+                return new WrongKindCheck(null, new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
+            }
+        }
+
+        private static IEnumerable<(Type WrongAttributeType, string Message)> WrongKindsFor(HandlerPath path)
+        {
+            switch (path)
+            {
+                case HandlerPath.Sync:
+                    yield return (typeof(QueryHandlerAttributeAsync),
+                        "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
+                    yield return (typeof(StreamQueryHandlerAttribute),
+                        "Sync handler has stream attribute(s) on Execute. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+                    break;
+                case HandlerPath.Async:
+                    yield return (typeof(QueryHandlerAttribute),
+                        "Async handler has sync attribute(s) on ExecuteAsync. Use async attributes (e.g. QueryHandlerAttributeAsync) for async handlers, or switch to a sync handler with Execute.");
+                    yield return (typeof(StreamQueryHandlerAttribute),
+                        "Async handler has stream attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+                    break;
+                case HandlerPath.Stream:
+                    yield return (typeof(QueryHandlerAttribute),
+                        "Stream handler has sync attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+                    yield return (typeof(QueryHandlerAttributeAsync),
+                        "Stream handler has async attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+                    break;
+            }
         }
 
         private static ExecuteMethodLookup Lookup(Func<MethodInfo?> find)
