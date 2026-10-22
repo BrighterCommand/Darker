@@ -167,7 +167,10 @@ public class Specification<T> : ISpecification<T>
                 ValidationResult.Fail(new ValidationError(
                     ValidationSeverity.Error,
                     entity?.ToString() ?? "(unknown)",
-                    $"Rule evaluation failed: {ex.Message}"))
+                    $"Rule evaluation failed: {ex.Message}")
+                {
+                    RuleId = ValidationRuleIds.EvaluationFailed
+                })
             ];
         }
 
