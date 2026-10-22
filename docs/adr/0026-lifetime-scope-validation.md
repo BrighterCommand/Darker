@@ -380,7 +380,7 @@ Steps, in commit order:
    - a Singleton handler with two Scoped parameters yields two Warnings, in parameter order;
    - an open-generic decorator registered through `RegisterDecorator` under a Singleton `HandlerLifetime`, taking a Scoped dependency, yields the Warning, naming the decorator;
    - a Transient `HandlerLifetime` with the handler registered Singleton before `AddDarker` yields the Warning;
-   - a Transient or Scoped dependency, an `IServiceProvider` parameter and an unregistered parameter yield nothing;
+   - a Transient or Singleton dependency, an `IServiceProvider` parameter and an unregistered parameter yield nothing;
    - with a Transient `HandlerLifetime`, a keyed Singleton component registration with a Scoped dependency yields nothing (row 1), and a Singleton component registered by factory delegate or by instance before `AddDarker` yields nothing (row 2);
    - with a Transient `HandlerLifetime`, `AddSingleton<H>()` before `AddDarker` and then `AddTransient<H>()` yields nothing, because only the last descriptor is effective (row 4);
    - a Singleton handler that takes `IRepository<Order>`, with the open generic `IRepository<>` registered Scoped, yields the Warning naming the parameter (row 9);
