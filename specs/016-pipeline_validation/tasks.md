@@ -76,7 +76,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `SpecificationTestState.cs` is copied from `Brighter/tests/Paramore.Brighter.Core.Tests/Specifications/TestDoubles/` into `test/Paramore.Darker.Core.Tests/TestDoubles/`, in the namespace `Paramore.Darker.Core.Tests.TestDoubles`.
     - Only `namespace` and `using` lines differ from Brighter. The tests keep Brighter's xUnit `Assert` style. If anything else has to change to compile under xunit.v3, stop and ask.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: in `src/Paramore.Darker/Specifications/AndSpecification.cs`, make `IsSatisfiedBy` short-circuit (`_left.IsSatisfiedBy(entity) && _right.IsSatisfiedBy(entity)`). `When_and_specification_left_fails_should_evaluate_both_sides` must fail on the assertion that the right side's error was collected.
+  - 🔁 RED mutation: in `src/Paramore.Darker/Specifications/AndSpecification.cs`, make `IsSatisfiedBy` short-circuit (`Left.IsSatisfiedBy(entity) && Right.IsSatisfiedBy(entity)`, replacing the separate evaluations at Brighter's `AndSpecification.cs:48-50`). The fact `AndSpecificationTests.When_both_sides_fail_should_collect_errors_from_both` (in `When_and_specification_left_fails_should_evaluate_both_sides.cs`) must fail first on `Assert.Equal(2, results.Count(r => !r.Success))` (line 52 of Brighter's test), because only the left side's error is collected.
   - Implementation should:
     - Need no production change. T1.1 delivers this.
 
@@ -111,7 +111,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 3 — Shared attribute reader (ADR 0025 step 3)
 
-> Risk mitigation, for ADR 0025's Negative "PipelineAttributeReader must stay the single reflection path" and "the documentation contradicts the code". The core suite pins step order only on the stream path (`When_stream_handler_has_multiple_decorators_should_order_by_step_descending.cs`). Wrong-kind messages are pinned only for a sync attribute on `ExecuteAsync` and for the stream path. T3.1 and T3.2 pin what the extraction must not change, before it starts.
+> Risk mitigation, for ADR 0025's Negative "PipelineAttributeReader must stay the single reflection path" and "the documentation contradicts the code". The core suite pins step order only on the stream path (`When_stream_handler_has_multiple_decorators_should_order_by_step_descending.cs`). All six wrong-kind paths already have tests (`When_sync_attribute_on_async_handler_should_throw_configuration_exception.cs`, `When_stream_handler_has_mismatched_decorator_attribute_should_throw_ConfigurationException.cs`), but each asserts only `ShouldContain("sync")`, `"async"` or `"stream"`, so the exact text is not pinned. T3.1 and T3.2 pin what the extraction must not change, before it starts.
 
 - [ ] **CHARACTERISE: T3.1 — On Execute and ExecuteAsync, the decorator with the lowest Step is outermost (pre-refactor guard; ADR 0025 Terms "Outer and inner"; FR9 semantics)**
   - **USE COMMAND**: `/test-first when a sync or async handler carries several decorator attributes should run the decorator with the lowest Step outermost`
@@ -126,17 +126,20 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T3.2 — The builder's wrong-kind ConfigurationException messages are pinned for the paths not already covered (pre-refactor guard; ADR 0025 step 3, "messages unchanged")**
-  - **USE COMMAND**: `/test-first when an async or stream attribute sits on Execute, or a stream attribute sits on ExecuteAsync, should throw ConfigurationException with the existing message`
+- [ ] **CHARACTERISE: T3.2 — The builder's six wrong-kind ConfigurationException messages are pinned by exact text (pre-refactor guard; ADR 0025 step 3, "messages unchanged")**
+  - **USE COMMAND**: `/test-first when a handler method carries another path's decorator attribute should throw ConfigurationException whose message equals the existing text exactly, for all six wrong-kind paths`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_handler_method_carries_another_paths_attribute_should_throw_the_existing_configuration_message.cs`
   - Test should verify:
     - A sync handler with an async attribute on `Execute` throws `ConfigurationException`. Its message equals the text at `PipelineBuilder.cs:80-81` ("Sync handler has async attribute(s) on Execute. …").
     - A sync handler with a stream attribute on `Execute` gives the message at `:82-83`.
+    - An async handler with a sync attribute on `ExecuteAsync` gives the message at `:145-146` ("Async handler has sync attribute(s) on ExecuteAsync. …").
     - An async handler with a stream attribute on `ExecuteAsync` gives the message at `:147-148`.
-    - Reuse `AsyncHandlerWithStreamAttribute` where it fits, and add sync doubles as needed.
+    - A stream handler with a sync attribute on `ExecuteAsync` gives the message at `:306-307` ("Stream handler has sync attribute(s) on ExecuteAsync. …").
+    - A stream handler with an async attribute on `ExecuteAsync` gives the message at `:308-309` ("Stream handler has async attribute(s) on ExecuteAsync. …").
+    - Every fact asserts equality with the full message, not `ShouldContain`. Reuse `SyncHandlerWithAsyncAttribute`, `SyncHandlerWithStreamAttribute`, `AsyncHandlerWithSyncAttribute`, `AsyncHandlerWithStreamAttribute`, `StreamHandlerWithSyncAttribute` and `StreamHandlerWithAsyncAttribute` from `TestDoubles/`.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: change the message string passed at `PipelineBuilder.cs:81`. The first fact must fail on the message-equality assertion.
+  - 🔁 RED mutation: change one word other than "sync", "async" or "stream" (for example "Use" to "Apply") in each message string passed at `PipelineBuilder.cs:81`, `:83`, `:146`, `:148`, `:307` and `:309`. Each fact must fail on its own message-equality assertion (the existing `ShouldContain` tests stay green under the same change).
   - Implementation should:
     - Need no production change.
 
@@ -261,7 +264,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `Validate()` does not throw. It returns two `RuleEvaluationFailed` errors, the sync registry's first, each naming its registry type and carrying the exception message. The second error is the evidence that validation went on.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - In `PipelineValidator.Validate`, read each registry's `GetRegistrations()` inside one try/catch per registry. Emit one error with `RuleId = ValidationRuleIds.EvaluationFailed`, then continue with the next registry. From T7.1, describing the registry's registrations happens inside the same guard, so a registry that cannot be read or described yields one finding (ADR 0025 step 6).
+    - In `PipelineValidator.Validate`, read each registry's `GetRegistrations()` inside one try/catch per registry. Emit one error with `RuleId = ValidationRuleIds.EvaluationFailed`, then continue with the next registry. From T7.1, describing the registry's registrations happens inside the same guard: the descriptions are materialised inside it, and the rules are evaluated over them afterwards, outside it. A registry that cannot be read or described yields one finding (ADR 0025 step 6).
 
 ## Phase 7 — Pipeline rules (ADR 0025 step 7)
 
@@ -278,10 +281,11 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - The same on the async and stream registries names their paths.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Add the public `HandlerPipelineDescription` and `PipelinePath`, and the internal `PipelineDescriber` over `IAmAHandlerRegistryInspector` and `PipelineAttributeReader`, called inside T6.4's per-registry guard. Only fixed registrations are needed here; router fan-out is T7.2's and T7.4's.
+    - Add the public `HandlerPipelineDescription` and `PipelinePath`, and the internal `PipelineDescriber` over `IAmAHandlerRegistryInspector` and `PipelineAttributeReader`, called inside T6.4's per-registry guard. The describer iterates the registration's candidates and yields one description each (a fixed registration has one); T7.2 adds the empty-list case, and T7.4 pins the fan-out.
     - Add the public `QueryPipelineRules`, which creates a fresh rule set for each `Validate`, and the `HandlerRegistered` specification.
     - Make the describer yield one description with no handler type for a null candidate.
-    - Evaluate every rule against every description, and collect with `ValidationResultCollector<T>`.
+    - Evaluate every rule against every description, and collect with `ValidationResultCollector<T>`. Evaluate the rules over the descriptions that T6.4's per-registry guard materialised; add no further try/catch around rule evaluation. A predicate that throws is already turned into a `RuleEvaluationFailed` Error, with its `RuleId` and the exception message, by `Specification<T>`'s catch paths (T2.1, T2.2), and every other rule's findings are kept (FR3).
+    - **Constraint on error factories.** `Specification<T>` calls the error factory outside its try (Brighter's `Specification.cs:194-195`), so a factory that throws would escape `Validate`. Every error factory in `QueryPipelineRules` (and later in `ScopeConfigurationRules`) must be null-safe and must not throw: render `description.HandlerType?.Name` and the like, never dereference a value the predicate did not check.
 
 - [ ] **TEST + IMPLEMENT: T7.2 — A router registration with no candidates is a `HandlerRegistered` error (ADR 0025 step 7; FR6; "Configuration mistakes" table, router row)**
   - **USE COMMAND**: `/test-first when a router is registered with no candidate handlers should report a HandlerRegistered error naming the query`
@@ -307,15 +311,16 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the `HandlerPublic` specification, judged on `Type.IsVisible`.
 
-- [ ] **TEST + IMPLEMENT: T7.4 — A router registration yields one description per candidate, so each internal candidate is reported, in candidate order (ADR 0025 step 6 router test, placed here; Invariant "one description per candidate")**
+- [ ] **CHARACTERISE: T7.4 — A router registration yields one description per candidate, so each internal candidate is reported, in candidate order (ADR 0025 step 6 router test, placed here; Invariant "one description per candidate")**
   - **USE COMMAND**: `/test-first when a router registration has two internal candidate handlers should report one HandlerPublic error per candidate in candidate order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_has_two_internal_candidates_should_report_each_candidate.cs`
   - Test should verify:
     - A router with internal candidates `A` then `B` yields two `HandlerPublic` Errors, the first naming `A` and the second naming `B`.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
+  - 🔁 RED mutation: in `PipelineDescriber`, describe only `registration.Candidates.First()`. The test must fail on the assertion that a second `HandlerPublic` Error names `B`.
   - Implementation should:
-    - Make the describer emit one description per candidate, with the registration as its source.
+    - Need no production change. T7.1's describer yields one description per candidate, and T7.2 handles the empty list.
 
 ### 7C — HandlerMatchesPath rule (behaviour)
 
@@ -351,7 +356,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test should verify:
     - `AsyncHandlerWithSyncAttribute` (existing double) in the async registry yields a `DecoratorAttributeKind` Error naming the handler, the attribute type and `QueryHandlerAttributeAsync` as the correct kind.
     - An async attribute on `Execute`, and a stream attribute on `Execute` or `ExecuteAsync` (reuse `AsyncHandlerWithStreamAttribute`), each yield the error.
-    - Stream path: a sync attribute (reuse `StreamHandlerWithSyncAttribute`) or an async attribute (new double) on a stream handler's `ExecuteAsync`, in the stream registry, each yield the error naming `StreamQueryHandlerAttribute` as the correct kind. These are the builder's checks at `PipelineBuilder.cs:306-309`.
+    - Stream path: a sync attribute (reuse `StreamHandlerWithSyncAttribute`) or an async attribute (reuse `StreamHandlerWithAsyncAttribute`) on a stream handler's `ExecuteAsync`, in the stream registry, each yield the error naming `StreamQueryHandlerAttribute` as the correct kind. These are the builder's checks at `PipelineBuilder.cs:306-309`.
     - `Validate()` does not throw. The builder would.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
@@ -493,10 +498,11 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test file: `When_a_description_has_no_handler_type_should_report_only_handler_registered.cs`
   - Test should verify:
     - One validator per path, built through `PipelineValidatorBuilder` with only that path's registry, after `Register(typeof(Q), typeof(R), null)` on it (three facts: sync, async, stream). For each, `Errors` contains exactly one finding, and its `RuleId` is `HandlerRegistered`. This exact-count assertion is a deliberate exception to "never on total counts": the setup holds no handler type, so `HandlerPublic` cannot fire, and the single error is the behaviour under test. No `RuleEvaluationFailed`, `HandlerPublic`, `HandlerMatchesPath`, `DecoratorAttributeKind`, `PipelineDescribable` or `DuplicateStep` finding appears. (Errors only: Phase 7 has no probe-less warning yet, and the convention is to assert on errors.)
-    - It is RED until the guards land: T7.3–T7.13 assert only their own rule, so their minimal rules dereference the null handler type and `Specification<T>`'s catch path turns that into `RuleEvaluationFailed` (T2.1).
+    - `Validate()` does not throw.
+    - It is RED until the guards land: T7.3–T7.13 assert only their own rule. A minimal predicate that dereferences the null handler type is caught by T2.1's catch path and yields a `RuleEvaluationFailed` Error; one that returns false yields a bogus finding of its own rule; and an error factory that dereferences the null handler type makes `Validate()` throw. Each fails an assertion of this test.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Make each Phase 7 rule other than `HandlerRegistered` satisfied when the description has no handler type, where it is not already: `HandlerPublic`, `HandlerMatchesPath`, `DecoratorAttributeKind`, `PipelineDescribable` and `DuplicateStep`. A rule over an empty list (no misplaced attributes, no problems, no steps) needs no guard; add one only where the test shows a finding.
+    - Make each Phase 7 rule other than `HandlerRegistered` satisfied when the description has no handler type, where it is not already: `HandlerPublic`, `HandlerMatchesPath`, `DecoratorAttributeKind`, `PipelineDescribable` and `DuplicateStep`. A rule over an empty list (no misplaced attributes, no problems, no steps) needs no guard; add one only where the test shows a finding. Keep every error factory null-safe (T7.1's constraint).
     - The resolvability rules and `DecoratorOrdering` do not exist yet. T8.5, T8.6 and T9.6 pin them.
 
 ## Phase 8 — Resolvability probe and rules (ADR 0025 step 8)
@@ -553,8 +559,8 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test file: `When_a_description_has_no_handler_type_should_report_no_handler_resolvable.cs`
   - Test should verify:
     - `Register(typeof(Q), typeof(R), null)` on the sync registry, and a `SimpleResolvabilityProbe` that records every type it is asked about and returns false, passed with `PipelineValidatorBuilder.WithProbe(probe)`.
-    - No finding with `RuleId` `HandlerResolvable` is reported, and the probe's recorded types contain no null. The `HandlerRegistered` Error is still reported.
-    - It is RED against T8.1's rule, which asks `probe.Resolves(description.HandlerType)` with a null type, gets false and reports a bogus `HandlerResolvable` Error.
+    - `Validate()` does not throw. No finding with `RuleId` `HandlerResolvable` or `RuleEvaluationFailed` is reported, and the probe's recorded types contain no null. The `HandlerRegistered` Error is still reported.
+    - It is RED against T8.1's rule, which asks `probe.Resolves(description.HandlerType)` with a null type and gets false. With a null-safe error factory (T7.1's constraint) a bogus `HandlerResolvable` Error appears; with a factory that dereferences the null handler type, `Validate()` throws. Either way an assertion of this test fails, and the probe-records-null assertion fails in both cases.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - Make `HandlerResolvable` satisfied, without calling the probe, when the description has no handler type.
@@ -567,7 +573,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `Register(typeof(Q), typeof(R), null)` on the sync registry, and a `SimpleResolvabilityProbe` that returns false for every type, passed with `PipelineValidatorBuilder.WithProbe(probe)`.
     - `Validate()` does not throw. No finding with `RuleId` `DecoratorResolvable` is reported, and no `RuleEvaluationFailed` finding is reported.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: in the `DecoratorResolvable` predicate, return false when the description has no handler type (`description.HandlerType == null ? false : …`). The test must fail on one of its own assertions: on "no `DecoratorResolvable`" if the rule's error factory renders the null handler safely, or on "`Validate()` does not throw" if it dereferences it, because `EvaluateSimple` runs the error factory outside its try (Brighter's `Specification.cs:175-192`).
+  - 🔁 RED mutation: in the `DecoratorResolvable` predicate, return false when the description has no handler type (`description.HandlerType == null ? false : …`). The test must fail on one of its own assertions: on "no `DecoratorResolvable`" if the rule's error factory renders the null handler safely, as T7.1 requires, or on "`Validate()` does not throw" if it dereferences it, because `EvaluateSimple` calls the error factory outside its try (Brighter's `Specification.cs:194-195`).
   - Implementation should:
     - Need no production change. A description with no handler type has no steps (T7.1, T7.13), so T8.2's rule has nothing to ask the probe about.
 
@@ -579,10 +585,11 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test file: `When_a_fallback_sits_inside_a_retry_should_report_decorator_ordering.cs`
   - Test should verify:
     - A sync handler with `[RetryableQuery(1)]` (outer) and `[FallbackPolicy(2)]` (inner) yields one `DecoratorOrdering` Warning. It names the handler, `FallbackPolicyDecorator`, `RetryableQueryDecorator` and the reason (the inner Fallback catches the failure, so the Retry never retries).
-    - The validator is built through `PipelineValidatorBuilder`, whose ordering rules default to `DecoratorOrderingRules.Default`.
+    - The validator is built through `PipelineValidatorBuilder`, whose ordering rules default to `DecoratorOrderingRules.Default`. The Warning's `RuleId` equals `new ValidationRuleId("DecoratorOrdering")`.
+    - Entry identifier: a validator built with `WithOrderingRules` holding only `new DecoratorOrderingRule(typeof(FallbackPolicyDecorator<,>), typeof(RetryableQueryDecorator<,>), new ValidationRuleId("CustomOrdering"), "reason")` reports the same violation with `RuleId` equal to `new ValidationRuleId("CustomOrdering")`. This fact makes a hard-coded `DecoratorOrdering` identifier fail.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Add the public `DecoratorOrderingRule` (outer type, inner type, rule identifier, reason) and `DecoratorOrderingRules.Default`, with the sync pair `FallbackPolicyDecorator<,>` outer and `RetryableQueryDecorator<,>` inner.
+    - Add the public `DecoratorOrderingRule` (outer type, inner type, rule identifier, reason) and `DecoratorOrderingRules.Default`, with the sync pair `FallbackPolicyDecorator<,>` outer and `RetryableQueryDecorator<,>` inner. A finding's `RuleId` is the violated table entry's rule identifier; every `Default` entry uses `new ValidationRuleId("DecoratorOrdering")`, the catalogue identifier.
     - Add the `IEnumerable<DecoratorOrderingRule>` constructor parameter, after the registries and before the optional probe (ADR 0025's order), and the `DecoratorOrdering` rule. `QueryPipelineRules` creates one **predicate-form** `DecoratorOrdering` specification per `DecoratorOrderingRule` in the supplied table, so each violated table entry yields its own finding (T9.4 relies on this). Each compares positions in the description's step order, which the builder's reader produces.
     - Add `WithOrderingRules(IEnumerable<DecoratorOrderingRule>)` to `PipelineValidatorBuilder`, defaulting to `DecoratorOrderingRules.Default`, and pass it in `Build()`. The builder is the only call site that changes; no T6–T8 test file is edited.
 
@@ -612,9 +619,9 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_caller_adds_an_ordering_rule_should_report_its_violation.cs`
   - Test should verify:
-    - `PipelineValidatorBuilder.WithOrderingRules(DecoratorOrderingRules.Default.Append(new DecoratorOrderingRule(typeof(OuterDouble<,>), typeof(InnerDouble<,>), …)))` with a handler that violates both the custom pair and Fallback/Retry yields two `DecoratorOrdering` Warnings, each naming its decorators and reason.
+    - `PipelineValidatorBuilder.WithOrderingRules(DecoratorOrderingRules.Default.Append(new DecoratorOrderingRule(typeof(OuterDouble<,>), typeof(InnerDouble<,>), new ValidationRuleId("CustomOrdering"), "reason")))` with a handler that violates both the custom pair and Fallback/Retry yields two ordering Warnings, each naming its decorators and reason: one whose `RuleId` is `new ValidationRuleId("CustomOrdering")` (the custom pair) and one whose `RuleId` is `new ValidationRuleId("DecoratorOrdering")` (Fallback/Retry).
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: in the `PipelineValidator` constructor, ignore the supplied table and use `DecoratorOrderingRules.Default`. The test must fail on the assertion that a `DecoratorOrdering` Warning names the custom pair's decorators and reason.
+  - 🔁 RED mutation: in the `PipelineValidator` constructor, ignore the supplied table and use `DecoratorOrderingRules.Default`. The test must fail on the assertion that a Warning with `RuleId` `CustomOrdering` names the custom pair's decorators and reason.
   - Implementation should:
     - Need no production change. T9.1 evaluates every rule in the supplied table, and T9.2 already relies on that for the async pair.
 
@@ -636,7 +643,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `Register(typeof(Q), typeof(R), null)` on the sync and async registries, with a validator built through `PipelineValidatorBuilder` (so `DecoratorOrderingRules.Default` applies).
     - `Validate()` does not throw. No finding with `RuleId` `DecoratorOrdering` is reported, and no `RuleEvaluationFailed` finding is reported.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: in each `DecoratorOrdering` predicate (one per table entry, T9.1), return false when the description has no handler type (`description.HandlerType == null ? false : …`). The test must fail on one of its own assertions: on "no `DecoratorOrdering`" if the rule's error factory renders the null handler safely, or on "`Validate()` does not throw" if it dereferences it, because `EvaluateSimple` runs the error factory outside its try.
+  - 🔁 RED mutation: in each `DecoratorOrdering` predicate (one per table entry, T9.1), return false when the description has no handler type (`description.HandlerType == null ? false : …`). The test must fail on one of its own assertions: on "no `DecoratorOrdering`" if the rule's error factory renders the null handler safely, as T7.1 requires, or on "`Validate()` does not throw" if it dereferences it, because `EvaluateSimple` calls the error factory outside its try.
   - Implementation should:
     - Need no production change. A description with no handler type has no steps, so T9.1's rule finds no pair to compare.
 
@@ -660,7 +667,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_should_register_the_pipeline_validator.cs`
   - Test should verify:
-    - After `AddDarker().ValidatePipelines()`, `GetServices<IAmAPipelineValidator>()` contains exactly one `PipelineValidator`.
+    - After `AddDarker().ValidatePipelines()`, `GetServices<IAmAPipelineValidator>().OfType<PipelineValidator>().Count()` is 1. (Not a total count: T14.1 adds a second, different validator.)
     - After `AddDarker()` alone, no `IAmAPipelineValidator` descriptor and no new `IHostedService` descriptor exist.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
@@ -682,8 +689,8 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidateAll_is_called_should_combine_every_validator_in_registration_order.cs`
   - Test should verify:
-    - A public duplicate-step handler is registered explicitly with `AddDarker()`, then `ValidatePipelines()`. Then `AddSingleton<IAmAPipelineValidator>(new FixedResultValidator(…))` (new double) adds a known Error.
-    - `provider.ValidateAll()` returns the `DuplicateStep` Warning (pipeline validator first) and the fixed Error, does not throw, and has `IsValid` false.
+    - A public duplicate-step handler is registered explicitly with `AddDarker()`, then `ValidatePipelines()`. Then `AddSingleton<IAmAPipelineValidator>(new FixedResultValidator(…))` (new double) adds a known Error and a known Warning.
+    - `provider.ValidateAll()` does not throw and has `IsValid` false. Its `Errors` contain the fixed Error. In `Warnings`, the pipeline validator's `DuplicateStep` Warning comes before the fixed Warning: both validators' findings share one list, so registration order is observable. Under a `ValidateAll` that reverses the validators, the order assertion fails.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - Add the public `ValidateAll(this IServiceProvider)`. It calls `Validate` on each `GetServices<IAmAPipelineValidator>()` in order and returns `PipelineValidationResult.Combine(...)`.
@@ -730,7 +737,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_package_adds_an_ordering_rule_should_accumulate_it_beside_the_default_table.cs`
   - Test should verify:
-    - `services.AddSingleton(new DecoratorOrderingRule(...))`, plus a handler that violates it and Fallback/Retry, yields two `DecoratorOrdering` Warnings.
+    - `services.AddSingleton(new DecoratorOrderingRule(typeof(OuterDouble<,>), typeof(InnerDouble<,>), new ValidationRuleId("CustomOrdering"), "reason"))`, plus a handler that violates it and Fallback/Retry, yields two ordering Warnings: one with `RuleId` `CustomOrdering` and one with `RuleId` `DecoratorOrdering`.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - Register each `DecoratorOrderingRules.Default` rule with `AddSingleton`, not `TryAddEnumerable`, which would drop them. Have the validator factory read `GetServices<DecoratorOrderingRule>()`.
@@ -814,10 +821,11 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test should verify:
     - A `CountingValidator` (new `IAmAPipelineValidator`) is registered beside `ValidatePipelines()`, with `AddLogging()` so the hosted service's `ILogger` resolves. The test resolves `GetServices<IHostedService>()` from a built provider and calls only `StartAsync(TestContext.Current.CancellationToken)` on each, once. `CountingValidator` reports 1.
     - It is RED against T11.9, whose `StartAsync` returns a completed task without validating (count 0).
+    - Throw path: with `ValidatePipelines()` (`throwOnError` true) and a `FixedResultValidator` (from T11.3) returning an Error, calling only `StartAsync` throws `PipelineValidationException` listing that finding (ADR 0025 `StartAsync` row, "As `StartingAsync`").
     - In the `DarkerHostBootstrap` collection (`[Collection("DarkerHostBootstrap")]`), because the provider has real logging. Do not dispose the provider.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Make `StartingAsync` set a flag when it has validated, and make `StartAsync` run the same validation as `StartingAsync` (`ValidateAll`, then throw or log as T11.10–T11.13 set) only when that flag is not set. A real host therefore still validates once, in `StartingAsync`, so T11.9, T11.12 and T11.13 stay green.
+    - Make `StartingAsync` set a flag when it has validated, and make `StartAsync` run the same validation as `StartingAsync` (`ValidateAll`, then throw or log exactly as `StartingAsync` does; this task's throw-path fact pins the throw, and the logging is shared code that T11.12 and T11.13 test through `StartingAsync`) only when that flag is not set. A real host therefore still validates once, in `StartingAsync`, so T11.9, T11.12 and T11.13 stay green.
     - Add no once-only guard against a second `StartAsync`; T11.15 drives it.
 
 - [ ] **TEST + IMPLEMENT: T11.15 — Validation runs exactly once, when both `StartingAsync` and `StartAsync` run and when `StartAsync` is called twice (ADR 0025 step 11 bullet 4; Invariant "a once-only guard")**
@@ -944,7 +952,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - The message names `TestScopeProvider`, `Transient`, the advice to set `ServiceLifetime.Scoped` and the advice to use `AlwaysNew`. It ends with `…README.md#inertscopeaffinity`.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Add the internal `DescriptorRecord`, `ScopeConfiguration` and `ScopeConfigurationRules` (the rule identifiers, the README link base, and fresh specifications on each call).
+    - Add the internal `DescriptorRecord`, `ScopeConfiguration` and `ScopeConfigurationRules` (the rule identifiers, the README link base, and fresh specifications on each call). Their error factories are null-safe and never throw (T7.1's constraint).
     - `Capture` reads `ImplementationType`/`ImplementationInstance` only when `IsKeyedService` is false, and the keyed properties otherwise. The keyed properties throw on unkeyed descriptors in 10.0.10.
     - The effective affinity is the last unkeyed `ScopeAffinityRegistration` instance, otherwise `Options.DefaultScopeAffinity`, as at `ServiceCollectionExtensions.cs:79-81`.
 
@@ -1133,19 +1141,20 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 > Tests build the provider with `BuildServiceProvider()`, without `ValidateOnBuild` or `ValidateScopes`, and call `ValidateAll()`. They never resolve the handler. The ladder rows cited are ADR 0026's `CaptiveDependency` table.
 
-- [ ] **TEST + IMPLEMENT: T17.1 — A Singleton `HandlerLifetime` and a handler that takes a Scoped dependency is a warning (ADR 0026 step 5 bullet 1; FR11; FR13 link; ladder rows 8 and 11)**
-  - **USE COMMAND**: `/test-first when HandlerLifetime is Singleton and a handler takes a Scoped dependency should report a CaptiveDependency warning naming the handler, why it is Singleton, the parameter and the fix`
+- [ ] **TEST + IMPLEMENT: T17.1 — A Singleton `HandlerLifetime` and a handler that takes a Scoped dependency is a warning, and a non-component Singleton service taking one is not (ADR 0026 step 5 bullet 1; FR11; FR13 link; ladder rows 3 (second clause), 8 and 11)**
+  - **USE COMMAND**: `/test-first when HandlerLifetime is Singleton and a handler takes a Scoped dependency should report a CaptiveDependency warning naming the handler, why it is Singleton, the parameter and the fix, and a plain non-component Singleton service taking a Scoped dependency should report none`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_a_scoped_dependency_should_report_captive_dependency.cs`
   - Test should verify:
     - A public `CaptiveHandler(ScopedDependency dependency)` is registered explicitly, with `services.AddScoped<ScopedDependency>()`.
     - One Warning with `RuleId` `CaptiveDependency` and source `"Handler 'CaptiveHandler'"`. The message names why it counts as Singleton (`HandlerLifetime`), the parameter's name and type, and the advice to register the dependency Singleton or Transient or to change the lifetime. It ends with `#captivedependency`.
+    - Ladder row 3, second clause: in the same setup, `services.AddSingleton<PlainService>()`, where the public non-component `PlainService(ScopedDependency dependency)` implements neither `IQueryHandler` nor `IQueryHandlerDecorator`, yields no `CaptiveDependency` finding naming `PlainService`. This fact drives the component-kind filter below.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - Implement only what this test needs: a self-registered, unkeyed handler with one public constructor, a Singleton `HandlerLifetime` and a Scoped dependency.
     - Add the internal `ComponentRegistration` and `ComponentConstructorSelector`. Here the selector returns the handler's single public constructor. The widest-constructor choice is T17.11's, and the tie is T17.13's.
-    - Add `ServiceRegistrationSnapshot.Components`: one candidate for each `DescriptorRecord` whose implementation type implements `IQueryHandler`, because the source `"Handler 'X'"` needs to know the component is a handler. It reads the record's implementation type, which T15.1 fills from `KeyedImplementationType` for a keyed descriptor and which is null for a factory or instance descriptor. Decorators are T17.3's; the keyed exclusion (row 1) is T17.6's; the alias exclusion (row 3) is T17.9's; effective descriptors (row 4) are T17.7's.
-    - Add the rule with `Specification<T>`'s **result-evaluator** constructor, returning one result per Scoped parameter, each read from the parameter type's last unkeyed descriptor (row 8). Reflection runs inside the evaluator, with no bespoke try/catch. Evaluate it after `DuplicateScopeProvider`, in snapshot order. The source is `"Handler 'X'"`, where X is the component type's `Type.Name`.
+    - Add `ServiceRegistrationSnapshot.Components`: one candidate for each `DescriptorRecord` whose implementation type implements `IQueryHandler`. The `PlainService` fact requires the filter (ladder row 3, second clause), and the source `"Handler 'X'"` needs to know the component is a handler. It reads the record's implementation type, which T15.1 fills from `KeyedImplementationType` for a keyed descriptor and which is null for a factory or instance descriptor. Decorators are T17.3's; the keyed exclusion (row 1) is T17.6's; the alias exclusion (row 3) is T17.9's; effective descriptors (row 4) are T17.7's.
+    - Add the rule with `Specification<T>`'s **result-evaluator** constructor, returning one result per Scoped parameter, each read from the parameter type's last unkeyed descriptor (row 8), with `LastOrDefault`: a parameter with no descriptor yields no result (row 10), which T17.5 pins. Reflection runs inside the evaluator, with no bespoke try/catch. Evaluate it after `DuplicateScopeProvider`, in snapshot order. The source is `"Handler 'X'"`, where X is the component type's `Type.Name`.
     - Here, only a Singleton `HandlerLifetime` counts as Singleton.
 
 - [ ] **CHARACTERISE: T17.2 — A Singleton handler with two Scoped parameters yields two warnings, in parameter order, and two captive handlers each yield their own (ADR 0026 step 5 bullet 2; Invariant "one finding for each Scoped parameter"; Risk "stateful `Specification<T>`")**
@@ -1187,10 +1196,12 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test file: `When_a_singleton_handler_takes_no_scoped_dependency_should_report_nothing.cs`
   - Test should verify:
     - Under a Singleton `HandlerLifetime`, a handler taking a Transient dependency, a handler taking a Singleton dependency, a handler taking `IServiceProvider`, and a handler taking an unregistered type each yield no `CaptiveDependency` finding.
+    - For the `IServiceProvider` and unregistered-type facts (ladder row 10, no descriptor), also: no `RuleEvaluationFailed` finding, and `ValidateAll().Errors` is empty.
+    - A public open-generic decorator taking `IServiceProvider`, registered with `RegisterDecorator` under a Singleton `HandlerLifetime` (the shape of `CacheableQueryDecorator` and `FluentValidationQueryValidatorDecorator`), yields no `CaptiveDependency` and no `RuleEvaluationFailed` finding, and `ValidateAll().Errors` is empty.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
-  - 🔁 RED mutation: in the evaluator, report every parameter for which a descriptor was found (instead of only `Lifetime == Scoped`). The test must fail on the Transient fact's and the Singleton fact's "no finding" assertions.
+  - 🔁 RED mutation: in the evaluator, report every parameter for which a descriptor was found (instead of only `Lifetime == Scoped`). The test must fail on the Transient fact's and the Singleton fact's "no finding" assertions. Second mutation: replace the parameter's descriptor lookup with `.Last()` on the unkeyed descriptor list, which throws when nothing matches; the `IServiceProvider`, unregistered-type and decorator facts must fail on their "no `RuleEvaluationFailed`" assertions.
   - Implementation should:
-    - Need no production change.
+    - Need no production change. T17.1's lookup yields no result for a parameter with no descriptor, and T17.3 makes decorators candidates.
 
 - [ ] **TEST + IMPLEMENT: T17.6 — A keyed component registration yields nothing (ADR 0026 step 5 bullet 6, keyed part; ladder row 1)**
   - **USE COMMAND**: `/test-first when a Singleton handler is registered keyed before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
@@ -1275,11 +1286,11 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_two_equal_width_constructors_should_report_nothing.cs`
   - Test should verify:
-    - Under a Singleton `HandlerLifetime`, a public handler with two one-parameter public constructors, declared with the Scoped one first: `(ScopedDependency dependency)` and `(OtherDependency other)`. No `CaptiveDependency` finding is reported.
-    - It is RED against T17.11's selector, which returns the first of the widest constructors and so reports the Scoped parameter.
+    - Under a Singleton `HandlerLifetime`, two public handler doubles, each with two one-parameter public constructors, `(ScopedDependency dependency)` and `(OtherDependency other)`, declared in opposite orders. Neither yields a `CaptiveDependency` finding.
+    - The CLR does not guarantee the order of `GetConstructors()`. Using both declaration orders makes the RED independent of which order reflection uses, provided it uses the same rule for both types (declaration order, or its reverse, as current runtimes do): T17.11's selector returns the first of the tied constructors, so for one of the two doubles it picks the Scoped one and reports it.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
-    - Make `ComponentConstructorSelector` return nothing when two or more public constructors share the widest parameter count.
+    - Make `ComponentConstructorSelector` return nothing when two or more public constructors share the widest parameter count. The rule counts constructors of the widest width, so it does not depend on the order `GetConstructors()` returns.
 
 - [ ] **CHARACTERISE: T17.14 — A component registered by a factory delegate yields nothing (ADR 0026 step 5 bullet 6, factory part; ladder row 2)**
   - **USE COMMAND**: `/test-first when a Singleton handler is registered by a factory delegate before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
@@ -1327,7 +1338,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T18.3 — Validation creates no handler, no scope provider and no scope (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
+- [ ] **CHARACTERISE: T18.3 — Validation creates no handler and no scope provider, and `ValidateAll` creates no scope at its own call level (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
   - **USE COMMAND**: `/test-first when lifetime validation runs should never construct a handler or a scope provider and ValidateAll should create no scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_lifetime_validation_runs_should_create_no_handler_or_scope_provider.cs`
@@ -1337,6 +1348,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - In the `DarkerHostBootstrap` collection.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - 🔁 RED mutation: in the `ScopeConfigurationValidator` registration factory, add `_ = sp.GetServices<IAmAScopeProvider>().ToList();`, which names the provider in use by resolving it. The test must fail on the provider-counter assertion. For the scope fact, in `ValidateAll`, create a scope with `provider.CreateScope()` and resolve the validators from `scope.ServiceProvider`; the test must fail on the `CreateScope` count assertion (1 instead of 0).
+  - Limit: the scope fact pins scope creation only at the `ValidateAll` call level. Validators are built by factories that receive the real root provider, so a scope created inside a validator factory, the probe or a validator bypasses `RecordingServiceScopeFactory`. No second mutation is named for that case, because it would not be observed.
   - Implementation should:
     - Need no production change.
 
@@ -1469,7 +1481,7 @@ Every NFR has at least one task.
 | Catalogue note: every rule except `HandlerRegistered` is satisfied by a description with no handler type | T7.19 (Phase 7 rules), T8.5 (`HandlerResolvable`), T8.6 (`DecoratorResolvable`), T9.6 (`DecoratorOrdering`) |
 | Invariant: nothing runs without opt-in | T11.1 |
 | Invariant: every finding reported (no short-circuit) | T1.2, T7.16 |
-| Invariant: misconfiguration never throws out of `Validate` | T6.4, T7.8–T7.11, T8.4 |
+| Invariant: misconfiguration never throws out of `Validate` | T6.4, T7.8–T7.11, T8.4, T8.5, T8.6, T9.6, T7.19 (null-safe error factories) |
 | Invariant: never creates a component | T11.18 |
 | Invariant: runs once, before the server | T11.9, T11.14, T11.15, T11.16 |
 | Invariant: one description per candidate | T5.2, T7.2, T7.4 |
@@ -1499,14 +1511,14 @@ Every NFR has at least one task.
 | Step 5 (`CaptiveDependency`; twelve bullet groups) | T17.1–T17.15 (bullet 6 split into T17.6 keyed, T17.14 factory and T17.15 instance; bullet 11 is T17.13; the widest-constructor choice, "Why the widest public constructor", is T17.11) |
 | Step 6 (snapshot semantics and side effects; five bullets) | T18.1–T18.5 |
 | Step 7 (README, XML remarks, sample, one commit) | T19.1 |
-| Ladder rows 1–11 | Row 1: T17.6; row 2: T17.14 (factory), T17.15 (instance); row 3: T17.9 (alias), T17.1 and T17.3 (component kind: handler, decorator); row 4: T17.7; row 5: T17.4 (own descriptor Singleton, inspected), T17.7 (neither Singleton, not inspected); row 6: T17.11 (widest; no constructor with parameters), T17.13 (tie); row 7: T17.10, T17.12; row 8: T17.1, T17.10; row 9: T17.8; row 10: T17.5; row 11: T17.1, T17.5 |
+| Ladder rows 1–11 | Row 1: T17.6; row 2: T17.14 (factory), T17.15 (instance); row 3: T17.9 (alias), T17.1 (component kind: a handler is a candidate, and the `PlainService` fact shows a non-component Singleton gives nothing), T17.3 (component kind: decorator); row 4: T17.7; row 5: T17.4 (own descriptor Singleton, inspected), T17.7 (neither Singleton, not inspected); row 6: T17.11 (widest; no constructor with parameters), T17.13 (tie); row 7: T17.10, T17.12; row 8: T17.1, T17.10; row 9: T17.8; row 10: T17.5 (no `CaptiveDependency` and no `RuleEvaluationFailed`, for a handler and an `IServiceProvider` decorator); row 11: T17.1, T17.5 |
 | `DuplicateScopeProvider` comparison rules (type, instance, factory position) | T16.1, T16.2, T16.3, T16.4, T16.5; T15.10 (shared factory rendering) |
 | `InertScopeAffinity` names the provider in use, rendered as in `DuplicateScopeProvider` | T15.1 (type), T15.9 (`AddDarkerRequestScope`), T15.10 (factory) |
 | Invariant: descriptors read, never resolved | T18.3 |
 | Invariant: snapshot is a copy | T18.1 |
 | Invariant: last call wins | T14.2, T18.2 |
 | Invariant: rules read what the runtime reads | T15.3, T15.7, T16.6, T17.7 |
-| Invariant: misconfiguration never throws (evaluator catch) | T2.2 (stamps the evaluator catch block), T17.12 |
+| Invariant: misconfiguration never throws (evaluator catch) | T2.2 (stamps the evaluator catch block), T17.12; the rules' error factories are null-safe under T7.1's constraint |
 | Invariant: one finding per Scoped parameter | T17.2 |
 | Invariant: ordering within severity lists | T18.5 |
 | Risk: users chain and register afterwards | T18.1, T19.1 |
@@ -1529,11 +1541,12 @@ Every other task traces to an ADR step, invariant or risk, and to at least one F
 
 - **ADR 0025 step 1 is split** into a STRUCTURAL copy of the source files (T1.1) and a CHARACTERISE task for the copied Brighter tests (T1.2). The copied tests are green on arrival, so they need a named mutation to show they guard the copy.
 - **ADR 0025 step 3 is split** into two guard pins (T3.1, T3.2) and two STRUCTURAL commits (T3.3 reader extraction, T3.4 wrong-kind checks).
+- **Error factories must be null-safe and must not throw (T7.1), an implementation constraint beyond ADR 0025's text.** `Specification<T>` calls the error factory outside its try (Brighter's `Specification.cs:194-195`), so a throwing factory would escape `Validate`. Predicates that throw are already reported as `RuleEvaluationFailed` by the catch paths (T2.1, T2.2), and T6.4's per-registry guard covers reading and describing a registry; nothing else wraps rule evaluation, so the findings of rules that do not throw are always kept (FR3). The constraint applies equally to `ScopeConfigurationValidator`'s rules (Phases 15–17). No ADR change is needed: it serves ADR 0025's invariant "a misconfiguration never throws out of `Validate`". A throwing error factory cannot be injected through the public surface, so the constraint is pinned through the "`Validate()` does not throw" assertions of T7.19, T8.5, T8.6 and T9.6.
 - **ADR 0025 step 6's router test moves to T7.4.** A description cannot be seen through the public surface until a rule reports on it. The throwing-inspector test (T6.4) uses two throwing registries, so that "the others are still validated" can be seen without rules.
 - **ADR 0025 step 6's describer and description types move to Phase 7.** T6.1 adds only `IAmAPipelineValidator`, `PipelineValidator` and `PipelineValidationResult`, which its test needs. `HandlerPipelineDescription`, `PipelinePath` and `PipelineDescriber` arrive in T7.1, and `PipelineStepDescription` in T7.13, the first tasks whose tests need them.
 - **The `ValidatePipelines()` "twice" behaviour is split** into once-only registration (T11.8) and last-call `throwOnError` (T11.11), so that each change has its own RED.
-- **Several ADR test bullets are CHARACTERISE rather than TEST + IMPLEMENT**, because an earlier task delivers them. Each names its RED mutation. They are: T7.12, T7.14, T7.16–T7.18, T8.4, T8.6, T9.3, T9.4, T9.6, T11.5, T11.6, T11.16–T11.18, T14.2, T15.3, T15.4, T15.6, T15.7, T15.8, T15.9, T16.4–T16.7, T17.2, T17.5, T17.12, T17.14, T17.15 and T18.1–T18.5.
-- **No task is left to "stop and ask" if it arrives green.** T9.4, T11.5, T15.6 and T15.7 are CHARACTERISE with named mutations, because T9.1, T8.1 with T11.4, T15.5, and T15.1 with T15.5 deliver them. T11.14 (only `StartAsync`, guarded by a flag that `StartingAsync` sets, so a real host still validates once) precedes T11.15 (a second `StartAsync`, then the once-only guard), so each is RED against the code before it and the suite stays green between them. T7.19, T17.6, T17.9, T17.11 and T17.13 are TEST + IMPLEMENT, because T7.3–T7.13 and T17.1 implement only what their own tests need.
+- **Several ADR test bullets are CHARACTERISE rather than TEST + IMPLEMENT**, because an earlier task delivers them. Each names its RED mutation. They are: T7.4, T7.12, T7.14, T7.16–T7.18, T8.4, T8.6, T9.3, T9.4, T9.6, T11.5, T11.6, T11.16–T11.18, T14.2, T15.3, T15.4, T15.6, T15.7, T15.8, T15.9, T16.4–T16.7, T17.2, T17.5, T17.12, T17.14, T17.15 and T18.1–T18.5.
+- **No task is left to "stop and ask" if it arrives green.** T9.4, T11.5, T15.6 and T15.7 are CHARACTERISE with named mutations, because T9.1, T8.1 with T11.4, T15.5, and T15.1 with T15.5 deliver them. T11.14 (only `StartAsync`, guarded by a flag that `StartingAsync` sets, so a real host still validates once) precedes T11.15 (a second `StartAsync`, then the once-only guard), so each is RED against the code before it and the suite stays green between them. T7.4 is CHARACTERISE, because T7.1's describer already iterates the candidates. T7.19, T17.6, T17.9, T17.11 and T17.13 are TEST + IMPLEMENT, because T7.3–T7.13 and T17.1 implement only what their own tests need.
 - **The no-handler facts for `DecoratorResolvable` (T8.6) and `DecoratorOrdering` (T9.6) are CHARACTERISE.** A description with no handler type has no steps, so both rules are satisfied without a guard; only `HandlerResolvable` (T8.5) asks the probe about the handler type and needs one.
 - **ADR 0026 step 5 bullet 6 is split three ways.** The keyed fact (T17.6) is TEST + IMPLEMENT, because `Capture` fills a keyed record's implementation type from `KeyedImplementationType`. The factory (T17.14) and instance (T17.15) facts are CHARACTERISE, each with its own mutation, because their records carry no implementation type. ADR 0026 step 5 bullet 11 (the tie) is T17.13, after the widest-constructor task T17.11 it depends on.
 - **T6.2 adds a public constructor beyond ADR 0025's member table.** `PipelineValidationResult(errors, warnings)` is public, although ADR 0025's `PipelineValidationResult` table lists only `Errors`, `Warnings`, `IsValid`, `ThrowIfInvalid` and `Combine`. `FixedResultValidator` (T11.3) and third-party `IAmAPipelineValidator` implementations need it to return findings. It is recorded here as an addition, not a change to the ADR.
