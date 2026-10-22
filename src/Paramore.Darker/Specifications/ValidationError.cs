@@ -22,6 +22,8 @@ THE SOFTWARE. */
 
 #endregion
 
+#nullable enable
+
 namespace Paramore.Darker.Specifications;
 
 /// <summary>
@@ -30,4 +32,8 @@ namespace Paramore.Darker.Specifications;
 /// <param name="Severity">The severity of the finding.</param>
 /// <param name="Source">Identifies which configuration element produced the finding (e.g. "Handler 'OrderCreatedHandler'").</param>
 /// <param name="Message">A human-readable description of the issue.</param>
-public record ValidationError(ValidationSeverity Severity, string Source, string Message);
+public record ValidationError(ValidationSeverity Severity, string Source, string Message)
+{
+    /// <summary>The rule that produced this finding, or null when the finding does not name one.</summary>
+    public ValidationRuleId? RuleId { get; init; }
+}
