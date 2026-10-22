@@ -126,7 +126,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T3.2 — The builder's six wrong-kind ConfigurationException messages are pinned by exact text (pre-refactor guard; ADR 0025 step 3, "messages unchanged")**
+- [x] **CHARACTERISE: T3.2 — The builder's six wrong-kind ConfigurationException messages are pinned by exact text (pre-refactor guard; ADR 0025 step 3, "messages unchanged")**
   - **USE COMMAND**: `/test-first when a handler method carries another path's decorator attribute should throw ConfigurationException whose message equals the existing text exactly, for all six wrong-kind paths`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_handler_method_carries_another_paths_attribute_should_throw_the_existing_configuration_message.cs`
