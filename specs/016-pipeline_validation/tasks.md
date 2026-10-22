@@ -84,7 +84,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 > `Specification<T>` has two catch blocks: `EvaluateSimple` for the predicate form and `EvaluateCollapsed` for the result-evaluator form. T2.1 stamps the first and T2.2 the second, so each has its own RED. The pipeline rules' predicates (T8.4) rely on T2.1, and `CaptiveDependency`'s result evaluator (T17.12) relies on T2.2.
 
-- [ ] **TEST + IMPLEMENT: T2.1 — A predicate that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; FR3 rule identifier; catalogue row `RuleEvaluationFailed`)**
+- [x] **TEST + IMPLEMENT: T2.1 — A predicate that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; FR3 rule identifier; catalogue row `RuleEvaluationFailed`)**
   - **USE COMMAND**: `/test-first when a specification's predicate throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_predicate_throws_should_report_evaluation_failed_rule_id.cs`
