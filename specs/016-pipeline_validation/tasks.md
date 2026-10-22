@@ -113,7 +113,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 > Risk mitigation, for ADR 0025's Negative "PipelineAttributeReader must stay the single reflection path" and "the documentation contradicts the code". The core suite pins step order only on the stream path (`When_stream_handler_has_multiple_decorators_should_order_by_step_descending.cs`). All six wrong-kind paths already have tests (`When_sync_attribute_on_async_handler_should_throw_configuration_exception.cs`, `When_stream_handler_has_mismatched_decorator_attribute_should_throw_ConfigurationException.cs`), but each asserts only `ShouldContain("sync")`, `"async"` or `"stream"`, so the exact text is not pinned. T3.1 and T3.2 pin what the extraction must not change, before it starts.
 
-- [ ] **CHARACTERISE: T3.1 — On Execute and ExecuteAsync, the decorator with the lowest Step is outermost (pre-refactor guard; ADR 0025 Terms "Outer and inner"; FR9 semantics)**
+- [x] **CHARACTERISE: T3.1 — On Execute and ExecuteAsync, the decorator with the lowest Step is outermost (pre-refactor guard; ADR 0025 Terms "Outer and inner"; FR9 semantics)**
   - **USE COMMAND**: `/test-first when a sync or async handler carries several decorator attributes should run the decorator with the lowest Step outermost`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_handler_has_several_decorators_should_run_the_lowest_step_outermost.cs`
