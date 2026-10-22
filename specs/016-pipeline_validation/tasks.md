@@ -98,7 +98,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Give `ValidationError` an init-only nullable `RuleId` that defaults to null.
     - In the predicate-form catch block of the copied `Specification<T>` (`EvaluateSimple`, Brighter's `Specification.cs:175-192`), stamp `RuleId = ValidationRuleIds.EvaluationFailed`. The general-purpose types name no pipeline rule. The result-evaluator catch block (`EvaluateCollapsed`) is T2.2's.
 
-- [ ] **TEST + IMPLEMENT: T2.2 — A result evaluator that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; ADR 0026 step 5 "constructor reflection runs inside that evaluator"; catalogue row `RuleEvaluationFailed`)**
+- [x] **TEST + IMPLEMENT: T2.2 — A result evaluator that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; ADR 0026 step 5 "constructor reflection runs inside that evaluator"; catalogue row `RuleEvaluationFailed`)**
   - **USE COMMAND**: `/test-first when a specification built with a result evaluator throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_result_evaluator_throws_should_report_evaluation_failed_rule_id.cs`
