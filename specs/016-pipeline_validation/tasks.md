@@ -67,7 +67,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Risk check, for the name collision (ADR 0025 forces): build `src/Paramore.Darker.Validation.DataAnnotations`. Confirm that `ValidationResult` in `DataAnnotationsQueryValidatorDecorator.cs` still binds to `System.ComponentModel.DataAnnotations`.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds for netstandard2.0, net8.0 and net9.0. The suite is green before and after. The commit adds new code only.
 
-- [ ] **CHARACTERISE: T1.2 — The copied Brighter specification tests pass against Darker's copy (ADR 0025 step 1; FR3, which relies on And/Or not short-circuiting)**
+- [x] **CHARACTERISE: T1.2 — The copied Brighter specification tests pass against Darker's copy (ADR 0025 step 1; FR3, which relies on And/Or not short-circuiting)**
   - **USE COMMAND**: `/test-first when Brighter's specification tests run against Darker's copied Specification types should pass unchanged apart from namespace (copy verbatim from Brighter)`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_and_specification_left_fails_should_evaluate_both_sides.cs` (the group also includes `When_evaluating_a_specification.cs`, `When_specification_with_error_factory_fails_should_collect_error.cs` and `When_collector_visits_specification_graph_should_collect_all_failures.cs`, all copied from `Brighter/tests/Paramore.Brighter.Core.Tests/Specifications/`)
