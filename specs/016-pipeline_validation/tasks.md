@@ -143,7 +143,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **STRUCTURAL: T3.3 — Extract `PipelineAttributeReader`: Execute-method lookup, attribute read and order, decorator closing, with failures returned rather than thrown (ADR 0025 step 3; force "one source of pipeline knowledge")**
+- [x] **STRUCTURAL: T3.3 — Extract `PipelineAttributeReader`: Execute-method lookup, attribute read and order, decorator closing, with failures returned rather than thrown (ADR 0025 step 3; force "one source of pipeline knowledge")**
   - Add `src/Paramore.Darker/PipelineAttributeReader.cs` (internal, `#nullable enable`). Move into it:
     - the method lookups at `PipelineBuilder.cs:194`, `:199` and the stream signature lookup at `:300-302`;
     - the attribute read and order logic at `:253-256`, `:342-345` and `:410-413`;
