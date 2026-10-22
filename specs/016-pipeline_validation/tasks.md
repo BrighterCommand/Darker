@@ -160,7 +160,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - the caching ordering test that uses `OrderingTestQueryHandlerAsync`.
   - Run the full suite before and after. No test changes.
 
-- [ ] **STRUCTURAL: T3.4 — Move the wrong-kind checks and their messages into `PipelineAttributeReader` (ADR 0025 step 3)**
+- [x] **STRUCTURAL: T3.4 — Move the wrong-kind checks and their messages into `PipelineAttributeReader` (ADR 0025 step 3)**
   - Move `ValidateNoMismatchedAttributes` and its call sites at `PipelineBuilder.cs:80-83`, `:145-148` and `:306-309` into the reader. The reader names the wrong kinds. The builder raises the same `ConfigurationException` with the same message.
   - Guarded by T3.2 and the tests listed in T3.3. Run the full suite before and after.
 
