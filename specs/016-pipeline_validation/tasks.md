@@ -172,7 +172,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 5 — Registry inspection (ADR 0025 step 5)
 
-- [ ] **TEST + IMPLEMENT: T5.1 — The sync registry lists its registrations in registration order (ADR 0025 step 5; FR6 input; role "Lists registrations")**
+- [x] **TEST + IMPLEMENT: T5.1 — The sync registry lists its registrations in registration order (ADR 0025 step 5; FR6 input; role "Lists registrations")**
   - **USE COMMAND**: `/test-first when handlers are registered in the sync registry should list each query type, result type and handler type in registration order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_handlers_are_registered_should_list_them_in_registration_order.cs`
