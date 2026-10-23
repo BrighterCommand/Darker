@@ -186,7 +186,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - In `QueryHandlerRegistry.cs`, record inside the virtual `Register(Type, Type, Type)` overload, so that DI subclasses that call `base.Register` inherit it (`ServiceCollectionHandlerRegistry.cs:18-22`).
     - Leave `IQueryHandlerRegistry` unchanged.
 
-- [ ] **TEST + IMPLEMENT: T5.2 — A router registration lists every candidate in order (ADR 0025 step 5; Invariant "one description per candidate")**
+- [x] **TEST + IMPLEMENT: T5.2 — A router registration lists every candidate in order (ADR 0025 step 5; Invariant "one description per candidate")**
   - **USE COMMAND**: `/test-first when a query is registered with a routing function and candidates should list one registration carrying every candidate in order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_is_registered_should_list_its_candidates_in_order.cs`
