@@ -69,6 +69,7 @@ namespace Paramore.Darker
 
             Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
             _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
+            _registrations.Add(new HandlerRegistration(queryType, typeof(TResult), candidateHandlerTypes.ToArray()));
         }
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
