@@ -166,7 +166,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 4 — DI builder exposes the registries (ADR 0025 step 4)
 
-- [ ] **STRUCTURAL: T4.1 — Give `ServiceCollectionDarkerHandlerBuilder` internal read access to its registries (ADR 0025 step 4)**
+- [x] **STRUCTURAL: T4.1 — Give `ServiceCollectionDarkerHandlerBuilder` internal read access to its registries (ADR 0025 step 4)**
   - In `src/Paramore.Darker.Extensions.DependencyInjection/ServiceCollectionDarkerHandlerBuilder.cs`, add internal read-only properties for the sync, async and stream handler registries. `AddDarker` creates them at `ServiceCollectionExtensions.cs:22-33`.
   - `IDarkerHandlerBuilder` gains no member (NFR opt-in and non-breaking). The suite is green before and after.
 
