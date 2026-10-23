@@ -6,9 +6,10 @@ using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker
 {
-    public class QueryHandlerRegistry : IQueryHandlerRegistry
+    public class QueryHandlerRegistry : IQueryHandlerRegistry, IAmAHandlerRegistryInspector
     {
         private readonly IDictionary<Type, IResolveHandlers> _registry;
+        private readonly List<HandlerRegistration> _registrations = new List<HandlerRegistration>();
 
         public QueryHandlerRegistry()
         {
@@ -37,7 +38,11 @@ namespace Paramore.Darker
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
             _registry.Add(queryType, new FixedHandlerRoute(handlerType));
+            _registrations.Add(new HandlerRegistration(queryType, resultType, new[] { handlerType }));
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<HandlerRegistration> GetRegistrations() => _registrations.ToArray();
 
         private static bool HasMatchingResultType(Type queryType, Type resultType)
         {
