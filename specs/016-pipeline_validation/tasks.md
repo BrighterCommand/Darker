@@ -198,7 +198,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Record in the router `Register<TQuery, TResult>` overload of `QueryHandlerRegistry.cs`.
 
-- [ ] **TEST + IMPLEMENT: T5.3 — The async and stream registries list their registrations, fixed and routed, in order (ADR 0025 step 5)**
+- [x] **TEST + IMPLEMENT: T5.3 — The async and stream registries list their registrations, fixed and routed, in order (ADR 0025 step 5)**
   - **USE COMMAND**: `/test-first when handlers are registered in the async and stream registries should list them in registration order with their candidates`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_async_and_stream_handlers_are_registered_should_list_them_in_registration_order.cs`
