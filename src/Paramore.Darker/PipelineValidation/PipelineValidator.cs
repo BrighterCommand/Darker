@@ -53,29 +53,64 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     public PipelineValidationResult Validate()
     {
         var errors = new List<ValidationError>();
+        var warnings = new List<ValidationError>();
+        var rules = QueryPipelineRules.Create();
+        var collector = new ValidationResultCollector<HandlerPipelineDescription>();
 
-        foreach (var registry in _registries)
+        for (var index = 0; index < _registries.Length; index++)
         {
-            if (registry is not IAmAHandlerRegistryInspector inspector)
+            if (_registries[index] is not IAmAHandlerRegistryInspector inspector)
                 continue;
 
-            var fault = TryReadRegistrations(inspector);
+            var fault = TryDescribe(inspector, (PipelinePath)index, out var descriptions);
             if (fault is not null)
+            {
                 errors.Add(fault);
+                continue;
+            }
+
+            foreach (var description in descriptions)
+                Evaluate(rules, collector, description, errors, warnings);
         }
 
-        return new PipelineValidationResult(errors, []);
+        return new PipelineValidationResult(errors, warnings);
     }
 
-    private static ValidationError? TryReadRegistrations(IAmAHandlerRegistryInspector inspector)
+    private static void Evaluate(
+        IReadOnlyList<ISpecification<HandlerPipelineDescription>> rules,
+        ValidationResultCollector<HandlerPipelineDescription> collector,
+        HandlerPipelineDescription description,
+        List<ValidationError> errors,
+        List<ValidationError> warnings)
+    {
+        foreach (var rule in rules)
+        {
+            if (rule.IsSatisfiedBy(description))
+                continue;
+
+            foreach (var result in rule.Accept(collector))
+            {
+                if (result.Success || result.Error is null)
+                    continue;
+
+                (result.Error.Severity == ValidationSeverity.Error ? errors : warnings).Add(result.Error);
+            }
+        }
+    }
+
+    private static ValidationError? TryDescribe(
+        IAmAHandlerRegistryInspector inspector,
+        PipelinePath path,
+        out IReadOnlyList<HandlerPipelineDescription> descriptions)
     {
         try
         {
-            inspector.GetRegistrations();
+            descriptions = PipelineDescriber.Describe(inspector, path);
             return null;
         }
         catch (Exception e)
         {
+            descriptions = [];
             return new ValidationError(
                 ValidationSeverity.Error,
                 $"Registry '{inspector.GetType().Name}'",
