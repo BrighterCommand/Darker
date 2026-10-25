@@ -30,9 +30,8 @@ namespace Paramore.Darker
     /// wrong kind found, or null when there is none, or the failure that stopped the attributes being read.
     /// </summary>
     internal sealed class WrongKindCheck(string? message, AttributeReadFailure? failure)
+        : ReadOutcome(failure)
     {
         public string? Message { get; } = message;
-
-        public AttributeReadFailure? Failure { get; } = failure;
     }
 }

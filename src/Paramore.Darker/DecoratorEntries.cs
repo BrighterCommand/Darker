@@ -35,10 +35,9 @@ namespace Paramore.Darker
     internal sealed class DecoratorEntries<TAttribute>(
         IReadOnlyList<DecoratorEntry<TAttribute>> entries,
         AttributeReadFailure? failure)
+        : ReadOutcome(failure)
         where TAttribute : Attribute
     {
         public IReadOnlyList<DecoratorEntry<TAttribute>> Entries { get; } = entries;
-
-        public AttributeReadFailure? Failure { get; } = failure;
     }
 }

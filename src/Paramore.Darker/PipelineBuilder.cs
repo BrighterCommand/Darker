@@ -183,14 +183,14 @@ namespace Paramore.Darker
         // The reader returns a failed lookup rather than throwing; rethrow it here so the builder's behaviour is unchanged.
         private static MethodInfo ResolveMethod(ExecuteMethodLookup lookup)
         {
-            lookup.Failure?.Rethrow();
+            lookup.ThrowIfFailed();
             return lookup.Method;
         }
 
         private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, HandlerPath path)
         {
             var check = PipelineAttributeReader.CheckAttributeKinds(methodInfo, path);
-            check.Failure?.Rethrow();
+            check.ThrowIfFailed();
             if (check.Message != null)
                 throw new ConfigurationException(check.Message);
         }
@@ -241,7 +241,7 @@ namespace Paramore.Darker
         {
             var read = PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(
                 executeMethod, typeof(IQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
-            read.Failure?.Rethrow();
+            read.ThrowIfFailed();
 
             _logger.LogDebug("Found {AttributesCount} query handler attributes", read.Entries.Count);
 
@@ -249,7 +249,7 @@ namespace Paramore.Darker
             _decorators = decorators; // visible to Dispose even if building throws part-way
             foreach (var entry in read.Entries)
             {
-                entry.Failure?.Rethrow();
+                entry.ThrowIfFailed();
                 var attribute = entry.Attribute;
                 var decoratorType = entry.DecoratorType;
 
@@ -328,7 +328,7 @@ namespace Paramore.Darker
         {
             var read = PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(
                 executeMethod, typeof(IStreamQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
-            read.Failure?.Rethrow();
+            read.ThrowIfFailed();
 
             _logger.LogDebug("Found {AttributesCount} stream query handler attributes", read.Entries.Count);
 
@@ -337,7 +337,7 @@ namespace Paramore.Darker
 
             foreach (var entry in read.Entries)
             {
-                entry.Failure?.Rethrow();
+                entry.ThrowIfFailed();
                 var attribute = entry.Attribute;
                 var decoratorType = entry.DecoratorType;
 
@@ -397,7 +397,7 @@ namespace Paramore.Darker
         {
             var read = PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(
                 executeMethod, typeof(IQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
-            read.Failure?.Rethrow();
+            read.ThrowIfFailed();
 
             _logger.LogDebug("Found {AttributesCount} async query handler attributes", read.Entries.Count);
 
@@ -409,7 +409,7 @@ namespace Paramore.Darker
 
             foreach (var entry in read.Entries)
             {
-                entry.Failure?.Rethrow();
+                entry.ThrowIfFailed();
                 var attribute = entry.Attribute;
                 var decoratorType = entry.DecoratorType;
 

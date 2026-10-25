@@ -29,12 +29,11 @@ namespace Paramore.Darker
 {
     /// <summary>One decorator attribute with its closed decorator type, or the failure that prevented closing it.</summary>
     internal sealed class DecoratorEntry<TAttribute>(TAttribute attribute, Type? decoratorType, AttributeReadFailure? failure)
+        : ReadOutcome(failure)
         where TAttribute : Attribute
     {
         public TAttribute Attribute { get; } = attribute;
 
         public Type? DecoratorType { get; } = decoratorType;
-
-        public AttributeReadFailure? Failure { get; } = failure;
     }
 }

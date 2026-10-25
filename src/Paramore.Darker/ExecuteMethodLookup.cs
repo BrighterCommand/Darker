@@ -29,9 +29,8 @@ namespace Paramore.Darker
 {
     /// <summary>The outcome of looking up an Execute or ExecuteAsync method: the method (null when absent) or a failure.</summary>
     internal sealed class ExecuteMethodLookup(MethodInfo? method, AttributeReadFailure? failure)
+        : ReadOutcome(failure)
     {
         public MethodInfo? Method { get; } = method;
-
-        public AttributeReadFailure? Failure { get; } = failure;
     }
 }
