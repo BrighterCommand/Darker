@@ -228,7 +228,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add, in `src/Paramore.Darker/PipelineValidation/`, the public `IAmAPipelineValidator`, `PipelineValidator` (taking the three nullable registries) and `PipelineValidationResult` (with `Errors`, `Warnings` and `IsValid`). Only what this test needs: `Validate()` returns an empty result.
     - The description types and `PipelineDescriber` arrive with the first task whose test needs them (T7.1, and T7.13 for `PipelineStepDescription`).
 
-- [ ] **TEST + IMPLEMENT: T6.2 — `PipelineValidationException` lists the error count and every finding, errors first, as `[rule] source: message` (ADR 0025 step 6; FR4 message; `ThrowIfInvalid`)**
+- [x] **TEST + IMPLEMENT: T6.2 — `PipelineValidationException` lists the error count and every finding, errors first, as `[rule] source: message` (ADR 0025 step 6; FR4 message; `ThrowIfInvalid`)**
   - **USE COMMAND**: `/test-first when a result with errors and warnings is thrown via ThrowIfInvalid should raise PipelineValidationException listing the error count and every finding errors first`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_result_with_errors_is_thrown_should_list_every_finding_in_the_exception_message.cs`
