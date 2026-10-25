@@ -480,7 +480,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T7.1's `QueryPipelineRules` creates a fresh rule set for each `Validate` call, and the validator collects each description's findings before evaluating the next.
 
-- [ ] **CHARACTERISE: T7.18 — Findings are deterministic: registry order, then registration order, then candidate order, then rule order (ADR 0025 step 7 determinism test; Invariant "order is deterministic")**
+- [x] **CHARACTERISE: T7.18 — Findings are deterministic: registry order, then registration order, then candidate order, then rule order (ADR 0025 step 7 determinism test; Invariant "order is deterministic")**
   - **USE COMMAND**: `/tdd:test-first when the same configuration is validated twice should produce identical findings ordered by registry, registration, candidate and rule`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_the_same_configuration_twice_should_produce_identical_ordered_findings.cs`
