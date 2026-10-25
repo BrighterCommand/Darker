@@ -272,7 +272,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7A — HandlerRegistered rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.1 — A registration with a null handler type is an error naming the query and the registry path (ADR 0025 step 7; FR6; catalogue `HandlerRegistered`)**
+- [x] **TEST + IMPLEMENT: T7.1 — A registration with a null handler type is an error naming the query and the registry path (ADR 0025 step 7; FR6; catalogue `HandlerRegistered`)**
   - **USE COMMAND**: `/tdd:test-first when a query is registered with a null handler type should report a HandlerRegistered error naming the query type and registry path`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registration_has_no_handler_should_report_handler_registered.cs`
