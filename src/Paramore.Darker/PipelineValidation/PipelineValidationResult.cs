@@ -60,4 +60,19 @@ public sealed class PipelineValidationResult
         if (!IsValid)
             throw new PipelineValidationException(this);
     }
+
+    /// <summary>Combines results, keeping every error and warning in input order.</summary>
+    /// <param name="results">The results to combine.</param>
+    /// <returns>One result holding all the findings.</returns>
+    public static PipelineValidationResult Combine(params PipelineValidationResult[] results) =>
+        Combine((IEnumerable<PipelineValidationResult>)results);
+
+    /// <summary>Combines results, keeping every error and warning in input order.</summary>
+    /// <param name="results">The results to combine.</param>
+    /// <returns>One result holding all the findings.</returns>
+    public static PipelineValidationResult Combine(IEnumerable<PipelineValidationResult> results)
+    {
+        var all = results.ToArray();
+        return new PipelineValidationResult(all.SelectMany(r => r.Errors), all.SelectMany(r => r.Warnings));
+    }
 }
