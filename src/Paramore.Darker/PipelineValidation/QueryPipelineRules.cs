@@ -41,10 +41,13 @@ public static class QueryPipelineRules
     /// <summary>The identifier of the rule that requires a registration to name a handler.</summary>
     public static readonly ValidationRuleId HandlerRegisteredId = new("HandlerRegistered");
 
+    /// <summary>The identifier of the rule that requires a handler type to be public.</summary>
+    public static readonly ValidationRuleId HandlerPublicId = new("HandlerPublic");
+
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered()];
+        [HandlerRegistered(), HandlerPublic()];
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         new(
@@ -55,5 +58,16 @@ public static class QueryPipelineRules
                 $"No handler type is registered for query '{description.QueryType?.Name}' in the registry path '{description.Path}'.")
             {
                 RuleId = HandlerRegisteredId
+            });
+
+    private static Specification<HandlerPipelineDescription> HandlerPublic() =>
+        new(
+            description => description.HandlerType!.IsVisible,
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                $"Handler '{description.HandlerType?.Name}'",
+                $"Handler '{description.HandlerType?.Name}' is not public. Make it public, because a handler is the public facade of a module.")
+            {
+                RuleId = HandlerPublicId
             });
 }
