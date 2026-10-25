@@ -255,7 +255,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the static `PipelineValidationResult.Combine(params PipelineValidationResult[])`, or an `IEnumerable` overload.
 
-- [ ] **TEST + IMPLEMENT: T6.4 — A registry whose inspector throws yields one `RuleEvaluationFailed` finding naming that registry, and the other registries are still validated (ADR 0025 step 6; FR3; Invariant "never throws out of Validate")**
+- [x] **TEST + IMPLEMENT: T6.4 — A registry whose inspector throws yields one `RuleEvaluationFailed` finding naming that registry, and the other registries are still validated (ADR 0025 step 6; FR3; Invariant "never throws out of Validate")**
   - **USE COMMAND**: `/test-first when a registry's inspector throws should report one RuleEvaluationFailed error naming that registry and still validate the remaining registries`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registry_inspector_throws_should_report_rule_evaluation_failed_and_validate_the_others.cs`
