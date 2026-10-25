@@ -26,6 +26,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Paramore.Darker.Specifications;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -38,7 +39,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     /// <summary>The identifier of the warning for a registry that cannot be inspected.</summary>
     public static readonly ValidationRuleId RegistryNotInspectableId = new("RegistryNotInspectable");
 
-    private readonly object?[] _registries;
+    private readonly (PipelinePath Path, object? Registry)[] _registries;
 
     /// <summary>Initializes a new instance of the <see cref="PipelineValidator"/> class.</summary>
     /// <param name="syncRegistry">The sync registry, or null when there is none.</param>
@@ -49,41 +50,40 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         IQueryHandlerRegistryAsync? asyncRegistry,
         IStreamQueryHandlerRegistry? streamRegistry)
     {
-        _registries = [syncRegistry, asyncRegistry, streamRegistry];
+        _registries = [(PipelinePath.Sync, syncRegistry), (PipelinePath.Async, asyncRegistry), (PipelinePath.Stream, streamRegistry)];
     }
 
     /// <inheritdoc />
     public PipelineValidationResult Validate()
     {
-        var errors = new List<ValidationError>();
-        var warnings = new List<ValidationError>();
         var rules = QueryPipelineRules.Create();
         var collector = new ValidationResultCollector<HandlerPipelineDescription>();
 
-        for (var index = 0; index < _registries.Length; index++)
-        {
-            var registry = _registries[index];
-            if (registry is null)
-                continue;
+        var findings = _registries
+            .SelectMany(entry => ValidateRegistry(entry.Path, entry.Registry, rules, collector))
+            .ToList();
 
-            if (registry is not IAmAHandlerRegistryInspector inspector)
-            {
-                warnings.Add(NotInspectable(registry));
-                continue;
-            }
+        return new PipelineValidationResult(
+            findings.Where(finding => finding.Severity == ValidationSeverity.Error),
+            findings.Where(finding => finding.Severity != ValidationSeverity.Error));
+    }
 
-            var fault = TryDescribe(inspector, (PipelinePath)index, out var descriptions);
-            if (fault is not null)
-            {
-                errors.Add(fault);
-                continue;
-            }
+    private static IReadOnlyList<ValidationError> ValidateRegistry(
+        PipelinePath path,
+        object? registry,
+        IReadOnlyList<ISpecification<HandlerPipelineDescription>> rules,
+        ValidationResultCollector<HandlerPipelineDescription> collector)
+    {
+        if (registry is null)
+            return [];
 
-            foreach (var description in descriptions)
-                Evaluate(rules, collector, description, errors, warnings);
-        }
+        if (registry is not IAmAHandlerRegistryInspector inspector)
+            return [NotInspectable(registry)];
 
-        return new PipelineValidationResult(errors, warnings);
+        var fault = TryDescribe(inspector, path, out var descriptions);
+        return fault is not null
+            ? [fault]
+            : descriptions.SelectMany(description => Evaluate(rules, collector, description)).ToList();
     }
 
     private static ValidationError NotInspectable(object registry) =>
@@ -95,27 +95,16 @@ public sealed class PipelineValidator : IAmAPipelineValidator
             RuleId = RegistryNotInspectableId
         };
 
-    private static void Evaluate(
+    private static IReadOnlyList<ValidationError> Evaluate(
         IReadOnlyList<ISpecification<HandlerPipelineDescription>> rules,
         ValidationResultCollector<HandlerPipelineDescription> collector,
-        HandlerPipelineDescription description,
-        List<ValidationError> errors,
-        List<ValidationError> warnings)
-    {
-        foreach (var rule in rules)
-        {
-            if (rule.IsSatisfiedBy(description))
-                continue;
-
-            foreach (var result in rule.Accept(collector))
-            {
-                if (result.Success || result.Error is null)
-                    continue;
-
-                (result.Error.Severity == ValidationSeverity.Error ? errors : warnings).Add(result.Error);
-            }
-        }
-    }
+        HandlerPipelineDescription description) =>
+        rules
+            .Where(rule => !rule.IsSatisfiedBy(description))
+            .SelectMany(rule => rule.Accept(collector))
+            .Where(result => !result.Success && result.Error is not null)
+            .Select(result => result.Error!)
+            .ToList();
 
     private static ValidationError? TryDescribe(
         IAmAHandlerRegistryInspector inspector,
