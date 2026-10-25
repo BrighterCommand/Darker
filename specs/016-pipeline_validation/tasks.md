@@ -311,7 +311,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the `HandlerPublic` specification, judged on `Type.IsVisible`.
 
-- [ ] **CHARACTERISE: T7.4 — A router registration yields one description per candidate, so each internal candidate is reported, in candidate order (ADR 0025 step 6 router test, placed here; Invariant "one description per candidate")**
+- [x] **CHARACTERISE: T7.4 — A router registration yields one description per candidate, so each internal candidate is reported, in candidate order (ADR 0025 step 6 router test, placed here; Invariant "one description per candidate")**
   - **USE COMMAND**: `/tdd:test-first when a router registration has two internal candidate handlers should report one HandlerPublic error per candidate in candidate order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_has_two_internal_candidates_should_report_each_candidate.cs`
