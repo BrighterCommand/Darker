@@ -324,7 +324,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7C — HandlerMatchesPath rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.5 — A handler in the registry of the wrong path is an error naming the handler, the query and the expected interface (ADR 0025 step 7; FR8; catalogue `HandlerMatchesPath`)**
+- [x] **TEST + IMPLEMENT: T7.5 — A handler in the registry of the wrong path is an error naming the handler, the query and the expected interface (ADR 0025 step 7; FR8; catalogue `HandlerMatchesPath`)**
   - **USE COMMAND**: `/tdd:test-first when a sync-only handler is registered in the async registry should report a HandlerMatchesPath error naming the handler, query and IQueryHandlerAsync`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_only_handler_is_in_the_async_registry_should_report_handler_matches_path.cs`
