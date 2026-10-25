@@ -99,7 +99,7 @@ internal static class PipelineDescriber
             return [new DescriptionProblem(subject, read.Failure.Exception.Message)];
 
         return read.Entries
-            .Where(entry => entry.Failure is not null && entry.Failure.Kind == AttributeReadFailureKind.DecoratorType)
+            .Where(entry => entry.Failure is not null)
             .Select(entry => new DescriptionProblem(entry.Attribute.GetType().Name, entry.Failure!.Exception.Message))
             .ToList();
     }
