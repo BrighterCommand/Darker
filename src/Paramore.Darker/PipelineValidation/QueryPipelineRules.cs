@@ -142,9 +142,8 @@ public static class QueryPipelineRules
 
     private static string DecoratorAttributeKindMessage(HandlerPipelineDescription description)
     {
-        var misplaced = description.MisplacedAttributes;
-        var attributes = string.Join(", ", misplaced.Select(attribute => $"'{attribute.AttributeType?.Name}'"));
-        var correctKind = misplaced.FirstOrDefault()?.CorrectKind?.Name;
+        var attributes = string.Join(", ", description.MisplacedAttributes.Select(attributeType => $"'{attributeType?.Name}'"));
+        var correctKind = PipelinePathReader.For(description.Path)?.AttributeKind.Name;
         return $"{HandlerSource(description)} {Where(description)} carries {attributes} on its method, which belongs to another path. Use '{correctKind}' instead.";
     }
 

@@ -26,7 +26,6 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -80,11 +79,10 @@ internal static class PipelineDescriber
         return lookup.Method is null ? new PipelineRead([], []) : reader.ReadDecorators(lookup.Method, registration);
     }
 
-    private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePathReader reader)
+    private static IReadOnlyList<Type> MisplacedAttributes(MethodInfo? method, PipelinePathReader reader)
     {
         if (method is null) return [];
 
-        var check = PipelineAttributeReader.CheckAttributeKinds(method, reader.HandlerPath);
-        return check.AttributeTypes.Select(attributeType => new MisplacedAttribute(attributeType, reader.AttributeKind)).ToList();
+        return PipelineAttributeReader.CheckAttributeKinds(method, reader.HandlerPath).AttributeTypes;
     }
 }

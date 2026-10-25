@@ -37,7 +37,7 @@ namespace Paramore.Darker.PipelineValidation;
 /// <param name="ResultType">The query's result type.</param>
 /// <param name="HandlerType">The handler type, or null when the registration has none.</param>
 /// <param name="HasPathMethod">False when the handler has no public method for the path, for example because it implements the interface explicitly.</param>
-/// <param name="MisplacedAttributes">The decorator attributes on the path's method that belong to another path; empty when there are none.</param>
+/// <param name="MisplacedAttributes">The types of the decorator attributes on the path's method that belong to another path; empty when there are none.</param>
 /// <param name="Problems">The problems that stopped the pipeline being described; empty when there are none.</param>
 /// <param name="Steps">The decorators the path's attributes closed, in the order the builder applies them; empty when there are none.</param>
 public sealed record HandlerPipelineDescription(
@@ -46,7 +46,7 @@ public sealed record HandlerPipelineDescription(
     Type ResultType,
     Type? HandlerType,
     bool HasPathMethod,
-    IReadOnlyList<MisplacedAttribute> MisplacedAttributes,
+    IReadOnlyList<Type> MisplacedAttributes,
     IReadOnlyList<DescriptionProblem> Problems,
     IReadOnlyList<PipelineStepDescription> Steps)
 {
