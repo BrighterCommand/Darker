@@ -287,7 +287,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Evaluate every rule against every description, and collect with `ValidationResultCollector<T>`. Evaluate the rules over the descriptions that T6.4's per-registry guard materialised; add no further try/catch around rule evaluation. A predicate that throws is already turned into a `RuleEvaluationFailed` Error, with its `RuleId` and the exception message, by `Specification<T>`'s catch paths (T2.1, T2.2), and every other rule's findings are kept (FR3).
     - **Constraint on error factories.** `Specification<T>` calls the error factory outside its try (Brighter's `Specification.cs:194-195`), so a factory that throws would escape `Validate`. Every error factory in `QueryPipelineRules` (and later in `ScopeConfigurationRules`) must be null-safe and must not throw: render `description.HandlerType?.Name` and the like, never dereference a value the predicate did not check.
 
-- [ ] **TEST + IMPLEMENT: T7.2 — A router registration with no candidates is a `HandlerRegistered` error (ADR 0025 step 7; FR6; "Configuration mistakes" table, router row)**
+- [x] **TEST + IMPLEMENT: T7.2 — A router registration with no candidates is a `HandlerRegistered` error (ADR 0025 step 7; FR6; "Configuration mistakes" table, router row)**
   - **USE COMMAND**: `/tdd:test-first when a router is registered with no candidate handlers should report a HandlerRegistered error naming the query`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_has_no_candidates_should_report_handler_registered.cs`
