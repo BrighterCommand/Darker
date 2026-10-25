@@ -409,7 +409,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Turn the reader's `MakeGenericType` failure into a description problem.
 
-- [ ] **CHARACTERISE: T7.12 — A sync-only handler in the async registry yields no `PipelineDescribable` finding (ADR 0025 step 7, the ADR's further `PipelineDescribable` test)**
+- [x] **CHARACTERISE: T7.12 — A sync-only handler in the async registry yields no `PipelineDescribable` finding (ADR 0025 step 7, the ADR's further `PipelineDescribable` test)**
   - **USE COMMAND**: `/tdd:test-first when a sync-only handler is in the async registry should report HandlerMatchesPath and no PipelineDescribable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_only_handler_is_in_the_async_registry_should_report_no_pipeline_describable.cs`
