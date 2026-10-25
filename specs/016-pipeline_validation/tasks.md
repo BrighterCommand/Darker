@@ -299,7 +299,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7B — HandlerPublic rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.3 — An explicitly registered handler that is not public is an error, with advice to make it public (ADR 0025 step 7; FR6; catalogue `HandlerPublic`)**
+- [x] **TEST + IMPLEMENT: T7.3 — An explicitly registered handler that is not public is an error, with advice to make it public (ADR 0025 step 7; FR6; catalogue `HandlerPublic`)**
   - **USE COMMAND**: `/tdd:test-first when an internal handler is registered explicitly should report a HandlerPublic error naming the handler and advising to make it public`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_an_internal_handler_is_registered_explicitly_should_report_handler_public.cs`
