@@ -364,7 +364,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7E — PipelineDescribable rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.8 — An ambiguous (overloaded) Execute method is a `PipelineDescribable` error, not an exception (ADR 0025 step 7; FR3, FR8; catalogue `PipelineDescribable`)**
+- [x] **TEST + IMPLEMENT: T7.8 — An ambiguous (overloaded) Execute method is a `PipelineDescribable` error, not an exception (ADR 0025 step 7; FR3, FR8; catalogue `PipelineDescribable`)**
   - **USE COMMAND**: `/tdd:test-first when an async handler has overloaded ExecuteAsync methods should report a PipelineDescribable error naming the handler and method and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_overloaded_execute_async_should_report_pipeline_describable.cs`
