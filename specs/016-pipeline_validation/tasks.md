@@ -434,7 +434,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the public `PipelineStepDescription`, and make the describer record the path's decorator steps in the builder's order, one step for each decorator the reader closed. A decorator that yields a problem adds no step (ADR 0025 Invariant; T7.14 pins it). Add the `DuplicateStep` specification over the description's ordered `PipelineStepDescription`s.
 
-- [ ] **CHARACTERISE: T7.14 — A decorator that fails to describe takes no part in `DuplicateStep` (ADR 0025 Invariant "a decorator that yields a problem adds no step")**
+- [x] **CHARACTERISE: T7.14 — A decorator that fails to describe takes no part in `DuplicateStep` (ADR 0025 Invariant "a decorator that yields a problem adds no step")**
   - **USE COMMAND**: `/tdd:test-first when a decorator that cannot be closed shares a Step with a valid decorator should report PipelineDescribable and no DuplicateStep`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_failed_decorator_shares_a_step_should_report_no_duplicate_step.cs`
