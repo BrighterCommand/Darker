@@ -336,7 +336,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the `HandlerMatchesPath` specification. Read the path's interface from the description's `PipelinePath`.
 
-- [ ] **TEST + IMPLEMENT: T7.6 — A handler that implements the path's interface explicitly is an error that advises implementing the method publicly (ADR 0025 step 7; FR8)**
+- [x] **TEST + IMPLEMENT: T7.6 — A handler that implements the path's interface explicitly is an error that advises implementing the method publicly (ADR 0025 step 7; FR8)**
   - **USE COMMAND**: `/tdd:test-first when a handler implements ExecuteAsync only as an explicit interface member should report a HandlerMatchesPath error advising a public implementation`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_handler_implements_the_interface_explicitly_should_report_handler_matches_path_with_advice.cs`
