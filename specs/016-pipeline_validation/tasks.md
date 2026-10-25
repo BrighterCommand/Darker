@@ -375,7 +375,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Turn only the reader's method-lookup failure into a description problem. Add the `PipelineDescribable` specification. The attribute-read, decorator-type and decorator-closing failures stay unhandled here; T7.9, T7.10 and T7.11 add them, so each is RED.
 
-- [ ] **TEST + IMPLEMENT: T7.9 — An attribute on the path's method that cannot be read is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
+- [x] **TEST + IMPLEMENT: T7.9 — An attribute on the path's method that cannot be read is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
   - **USE COMMAND**: `/tdd:test-first when a decorator attribute's constructor throws should report a PipelineDescribable error carrying the exception message and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_attribute_cannot_be_read_should_report_pipeline_describable.cs`
