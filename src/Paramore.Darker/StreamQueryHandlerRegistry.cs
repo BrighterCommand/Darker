@@ -11,7 +11,7 @@ namespace Paramore.Darker
     /// </summary>
     public class StreamQueryHandlerRegistry : IStreamQueryHandlerRegistry, IAmAHandlerRegistryInspector
     {
-        private readonly List<HandlerRegistration> _registrations = new List<HandlerRegistration>();
+        private readonly RegistrationLog _registrations = new RegistrationLog();
         private readonly IDictionary<Type, IResolveHandlers> _registry = new Dictionary<Type, IResolveHandlers>();
 
         /// <inheritdoc/>
@@ -36,7 +36,7 @@ namespace Paramore.Darker
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
             _registry.Add(queryType, new FixedHandlerRoute(handlerType));
-            _registrations.Add(new HandlerRegistration(queryType, resultType, new[] { handlerType }));
+            _registrations.RecordFixed(queryType, resultType, handlerType);
         }
 
         /// <summary>
@@ -62,11 +62,11 @@ namespace Paramore.Darker
 
             Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
             _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
-            _registrations.Add(new HandlerRegistration(queryType, typeof(TResult), candidateHandlerTypes.ToArray()));
+            _registrations.RecordRouted(queryType, typeof(TResult), candidateHandlerTypes);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<HandlerRegistration> GetRegistrations() => _registrations.ToArray();
+        public IReadOnlyList<HandlerRegistration> GetRegistrations() => _registrations.Snapshot();
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
         {
