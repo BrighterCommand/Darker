@@ -44,9 +44,20 @@ public sealed class PipelineValidationResult
     /// <summary>Gets a value indicating whether there are no errors.</summary>
     public bool IsValid => Errors.Count == 0;
 
-    internal PipelineValidationResult(IEnumerable<ValidationError> errors, IEnumerable<ValidationError> warnings)
+    /// <summary>Initializes a new instance of the <see cref="PipelineValidationResult"/> class.</summary>
+    /// <param name="errors">The error findings.</param>
+    /// <param name="warnings">The warning findings.</param>
+    public PipelineValidationResult(IEnumerable<ValidationError> errors, IEnumerable<ValidationError> warnings)
     {
         Errors = errors.ToArray();
         Warnings = warnings.ToArray();
+    }
+
+    /// <summary>Throws when there are errors.</summary>
+    /// <exception cref="PipelineValidationException">There is at least one error.</exception>
+    public void ThrowIfInvalid()
+    {
+        if (!IsValid)
+            throw new PipelineValidationException(this);
     }
 }
