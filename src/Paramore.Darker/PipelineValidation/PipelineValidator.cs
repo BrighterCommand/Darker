@@ -59,22 +59,30 @@ public sealed class PipelineValidator : IAmAPipelineValidator
             if (registry is not IAmAHandlerRegistryInspector inspector)
                 continue;
 
-            try
-            {
-                inspector.GetRegistrations();
-            }
-            catch (Exception e)
-            {
-                errors.Add(new ValidationError(
-                    ValidationSeverity.Error,
-                    $"Registry '{registry.GetType().Name}'",
-                    $"The registry could not be read: {e.Message}")
-                {
-                    RuleId = ValidationRuleIds.EvaluationFailed
-                });
-            }
+            var fault = TryReadRegistrations(inspector);
+            if (fault is not null)
+                errors.Add(fault);
         }
 
         return new PipelineValidationResult(errors, []);
+    }
+
+    private static ValidationError? TryReadRegistrations(IAmAHandlerRegistryInspector inspector)
+    {
+        try
+        {
+            inspector.GetRegistrations();
+            return null;
+        }
+        catch (Exception e)
+        {
+            return new ValidationError(
+                ValidationSeverity.Error,
+                $"Registry '{inspector.GetType().Name}'",
+                $"The registry could not be read: {e.Message}")
+            {
+                RuleId = ValidationRuleIds.EvaluationFailed
+            };
+        }
     }
 }
