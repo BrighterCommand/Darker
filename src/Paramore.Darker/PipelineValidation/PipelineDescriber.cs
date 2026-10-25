@@ -73,16 +73,25 @@ internal static class PipelineDescriber
 
         // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
         var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
-        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), Problems(lookup, path));
+        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), Problems(lookup, path, queryType, resultType));
     }
 
-    private static IReadOnlyList<DescriptionProblem> Problems(ExecuteMethodLookup lookup, PipelinePath path)
+    private static IReadOnlyList<DescriptionProblem> Problems(ExecuteMethodLookup lookup, PipelinePath path, Type queryType, Type resultType)
     {
-        if (lookup.Failure is null) return [];
-
         var subject = path == PipelinePath.Sync ? "Execute" : "ExecuteAsync";
-        return [new DescriptionProblem(subject, lookup.Failure.Exception.Message)];
+        if (lookup.Failure is not null)
+            return [new DescriptionProblem(subject, lookup.Failure.Exception.Message)];
+
+        var readFailure = lookup.Method is null ? null : ReadDecorators(lookup.Method, path, queryType, resultType).Failure;
+        return readFailure is null ? [] : [new DescriptionProblem(subject, readFailure.Exception.Message)];
     }
+
+    private static ReadOutcome ReadDecorators(MethodInfo method, PipelinePath path, Type queryType, Type resultType) => path switch
+    {
+        PipelinePath.Sync => PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()),
+        PipelinePath.Async => PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()),
+        _ => PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType())
+    };
 
     private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
     {
