@@ -27,95 +27,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 
 namespace Paramore.Darker
 {
-    /// <summary>The reflective operation that failed while reading a handler's pipeline.</summary>
-    internal enum AttributeReadFailureKind
-    {
-        /// <summary>Looking up the handler's Execute or ExecuteAsync method threw.</summary>
-        MethodLookup,
-
-        /// <summary>Reading the decorator attributes from the method threw.</summary>
-        AttributeRead,
-
-        /// <summary>An attribute's GetDecoratorType threw or returned null.</summary>
-        DecoratorType,
-
-        /// <summary>Closing the open decorator type over the query and result types threw.</summary>
-        DecoratorClosing
-    }
-
-    /// <summary>A reflective failure, typed by the operation that failed, carrying the exception it raised.</summary>
-    internal sealed class AttributeReadFailure(AttributeReadFailureKind kind, Exception exception)
-    {
-        public AttributeReadFailureKind Kind { get; } = kind;
-
-        public Exception Exception { get; } = exception;
-
-        /// <summary>Throws the carried exception, preserving its type and original stack trace.</summary>
-        public void Rethrow() => ExceptionDispatchInfo.Capture(Exception).Throw();
-    }
-
-    /// <summary>The outcome of looking up an Execute or ExecuteAsync method: the method (null when absent) or a failure.</summary>
-    internal sealed class ExecuteMethodLookup(MethodInfo? method, AttributeReadFailure? failure)
-    {
-        public MethodInfo? Method { get; } = method;
-
-        public AttributeReadFailure? Failure { get; } = failure;
-    }
-
-    /// <summary>The kind of handler a pipeline is read for. It decides which decorator attribute kinds are wrong.</summary>
-    internal enum HandlerPath
-    {
-        /// <summary>A sync handler: <c>Execute</c> with <see cref="QueryHandlerAttribute"/> decorators.</summary>
-        Sync,
-
-        /// <summary>An async handler: <c>ExecuteAsync</c> with <see cref="QueryHandlerAttributeAsync"/> decorators.</summary>
-        Async,
-
-        /// <summary>A stream handler: <c>ExecuteAsync</c> with <see cref="StreamQueryHandlerAttribute"/> decorators.</summary>
-        Stream
-    }
-
-    /// <summary>
-    /// The outcome of checking a handler method for another path's decorator attributes: the message of the first
-    /// wrong kind found, or null when there is none, or the failure that stopped the attributes being read.
-    /// </summary>
-    internal sealed class WrongKindCheck(string? message, AttributeReadFailure? failure)
-    {
-        public string? Message { get; } = message;
-
-        public AttributeReadFailure? Failure { get; } = failure;
-    }
-
-    /// <summary>One decorator attribute with its closed decorator type, or the failure that prevented closing it.</summary>
-    internal sealed class DecoratorEntry<TAttribute>(TAttribute attribute, Type? decoratorType, AttributeReadFailure? failure)
-        where TAttribute : Attribute
-    {
-        public TAttribute Attribute { get; } = attribute;
-
-        public Type? DecoratorType { get; } = decoratorType;
-
-        public AttributeReadFailure? Failure { get; } = failure;
-    }
-
-    /// <summary>
-    /// The decorator entries of one handler method in the order the builder creates them (highest <c>Step</c> first),
-    /// or the failure that stopped the attributes being read at all.
-    /// </summary>
-    internal sealed class DecoratorEntries<TAttribute>(
-        IReadOnlyList<DecoratorEntry<TAttribute>> entries,
-        AttributeReadFailure? failure)
-        where TAttribute : Attribute
-    {
-        public IReadOnlyList<DecoratorEntry<TAttribute>> Entries { get; } = entries;
-
-        public AttributeReadFailure? Failure { get; } = failure;
-    }
-
     /// <summary>
     /// The single path through which a handler's pipeline is read by reflection: method lookup, decorator
     /// attributes in builder order, and decorator-type closing. It throws nothing itself; each failure is
