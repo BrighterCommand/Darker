@@ -24,6 +24,7 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -50,9 +51,24 @@ internal static class PipelineDescriber
             }
 
             foreach (var candidate in registration.CandidateHandlerTypes)
-                descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, candidate));
+                descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, candidate, HasPathMethod(candidate, path, registration.QueryType)));
         }
 
         return descriptions;
+    }
+
+    // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
+    private static bool HasPathMethod(Type? handlerType, PipelinePath path, Type queryType)
+    {
+        if (handlerType is null) return true;
+
+        var lookup = path switch
+        {
+            PipelinePath.Sync => PipelineAttributeReader.FindExecute(handlerType),
+            PipelinePath.Async => PipelineAttributeReader.FindExecuteAsync(handlerType),
+            _ => PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType)
+        };
+
+        return lookup.Failure is not null || lookup.Method is not null;
     }
 }

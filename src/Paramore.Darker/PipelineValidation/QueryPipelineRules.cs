@@ -78,14 +78,23 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> HandlerMatchesPath() =>
         new(
-            description => ImplementsPathInterface(description),
+            description => ImplementsPathInterface(description) && description.HasPathMethod,
             description => new ValidationError(
                 ValidationSeverity.Error,
                 $"Handler '{description.HandlerType?.Name}'",
-                $"Handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}' must implement '{PathInterface(description.Path)?.Name.Replace("`2", "<,>")}'.")
+                HandlerMatchesPathMessage(description))
             {
                 RuleId = HandlerMatchesPathId
             });
+
+    private static string HandlerMatchesPathMessage(HandlerPipelineDescription description)
+    {
+        var interfaceName = PathInterface(description.Path)?.Name.Replace("`2", "<,>");
+        var prefix = $"Handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}'";
+        return description.HandlerType is not null && ImplementsPathInterface(description)
+            ? $"{prefix} implements '{interfaceName}' only explicitly, so it has no public method for the path. Implement the method publicly."
+            : $"{prefix} must implement '{interfaceName}'.";
+    }
 
     private static bool ImplementsPathInterface(HandlerPipelineDescription description)
     {

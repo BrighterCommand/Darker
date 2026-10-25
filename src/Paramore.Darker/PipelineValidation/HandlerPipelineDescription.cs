@@ -35,4 +35,5 @@ namespace Paramore.Darker.PipelineValidation;
 /// <param name="QueryType">The registered query type.</param>
 /// <param name="ResultType">The query's result type.</param>
 /// <param name="HandlerType">The handler type, or null when the registration has none.</param>
-public sealed record HandlerPipelineDescription(PipelinePath Path, Type QueryType, Type ResultType, Type? HandlerType);
+/// <param name="HasPathMethod">False when the handler has no public method for the path, for example because it implements the interface explicitly.</param>
+public sealed record HandlerPipelineDescription(PipelinePath Path, Type QueryType, Type ResultType, Type? HandlerType, bool HasPathMethod = true);
