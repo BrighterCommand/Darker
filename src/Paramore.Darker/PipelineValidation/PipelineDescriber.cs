@@ -48,7 +48,7 @@ internal static class PipelineDescriber
         {
             if (registration.CandidateHandlerTypes.Count == 0)
             {
-                descriptions.Add(new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, null));
+                descriptions.Add(HandlerPipelineDescription.WithoutHandler(reader.Path, registration.QueryType, registration.ResultType));
                 continue;
             }
 
@@ -62,7 +62,7 @@ internal static class PipelineDescriber
     private static HandlerPipelineDescription DescribeCandidate(Type? handlerType, HandlerRegistration registration, PipelinePathReader reader)
     {
         if (handlerType is null)
-            return new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, null);
+            return HandlerPipelineDescription.WithoutHandler(reader.Path, registration.QueryType, registration.ResultType);
 
         var lookup = reader.FindMethod(handlerType, registration.QueryType);
 

@@ -37,7 +37,24 @@ namespace Paramore.Darker.PipelineValidation;
 /// <param name="ResultType">The query's result type.</param>
 /// <param name="HandlerType">The handler type, or null when the registration has none.</param>
 /// <param name="HasPathMethod">False when the handler has no public method for the path, for example because it implements the interface explicitly.</param>
-/// <param name="Problems">The problems that stopped the pipeline being described, or null when there are none.</param>
-/// <param name="MisplacedAttributes">The decorator attributes on the path's method that belong to another path, or null when there are none.</param>
-/// <param name="Steps">The decorators the path's attributes closed, in the order the builder applies them, or null when there are none.</param>
-public sealed record HandlerPipelineDescription(PipelinePath Path, Type QueryType, Type ResultType, Type? HandlerType, bool HasPathMethod = true, IReadOnlyList<MisplacedAttribute>? MisplacedAttributes = null, IReadOnlyList<DescriptionProblem>? Problems = null, IReadOnlyList<PipelineStepDescription>? Steps = null);
+/// <param name="MisplacedAttributes">The decorator attributes on the path's method that belong to another path; empty when there are none.</param>
+/// <param name="Problems">The problems that stopped the pipeline being described; empty when there are none.</param>
+/// <param name="Steps">The decorators the path's attributes closed, in the order the builder applies them; empty when there are none.</param>
+public sealed record HandlerPipelineDescription(
+    PipelinePath Path,
+    Type QueryType,
+    Type ResultType,
+    Type? HandlerType,
+    bool HasPathMethod,
+    IReadOnlyList<MisplacedAttribute> MisplacedAttributes,
+    IReadOnlyList<DescriptionProblem> Problems,
+    IReadOnlyList<PipelineStepDescription> Steps)
+{
+    /// <summary>Describes a registration that names no handler type, so it has no pipeline to read.</summary>
+    /// <param name="path">The registry the registration was found in.</param>
+    /// <param name="queryType">The registered query type.</param>
+    /// <param name="resultType">The query's result type.</param>
+    /// <returns>A description with no handler type and nothing read.</returns>
+    public static HandlerPipelineDescription WithoutHandler(PipelinePath path, Type queryType, Type resultType) =>
+        new(path, queryType, resultType, null, true, [], [], []);
+}

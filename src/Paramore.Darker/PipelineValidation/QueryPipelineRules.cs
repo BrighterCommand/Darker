@@ -87,14 +87,14 @@ public static class QueryPipelineRules
     private static Specification<HandlerPipelineDescription> DecoratorAttributeKind() =>
         ErrorRule(
             DecoratorAttributeKindId,
-            description => description.MisplacedAttributes is null || description.MisplacedAttributes.Count == 0,
+            description => description.MisplacedAttributes.Count == 0,
             HandlerSource,
             DecoratorAttributeKindMessage);
 
     private static Specification<HandlerPipelineDescription> PipelineDescribable() =>
         ErrorRule(
             PipelineDescribableId,
-            description => description.Problems is null || description.Problems.Count == 0,
+            description => description.Problems.Count == 0,
             HandlerSource,
             PipelineDescribableMessage);
 
@@ -126,7 +126,7 @@ public static class QueryPipelineRules
         $"for query '{description.QueryType?.Name}' in the registry path '{description.Path}'";
 
     private static IEnumerable<IGrouping<int, PipelineStepDescription>> DuplicateSteps(HandlerPipelineDescription description) =>
-        (description.Steps ?? []).GroupBy(step => step.Step).Where(group => group.Count() > 1);
+        description.Steps.GroupBy(step => step.Step).Where(group => group.Count() > 1);
 
     private static string DuplicateStepMessage(HandlerPipelineDescription description, IGrouping<int, PipelineStepDescription> group)
     {
@@ -136,13 +136,13 @@ public static class QueryPipelineRules
 
     private static string PipelineDescribableMessage(HandlerPipelineDescription description)
     {
-        var problems = string.Join(" ", (description.Problems ?? []).Select(problem => $"'{problem.Subject}' could not be read: {problem.Message}"));
+        var problems = string.Join(" ", description.Problems.Select(problem => $"'{problem.Subject}' could not be read: {problem.Message}"));
         return $"The pipeline of handler '{description.HandlerType?.Name}' {Where(description)} cannot be described. {problems}";
     }
 
     private static string DecoratorAttributeKindMessage(HandlerPipelineDescription description)
     {
-        var misplaced = description.MisplacedAttributes ?? [];
+        var misplaced = description.MisplacedAttributes;
         var attributes = string.Join(", ", misplaced.Select(attribute => $"'{attribute.AttributeType?.Name}'"));
         var correctKind = misplaced.FirstOrDefault()?.CorrectKind?.Name;
         return $"{HandlerSource(description)} {Where(description)} carries {attributes} on its method, which belongs to another path. Use '{correctKind}' instead.";
