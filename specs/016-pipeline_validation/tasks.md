@@ -422,7 +422,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7F — DuplicateStep rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.13 — Two attributes of the path's kind with the same Step are a warning naming the handler, the step and both attributes (ADR 0025 step 7; FR9; catalogue `DuplicateStep`)**
+- [x] **TEST + IMPLEMENT: T7.13 — Two attributes of the path's kind with the same Step are a warning naming the handler, the step and both attributes (ADR 0025 step 7; FR9; catalogue `DuplicateStep`)**
   - **USE COMMAND**: `/tdd:test-first when two decorator attributes on one handler method share a Step should report a DuplicateStep warning naming the handler, the step and both attributes`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_two_decorator_attributes_share_a_step_should_report_duplicate_step.cs`
