@@ -24,7 +24,9 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Paramore.Darker.Specifications;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -44,10 +46,13 @@ public static class QueryPipelineRules
     /// <summary>The identifier of the rule that requires a handler type to be public.</summary>
     public static readonly ValidationRuleId HandlerPublicId = new("HandlerPublic");
 
+    /// <summary>The identifier of the rule that requires a handler to implement the interface of its registry's path.</summary>
+    public static readonly ValidationRuleId HandlerMatchesPathId = new("HandlerMatchesPath");
+
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered(), HandlerPublic()];
+        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath()];
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         new(
@@ -70,4 +75,33 @@ public static class QueryPipelineRules
             {
                 RuleId = HandlerPublicId
             });
+
+    private static Specification<HandlerPipelineDescription> HandlerMatchesPath() =>
+        new(
+            description => ImplementsPathInterface(description),
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                $"Handler '{description.HandlerType?.Name}'",
+                $"Handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}' must implement '{PathInterface(description.Path)?.Name.Replace("`2", "<,>")}'.")
+            {
+                RuleId = HandlerMatchesPathId
+            });
+
+    private static bool ImplementsPathInterface(HandlerPipelineDescription description)
+    {
+        var pathInterface = PathInterface(description.Path);
+        return description.HandlerType!.GetInterfaces().Any(i =>
+            i.IsGenericType
+            && i.GetGenericTypeDefinition() == pathInterface
+            && i.GenericTypeArguments[0] == description.QueryType
+            && i.GenericTypeArguments[1] == description.ResultType);
+    }
+
+    private static Type? PathInterface(PipelinePath path) => path switch
+    {
+        PipelinePath.Sync => typeof(IQueryHandler<,>),
+        PipelinePath.Async => typeof(IQueryHandlerAsync<,>),
+        PipelinePath.Stream => typeof(IStreamQueryHandler<,>),
+        _ => null
+    };
 }
