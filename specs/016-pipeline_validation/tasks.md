@@ -398,7 +398,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Turn the reader's null-type and `GetDecoratorType` failures into description problems.
 
-- [ ] **TEST + IMPLEMENT: T7.11 — A decorator type that cannot be closed over `IQuery<TResult>`/`IStreamQuery<TResult>` and `TResult` is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
+- [x] **TEST + IMPLEMENT: T7.11 — A decorator type that cannot be closed over `IQuery<TResult>`/`IStreamQuery<TResult>` and `TResult` is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
   - **USE COMMAND**: `/tdd:test-first when a decorator attribute names a decorator type that cannot be closed over the query and result should report a PipelineDescribable error and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_type_cannot_be_closed_should_report_pipeline_describable.cs`
