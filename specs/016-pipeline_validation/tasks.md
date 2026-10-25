@@ -214,7 +214,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 >
 > **Every Phase 6–9 test builds its validator through the test-data builder `PipelineValidatorBuilder`**, which T6.1 adds in `test/Paramore.Darker.Core.Tests/TestDoubles/`. The builder is the only place that changes when the constructor grows: T8.1 adds `WithProbe` and T9.1 adds `WithOrderingRules`, and each updates `Build()`. No earlier test file is edited when the constructor changes. The one exception is T9.5, which tests the constructor's own guard and so calls it directly.
 
-- [ ] **TEST + IMPLEMENT: T6.1 — A clean configuration of public handlers yields no errors (ADR 0025 step 6; FR3, FR5; acceptance criterion "starts cleanly")**
+- [x] **TEST + IMPLEMENT: T6.1 — A clean configuration of public handlers yields no errors (ADR 0025 step 6; FR3, FR5; acceptance criterion "starts cleanly")**
   - **USE COMMAND**: `/test-first when the registries hold only correctly configured public handlers should return a valid result with no errors`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_a_clean_configuration_should_report_no_errors.cs`
