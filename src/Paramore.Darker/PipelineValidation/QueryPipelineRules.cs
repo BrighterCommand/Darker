@@ -52,10 +52,13 @@ public static class QueryPipelineRules
     /// <summary>The identifier of the rule that forbids a path's method to carry another path's decorator attributes.</summary>
     public static readonly ValidationRuleId DecoratorAttributeKindId = new("DecoratorAttributeKind");
 
+    /// <summary>The identifier of the rule that requires a handler's pipeline to be describable.</summary>
+    public static readonly ValidationRuleId PipelineDescribableId = new("PipelineDescribable");
+
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind()];
+        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable()];
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         new(
@@ -100,6 +103,23 @@ public static class QueryPipelineRules
             {
                 RuleId = DecoratorAttributeKindId
             });
+
+    private static Specification<HandlerPipelineDescription> PipelineDescribable() =>
+        new(
+            description => description.Problems is null || description.Problems.Count == 0,
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                $"Handler '{description.HandlerType?.Name}'",
+                PipelineDescribableMessage(description))
+            {
+                RuleId = PipelineDescribableId
+            });
+
+    private static string PipelineDescribableMessage(HandlerPipelineDescription description)
+    {
+        var problems = string.Join(" ", (description.Problems ?? []).Select(problem => $"'{problem.Subject}' could not be read: {problem.Message}"));
+        return $"The pipeline of handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}' cannot be described. {problems}";
+    }
 
     private static string DecoratorAttributeKindMessage(HandlerPipelineDescription description)
     {

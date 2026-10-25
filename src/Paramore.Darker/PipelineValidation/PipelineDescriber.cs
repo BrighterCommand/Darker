@@ -73,7 +73,15 @@ internal static class PipelineDescriber
 
         // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
         var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
-        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path));
+        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), Problems(lookup, path));
+    }
+
+    private static IReadOnlyList<DescriptionProblem> Problems(ExecuteMethodLookup lookup, PipelinePath path)
+    {
+        if (lookup.Failure is null) return [];
+
+        var subject = path == PipelinePath.Sync ? "Execute" : "ExecuteAsync";
+        return [new DescriptionProblem(subject, lookup.Failure.Exception.Message)];
     }
 
     private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
