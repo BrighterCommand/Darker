@@ -24,6 +24,10 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
+using System.Collections.Generic;
+using Paramore.Darker.Specifications;
+
 namespace Paramore.Darker.PipelineValidation;
 
 /// <summary>
@@ -31,6 +35,8 @@ namespace Paramore.Darker.PipelineValidation;
 /// </summary>
 public sealed class PipelineValidator : IAmAPipelineValidator
 {
+    private readonly object?[] _registries;
+
     /// <summary>Initializes a new instance of the <see cref="PipelineValidator"/> class.</summary>
     /// <param name="syncRegistry">The sync registry, or null when there is none.</param>
     /// <param name="asyncRegistry">The async registry, or null when there is none.</param>
@@ -40,8 +46,35 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         IQueryHandlerRegistryAsync? asyncRegistry,
         IStreamQueryHandlerRegistry? streamRegistry)
     {
+        _registries = [syncRegistry, asyncRegistry, streamRegistry];
     }
 
     /// <inheritdoc />
-    public PipelineValidationResult Validate() => new([], []);
+    public PipelineValidationResult Validate()
+    {
+        var errors = new List<ValidationError>();
+
+        foreach (var registry in _registries)
+        {
+            if (registry is not IAmAHandlerRegistryInspector inspector)
+                continue;
+
+            try
+            {
+                inspector.GetRegistrations();
+            }
+            catch (Exception e)
+            {
+                errors.Add(new ValidationError(
+                    ValidationSeverity.Error,
+                    $"Registry '{registry.GetType().Name}'",
+                    $"The registry could not be read: {e.Message}")
+                {
+                    RuleId = ValidationRuleIds.EvaluationFailed
+                });
+            }
+        }
+
+        return new PipelineValidationResult(errors, []);
+    }
 }
