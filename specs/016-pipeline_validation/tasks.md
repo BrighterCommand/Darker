@@ -457,7 +457,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - In `PipelineValidator.Validate`, emit the warning when a non-null registry is not an `IAmAHandlerRegistryInspector`.
 
-- [ ] **CHARACTERISE: T7.16 — Several mistakes appear together in one result (ADR 0025 step 7; FR3; acceptance criterion "several misconfigurations at once")**
+- [x] **CHARACTERISE: T7.16 — Several mistakes appear together in one result (ADR 0025 step 7; FR3; acceptance criterion "several misconfigurations at once")**
   - **USE COMMAND**: `/tdd:test-first when the registries hold several different misconfigurations should report every one of them in a single result`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_several_pipelines_are_misconfigured_should_report_every_mistake_in_one_result.cs`
