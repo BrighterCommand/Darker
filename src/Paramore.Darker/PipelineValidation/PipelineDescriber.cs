@@ -43,6 +43,12 @@ internal static class PipelineDescriber
 
         foreach (var registration in inspector.GetRegistrations())
         {
+            if (registration.CandidateHandlerTypes.Count == 0)
+            {
+                descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, null));
+                continue;
+            }
+
             foreach (var candidate in registration.CandidateHandlerTypes)
                 descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, candidate));
         }
