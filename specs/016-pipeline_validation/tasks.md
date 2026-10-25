@@ -349,7 +349,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7D — DecoratorAttributeKind rule (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T7.7 — The path's method carrying another path's attributes is an error naming the handler, the attribute and the correct kind (ADR 0025 step 7; FR8; catalogue `DecoratorAttributeKind`)**
+- [x] **TEST + IMPLEMENT: T7.7 — The path's method carrying another path's attributes is an error naming the handler, the attribute and the correct kind (ADR 0025 step 7; FR8; catalogue `DecoratorAttributeKind`)**
   - **USE COMMAND**: `/tdd:test-first when a handler's path method carries attributes of another path's kind should report a DecoratorAttributeKind error naming the handler, attribute and correct kind`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_attribute_is_on_execute_async_should_report_decorator_attribute_kind.cs`
