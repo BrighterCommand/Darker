@@ -244,7 +244,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add `ThrowIfInvalid()`, and a public constructor on `PipelineValidationResult` that takes errors and warnings.
     - `ConfigurationException` stays sealed and unchanged.
 
-- [ ] **TEST + IMPLEMENT: T6.3 — `PipelineValidationResult.Combine` keeps the input order (ADR 0025 step 6; FR3, FR5; ADR 0026 ordering relies on it)**
+- [x] **TEST + IMPLEMENT: T6.3 — `PipelineValidationResult.Combine` keeps the input order (ADR 0025 step 6; FR3, FR5; ADR 0026 ordering relies on it)**
   - **USE COMMAND**: `/test-first when results are combined should keep every error and warning in input order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_results_are_combined_should_keep_findings_in_input_order.cs`
