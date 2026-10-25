@@ -447,7 +447,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 7G — Cross-cutting pipeline guarantees (behaviour and risk pins)
 
-- [ ] **TEST + IMPLEMENT: T7.15 — A custom registry that is not an inspector yields a `RegistryNotInspectable` warning (ADR 0025 step 7; FR6; catalogue `RegistryNotInspectable`)**
+- [x] **TEST + IMPLEMENT: T7.15 — A custom registry that is not an inspector yields a `RegistryNotInspectable` warning (ADR 0025 step 7; FR6; catalogue `RegistryNotInspectable`)**
   - **USE COMMAND**: `/tdd:test-first when a custom registry does not implement IAmAHandlerRegistryInspector should report a RegistryNotInspectable warning naming the registry type`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registry_is_not_inspectable_should_report_registry_not_inspectable.cs`
