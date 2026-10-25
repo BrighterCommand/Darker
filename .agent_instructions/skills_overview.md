@@ -13,7 +13,8 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 | Skill | Purpose | Usage |
 |-------|---------|-------|
 | `/test-first` | TDD with an approval gate (armed by default) | `/test-first <behavior description>` |
-| `/tidy-first` | Separate refactoring from features | `/tidy-first <change description>` |
+| `/refactor:tidy-first` | Separate refactoring from features | `/refactor:tidy-first <change description>` |
+| `/refactor:smells` | Find code smells in completed work, schedule refactorings | `/refactor:smells [base-ref \| base..head \| path...]` |
 | `/adr` | Create Architecture Decision Record | `/adr <title>` |
 | `/bugfix:*` | Diagnosis-first bug workflow (Confirm gate) | `/bugfix:triage [issue \| description]` |
 
@@ -66,10 +67,14 @@ TEST-DRIVEN DEVELOPMENT
    Example: /test-first when query handler throws it should invoke fallback policy
 
 REFACTORING
-   /tidy-first <change>
+   /refactor:tidy-first <change>
    Separate structural changes from behavioral changes
    Creates two commits: refactor + feat/fix/perf
-   Example: /tidy-first optimize query pipeline building
+   Example: /refactor:tidy-first optimize query pipeline building
+
+   /refactor:smells [base-ref | base..head | path...]
+   Opt-in, after a unit of work is green (esp. after review-after): find Fowler's code smells
+   Reports and schedules; /refactor:tidy-first or STRUCTURAL tasks do the refactoring
 
 ARCHITECTURE DECISIONS
    /adr <title>
@@ -110,12 +115,12 @@ RALPH LOOP (UNATTENDED)
                 NO              YES        YES             NO
                  |               |          |               |
           /bugfix:triage    /test-first  Code needs    Just refactoring
-          (Confirm gate)                 cleanup?      -> /tidy-first
+          (Confirm gate)                 cleanup?      -> /refactor:tidy-first
                                              |
                                      +-------+-------+
                                    YES             NO
                                      |              |
-                               /tidy-first    /test-first
+                               /refactor:tidy-first    /test-first
 ```
 
 ## Enforcement of Darker Practices
@@ -145,7 +150,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 **Reference**: [documentation.md](documentation.md)
 
-### `/tidy-first` -> code_style.md
+### `/refactor:tidy-first` -> code_style.md
 
 **Enforces**:
 - Separation of structural from behavioral changes
@@ -194,7 +199,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 ```bash
 # 1. Clean up and add feature in one workflow
-/tidy-first add caching to query pipeline
+/refactor:tidy-first add caching to query pipeline
 
 # Output: Two commits
 #   - refactor: simplify pipeline builder structure
@@ -230,7 +235,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 ```bash
 # Refactor without adding features
-/tidy-first simplify nested conditionals in PipelineBuilder
+/refactor:tidy-first simplify nested conditionals in PipelineBuilder
 
 # Output: Single commit
 #   - refactor: simplify nested conditionals in PipelineBuilder

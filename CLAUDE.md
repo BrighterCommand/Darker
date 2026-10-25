@@ -60,7 +60,8 @@ Claude Code skills automate common workflows and enforce mandatory engineering p
 ### Core Development Skills
 
 - `/test-first <behavior>` - TDD workflow with an approval gate before implementation, armed by default ([docs](.claude/commands/tdd/README.md))
-- `/tidy-first <change>` - Separate structural (refactoring) from behavioral (feature) changes ([docs](.claude/commands/refactor/README.md))
+- `/refactor:tidy-first <change>` - Separate structural (refactoring) from behavioral (feature) changes ([docs](.claude/commands/refactor/README.md))
+- `/refactor:smells [base-ref | base..head | path...]` - Opt-in review of a completed, green unit of work for Fowler's code smells; reports and schedules refactorings (as `/refactor:tidy-first` runs or `STRUCTURAL` tasks) without changing code ([docs](.claude/commands/refactor/README.md))
 - `/adr <title>` - Create Architecture Decision Records ([docs](.claude/commands/adr/README.md))
 
 ### Specification Workflow Skills
@@ -71,7 +72,8 @@ Claude Code skills automate common workflows and enforce mandatory engineering p
 **When to use skills**:
 - Use `/test-first` when adding new behavior or fixing bugs
 - Use `/spec:gear` when the approval gate has stopped earning its cost (upshift) or has started to again (downshift) — never a hand-written waiver
-- Use `/tidy-first` when code needs refactoring before/during feature work
+- Use `/refactor:tidy-first` when code needs refactoring before/during feature work
+- Use `/refactor:smells` when the user elects to review finished work for code smells — never run it on their behalf
 - Use `/adr` when documenting architectural decisions
 - Use `/spec:*` commands for full feature development from requirements to implementation
 

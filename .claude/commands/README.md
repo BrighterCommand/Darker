@@ -9,7 +9,8 @@ Skills are invoked using slash commands in Claude Code:
 ```bash
 /test-first <behavior description>    # TDD with an approval gate (armed by default)
 /adr <title>                          # Create Architecture Decision Record
-/tidy-first <change description>      # Separate structural from behavioral changes
+/refactor:tidy-first <change description>      # Separate structural from behavioral changes
+/refactor:smells [ref | range | path] # Find code smells in completed work, schedule refactorings
 /bugfix:triage <issue | description>  # Diagnosis-first bug workflow (Confirm gate)
 ```
 
@@ -72,7 +73,7 @@ Documentation: [.claude/commands/adr/README.md](adr/README.md)
 
 ### 3. Tidy First - Separate Structural from Behavioral Changes
 
-**Command**: `/tidy-first <change description>`
+**Command**: `/refactor:tidy-first <change description>`
 
 **Purpose**: Enforces Beck's "Tidy First" methodology by separating refactoring from functionality changes into distinct commits.
 
@@ -93,7 +94,7 @@ Documentation: [.claude/commands/adr/README.md](adr/README.md)
 
 **Example**:
 ```bash
-/tidy-first optimize the pipeline building in QueryProcessor
+/refactor:tidy-first optimize the pipeline building in QueryProcessor
 ```
 
 Documentation: [.claude/commands/refactor/README.md](refactor/README.md)
@@ -137,7 +138,8 @@ Documentation: [.claude/commands/bugfix/README.md](bugfix/README.md)
 
 ### Development Workflow Skills
 - **`/test-first`** - TDD with approval gate
-- **`/tidy-first`** - Safe refactoring workflow
+- **`/refactor:tidy-first`** - Safe refactoring workflow
+- **`/refactor:smells`** - Opt-in code smell review of completed work; schedules refactorings
 - **`/bugfix:*`** - Diagnosis-first bug workflow (Triage → Confirm → Test-first → Fix → Verify)
 
 ### Documentation Skills
@@ -177,11 +179,11 @@ Do you need to document an architectural decision?
        Are you adding new behavior?
        +- Yes
        |   Does existing code need refactoring first?
-       |   +- Yes -> /tidy-first <description>
+       |   +- Yes -> /refactor:tidy-first <description>
        |   +- No -> /test-first <behavior>
        +- No
            Are you just refactoring with no behavior changes?
-           +- Yes -> /tidy-first <description> (will create single refactor commit)
+           +- Yes -> /refactor:tidy-first <description> (will create single refactor commit)
            +- No -> Use standard workflow
 ```
 
@@ -195,7 +197,8 @@ These skills enforce practices documented in `.agent_instructions/`:
 |-------|----------|-----------|
 | `/test-first` | TDD approval workflow | [testing.md](../../.agent_instructions/testing.md) |
 | `/adr` | ADR creation standards | [documentation.md](../../.agent_instructions/documentation.md) |
-| `/tidy-first` | Structural/behavioral separation | [code_style.md](../../.agent_instructions/code_style.md) |
+| `/refactor:tidy-first` | Structural/behavioral separation | [code_style.md](../../.agent_instructions/code_style.md) |
+| `/refactor:smells` | Fowler's code smells, calibrated to Darker's design principles (opt-in) | [design_principles.md](../../.agent_instructions/design_principles.md) |
 
 All three make **mandatory workflows enforceable** rather than just documented.
 
@@ -217,7 +220,7 @@ These core skills enforce Darker's mandatory engineering practices:
 |-------|----------|---------|
 | `/test-first` | TDD with an approval gate (armed by default) | Tests -> Implementation -> Refactoring |
 | `/adr` | Documented decisions | Numbered ADR files |
-| `/tidy-first` | Structural/behavioral separation | Two commits: refactor + feat |
+| `/refactor:tidy-first` | Structural/behavioral separation | Two commits: refactor + feat |
 | `/bugfix:*` | Confirm root cause before fixing | Bug record + regression test + scoped `fix:` commit |
 
 **Key insight**: These skills make the **correct approach the easy path** by automating multi-step workflows and enforcing approval gates.

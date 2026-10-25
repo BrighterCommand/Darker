@@ -33,7 +33,7 @@ Read the suspect code (Confirmed Root Cause + Suspected Location).
 
 - **If the fix is a clean, localized change**: proceed to Step 3 (a single `fix:` commit).
 - **If the code needs structural cleanup *before* the fix is safe** (e.g. a large method must be
-  broken up, duplicated logic consolidated): do the cleanup via **`/tidy-first`** so the
+  broken up, duplicated logic consolidated): do the cleanup via **`/refactor:tidy-first`** so the
   structural change lands in its own `refactor:` commit first, *then* the behavioural `fix:`
   commit. Never mix structural and behavioural changes in one commit
   (`.agent_instructions/code_style.md`).

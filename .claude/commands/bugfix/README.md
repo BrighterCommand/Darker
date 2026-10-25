@@ -54,7 +54,7 @@ not a specific closed issue.)*
       ▼
  Fix ─────────────────► /bugfix:fix
       │                 (minimal change to green, scoped to confirmed cause;
-      │                  /tidy-first if structural cleanup needed first)
+      │                  /refactor:tidy-first if structural cleanup needed first)
       ▼
  Verify ──────────────► /bugfix:verify
       │                 (run suite; regression test stays; capture root cause,
@@ -148,7 +148,7 @@ IDE-approval gate applies.
 ### `/bugfix:fix`
 Requires `.confirm-approved` + a red test. Makes the test green with the **minimal** change scoped
 to the confirmed cause — no speculative edits, no default changes. If structural cleanup is needed
-first, defers to `/tidy-first` (separate `refactor:` commit, then the `fix:` commit).
+first, defers to `/refactor:tidy-first` (separate `refactor:` commit, then the `fix:` commit).
 
 ### `/bugfix:verify`
 Runs the regression test(s) and the broader suite; the regression test stays. Suggests a `fix:`
@@ -167,11 +167,11 @@ Switches the active bug (updates `bugfixes/.current-bug`).
   you should verify before trusting. The Confirm gate is the value-add.
 - **`/test-first`** — a small change whose behaviour/cause is already obvious; you just need the
   test-first discipline.
-- **`/tidy-first`** — the change is (or includes) structural cleanup; keep refactor and behaviour
+- **`/refactor:tidy-first`** — the change is (or includes) structural cleanup; keep refactor and behaviour
   in separate commits. `/bugfix:fix` calls this when a fix needs cleanup first.
 - **`/spec:*`** — a *feature* or capability needing requirements + ADR design, not a bug fix.
 
 ## Related Commands
 - **`/test-first`** — `.claude/commands/tdd/test-first.md` (the test step delegates here)
-- **`/tidy-first`** — `.claude/commands/refactor/tidy-first.md` (the fix step defers here when needed)
+- **`/refactor:tidy-first`** — `.claude/commands/refactor/tidy-first.md` (the fix step defers here when needed)
 - **`/spec:*`** — `.claude/commands/spec/README.md` (the heavyweight feature workflow this mirrors)
