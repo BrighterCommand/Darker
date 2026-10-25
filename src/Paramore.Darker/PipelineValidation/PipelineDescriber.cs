@@ -82,16 +82,27 @@ internal static class PipelineDescriber
         if (lookup.Failure is not null)
             return [new DescriptionProblem(subject, lookup.Failure.Exception.Message)];
 
-        var readFailure = lookup.Method is null ? null : ReadDecorators(lookup.Method, path, queryType, resultType).Failure;
-        return readFailure is null ? [] : [new DescriptionProblem(subject, readFailure.Exception.Message)];
+        return lookup.Method is null ? [] : ReadProblems(lookup.Method, path, queryType, resultType, subject);
     }
 
-    private static ReadOutcome ReadDecorators(MethodInfo method, PipelinePath path, Type queryType, Type resultType) => path switch
+    private static IReadOnlyList<DescriptionProblem> ReadProblems(MethodInfo method, PipelinePath path, Type queryType, Type resultType, string subject) => path switch
     {
-        PipelinePath.Sync => PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()),
-        PipelinePath.Async => PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()),
-        _ => PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType())
+        PipelinePath.Sync => ProblemsOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject),
+        PipelinePath.Async => ProblemsOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject),
+        _ => ProblemsOf(PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject)
     };
+
+    private static IReadOnlyList<DescriptionProblem> ProblemsOf<TAttribute>(DecoratorEntries<TAttribute> read, string subject)
+        where TAttribute : Attribute
+    {
+        if (read.Failure is not null)
+            return [new DescriptionProblem(subject, read.Failure.Exception.Message)];
+
+        return read.Entries
+            .Where(entry => entry.Failure is not null && entry.Failure.Kind == AttributeReadFailureKind.DecoratorType)
+            .Select(entry => new DescriptionProblem(entry.Attribute.GetType().Name, entry.Failure!.Exception.Message))
+            .ToList();
+    }
 
     private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
     {
