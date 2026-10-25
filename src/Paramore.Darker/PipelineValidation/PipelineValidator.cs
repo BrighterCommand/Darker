@@ -35,6 +35,9 @@ namespace Paramore.Darker.PipelineValidation;
 /// </summary>
 public sealed class PipelineValidator : IAmAPipelineValidator
 {
+    /// <summary>The identifier of the warning for a registry that cannot be inspected.</summary>
+    public static readonly ValidationRuleId RegistryNotInspectableId = new("RegistryNotInspectable");
+
     private readonly object?[] _registries;
 
     /// <summary>Initializes a new instance of the <see cref="PipelineValidator"/> class.</summary>
@@ -59,8 +62,15 @@ public sealed class PipelineValidator : IAmAPipelineValidator
 
         for (var index = 0; index < _registries.Length; index++)
         {
-            if (_registries[index] is not IAmAHandlerRegistryInspector inspector)
+            var registry = _registries[index];
+            if (registry is null)
                 continue;
+
+            if (registry is not IAmAHandlerRegistryInspector inspector)
+            {
+                warnings.Add(NotInspectable(registry));
+                continue;
+            }
 
             var fault = TryDescribe(inspector, (PipelinePath)index, out var descriptions);
             if (fault is not null)
@@ -75,6 +85,15 @@ public sealed class PipelineValidator : IAmAPipelineValidator
 
         return new PipelineValidationResult(errors, warnings);
     }
+
+    private static ValidationError NotInspectable(object registry) =>
+        new(
+            ValidationSeverity.Warning,
+            $"Registry '{registry.GetType().Name}'",
+            $"The registry '{registry.GetType().Name}' does not implement IAmAHandlerRegistryInspector, so its handlers cannot be checked.")
+        {
+            RuleId = RegistryNotInspectableId
+        };
 
     private static void Evaluate(
         IReadOnlyList<ISpecification<HandlerPipelineDescription>> rules,
