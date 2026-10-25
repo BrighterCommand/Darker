@@ -23,15 +23,22 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
+using System.Collections.Generic;
+
 namespace Paramore.Darker
 {
     /// <summary>
     /// The outcome of checking a handler method for another path's decorator attributes: the message of the first
-    /// wrong kind found, or null when there is none, or the failure that stopped the attributes being read.
+    /// wrong kind found with the types of the attributes of that kind, or null when there is none, or the failure that
+    /// stopped the attributes being read.
     /// </summary>
-    internal sealed class WrongKindCheck(string? message, AttributeReadFailure? failure)
+    internal sealed class WrongKindCheck(string? message, IReadOnlyList<Type> attributeTypes, AttributeReadFailure? failure)
         : ReadOutcome(failure)
     {
         public string? Message { get; } = message;
+
+        /// <summary>The types of the attributes of the first wrong kind found; empty when there is none.</summary>
+        public IReadOnlyList<Type> AttributeTypes { get; } = attributeTypes;
     }
 }

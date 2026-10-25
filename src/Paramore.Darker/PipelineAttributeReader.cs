@@ -95,15 +95,16 @@ namespace Paramore.Darker
             {
                 foreach (var (wrongAttributeType, message) in WrongKindsFor(path))
                 {
-                    if (method!.GetCustomAttributes(wrongAttributeType, true).Length > 0)
-                        return new WrongKindCheck(message, null);
+                    var found = method!.GetCustomAttributes(wrongAttributeType, true);
+                    if (found.Length > 0)
+                        return new WrongKindCheck(message, found.Select(attribute => attribute.GetType()).ToList(), null);
                 }
 
-                return new WrongKindCheck(null, null);
+                return new WrongKindCheck(null, [], null);
             }
             catch (Exception ex)
             {
-                return new WrongKindCheck(null, new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
+                return new WrongKindCheck(null, [], new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
             }
         }
 

@@ -25,6 +25,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 
 namespace Paramore.Darker.PipelineValidation;
 
@@ -36,4 +37,5 @@ namespace Paramore.Darker.PipelineValidation;
 /// <param name="ResultType">The query's result type.</param>
 /// <param name="HandlerType">The handler type, or null when the registration has none.</param>
 /// <param name="HasPathMethod">False when the handler has no public method for the path, for example because it implements the interface explicitly.</param>
-public sealed record HandlerPipelineDescription(PipelinePath Path, Type QueryType, Type ResultType, Type? HandlerType, bool HasPathMethod = true);
+/// <param name="MisplacedAttributes">The decorator attributes on the path's method that belong to another path, or null when there are none.</param>
+public sealed record HandlerPipelineDescription(PipelinePath Path, Type QueryType, Type ResultType, Type? HandlerType, bool HasPathMethod = true, IReadOnlyList<MisplacedAttribute>? MisplacedAttributes = null);

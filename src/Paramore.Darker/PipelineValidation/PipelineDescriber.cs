@@ -26,6 +26,8 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Paramore.Darker.PipelineValidation;
 
@@ -51,16 +53,16 @@ internal static class PipelineDescriber
             }
 
             foreach (var candidate in registration.CandidateHandlerTypes)
-                descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, candidate, HasPathMethod(candidate, path, registration.QueryType)));
+                descriptions.Add(DescribeCandidate(candidate, path, registration.QueryType, registration.ResultType));
         }
 
         return descriptions;
     }
 
-    // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
-    private static bool HasPathMethod(Type? handlerType, PipelinePath path, Type queryType)
+    private static HandlerPipelineDescription DescribeCandidate(Type? handlerType, PipelinePath path, Type queryType, Type resultType)
     {
-        if (handlerType is null) return true;
+        if (handlerType is null)
+            return new HandlerPipelineDescription(path, queryType, resultType, null);
 
         var lookup = path switch
         {
@@ -69,6 +71,31 @@ internal static class PipelineDescriber
             _ => PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType)
         };
 
-        return lookup.Failure is not null || lookup.Method is not null;
+        // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
+        var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
+        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path));
     }
+
+    private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
+    {
+        if (method is null) return [];
+
+        var check = PipelineAttributeReader.CheckAttributeKinds(method, ToHandlerPath(path));
+        var correctKind = CorrectKind(path);
+        return check.AttributeTypes.Select(attributeType => new MisplacedAttribute(attributeType, correctKind)).ToList();
+    }
+
+    private static HandlerPath ToHandlerPath(PipelinePath path) => path switch
+    {
+        PipelinePath.Sync => HandlerPath.Sync,
+        PipelinePath.Async => HandlerPath.Async,
+        _ => HandlerPath.Stream
+    };
+
+    private static Type CorrectKind(PipelinePath path) => path switch
+    {
+        PipelinePath.Sync => typeof(QueryHandlerAttribute),
+        PipelinePath.Async => typeof(QueryHandlerAttributeAsync),
+        _ => typeof(StreamQueryHandlerAttribute)
+    };
 }

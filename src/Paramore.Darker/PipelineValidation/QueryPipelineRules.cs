@@ -49,10 +49,13 @@ public static class QueryPipelineRules
     /// <summary>The identifier of the rule that requires a handler to implement the interface of its registry's path.</summary>
     public static readonly ValidationRuleId HandlerMatchesPathId = new("HandlerMatchesPath");
 
+    /// <summary>The identifier of the rule that forbids a path's method to carry another path's decorator attributes.</summary>
+    public static readonly ValidationRuleId DecoratorAttributeKindId = new("DecoratorAttributeKind");
+
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath()];
+        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind()];
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         new(
@@ -86,6 +89,25 @@ public static class QueryPipelineRules
             {
                 RuleId = HandlerMatchesPathId
             });
+
+    private static Specification<HandlerPipelineDescription> DecoratorAttributeKind() =>
+        new(
+            description => description.MisplacedAttributes is null || description.MisplacedAttributes.Count == 0,
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                $"Handler '{description.HandlerType?.Name}'",
+                DecoratorAttributeKindMessage(description))
+            {
+                RuleId = DecoratorAttributeKindId
+            });
+
+    private static string DecoratorAttributeKindMessage(HandlerPipelineDescription description)
+    {
+        var misplaced = description.MisplacedAttributes ?? [];
+        var attributes = string.Join(", ", misplaced.Select(attribute => $"'{attribute.AttributeType?.Name}'"));
+        var correctKind = misplaced.FirstOrDefault()?.CorrectKind?.Name;
+        return $"Handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}' carries {attributes} on its method, which belongs to another path. Use '{correctKind}' instead.";
+    }
 
     private static string HandlerMatchesPathMessage(HandlerPipelineDescription description)
     {
