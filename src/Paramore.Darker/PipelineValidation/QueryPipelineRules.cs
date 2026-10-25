@@ -76,7 +76,7 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> HandlerPublic() =>
         new(
-            description => description.HandlerType!.IsVisible,
+            description => description.HandlerType is null || description.HandlerType.IsVisible,
             description => new ValidationError(
                 ValidationSeverity.Error,
                 $"Handler '{description.HandlerType?.Name}'",
@@ -87,7 +87,7 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> HandlerMatchesPath() =>
         new(
-            description => ImplementsPathInterface(description) && description.HasPathMethod,
+            description => description.HandlerType is null || (ImplementsPathInterface(description) && description.HasPathMethod),
             description => new ValidationError(
                 ValidationSeverity.Error,
                 $"Handler '{description.HandlerType?.Name}'",
