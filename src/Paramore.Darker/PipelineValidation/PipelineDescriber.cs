@@ -73,36 +73,44 @@ internal static class PipelineDescriber
 
         // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
         var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
-        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), Problems(lookup, path, queryType, resultType));
+        var read = ReadPipeline(lookup, path, queryType, resultType);
+        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), read.Problems, read.Steps);
     }
 
-    private static IReadOnlyList<DescriptionProblem> Problems(ExecuteMethodLookup lookup, PipelinePath path, Type queryType, Type resultType)
+    private static PipelineRead ReadPipeline(ExecuteMethodLookup lookup, PipelinePath path, Type queryType, Type resultType)
     {
         var subject = path == PipelinePath.Sync ? "Execute" : "ExecuteAsync";
         if (lookup.Failure is not null)
-            return [new DescriptionProblem(subject, lookup.Failure.Exception.Message)];
+            return new PipelineRead([new DescriptionProblem(subject, lookup.Failure.Exception.Message)], []);
 
-        return lookup.Method is null ? [] : ReadProblems(lookup.Method, path, queryType, resultType, subject);
+        return lookup.Method is null ? new PipelineRead([], []) : ReadDecorators(lookup.Method, path, queryType, resultType, subject);
     }
 
-    private static IReadOnlyList<DescriptionProblem> ReadProblems(MethodInfo method, PipelinePath path, Type queryType, Type resultType, string subject) => path switch
+    private static PipelineRead ReadDecorators(MethodInfo method, PipelinePath path, Type queryType, Type resultType, string subject) => path switch
     {
-        PipelinePath.Sync => ProblemsOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject),
-        PipelinePath.Async => ProblemsOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject),
-        _ => ProblemsOf(PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject)
+        PipelinePath.Sync => ReadOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step),
+        PipelinePath.Async => ReadOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step),
+        _ => ReadOf(PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step)
     };
 
-    private static IReadOnlyList<DescriptionProblem> ProblemsOf<TAttribute>(DecoratorEntries<TAttribute> read, string subject)
+    private static PipelineRead ReadOf<TAttribute>(DecoratorEntries<TAttribute> read, string subject, Func<TAttribute, int> stepOf)
         where TAttribute : Attribute
     {
         if (read.Failure is not null)
-            return [new DescriptionProblem(subject, read.Failure.Exception.Message)];
+            return new PipelineRead([new DescriptionProblem(subject, read.Failure.Exception.Message)], []);
 
-        return read.Entries
+        var problems = read.Entries
             .Where(entry => entry.Failure is not null)
             .Select(entry => new DescriptionProblem(entry.Attribute.GetType().Name, entry.Failure!.Exception.Message))
             .ToList();
+        var steps = read.Entries
+            .Where(entry => entry.Failure is null && entry.DecoratorType is not null)
+            .Select(entry => new PipelineStepDescription(stepOf(entry.Attribute), entry.Attribute.GetType(), entry.DecoratorType!))
+            .ToList();
+        return new PipelineRead(problems, steps);
     }
+
+    private sealed record PipelineRead(IReadOnlyList<DescriptionProblem> Problems, IReadOnlyList<PipelineStepDescription> Steps);
 
     private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
     {

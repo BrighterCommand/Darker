@@ -55,10 +55,13 @@ public static class QueryPipelineRules
     /// <summary>The identifier of the rule that requires a handler's pipeline to be describable.</summary>
     public static readonly ValidationRuleId PipelineDescribableId = new("PipelineDescribable");
 
+    /// <summary>The identifier of the rule that warns when two attributes of a path share a step.</summary>
+    public static readonly ValidationRuleId DuplicateStepId = new("DuplicateStep");
+
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable()];
+        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable(), DuplicateStep()];
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         new(
@@ -114,6 +117,25 @@ public static class QueryPipelineRules
             {
                 RuleId = PipelineDescribableId
             });
+
+    private static Specification<HandlerPipelineDescription> DuplicateStep() =>
+        new((Func<HandlerPipelineDescription, IEnumerable<ValidationResult>>)(description => DuplicateSteps(description)
+            .Select(group => ValidationResult.Fail(new ValidationError(
+                ValidationSeverity.Warning,
+                $"Handler '{description.HandlerType?.Name}'",
+                DuplicateStepMessage(description, group))
+            {
+                RuleId = DuplicateStepId
+            }))));
+
+    private static IEnumerable<IGrouping<int, PipelineStepDescription>> DuplicateSteps(HandlerPipelineDescription description) =>
+        (description.Steps ?? []).GroupBy(step => step.Step).Where(group => group.Count() > 1);
+
+    private static string DuplicateStepMessage(HandlerPipelineDescription description, IGrouping<int, PipelineStepDescription> group)
+    {
+        var attributes = string.Join(", ", group.Select(step => $"'{step.AttributeType?.Name}'"));
+        return $"Handler '{description.HandlerType?.Name}' for query '{description.QueryType?.Name}' in the registry path '{description.Path}' has {attributes} at the same Step {group.Key}, so their order is undefined. Give each attribute its own Step.";
+    }
 
     private static string PipelineDescribableMessage(HandlerPipelineDescription description)
     {
