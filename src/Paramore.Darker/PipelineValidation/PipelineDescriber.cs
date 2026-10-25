@@ -38,9 +38,9 @@ internal static class PipelineDescriber
 {
     /// <summary>Describes every candidate of every registration the inspector reports.</summary>
     /// <param name="inspector">The registry to describe.</param>
-    /// <param name="path">The path the registry serves.</param>
+    /// <param name="reader">The reader for the path the registry serves.</param>
     /// <returns>One description for each candidate handler of each registration, in registration order.</returns>
-    public static IReadOnlyList<HandlerPipelineDescription> Describe(IAmAHandlerRegistryInspector inspector, PipelinePath path)
+    public static IReadOnlyList<HandlerPipelineDescription> Describe(IAmAHandlerRegistryInspector inspector, PipelinePathReader reader)
     {
         var descriptions = new List<HandlerPipelineDescription>();
 
@@ -48,90 +48,43 @@ internal static class PipelineDescriber
         {
             if (registration.CandidateHandlerTypes.Count == 0)
             {
-                descriptions.Add(new HandlerPipelineDescription(path, registration.QueryType, registration.ResultType, null));
+                descriptions.Add(new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, null));
                 continue;
             }
 
             foreach (var candidate in registration.CandidateHandlerTypes)
-                descriptions.Add(DescribeCandidate(candidate, path, registration.QueryType, registration.ResultType));
+                descriptions.Add(DescribeCandidate(candidate, registration, reader));
         }
 
         return descriptions;
     }
 
-    private static HandlerPipelineDescription DescribeCandidate(Type? handlerType, PipelinePath path, Type queryType, Type resultType)
+    private static HandlerPipelineDescription DescribeCandidate(Type? handlerType, HandlerRegistration registration, PipelinePathReader reader)
     {
         if (handlerType is null)
-            return new HandlerPipelineDescription(path, queryType, resultType, null);
+            return new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, null);
 
-        var lookup = path switch
-        {
-            PipelinePath.Sync => PipelineAttributeReader.FindExecute(handlerType),
-            PipelinePath.Async => PipelineAttributeReader.FindExecuteAsync(handlerType),
-            _ => PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType)
-        };
+        var lookup = reader.FindMethod(handlerType, registration.QueryType);
 
         // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
         var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
-        var read = ReadPipeline(lookup, path, queryType, resultType);
-        return new HandlerPipelineDescription(path, queryType, resultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, path), read.Problems, read.Steps);
+        var read = ReadPipeline(lookup, registration, reader);
+        return new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, reader), read.Problems, read.Steps);
     }
 
-    private static PipelineRead ReadPipeline(ExecuteMethodLookup lookup, PipelinePath path, Type queryType, Type resultType)
+    private static PipelineRead ReadPipeline(ExecuteMethodLookup lookup, HandlerRegistration registration, PipelinePathReader reader)
     {
-        var subject = path == PipelinePath.Sync ? "Execute" : "ExecuteAsync";
         if (lookup.Failure is not null)
-            return new PipelineRead([new DescriptionProblem(subject, lookup.Failure.Exception.Message)], []);
+            return new PipelineRead([new DescriptionProblem(reader.MethodName, lookup.Failure.Exception.Message)], []);
 
-        return lookup.Method is null ? new PipelineRead([], []) : ReadDecorators(lookup.Method, path, queryType, resultType, subject);
+        return lookup.Method is null ? new PipelineRead([], []) : reader.ReadDecorators(lookup.Method, registration);
     }
 
-    private static PipelineRead ReadDecorators(MethodInfo method, PipelinePath path, Type queryType, Type resultType, string subject) => path switch
-    {
-        PipelinePath.Sync => ReadOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step),
-        PipelinePath.Async => ReadOf(PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step),
-        _ => ReadOf(PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(method, queryType, resultType, attr => attr.Step, attr => attr.GetDecoratorType()), subject, attr => attr.Step)
-    };
-
-    private static PipelineRead ReadOf<TAttribute>(DecoratorEntries<TAttribute> read, string subject, Func<TAttribute, int> stepOf)
-        where TAttribute : Attribute
-    {
-        if (read.Failure is not null)
-            return new PipelineRead([new DescriptionProblem(subject, read.Failure.Exception.Message)], []);
-
-        var problems = read.Entries
-            .Where(entry => entry.Failure is not null)
-            .Select(entry => new DescriptionProblem(entry.Attribute.GetType().Name, entry.Failure!.Exception.Message))
-            .ToList();
-        var steps = read.Entries
-            .Where(entry => entry.Failure is null && entry.DecoratorType is not null)
-            .Select(entry => new PipelineStepDescription(stepOf(entry.Attribute), entry.Attribute.GetType(), entry.DecoratorType!))
-            .ToList();
-        return new PipelineRead(problems, steps);
-    }
-
-    private sealed record PipelineRead(IReadOnlyList<DescriptionProblem> Problems, IReadOnlyList<PipelineStepDescription> Steps);
-
-    private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePath path)
+    private static IReadOnlyList<MisplacedAttribute> MisplacedAttributes(MethodInfo? method, PipelinePathReader reader)
     {
         if (method is null) return [];
 
-        var check = PipelineAttributeReader.CheckAttributeKinds(method, ToHandlerPath(path));
-        var correctKind = CorrectKind(path);
-        return check.AttributeTypes.Select(attributeType => new MisplacedAttribute(attributeType, correctKind)).ToList();
+        var check = PipelineAttributeReader.CheckAttributeKinds(method, reader.HandlerPath);
+        return check.AttributeTypes.Select(attributeType => new MisplacedAttribute(attributeType, reader.AttributeKind)).ToList();
     }
-
-    private static HandlerPath ToHandlerPath(PipelinePath path) => path switch
-    {
-        PipelinePath.Sync => HandlerPath.Sync,
-        PipelinePath.Async => HandlerPath.Async,
-        _ => HandlerPath.Stream
-    };
-
-    private static Type CorrectKind(PipelinePath path) => path switch
-    {
-        PipelinePath.Sync => typeof(QueryHandlerAttribute),
-        PipelinePath.Async => typeof(QueryHandlerAttributeAsync),
-        _ => typeof(StreamQueryHandlerAttribute)
-    };
 }

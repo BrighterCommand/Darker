@@ -150,7 +150,7 @@ public static class QueryPipelineRules
 
     private static string HandlerMatchesPathMessage(HandlerPipelineDescription description)
     {
-        var interfaceName = PathInterface(description.Path)?.Name.Replace("`2", "<,>");
+        var interfaceName = PipelinePathReader.For(description.Path)?.PathInterface.Name.Replace("`2", "<,>");
         var prefix = $"{HandlerSource(description)} {Where(description)}";
         return description.HandlerType is not null && ImplementsPathInterface(description)
             ? $"{prefix} implements '{interfaceName}' only explicitly, so it has no public method for the path. Implement the method publicly."
@@ -159,19 +159,11 @@ public static class QueryPipelineRules
 
     private static bool ImplementsPathInterface(HandlerPipelineDescription description)
     {
-        var pathInterface = PathInterface(description.Path);
+        var pathInterface = PipelinePathReader.For(description.Path)?.PathInterface;
         return description.HandlerType!.GetInterfaces().Any(i =>
             i.IsGenericType
             && i.GetGenericTypeDefinition() == pathInterface
             && i.GenericTypeArguments[0] == description.QueryType
             && i.GenericTypeArguments[1] == description.ResultType);
     }
-
-    private static Type? PathInterface(PipelinePath path) => path switch
-    {
-        PipelinePath.Sync => typeof(IQueryHandler<,>),
-        PipelinePath.Async => typeof(IQueryHandlerAsync<,>),
-        PipelinePath.Stream => typeof(IStreamQueryHandler<,>),
-        _ => null
-    };
 }

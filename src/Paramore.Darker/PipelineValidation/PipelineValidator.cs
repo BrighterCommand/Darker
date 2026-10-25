@@ -39,7 +39,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     /// <summary>The identifier of the warning for a registry that cannot be inspected.</summary>
     public static readonly ValidationRuleId RegistryNotInspectableId = new("RegistryNotInspectable");
 
-    private readonly (PipelinePath Path, object? Registry)[] _registries;
+    private readonly (PipelinePathReader Reader, object? Registry)[] _registries;
 
     /// <summary>Initializes a new instance of the <see cref="PipelineValidator"/> class.</summary>
     /// <param name="syncRegistry">The sync registry, or null when there is none.</param>
@@ -50,7 +50,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         IQueryHandlerRegistryAsync? asyncRegistry,
         IStreamQueryHandlerRegistry? streamRegistry)
     {
-        _registries = [(PipelinePath.Sync, syncRegistry), (PipelinePath.Async, asyncRegistry), (PipelinePath.Stream, streamRegistry)];
+        _registries = [(PipelinePathReader.Sync, syncRegistry), (PipelinePathReader.Async, asyncRegistry), (PipelinePathReader.Stream, streamRegistry)];
     }
 
     /// <inheritdoc />
@@ -60,7 +60,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         var collector = new ValidationResultCollector<HandlerPipelineDescription>();
 
         var findings = _registries
-            .SelectMany(entry => ValidateRegistry(entry.Path, entry.Registry, rules, collector))
+            .SelectMany(entry => ValidateRegistry(entry.Reader, entry.Registry, rules, collector))
             .ToList();
 
         return new PipelineValidationResult(
@@ -69,7 +69,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     }
 
     private static IReadOnlyList<ValidationError> ValidateRegistry(
-        PipelinePath path,
+        PipelinePathReader reader,
         object? registry,
         IReadOnlyList<ISpecification<HandlerPipelineDescription>> rules,
         ValidationResultCollector<HandlerPipelineDescription> collector)
@@ -80,7 +80,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         if (registry is not IAmAHandlerRegistryInspector inspector)
             return [NotInspectable(registry)];
 
-        var fault = TryDescribe(inspector, path, out var descriptions);
+        var fault = TryDescribe(inspector, reader, out var descriptions);
         return fault is not null
             ? [fault]
             : descriptions.SelectMany(description => Evaluate(rules, collector, description)).ToList();
@@ -108,12 +108,12 @@ public sealed class PipelineValidator : IAmAPipelineValidator
 
     private static ValidationError? TryDescribe(
         IAmAHandlerRegistryInspector inspector,
-        PipelinePath path,
+        PipelinePathReader reader,
         out IReadOnlyList<HandlerPipelineDescription> descriptions)
     {
         try
         {
-            descriptions = PipelineDescriber.Describe(inspector, path);
+            descriptions = PipelineDescriber.Describe(inspector, reader);
             return null;
         }
         catch (Exception e)

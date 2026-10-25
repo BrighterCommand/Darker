@@ -38,8 +38,8 @@ namespace Paramore.Darker
     /// </summary>
     internal static class PipelineAttributeReader
     {
-        private const string EXECUTE_METHOD_NAME = "Execute";
-        private const string EXECUTE_ASYNC_METHOD_NAME = "ExecuteAsync";
+        internal const string EXECUTE_METHOD_NAME = "Execute";
+        internal const string EXECUTE_ASYNC_METHOD_NAME = "ExecuteAsync";
 
         /// <summary>Finds the handler's sync <c>Execute</c> method.</summary>
         public static ExecuteMethodLookup FindExecute(Type handlerType)
