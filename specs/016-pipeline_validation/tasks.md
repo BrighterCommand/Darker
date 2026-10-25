@@ -68,7 +68,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds for netstandard2.0, net8.0 and net9.0. The suite is green before and after. The commit adds new code only.
 
 - [x] **CHARACTERISE: T1.2 — The copied Brighter specification tests pass against Darker's copy (ADR 0025 step 1; FR3, which relies on And/Or not short-circuiting)**
-  - **USE COMMAND**: `/test-first when Brighter's specification tests run against Darker's copied Specification types should pass unchanged apart from namespace (copy verbatim from Brighter)`
+  - **USE COMMAND**: `/tdd:test-first when Brighter's specification tests run against Darker's copied Specification types should pass unchanged apart from namespace (copy verbatim from Brighter)`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_and_specification_left_fails_should_evaluate_both_sides.cs` (the group also includes `When_evaluating_a_specification.cs`, `When_specification_with_error_factory_fails_should_collect_error.cs` and `When_collector_visits_specification_graph_should_collect_all_failures.cs`, all copied from `Brighter/tests/Paramore.Brighter.Core.Tests/Specifications/`)
   - Test should verify:
@@ -85,7 +85,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 > `Specification<T>` has two catch blocks: `EvaluateSimple` for the predicate form and `EvaluateCollapsed` for the result-evaluator form. T2.1 stamps the first and T2.2 the second, so each has its own RED. The pipeline rules' predicates (T8.4) rely on T2.1, and `CaptiveDependency`'s result evaluator (T17.12) relies on T2.2.
 
 - [x] **TEST + IMPLEMENT: T2.1 — A predicate that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; FR3 rule identifier; catalogue row `RuleEvaluationFailed`)**
-  - **USE COMMAND**: `/test-first when a specification's predicate throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
+  - **USE COMMAND**: `/tdd:test-first when a specification's predicate throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_predicate_throws_should_report_evaluation_failed_rule_id.cs`
   - Test should verify:
@@ -99,7 +99,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - In the predicate-form catch block of the copied `Specification<T>` (`EvaluateSimple`, Brighter's `Specification.cs:175-192`), stamp `RuleId = ValidationRuleIds.EvaluationFailed`. The general-purpose types name no pipeline rule. The result-evaluator catch block (`EvaluateCollapsed`) is T2.2's.
 
 - [x] **TEST + IMPLEMENT: T2.2 — A result evaluator that throws yields a collected error whose RuleId is `RuleEvaluationFailed` (ADR 0025 step 2; ADR 0026 step 5 "constructor reflection runs inside that evaluator"; catalogue row `RuleEvaluationFailed`)**
-  - **USE COMMAND**: `/test-first when a specification built with a result evaluator throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
+  - **USE COMMAND**: `/tdd:test-first when a specification built with a result evaluator throws should collect an error whose RuleId is ValidationRuleIds.EvaluationFailed`
   - Test location: "test/Paramore.Darker.Core.Tests/Specifications/"
   - Test file: `When_result_evaluator_throws_should_report_evaluation_failed_rule_id.cs`
   - Test should verify:
@@ -114,7 +114,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 > Risk mitigation, for ADR 0025's Negative "PipelineAttributeReader must stay the single reflection path" and "the documentation contradicts the code". The core suite pins step order only on the stream path (`When_stream_handler_has_multiple_decorators_should_order_by_step_descending.cs`). All six wrong-kind paths already have tests (`When_sync_attribute_on_async_handler_should_throw_configuration_exception.cs`, `When_stream_handler_has_mismatched_decorator_attribute_should_throw_ConfigurationException.cs`), but each asserts only `ShouldContain("sync")`, `"async"` or `"stream"`, so the exact text is not pinned. T3.1 and T3.2 pin what the extraction must not change, before it starts.
 
 - [x] **CHARACTERISE: T3.1 — On Execute and ExecuteAsync, the decorator with the lowest Step is outermost (pre-refactor guard; ADR 0025 Terms "Outer and inner"; FR9 semantics)**
-  - **USE COMMAND**: `/test-first when a sync or async handler carries several decorator attributes should run the decorator with the lowest Step outermost`
+  - **USE COMMAND**: `/tdd:test-first when a sync or async handler carries several decorator attributes should run the decorator with the lowest Step outermost`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_handler_has_several_decorators_should_run_the_lowest_step_outermost.cs`
   - Test should verify:
@@ -127,7 +127,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [x] **CHARACTERISE: T3.2 — The builder's six wrong-kind ConfigurationException messages are pinned by exact text (pre-refactor guard; ADR 0025 step 3, "messages unchanged")**
-  - **USE COMMAND**: `/test-first when a handler method carries another path's decorator attribute should throw ConfigurationException whose message equals the existing text exactly, for all six wrong-kind paths`
+  - **USE COMMAND**: `/tdd:test-first when a handler method carries another path's decorator attribute should throw ConfigurationException whose message equals the existing text exactly, for all six wrong-kind paths`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_a_handler_method_carries_another_paths_attribute_should_throw_the_existing_configuration_message.cs`
   - Test should verify:
@@ -173,7 +173,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 5 — Registry inspection (ADR 0025 step 5)
 
 - [x] **TEST + IMPLEMENT: T5.1 — The sync registry lists its registrations in registration order (ADR 0025 step 5; FR6 input; role "Lists registrations")**
-  - **USE COMMAND**: `/test-first when handlers are registered in the sync registry should list each query type, result type and handler type in registration order`
+  - **USE COMMAND**: `/tdd:test-first when handlers are registered in the sync registry should list each query type, result type and handler type in registration order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_handlers_are_registered_should_list_them_in_registration_order.cs`
   - Test should verify:
@@ -187,7 +187,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Leave `IQueryHandlerRegistry` unchanged.
 
 - [x] **TEST + IMPLEMENT: T5.2 — A router registration lists every candidate in order (ADR 0025 step 5; Invariant "one description per candidate")**
-  - **USE COMMAND**: `/test-first when a query is registered with a routing function and candidates should list one registration carrying every candidate in order`
+  - **USE COMMAND**: `/tdd:test-first when a query is registered with a routing function and candidates should list one registration carrying every candidate in order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_is_registered_should_list_its_candidates_in_order.cs`
   - Test should verify:
@@ -199,7 +199,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Record in the router `Register<TQuery, TResult>` overload of `QueryHandlerRegistry.cs`.
 
 - [x] **TEST + IMPLEMENT: T5.3 — The async and stream registries list their registrations, fixed and routed, in order (ADR 0025 step 5)**
-  - **USE COMMAND**: `/test-first when handlers are registered in the async and stream registries should list them in registration order with their candidates`
+  - **USE COMMAND**: `/tdd:test-first when handlers are registered in the async and stream registries should list them in registration order with their candidates`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_async_and_stream_handlers_are_registered_should_list_them_in_registration_order.cs`
   - Test should verify:
@@ -215,7 +215,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 > **Every Phase 6–9 test builds its validator through the test-data builder `PipelineValidatorBuilder`**, which T6.1 adds in `test/Paramore.Darker.Core.Tests/TestDoubles/`. The builder is the only place that changes when the constructor grows: T8.1 adds `WithProbe` and T9.1 adds `WithOrderingRules`, and each updates `Build()`. No earlier test file is edited when the constructor changes. The one exception is T9.5, which tests the constructor's own guard and so calls it directly.
 
 - [x] **TEST + IMPLEMENT: T6.1 — A clean configuration of public handlers yields no errors (ADR 0025 step 6; FR3, FR5; acceptance criterion "starts cleanly")**
-  - **USE COMMAND**: `/test-first when the registries hold only correctly configured public handlers should return a valid result with no errors`
+  - **USE COMMAND**: `/tdd:test-first when the registries hold only correctly configured public handlers should return a valid result with no errors`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_a_clean_configuration_should_report_no_errors.cs`
   - Test should verify:
@@ -229,7 +229,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - The description types and `PipelineDescriber` arrive with the first task whose test needs them (T7.1, and T7.13 for `PipelineStepDescription`).
 
 - [x] **TEST + IMPLEMENT: T6.2 — `PipelineValidationException` lists the error count and every finding, errors first, as `[rule] source: message` (ADR 0025 step 6; FR4 message; `ThrowIfInvalid`)**
-  - **USE COMMAND**: `/test-first when a result with errors and warnings is thrown via ThrowIfInvalid should raise PipelineValidationException listing the error count and every finding errors first`
+  - **USE COMMAND**: `/tdd:test-first when a result with errors and warnings is thrown via ThrowIfInvalid should raise PipelineValidationException listing the error count and every finding errors first`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_result_with_errors_is_thrown_should_list_every_finding_in_the_exception_message.cs`
   - Test should verify:
@@ -245,7 +245,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `ConfigurationException` stays sealed and unchanged.
 
 - [x] **TEST + IMPLEMENT: T6.3 — `PipelineValidationResult.Combine` keeps the input order (ADR 0025 step 6; FR3, FR5; ADR 0026 ordering relies on it)**
-  - **USE COMMAND**: `/test-first when results are combined should keep every error and warning in input order`
+  - **USE COMMAND**: `/tdd:test-first when results are combined should keep every error and warning in input order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_results_are_combined_should_keep_findings_in_input_order.cs`
   - Test should verify:
@@ -256,7 +256,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the static `PipelineValidationResult.Combine(params PipelineValidationResult[])`, or an `IEnumerable` overload.
 
 - [x] **TEST + IMPLEMENT: T6.4 — A registry whose inspector throws yields one `RuleEvaluationFailed` finding naming that registry, and the other registries are still validated (ADR 0025 step 6; FR3; Invariant "never throws out of Validate")**
-  - **USE COMMAND**: `/test-first when a registry's inspector throws should report one RuleEvaluationFailed error naming that registry and still validate the remaining registries`
+  - **USE COMMAND**: `/tdd:test-first when a registry's inspector throws should report one RuleEvaluationFailed error naming that registry and still validate the remaining registries`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registry_inspector_throws_should_report_rule_evaluation_failed_and_validate_the_others.cs`
   - Test should verify:
@@ -273,7 +273,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7A — HandlerRegistered rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.1 — A registration with a null handler type is an error naming the query and the registry path (ADR 0025 step 7; FR6; catalogue `HandlerRegistered`)**
-  - **USE COMMAND**: `/test-first when a query is registered with a null handler type should report a HandlerRegistered error naming the query type and registry path`
+  - **USE COMMAND**: `/tdd:test-first when a query is registered with a null handler type should report a HandlerRegistered error naming the query type and registry path`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registration_has_no_handler_should_report_handler_registered.cs`
   - Test should verify:
@@ -288,7 +288,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - **Constraint on error factories.** `Specification<T>` calls the error factory outside its try (Brighter's `Specification.cs:194-195`), so a factory that throws would escape `Validate`. Every error factory in `QueryPipelineRules` (and later in `ScopeConfigurationRules`) must be null-safe and must not throw: render `description.HandlerType?.Name` and the like, never dereference a value the predicate did not check.
 
 - [ ] **TEST + IMPLEMENT: T7.2 — A router registration with no candidates is a `HandlerRegistered` error (ADR 0025 step 7; FR6; "Configuration mistakes" table, router row)**
-  - **USE COMMAND**: `/test-first when a router is registered with no candidate handlers should report a HandlerRegistered error naming the query`
+  - **USE COMMAND**: `/tdd:test-first when a router is registered with no candidate handlers should report a HandlerRegistered error naming the query`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_has_no_candidates_should_report_handler_registered.cs`
   - Test should verify:
@@ -300,7 +300,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7B — HandlerPublic rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.3 — An explicitly registered handler that is not public is an error, with advice to make it public (ADR 0025 step 7; FR6; catalogue `HandlerPublic`)**
-  - **USE COMMAND**: `/test-first when an internal handler is registered explicitly should report a HandlerPublic error naming the handler and advising to make it public`
+  - **USE COMMAND**: `/tdd:test-first when an internal handler is registered explicitly should report a HandlerPublic error naming the handler and advising to make it public`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_an_internal_handler_is_registered_explicitly_should_report_handler_public.cs`
   - Test should verify:
@@ -312,7 +312,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the `HandlerPublic` specification, judged on `Type.IsVisible`.
 
 - [ ] **CHARACTERISE: T7.4 — A router registration yields one description per candidate, so each internal candidate is reported, in candidate order (ADR 0025 step 6 router test, placed here; Invariant "one description per candidate")**
-  - **USE COMMAND**: `/test-first when a router registration has two internal candidate handlers should report one HandlerPublic error per candidate in candidate order`
+  - **USE COMMAND**: `/tdd:test-first when a router registration has two internal candidate handlers should report one HandlerPublic error per candidate in candidate order`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_router_has_two_internal_candidates_should_report_each_candidate.cs`
   - Test should verify:
@@ -325,7 +325,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7C — HandlerMatchesPath rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.5 — A handler in the registry of the wrong path is an error naming the handler, the query and the expected interface (ADR 0025 step 7; FR8; catalogue `HandlerMatchesPath`)**
-  - **USE COMMAND**: `/test-first when a sync-only handler is registered in the async registry should report a HandlerMatchesPath error naming the handler, query and IQueryHandlerAsync`
+  - **USE COMMAND**: `/tdd:test-first when a sync-only handler is registered in the async registry should report a HandlerMatchesPath error naming the handler, query and IQueryHandlerAsync`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_only_handler_is_in_the_async_registry_should_report_handler_matches_path.cs`
   - Test should verify:
@@ -337,7 +337,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the `HandlerMatchesPath` specification. Read the path's interface from the description's `PipelinePath`.
 
 - [ ] **TEST + IMPLEMENT: T7.6 — A handler that implements the path's interface explicitly is an error that advises implementing the method publicly (ADR 0025 step 7; FR8)**
-  - **USE COMMAND**: `/test-first when a handler implements ExecuteAsync only as an explicit interface member should report a HandlerMatchesPath error advising a public implementation`
+  - **USE COMMAND**: `/tdd:test-first when a handler implements ExecuteAsync only as an explicit interface member should report a HandlerMatchesPath error advising a public implementation`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_handler_implements_the_interface_explicitly_should_report_handler_matches_path_with_advice.cs`
   - Test should verify:
@@ -350,7 +350,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7D — DecoratorAttributeKind rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.7 — The path's method carrying another path's attributes is an error naming the handler, the attribute and the correct kind (ADR 0025 step 7; FR8; catalogue `DecoratorAttributeKind`)**
-  - **USE COMMAND**: `/test-first when a handler's path method carries attributes of another path's kind should report a DecoratorAttributeKind error naming the handler, attribute and correct kind`
+  - **USE COMMAND**: `/tdd:test-first when a handler's path method carries attributes of another path's kind should report a DecoratorAttributeKind error naming the handler, attribute and correct kind`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_attribute_is_on_execute_async_should_report_decorator_attribute_kind.cs`
   - Test should verify:
@@ -365,7 +365,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7E — PipelineDescribable rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.8 — An ambiguous (overloaded) Execute method is a `PipelineDescribable` error, not an exception (ADR 0025 step 7; FR3, FR8; catalogue `PipelineDescribable`)**
-  - **USE COMMAND**: `/test-first when an async handler has overloaded ExecuteAsync methods should report a PipelineDescribable error naming the handler and method and not throw`
+  - **USE COMMAND**: `/tdd:test-first when an async handler has overloaded ExecuteAsync methods should report a PipelineDescribable error naming the handler and method and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_overloaded_execute_async_should_report_pipeline_describable.cs`
   - Test should verify:
@@ -376,7 +376,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Turn only the reader's method-lookup failure into a description problem. Add the `PipelineDescribable` specification. The attribute-read, decorator-type and decorator-closing failures stay unhandled here; T7.9, T7.10 and T7.11 add them, so each is RED.
 
 - [ ] **TEST + IMPLEMENT: T7.9 — An attribute on the path's method that cannot be read is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
-  - **USE COMMAND**: `/test-first when a decorator attribute's constructor throws should report a PipelineDescribable error carrying the exception message and not throw`
+  - **USE COMMAND**: `/tdd:test-first when a decorator attribute's constructor throws should report a PipelineDescribable error carrying the exception message and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_attribute_cannot_be_read_should_report_pipeline_describable.cs`
   - Test should verify:
@@ -387,7 +387,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Turn the reader's `GetCustomAttributes` failure into a description problem.
 
 - [ ] **TEST + IMPLEMENT: T7.10 — A decorator type that is null, or whose `GetDecoratorType` throws, is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
-  - **USE COMMAND**: `/test-first when a decorator attribute's GetDecoratorType throws or returns null should report a PipelineDescribable error naming the attribute and not throw`
+  - **USE COMMAND**: `/tdd:test-first when a decorator attribute's GetDecoratorType throws or returns null should report a PipelineDescribable error naming the attribute and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_type_is_null_or_throws_should_report_pipeline_describable.cs`
   - Test should verify:
@@ -399,7 +399,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Turn the reader's null-type and `GetDecoratorType` failures into description problems.
 
 - [ ] **TEST + IMPLEMENT: T7.11 — A decorator type that cannot be closed over `IQuery<TResult>`/`IStreamQuery<TResult>` and `TResult` is a `PipelineDescribable` error (ADR 0025 step 7; FR3)**
-  - **USE COMMAND**: `/test-first when a decorator attribute names a decorator type that cannot be closed over the query and result should report a PipelineDescribable error and not throw`
+  - **USE COMMAND**: `/tdd:test-first when a decorator attribute names a decorator type that cannot be closed over the query and result should report a PipelineDescribable error and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_type_cannot_be_closed_should_report_pipeline_describable.cs`
   - Test should verify:
@@ -410,7 +410,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Turn the reader's `MakeGenericType` failure into a description problem.
 
 - [ ] **CHARACTERISE: T7.12 — A sync-only handler in the async registry yields no `PipelineDescribable` finding (ADR 0025 step 7, the ADR's further `PipelineDescribable` test)**
-  - **USE COMMAND**: `/test-first when a sync-only handler is in the async registry should report HandlerMatchesPath and no PipelineDescribable finding`
+  - **USE COMMAND**: `/tdd:test-first when a sync-only handler is in the async registry should report HandlerMatchesPath and no PipelineDescribable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_sync_only_handler_is_in_the_async_registry_should_report_no_pipeline_describable.cs`
   - Test should verify:
@@ -423,7 +423,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7F — DuplicateStep rule (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T7.13 — Two attributes of the path's kind with the same Step are a warning naming the handler, the step and both attributes (ADR 0025 step 7; FR9; catalogue `DuplicateStep`)**
-  - **USE COMMAND**: `/test-first when two decorator attributes on one handler method share a Step should report a DuplicateStep warning naming the handler, the step and both attributes`
+  - **USE COMMAND**: `/tdd:test-first when two decorator attributes on one handler method share a Step should report a DuplicateStep warning naming the handler, the step and both attributes`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_two_decorator_attributes_share_a_step_should_report_duplicate_step.cs`
   - Test should verify:
@@ -435,7 +435,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the public `PipelineStepDescription`, and make the describer record the path's decorator steps in the builder's order, one step for each decorator the reader closed. A decorator that yields a problem adds no step (ADR 0025 Invariant; T7.14 pins it). Add the `DuplicateStep` specification over the description's ordered `PipelineStepDescription`s.
 
 - [ ] **CHARACTERISE: T7.14 — A decorator that fails to describe takes no part in `DuplicateStep` (ADR 0025 Invariant "a decorator that yields a problem adds no step")**
-  - **USE COMMAND**: `/test-first when a decorator that cannot be closed shares a Step with a valid decorator should report PipelineDescribable and no DuplicateStep`
+  - **USE COMMAND**: `/tdd:test-first when a decorator that cannot be closed shares a Step with a valid decorator should report PipelineDescribable and no DuplicateStep`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_failed_decorator_shares_a_step_should_report_no_duplicate_step.cs`
   - Test should verify:
@@ -448,7 +448,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 7G — Cross-cutting pipeline guarantees (behaviour and risk pins)
 
 - [ ] **TEST + IMPLEMENT: T7.15 — A custom registry that is not an inspector yields a `RegistryNotInspectable` warning (ADR 0025 step 7; FR6; catalogue `RegistryNotInspectable`)**
-  - **USE COMMAND**: `/test-first when a custom registry does not implement IAmAHandlerRegistryInspector should report a RegistryNotInspectable warning naming the registry type`
+  - **USE COMMAND**: `/tdd:test-first when a custom registry does not implement IAmAHandlerRegistryInspector should report a RegistryNotInspectable warning naming the registry type`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_registry_is_not_inspectable_should_report_registry_not_inspectable.cs`
   - Test should verify:
@@ -458,7 +458,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - In `PipelineValidator.Validate`, emit the warning when a non-null registry is not an `IAmAHandlerRegistryInspector`.
 
 - [ ] **CHARACTERISE: T7.16 — Several mistakes appear together in one result (ADR 0025 step 7; FR3; acceptance criterion "several misconfigurations at once")**
-  - **USE COMMAND**: `/test-first when the registries hold several different misconfigurations should report every one of them in a single result`
+  - **USE COMMAND**: `/tdd:test-first when the registries hold several different misconfigurations should report every one of them in a single result`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_several_pipelines_are_misconfigured_should_report_every_mistake_in_one_result.cs`
   - Test should verify:
@@ -469,7 +469,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T7.17 — Two descriptions failing the same rule each yield a finding (ADR 0025 risk: `Specification<T>` is stateful)**
-  - **USE COMMAND**: `/test-first when two handlers fail the same rule should report one finding for each handler`
+  - **USE COMMAND**: `/tdd:test-first when two handlers fail the same rule should report one finding for each handler`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_two_handlers_fail_the_same_rule_should_report_a_finding_for_each.cs`
   - Test should verify:
@@ -481,7 +481,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T7.1's `QueryPipelineRules` creates a fresh rule set for each `Validate` call, and the validator collects each description's findings before evaluating the next.
 
 - [ ] **CHARACTERISE: T7.18 — Findings are deterministic: registry order, then registration order, then candidate order, then rule order (ADR 0025 step 7 determinism test; Invariant "order is deterministic")**
-  - **USE COMMAND**: `/test-first when the same configuration is validated twice should produce identical findings ordered by registry, registration, candidate and rule`
+  - **USE COMMAND**: `/tdd:test-first when the same configuration is validated twice should produce identical findings ordered by registry, registration, candidate and rule`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_the_same_configuration_twice_should_produce_identical_ordered_findings.cs`
   - Test should verify:
@@ -493,7 +493,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **TEST + IMPLEMENT: T7.19 — A description with no handler type yields only the `HandlerRegistered` error from the Phase 7 rules (ADR 0025 step 7; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
-  - **USE COMMAND**: `/test-first when a registration has no handler type should report only the HandlerRegistered error`
+  - **USE COMMAND**: `/tdd:test-first when a registration has no handler type should report only the HandlerRegistered error`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_only_handler_registered.cs`
   - Test should verify:
@@ -508,7 +508,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 8 — Resolvability probe and rules (ADR 0025 step 8)
 
 - [ ] **TEST + IMPLEMENT: T8.1 — A handler type that the probe says is not registered is a `HandlerResolvable` error (ADR 0025 step 8; FR6; catalogue `HandlerResolvable`)**
-  - **USE COMMAND**: `/test-first when the resolvability probe says a handler type is not registered should report a HandlerResolvable error naming the handler and advising to register it`
+  - **USE COMMAND**: `/tdd:test-first when the resolvability probe says a handler type is not registered should report a HandlerResolvable error naming the handler and advising to register it`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_says_a_handler_is_not_registered_should_report_handler_resolvable.cs`
   - Test should verify:
@@ -521,7 +521,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add `WithProbe(IAmAComponentResolvabilityProbe)` to `PipelineValidatorBuilder` (default: no probe) and pass it in `Build()`. The builder is the only call site that changes; no earlier test file is edited.
 
 - [ ] **TEST + IMPLEMENT: T8.2 — A closed decorator type that the probe says is not registered is a `DecoratorResolvable` error (ADR 0025 step 8; FR7; catalogue `DecoratorResolvable`)**
-  - **USE COMMAND**: `/test-first when the resolvability probe says a closed decorator type is not registered should report a DecoratorResolvable error naming the decorator and handler`
+  - **USE COMMAND**: `/tdd:test-first when the resolvability probe says a closed decorator type is not registered should report a DecoratorResolvable error naming the decorator and handler`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_says_a_decorator_is_not_registered_should_report_decorator_resolvable.cs`
   - Test should verify:
@@ -532,7 +532,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the `DecoratorResolvable` rule over the description's closed step types, as a **predicate-form** specification, added only when a probe was supplied (as T8.1).
 
 - [ ] **TEST + IMPLEMENT: T8.3 — A validator without a probe reports one `ResolvabilityNotChecked` warning, ahead of every registry, and no resolvability error (ADR 0025 step 8; Invariant "without a probe, validation says so")**
-  - **USE COMMAND**: `/test-first when PipelineValidator is built without a probe should report one ResolvabilityNotChecked warning first and no HandlerResolvable or DecoratorResolvable finding`
+  - **USE COMMAND**: `/tdd:test-first when PipelineValidator is built without a probe should report one ResolvabilityNotChecked warning first and no HandlerResolvable or DecoratorResolvable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_without_a_probe_should_report_resolvability_not_checked.cs`
   - Test should verify:
@@ -543,7 +543,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - When the probe is null, emit the `ResolvabilityNotChecked` warning once, before the registries. T8.1 and T8.2 already skip both resolvability rules in that case.
 
 - [ ] **CHARACTERISE: T8.4 — A probe that throws yields a `RuleEvaluationFailed` error through `PipelineValidator` (ADR 0025 step 8; FR3)**
-  - **USE COMMAND**: `/test-first when the resolvability probe throws should report a RuleEvaluationFailed error with rule identifier RuleEvaluationFailed and not throw`
+  - **USE COMMAND**: `/tdd:test-first when the resolvability probe throws should report a RuleEvaluationFailed error with rule identifier RuleEvaluationFailed and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_throws_should_report_rule_evaluation_failed.cs`
   - Test should verify:
@@ -554,7 +554,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T8.1 and T8.2 build both rules as predicate-form specifications, so T2.1's predicate catch path (`EvaluateSimple`) delivers this.
 
 - [ ] **TEST + IMPLEMENT: T8.5 — A description with no handler type yields no `HandlerResolvable` finding, and the probe is never asked about it (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
-  - **USE COMMAND**: `/test-first when a registration has no handler type and the probe answers false should report no HandlerResolvable finding and never ask the probe about a null type`
+  - **USE COMMAND**: `/tdd:test-first when a registration has no handler type and the probe answers false should report no HandlerResolvable finding and never ask the probe about a null type`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_handler_resolvable.cs`
   - Test should verify:
@@ -566,7 +566,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Make `HandlerResolvable` satisfied, without calling the probe, when the description has no handler type.
 
 - [ ] **CHARACTERISE: T8.6 — A description with no handler type yields no `DecoratorResolvable` finding (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
-  - **USE COMMAND**: `/test-first when a registration has no handler type and the probe answers false should report no DecoratorResolvable finding`
+  - **USE COMMAND**: `/tdd:test-first when a registration has no handler type and the probe answers false should report no DecoratorResolvable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_decorator_resolvable.cs`
   - Test should verify:
@@ -580,7 +580,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 9 — Decorator ordering table (ADR 0025 step 9)
 
 - [ ] **TEST + IMPLEMENT: T9.1 — A Fallback inside a Retry on the sync path is a `DecoratorOrdering` warning naming the handler, both decorators and the reason (ADR 0025 step 9; FR9; catalogue `DecoratorOrdering`)**
-  - **USE COMMAND**: `/test-first when a sync handler's FallbackPolicy sits inside its RetryableQuery should report a DecoratorOrdering warning naming the handler, both decorators and the reason`
+  - **USE COMMAND**: `/tdd:test-first when a sync handler's FallbackPolicy sits inside its RetryableQuery should report a DecoratorOrdering warning naming the handler, both decorators and the reason`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_fallback_sits_inside_a_retry_should_report_decorator_ordering.cs`
   - Test should verify:
@@ -594,7 +594,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add `WithOrderingRules(IEnumerable<DecoratorOrderingRule>)` to `PipelineValidatorBuilder`, defaulting to `DecoratorOrderingRules.Default`, and pass it in `Build()`. The builder is the only call site that changes; no T6–T8 test file is edited.
 
 - [ ] **TEST + IMPLEMENT: T9.2 — The same ordering rule holds on the async path (ADR 0025 step 9; FR9)**
-  - **USE COMMAND**: `/test-first when an async handler's FallbackPolicyAsync sits inside its RetryableQueryAsync should report a DecoratorOrdering warning`
+  - **USE COMMAND**: `/tdd:test-first when an async handler's FallbackPolicyAsync sits inside its RetryableQueryAsync should report a DecoratorOrdering warning`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_an_async_fallback_sits_inside_an_async_retry_should_report_decorator_ordering.cs`
   - Test should verify:
@@ -604,7 +604,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the async pair to `DecoratorOrderingRules.Default`. Add no stream pair.
 
 - [ ] **CHARACTERISE: T9.3 — Fallback outside Retry (lower Fallback Step) yields no ordering warning (ADR 0025 risk "users read lower step against stale documentation")**
-  - **USE COMMAND**: `/test-first when FallbackPolicy has a lower Step than RetryableQuery should report no DecoratorOrdering finding`
+  - **USE COMMAND**: `/tdd:test-first when FallbackPolicy has a lower Step than RetryableQuery should report no DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_fallback_sits_outside_a_retry_should_report_no_decorator_ordering.cs`
   - Test should verify:
@@ -615,7 +615,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T9.4 — A caller-supplied ordering rule extends the table (ADR 0025 step 9; force "Extensibility")**
-  - **USE COMMAND**: `/test-first when a caller passes Default plus its own DecoratorOrderingRule should report violations of both`
+  - **USE COMMAND**: `/tdd:test-first when a caller passes Default plus its own DecoratorOrderingRule should report violations of both`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_caller_adds_an_ordering_rule_should_report_its_violation.cs`
   - Test should verify:
@@ -626,7 +626,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T9.1 evaluates every rule in the supplied table, and T9.2 already relies on that for the async pair.
 
 - [ ] **TEST + IMPLEMENT: T9.5 — A null ordering-rule collection throws `ArgumentNullException` (ADR 0025 `PipelineValidator` constructor error condition)**
-  - **USE COMMAND**: `/test-first when PipelineValidator is constructed with a null ordering rule collection should throw ArgumentNullException`
+  - **USE COMMAND**: `/tdd:test-first when PipelineValidator is constructed with a null ordering rule collection should throw ArgumentNullException`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_constructing_a_validator_with_null_ordering_rules_should_throw.cs`
   - Test should verify:
@@ -636,7 +636,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Guard the parameter.
 
 - [ ] **CHARACTERISE: T9.6 — A description with no handler type yields no `DecoratorOrdering` finding (ADR 0025 step 9; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
-  - **USE COMMAND**: `/test-first when a registration has no handler type should report no DecoratorOrdering finding`
+  - **USE COMMAND**: `/tdd:test-first when a registration has no handler type should report no DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_decorator_ordering.cs`
   - Test should verify:
@@ -663,7 +663,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 11A — Opt-in registration (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T11.1 — `ValidatePipelines()` registers the validator, and without it nothing is registered (ADR 0025 step 11 bullet 1; FR1; NFR opt-in and non-breaking; acceptance criterion "an application that does not call it is unaffected")**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called on the Darker builder should register an IAmAPipelineValidator, and when it is not called should register none`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called on the Darker builder should register an IAmAPipelineValidator, and when it is not called should register none`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_should_register_the_pipeline_validator.cs`
   - Test should verify:
@@ -675,7 +675,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - It captures the registries through T4.1's internal properties, and registers `PipelineValidator` in a factory delegate (lazy, at resolve time), over those live registries and `DecoratorOrderingRules.Default`.
 
 - [ ] **TEST + IMPLEMENT: T11.2 — `ValidatePipelines()` on a builder that `AddDarker` did not create throws `InvalidOperationException` (ADR 0025 `ValidatePipelines` error condition)**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called on a builder not created by AddDarker should throw InvalidOperationException`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called on a builder not created by AddDarker should throw InvalidOperationException`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_on_a_foreign_builder_should_throw_invalid_operation.cs`
   - Test should verify:
@@ -685,7 +685,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Throw when the builder is not a `ServiceCollectionDarkerHandlerBuilder`.
 
 - [ ] **TEST + IMPLEMENT: T11.3 — `ValidateAll` runs every registered validator, combines their results in registration order and never throws (ADR 0025 step 11 bullet "on-demand ValidateAll"; FR5)**
-  - **USE COMMAND**: `/test-first when ValidateAll is called on the provider should return one combined result from every registered validator in registration order without throwing`
+  - **USE COMMAND**: `/tdd:test-first when ValidateAll is called on the provider should return one combined result from every registered validator in registration order without throwing`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidateAll_is_called_should_combine_every_validator_in_registration_order.cs`
   - Test should verify:
@@ -698,7 +698,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 11B — Container-backed resolvability (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T11.4 — An unregistered decorator is reported through a real container (ADR 0025 step 11 bullet 3; FR7; acceptance criterion for FR7)**
-  - **USE COMMAND**: `/test-first when a public handler names a decorator that is not registered in the container should report a DecoratorResolvable error through ValidateAll`
+  - **USE COMMAND**: `/tdd:test-first when a public handler names a decorator that is not registered in the container should report a DecoratorResolvable error through ValidateAll`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_is_not_registered_in_the_container_should_report_decorator_resolvable.cs`
   - Test should verify:
@@ -709,7 +709,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the internal `ServiceProviderResolvabilityProbe` over `IServiceProviderIsService`, resolved from the provider in the validator factory. Pass null when the container supplies no `IServiceProviderIsService`.
 
 - [ ] **CHARACTERISE: T11.5 — A handler whose descriptor was removed is reported through a real container (ADR 0025 step 11 bullet 3; FR6; acceptance criterion for FR6)**
-  - **USE COMMAND**: `/test-first when a registered handler's service descriptor is removed from the container should report a HandlerResolvable error through ValidateAll`
+  - **USE COMMAND**: `/tdd:test-first when a registered handler's service descriptor is removed from the container should report a HandlerResolvable error through ValidateAll`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_descriptor_is_removed_should_report_handler_resolvable.cs`
   - Test should verify:
@@ -720,7 +720,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T8.1's `HandlerResolvable` rule and T11.4's container probe deliver this.
 
 - [ ] **CHARACTERISE: T11.6 — An open-generic decorator registration counts as registered once closed (ADR 0025 step 11 bullet 3; `IServiceProviderIsService` open-generic choice)**
-  - **USE COMMAND**: `/test-first when a decorator is registered as an open generic should report no DecoratorResolvable error for its closed type`
+  - **USE COMMAND**: `/tdd:test-first when a decorator is registered as an open generic should report no DecoratorResolvable error for its closed type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_is_registered_as_an_open_generic_should_report_no_decorator_resolvable.cs`
   - Test should verify:
@@ -733,7 +733,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 11C — Ordering table in the container (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T11.7 — An ordering rule contributed with `AddSingleton` accumulates beside the default table (ADR 0025 step 11 bullet 2; force "Extensibility")**
-  - **USE COMMAND**: `/test-first when a package adds a DecoratorOrderingRule with AddSingleton should report its violation beside the default Fallback and Retry rule`
+  - **USE COMMAND**: `/tdd:test-first when a package adds a DecoratorOrderingRule with AddSingleton should report its violation beside the default Fallback and Retry rule`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_package_adds_an_ordering_rule_should_accumulate_it_beside_the_default_table.cs`
   - Test should verify:
@@ -743,7 +743,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Register each `DecoratorOrderingRules.Default` rule with `AddSingleton`, not `TryAddEnumerable`, which would drop them. Have the validator factory read `GetServices<DecoratorOrderingRule>()`.
 
 - [ ] **TEST + IMPLEMENT: T11.8 — Calling `ValidatePipelines()` twice registers once, and yields a single `DecoratorOrdering` finding (ADR 0025 step 11 bullet 1; risk "duplicate registrations repeat findings")**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called twice should register one pipeline validator and report a single DecoratorOrdering finding`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called twice should register one pipeline validator and report a single DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_register_once.cs`
   - Test should verify:
@@ -756,7 +756,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 11D — Hosted service at start (behaviour)
 
 - [ ] **TEST + IMPLEMENT: T11.9 — Validation runs in the host's starting phase, before another hosted service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2)**
-  - **USE COMMAND**: `/test-first when a host starts with ValidatePipelines should run validation in StartingAsync before another hosted service's StartAsync even if that service was registered first`
+  - **USE COMMAND**: `/tdd:test-first when a host starts with ValidatePipelines should run validation in StartingAsync before another hosted service's StartAsync even if that service was registered first`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_host_starts_should_validate_before_any_hosted_service_starts.cs`
   - Test should verify:
@@ -769,7 +769,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Register it with `AddHostedService` inside the once-only branch.
 
 - [ ] **TEST + IMPLEMENT: T11.10 — With `throwOnError` true, an error fails host start with `PipelineValidationException` listing every finding (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "throwOnError = true fails start")**
-  - **USE COMMAND**: `/test-first when validation finds an error and throwOnError is true should fail host start with PipelineValidationException listing every finding`
+  - **USE COMMAND**: `/tdd:test-first when validation finds an error and throwOnError is true should fail host start with PipelineValidationException listing every finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_an_error_and_throw_on_error_is_true_should_fail_host_start.cs`
   - Test should verify:
@@ -780,7 +780,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Register a `DarkerPipelineValidationOptions` holding `ThrowOnError`. In the hosted service, call `ThrowIfInvalid()` on the combined result when `ThrowOnError` is true.
 
 - [ ] **TEST + IMPLEMENT: T11.11 — The last `ValidatePipelines()` call sets `throwOnError` (ADR 0025 Scope FR1, "the last call sets throwOnError")**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called first with throwOnError false and then with true should fail host start on an error`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called first with throwOnError false and then with true should fail host start on an error`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_take_throw_on_error_from_the_last_call.cs`
   - Test should verify:
@@ -792,7 +792,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - On every call, update the options instance found through its descriptor's `ImplementationInstance`.
 
 - [ ] **TEST + IMPLEMENT: T11.12 — With `throwOnError` false, each error is logged at Error and the host starts (ADR 0025 step 11 bullet 5; FR4)**
-  - **USE COMMAND**: `/test-first when validation finds errors and throwOnError is false should log each error at Error level and let the host start`
+  - **USE COMMAND**: `/tdd:test-first when validation finds errors and throwOnError is false should log each error at Error level and let the host start`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_errors_and_throw_on_error_is_false_should_log_and_start.cs`
   - Test should verify:
@@ -803,7 +803,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Inject `ILogger<DarkerValidationHostedService>`, and log each error at Error when not throwing.
 
 - [ ] **TEST + IMPLEMENT: T11.13 — Warnings are logged at Warning and never block start, and a clean result logs only a Debug summary (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "warnings alone never fail start")**
-  - **USE COMMAND**: `/test-first when validation finds only warnings with throwOnError true should log each at Warning and start, and when clean should log nothing above Debug`
+  - **USE COMMAND**: `/tdd:test-first when validation finds only warnings with throwOnError true should log each at Warning and start, and when clean should log nothing above Debug`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_only_warnings_should_log_them_and_start.cs`
   - Test should verify:
@@ -815,7 +815,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Always log warnings at Warning, and log one Debug summary when the combined result has no findings.
 
 - [ ] **TEST + IMPLEMENT: T11.14 — A host that never calls the starting phase still validates, from `StartAsync` (ADR 0025 `DarkerValidationHostedService.StartAsync`; Technology Choices limit 3)**
-  - **USE COMMAND**: `/test-first when only StartAsync is called on the registered hosted services should run validation`
+  - **USE COMMAND**: `/tdd:test-first when only StartAsync is called on the registered hosted services should run validation`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_only_start_async_is_called_should_validate.cs`
   - Test should verify:
@@ -829,7 +829,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add no once-only guard against a second `StartAsync`; T11.15 drives it.
 
 - [ ] **TEST + IMPLEMENT: T11.15 — Validation runs exactly once, when both `StartingAsync` and `StartAsync` run and when `StartAsync` is called twice (ADR 0025 step 11 bullet 4; Invariant "a once-only guard")**
-  - **USE COMMAND**: `/test-first when StartAsync is called a second time, or the host runs both StartingAsync and StartAsync, should run validation exactly once`
+  - **USE COMMAND**: `/tdd:test-first when StartAsync is called a second time, or the host runs both StartingAsync and StartAsync, should run validation exactly once`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_start_async_is_called_twice_should_validate_once.cs`
   - Test should verify:
@@ -841,7 +841,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Replace T11.14's flag with a once-only guard in `DarkerValidationHostedService` (for example `Interlocked.Exchange` on an int), taken by whichever of `StartingAsync` and `StartAsync` runs first, so validation runs at most once per hosted-service instance.
 
 - [ ] **CHARACTERISE: T11.16 — Under `ServicesStartConcurrently`, validation still precedes the other service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2 "does not depend on registration order")**
-  - **USE COMMAND**: `/test-first when the host starts services concurrently should still validate before another hosted service's StartAsync`
+  - **USE COMMAND**: `/tdd:test-first when the host starts services concurrently should still validate before another hosted service's StartAsync`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_services_start_concurrently_should_still_validate_before_any_hosted_service_starts.cs`
   - Test should verify:
@@ -857,7 +857,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ### 11E — Call order and side effects (risk pins)
 
 - [ ] **CHARACTERISE: T11.17 — A handler added after `ValidatePipelines()` is still validated (ADR 0025 step 11 bullet 7; FR14, pipeline part)**
-  - **USE COMMAND**: `/test-first when a handler is registered after ValidatePipelines should still be validated`
+  - **USE COMMAND**: `/tdd:test-first when a handler is registered after ValidatePipelines should still be validated`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_is_registered_after_ValidatePipelines_should_still_be_validated.cs`
   - Test should verify:
@@ -868,7 +868,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. The lazy factory from T11.1 delivers this.
 
 - [ ] **CHARACTERISE: T11.18 — Validation creates no handler and no decorator (ADR 0025 step 11 bullet 8; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
-  - **USE COMMAND**: `/test-first when validation runs at host start should never construct a handler or a decorator`
+  - **USE COMMAND**: `/tdd:test-first when validation runs at host start should never construct a handler or a decorator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_runs_should_create_no_handler_or_decorator.cs`
   - Test should verify:
@@ -916,7 +916,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 14 — Lifetime snapshot and validator skeleton (ADR 0026 step 2)
 
 - [ ] **TEST + IMPLEMENT: T14.1 — `ValidatePipelines()` registers two validators, the pipeline validator first (ADR 0026 step 2 bullet 1; FR1, FR5)**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called should register the pipeline validator first and then the lifetime validator`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called should register the pipeline validator first and then the lifetime validator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_should_register_the_lifetime_validator_after_the_pipeline_validator.cs`
   - Test should verify:
@@ -931,7 +931,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - A later call finds the snapshot through its descriptor's `ImplementationInstance`.
 
 - [ ] **CHARACTERISE: T14.2 — Calling `ValidatePipelines()` twice registers two validators in total, not three (ADR 0026 step 2 bullet 2; Invariant "the last call wins")**
-  - **USE COMMAND**: `/test-first when ValidatePipelines is called twice should register exactly two validators`
+  - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called twice should register exactly two validators`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_register_two_validators_in_total.cs`
   - Test should verify:
@@ -944,7 +944,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 15 — InertScopeAffinity rule (ADR 0026 step 3)
 
 - [ ] **TEST + IMPLEMENT: T15.1 — `AddDarkerScopeProvider<T>(JoinAmbient)` with a Transient `HandlerLifetime` is an error naming `T` and `Transient` (ADR 0026 step 3 bullet 1; FR10; FR13 link)**
-  - **USE COMMAND**: `/test-first when AddDarkerScopeProvider registers JoinAmbient and HandlerLifetime is Transient should report an InertScopeAffinity error naming the provider and Transient with the README link`
+  - **USE COMMAND**: `/tdd:test-first when AddDarkerScopeProvider registers JoinAmbient and HandlerLifetime is Transient should report an InertScopeAffinity error naming the provider and Transient with the README link`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_is_registered_with_a_transient_handler_lifetime_should_report_inert_scope_affinity.cs`
   - Test should verify:
@@ -957,7 +957,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - The effective affinity is the last unkeyed `ScopeAffinityRegistration` instance, otherwise `Options.DefaultScopeAffinity`, as at `ServiceCollectionExtensions.cs:79-81`.
 
 - [ ] **TEST + IMPLEMENT: T15.2 — `DefaultScopeAffinity = JoinAmbient` with a Singleton `HandlerLifetime` and a provider added with `AddSingleton` is an error naming the option (ADR 0026 step 3 bullet 2; FR10)**
-  - **USE COMMAND**: `/test-first when DefaultScopeAffinity is JoinAmbient and HandlerLifetime is Singleton with a directly registered provider should report an InertScopeAffinity error naming DarkerOptions.DefaultScopeAffinity`
+  - **USE COMMAND**: `/tdd:test-first when DefaultScopeAffinity is JoinAmbient and HandlerLifetime is Singleton with a directly registered provider should report an InertScopeAffinity error naming DarkerOptions.DefaultScopeAffinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_default_affinity_is_join_ambient_with_a_singleton_handler_lifetime_should_report_inert_scope_affinity.cs`
   - Test should verify:
@@ -967,7 +967,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Render the option as the affinity's source when no registration exists. Read `HandlerLifetime` from `snapshot.Options` inside `Validate`, at host start.
 
 - [ ] **CHARACTERISE: T15.3 — A registered `AlwaysNew` that overrides a `JoinAmbient` default yields nothing (ADR 0026 step 3 bullet 3; "Why the effective affinity")**
-  - **USE COMMAND**: `/test-first when a registered AlwaysNew affinity overrides a JoinAmbient default should report no InertScopeAffinity finding`
+  - **USE COMMAND**: `/tdd:test-first when a registered AlwaysNew affinity overrides a JoinAmbient default should report no InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_registered_always_new_overrides_a_join_ambient_default_should_report_nothing.cs`
   - Test should verify:
@@ -978,7 +978,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T15.4 — `JoinAmbient` with a Scoped `HandlerLifetime` and a registered provider yields nothing (ADR 0026 step 3 bullet 4; acceptance criterion "correctly configured application starts cleanly")**
-  - **USE COMMAND**: `/test-first when JoinAmbient is registered with a Scoped handler lifetime and a scope provider should report no InertScopeAffinity finding`
+  - **USE COMMAND**: `/tdd:test-first when JoinAmbient is registered with a Scoped handler lifetime and a scope provider should report no InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_has_a_scoped_lifetime_and_a_provider_should_report_nothing.cs`
   - Test should verify:
@@ -989,7 +989,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **TEST + IMPLEMENT: T15.5 — `DefaultScopeAffinity = JoinAmbient` with a Scoped lifetime and no provider is an error that advises `AddDarkerScopeProvider` (ADR 0026 step 3 bullet 5; FR10 "no unkeyed provider")**
-  - **USE COMMAND**: `/test-first when DefaultScopeAffinity is JoinAmbient with a Scoped handler lifetime and no scope provider should report an InertScopeAffinity error advising AddDarkerScopeProvider or AddDarkerRequestScope`
+  - **USE COMMAND**: `/tdd:test-first when DefaultScopeAffinity is JoinAmbient with a Scoped handler lifetime and no scope provider should report an InertScopeAffinity error advising AddDarkerScopeProvider or AddDarkerRequestScope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_default_affinity_is_join_ambient_without_a_provider_should_report_inert_scope_affinity.cs`
   - Test should verify:
@@ -999,7 +999,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the missing-provider cause, read from the unkeyed `IAmAScopeProvider` descriptors in the snapshot (`DescriptorsFor`, which excludes keyed descriptors, because Darker resolves the provider unkeyed). Add it to the same finding as the `HandlerLifetime` cause, not as a second finding, as the ADR 0026 catalogue says ("every cause that applies, in one finding"). T15.6 pins this.
 
 - [ ] **CHARACTERISE: T15.6 — A Transient lifetime and no provider yield one finding that names both causes (ADR 0026 step 3 bullet 6; catalogue "every cause that applies, in one finding")**
-  - **USE COMMAND**: `/test-first when JoinAmbient has both a Transient handler lifetime and no scope provider should report one InertScopeAffinity error naming both causes`
+  - **USE COMMAND**: `/tdd:test-first when JoinAmbient has both a Transient handler lifetime and no scope provider should report one InertScopeAffinity error naming both causes`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_has_both_causes_should_report_one_finding_naming_both.cs`
   - Test should verify:
@@ -1010,7 +1010,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T15.5 composes every applicable cause into one finding, as the ADR 0026 catalogue requires.
 
 - [ ] **CHARACTERISE: T15.7 — A provider added with `AddSingleton` satisfies the rule, and a keyed-only provider does not (ADR 0026 step 3 bullet 7; risk "reading the wrong property family")**
-  - **USE COMMAND**: `/test-first when the only scope provider is keyed should report InertScopeAffinity, and when an unkeyed provider is added with AddSingleton should report nothing`
+  - **USE COMMAND**: `/tdd:test-first when the only scope provider is keyed should report InertScopeAffinity, and when an unkeyed provider is added with AddSingleton should report nothing`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_only_scope_provider_is_keyed_should_report_inert_scope_affinity.cs`
   - Test should verify:
@@ -1022,7 +1022,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T15.1's `Capture` checks `IsKeyedService` before reading a property family, and T15.5's `DescriptorsFor` returns unkeyed descriptors only.
 
 - [ ] **CHARACTERISE: T15.8 — A host with `throwOnError` true fails start on an `InertScopeAffinity` error (ADR 0026 step 3 bullet 8; FR4, FR10)**
-  - **USE COMMAND**: `/test-first when the host starts with an inert JoinAmbient configuration and throwOnError true should fail with PipelineValidationException listing the InertScopeAffinity finding`
+  - **USE COMMAND**: `/tdd:test-first when the host starts with an inert JoinAmbient configuration and throwOnError true should fail with PipelineValidationException listing the InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_host_starts_with_an_inert_scope_affinity_should_fail_start.cs`
   - Test should verify:
@@ -1034,7 +1034,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T15.9 — `AddDarkerRequestScope()` with a Transient `HandlerLifetime` is an `InertScopeAffinity` error (ADR 0026 step 3 bullet 9; FR10 "including via AddDarkerRequestScope()")**
-  - **USE COMMAND**: `/test-first when AddDarkerRequestScope is registered before AddDarker with a Transient handler lifetime should report an InertScopeAffinity error naming HttpContextScopeProvider`
+  - **USE COMMAND**: `/tdd:test-first when AddDarkerRequestScope is registered before AddDarker with a Transient handler lifetime should report an InertScopeAffinity error naming HttpContextScopeProvider`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests/"
   - Test file: `When_the_request_scope_is_registered_with_a_transient_handler_lifetime_should_report_inert_scope_affinity.cs`
   - Test should verify:
@@ -1046,7 +1046,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **TEST + IMPLEMENT: T15.10 — When the scope provider in use is a factory registration, the `InertScopeAffinity` message renders it as "a factory registration at position N" (ADR 0026 catalogue, `InertScopeAffinity` "the scope provider in use … rendered as in DuplicateScopeProvider")**
-  - **USE COMMAND**: `/test-first when the scope provider in use is registered by a factory and JoinAmbient is inert should report an InertScopeAffinity error rendering the provider as a factory registration at its position`
+  - **USE COMMAND**: `/tdd:test-first when the scope provider in use is registered by a factory and JoinAmbient is inert should report an InertScopeAffinity error rendering the provider as a factory registration at its position`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_scope_provider_in_use_is_a_factory_should_render_it_by_position_in_inert_scope_affinity.cs`
   - Test should verify:
@@ -1060,7 +1060,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 16 — DuplicateScopeProvider rule (ADR 0026 step 4)
 
 - [ ] **TEST + IMPLEMENT: T16.1 — Two different provider types are a warning naming both and saying the last is used (ADR 0026 step 4 bullet 1; FR12; FR13 link)**
-  - **USE COMMAND**: `/test-first when two different IAmAScopeProvider types are registered with AddSingleton should report a DuplicateScopeProvider warning naming both and the last as the one used`
+  - **USE COMMAND**: `/tdd:test-first when two different IAmAScopeProvider types are registered with AddSingleton should report a DuplicateScopeProvider warning naming both and the last as the one used`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_two_different_scope_providers_are_registered_should_report_duplicate_scope_provider.cs`
   - Test should verify:
@@ -1071,7 +1071,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the `DuplicateScopeProvider` specification to `ScopeConfigurationRules`, evaluated after `InertScopeAffinity`. It fails when the unkeyed provider records name more than one distinct implementation type, and renders each with T15.10's rendering.
 
 - [ ] **TEST + IMPLEMENT: T16.2 — A factory registration beside a type registration is a warning that renders "a factory registration at position N" (ADR 0026 step 4 bullet 2)**
-  - **USE COMMAND**: `/test-first when a factory-registered scope provider sits beside a type-registered one should report a DuplicateScopeProvider warning rendering the factory by its position`
+  - **USE COMMAND**: `/tdd:test-first when a factory-registered scope provider sits beside a type-registered one should report a DuplicateScopeProvider warning rendering the factory by its position`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_factory_scope_provider_sits_beside_a_type_registration_should_report_duplicate_scope_provider.cs`
   - Test should verify:
@@ -1083,7 +1083,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Reuse T15.10's rendering of a provider record. Count each factory descriptor as distinct from every other descriptor (ADR 0026 `DuplicateScopeProvider` comparison rules).
 
 - [ ] **TEST + IMPLEMENT: T16.3 — An instance of a different type beside a type registration is a warning naming the instance's runtime type (ADR 0026 step 4 bullet 3)**
-  - **USE COMMAND**: `/test-first when an instance-registered scope provider of a different type sits beside a type registration should report a DuplicateScopeProvider warning naming the instance's runtime type`
+  - **USE COMMAND**: `/tdd:test-first when an instance-registered scope provider of a different type sits beside a type registration should report a DuplicateScopeProvider warning naming the instance's runtime type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_an_instance_scope_provider_sits_beside_a_type_registration_should_report_duplicate_scope_provider.cs`
   - Test should verify:
@@ -1093,7 +1093,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Derive the instance's runtime type from `DescriptorRecord`'s instance, both for the distinct-type comparison and in the shared rendering from T15.10.
 
 - [ ] **CHARACTERISE: T16.4 — The same provider type registered twice yields nothing (ADR 0026 step 4 bullet 4)**
-  - **USE COMMAND**: `/test-first when the same IAmAScopeProvider type is registered twice should report no DuplicateScopeProvider finding`
+  - **USE COMMAND**: `/tdd:test-first when the same IAmAScopeProvider type is registered twice should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_same_scope_provider_type_is_registered_twice_should_report_nothing.cs`
   - Test should verify:
@@ -1104,7 +1104,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T16.5 — A keyed provider beside one unkeyed provider yields nothing (ADR 0026 step 4 bullet 5)**
-  - **USE COMMAND**: `/test-first when a keyed scope provider sits beside one unkeyed provider should report no DuplicateScopeProvider finding`
+  - **USE COMMAND**: `/tdd:test-first when a keyed scope provider sits beside one unkeyed provider should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_keyed_scope_provider_sits_beside_an_unkeyed_one_should_report_nothing.cs`
   - Test should verify:
@@ -1115,7 +1115,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T16.6 — A provider registered with `AddDarkerScopeProvider` and then replaced through the same API yields nothing (ADR 0026 step 4 bullet 6; "the Darker API alone never produces this finding")**
-  - **USE COMMAND**: `/test-first when AddDarkerScopeProvider is called twice with different providers should report no DuplicateScopeProvider finding`
+  - **USE COMMAND**: `/tdd:test-first when AddDarkerScopeProvider is called twice with different providers should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_AddDarkerScopeProvider_replaces_a_provider_should_report_no_duplicate_scope_provider.cs`
   - Test should verify:
@@ -1126,7 +1126,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T16.7 — A `DuplicateScopeProvider` warning alone never blocks host start (ADR 0026 step 4 bullet 7; FR4)**
-  - **USE COMMAND**: `/test-first when the only finding is a DuplicateScopeProvider warning and throwOnError is true should let the host start and log the warning`
+  - **USE COMMAND**: `/tdd:test-first when the only finding is a DuplicateScopeProvider warning and throwOnError is true should let the host start and log the warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_only_finding_is_a_duplicate_scope_provider_should_let_the_host_start.cs`
   - Test should verify:
@@ -1142,7 +1142,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 > Tests build the provider with `BuildServiceProvider()`, without `ValidateOnBuild` or `ValidateScopes`, and call `ValidateAll()`. They never resolve the handler. The ladder rows cited are ADR 0026's `CaptiveDependency` table.
 
 - [ ] **TEST + IMPLEMENT: T17.1 — A Singleton `HandlerLifetime` and a handler that takes a Scoped dependency is a warning, and a non-component Singleton service taking one is not (ADR 0026 step 5 bullet 1; FR11; FR13 link; ladder rows 3 (second clause), 8 and 11)**
-  - **USE COMMAND**: `/test-first when HandlerLifetime is Singleton and a handler takes a Scoped dependency should report a CaptiveDependency warning naming the handler, why it is Singleton, the parameter and the fix, and a plain non-component Singleton service taking a Scoped dependency should report none`
+  - **USE COMMAND**: `/tdd:test-first when HandlerLifetime is Singleton and a handler takes a Scoped dependency should report a CaptiveDependency warning naming the handler, why it is Singleton, the parameter and the fix, and a plain non-component Singleton service taking a Scoped dependency should report none`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_a_scoped_dependency_should_report_captive_dependency.cs`
   - Test should verify:
@@ -1158,7 +1158,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Here, only a Singleton `HandlerLifetime` counts as Singleton.
 
 - [ ] **CHARACTERISE: T17.2 — A Singleton handler with two Scoped parameters yields two warnings, in parameter order, and two captive handlers each yield their own (ADR 0026 step 5 bullet 2; Invariant "one finding for each Scoped parameter"; Risk "stateful `Specification<T>`")**
-  - **USE COMMAND**: `/test-first when a Singleton handler takes two Scoped dependencies should report two CaptiveDependency warnings in parameter order`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes two Scoped dependencies should report two CaptiveDependency warnings in parameter order`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_two_scoped_dependencies_should_report_two_warnings_in_order.cs`
   - Test should verify:
@@ -1170,7 +1170,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **TEST + IMPLEMENT: T17.3 — An open-generic decorator registered through `RegisterDecorator` under a Singleton lifetime, taking a Scoped dependency, is a warning naming the decorator (ADR 0026 step 5 bullet 3; FR11 "handler or decorator")**
-  - **USE COMMAND**: `/test-first when an open-generic decorator registered with RegisterDecorator under a Singleton handler lifetime takes a Scoped dependency should report a CaptiveDependency warning naming the decorator`
+  - **USE COMMAND**: `/tdd:test-first when an open-generic decorator registered with RegisterDecorator under a Singleton handler lifetime takes a Scoped dependency should report a CaptiveDependency warning naming the decorator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_open_generic_decorator_takes_a_scoped_dependency_should_report_captive_dependency.cs`
   - Test should verify:
@@ -1181,7 +1181,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Recognise as decorators the types, including open generic type definitions, that implement the **non-generic** `IQueryHandlerDecorator` (ADR 0026 Terms). That covers `IQueryHandlerDecorator<,>`, `IQueryHandlerDecoratorAsync<,>` (`src/Paramore.Darker/IQueryHandlerDecoratorAsync.cs:7`) and `IStreamQueryHandlerDecorator<,>` (`IStreamQueryHandlerDecorator.cs:10`). Read their constructors, and use the source `"Decorator 'X'"`.
 
 - [ ] **TEST + IMPLEMENT: T17.4 — A Transient `HandlerLifetime` with the handler registered Singleton before `AddDarker` is a warning (ADR 0026 step 5 bullet 4; "Why a component counts as Singleton when either lifetime says so"; ladder row 5)**
-  - **USE COMMAND**: `/test-first when HandlerLifetime is Transient but the handler was registered Singleton before AddDarker and takes a Scoped dependency should report a CaptiveDependency warning naming its Singleton registration`
+  - **USE COMMAND**: `/tdd:test-first when HandlerLifetime is Transient but the handler was registered Singleton before AddDarker and takes a Scoped dependency should report a CaptiveDependency warning naming its Singleton registration`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_registered_singleton_before_AddDarker_takes_a_scoped_dependency_should_report_captive_dependency.cs`
   - Test should verify:
@@ -1191,7 +1191,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Count a component as Singleton when its own descriptor is Singleton, as well as under a Singleton `HandlerLifetime`. `ComponentRegistration` records why. (T17.7 narrows "its own descriptor" to the effective one.)
 
 - [ ] **CHARACTERISE: T17.5 — Transient or Singleton dependencies, `IServiceProvider` and unregistered parameters yield nothing (ADR 0026 step 5 bullet 5; ladder rows 10 and 11)**
-  - **USE COMMAND**: `/test-first when a Singleton handler takes a Transient, Singleton, IServiceProvider or unregistered dependency should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes a Transient, Singleton, IServiceProvider or unregistered dependency should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_no_scoped_dependency_should_report_nothing.cs`
   - Test should verify:
@@ -1204,7 +1204,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. T17.1's lookup yields no result for a parameter with no descriptor, and T17.3 makes decorators candidates.
 
 - [ ] **TEST + IMPLEMENT: T17.6 — A keyed component registration yields nothing (ADR 0026 step 5 bullet 6, keyed part; ladder row 1)**
-  - **USE COMMAND**: `/test-first when a Singleton handler is registered keyed before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered keyed before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_keyed_should_report_nothing.cs`
   - Test should verify:
@@ -1215,7 +1215,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Exclude keyed records from `ServiceRegistrationSnapshot.Components` (row 1: Darker resolves components unkeyed). Keep reading the keyed properties in `Capture`, which T15.7 pins.
 
 - [ ] **TEST + IMPLEMENT: T17.7 — Only the effective descriptor counts: `AddSingleton<H>()` then `AddTransient<H>()` yields nothing (ADR 0026 step 5 bullet 7; ladder row 4)**
-  - **USE COMMAND**: `/test-first when a handler is registered Singleton and then Transient before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a handler is registered Singleton and then Transient before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_later_descriptor_replaces_a_singleton_component_should_report_nothing.cs`
   - Test should verify:
@@ -1225,7 +1225,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add `ServiceRegistrationSnapshot.EffectiveDescriptor(type, key)`: the last match, where a null key matches unkeyed only. Make `Components` keep only effective descriptors.
 
 - [ ] **TEST + IMPLEMENT: T17.8 — A closed generic parameter falls back to its open generic registration (ADR 0026 step 5 bullet 8; ladder row 9)**
-  - **USE COMMAND**: `/test-first when a Singleton handler takes IRepository<Order> and only the open generic IRepository<> is registered Scoped should report a CaptiveDependency warning naming the parameter`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes IRepository<Order> and only the open generic IRepository<> is registered Scoped should report a CaptiveDependency warning naming the parameter`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_a_closed_generic_of_a_scoped_open_generic_should_report_captive_dependency.cs`
   - Test should verify:
@@ -1235,7 +1235,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - When no descriptor matches a constructed generic parameter, read the effective descriptor of its generic type definition, ignoring constraints.
 
 - [ ] **TEST + IMPLEMENT: T17.9 — An interface registration of a handler beside Darker's own registration yields nothing (ADR 0026 step 5 bullet 9; ladder row 3)**
-  - **USE COMMAND**: `/test-first when a handler is also registered Singleton under IQueryHandlerAsync beside the Transient registration Darker uses should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a handler is also registered Singleton under IQueryHandlerAsync beside the Transient registration Darker uses should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_an_interface_alias_registration_should_report_nothing.cs`
   - Test should verify:
@@ -1246,7 +1246,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the row-3 alias exclusion to `Components`: keep only records whose service type equals their implementation type.
 
 - [ ] **TEST + IMPLEMENT: T17.10 — `[FromKeyedServices("k")]` reads the keyed registration, and a parameterless attribute reads unkeyed (ADR 0026 step 5 bullet 10; ladder rows 7 and 8; "Why [FromKeyedServices] is honoured")**
-  - **USE COMMAND**: `/test-first when a Singleton handler's parameter carries FromKeyedServices with a key should judge the keyed registration and ignore an unkeyed Scoped registration of the same type`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler's parameter carries FromKeyedServices with a key should judge the keyed registration and ignore an unkeyed Scoped registration of the same type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_parameter_is_from_keyed_services_should_judge_the_keyed_registration.cs`
   - Test should verify:
@@ -1258,7 +1258,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - For a parameter with an explicit non-null key, read the last keyed descriptor for that type and key. Otherwise fall through to the unkeyed lookup.
 
 - [ ] **TEST + IMPLEMENT: T17.11 — The widest public constructor is the one inspected, and a handler whose constructors take no parameters yields nothing (ADR 0026 step 5; "Why the widest public constructor"; ladder row 6, first clause)**
-  - **USE COMMAND**: `/test-first when a Singleton handler has two public constructors of different widths and only the wider takes a Scoped dependency should report a CaptiveDependency warning`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler has two public constructors of different widths and only the wider takes a Scoped dependency should report a CaptiveDependency warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_constructors_of_different_widths_should_inspect_the_widest.cs`
   - Test should verify:
@@ -1269,7 +1269,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Make `ComponentConstructorSelector` return the public constructor with the most parameters, and nothing when no public constructor has parameters. The tie is T17.13's.
 
 - [ ] **CHARACTERISE: T17.12 — Constructor reflection that throws yields a `RuleEvaluationFailed` error and no `CaptiveDependency` finding (ADR 0026 step 5 bullet 12; Invariant "a misconfiguration never throws out of Validate")**
-  - **USE COMMAND**: `/test-first when reading a Singleton handler's constructor throws should report a RuleEvaluationFailed error with its rule identifier and no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when reading a Singleton handler's constructor throws should report a RuleEvaluationFailed error with its rule identifier and no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_constructor_reflection_throws_should_report_rule_evaluation_failed.cs`
   - Test should verify:
@@ -1282,7 +1282,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. `CaptiveDependency` uses the result-evaluator form (T17.1), so T2.2's result-evaluator catch path (`EvaluateCollapsed`) delivers this.
 
 - [ ] **TEST + IMPLEMENT: T17.13 — Two equal-width public constructors yield nothing (ADR 0026 step 5 bullet 11; ladder row 6, second clause)**
-  - **USE COMMAND**: `/test-first when a Singleton handler has two public constructors with the same widest parameter count should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler has two public constructors with the same widest parameter count should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_two_equal_width_constructors_should_report_nothing.cs`
   - Test should verify:
@@ -1293,7 +1293,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Make `ComponentConstructorSelector` return nothing when two or more public constructors share the widest parameter count. The rule counts constructors of the widest width, so it does not depend on the order `GetConstructors()` returns.
 
 - [ ] **CHARACTERISE: T17.14 — A component registered by a factory delegate yields nothing (ADR 0026 step 5 bullet 6, factory part; ladder row 2)**
-  - **USE COMMAND**: `/test-first when a Singleton handler is registered by a factory delegate before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered by a factory delegate before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_by_factory_should_report_nothing.cs`
   - Test should verify:
@@ -1304,7 +1304,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change. A factory record has no implementation type (T15.1, T15.10), so T17.1's `Components` never makes it a candidate.
 
 - [ ] **CHARACTERISE: T17.15 — A component registered as an instance yields nothing (ADR 0026 step 5 bullet 6, instance part; ladder row 2, "an instance's runtime type does not count")**
-  - **USE COMMAND**: `/test-first when a Singleton handler is registered as an instance before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
+  - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered as an instance before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_as_an_instance_should_report_nothing.cs`
   - Test should verify:
@@ -1317,7 +1317,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 ## Phase 18 — Snapshot semantics and side effects (ADR 0026 step 6)
 
 - [ ] **CHARACTERISE: T18.1 — A Scoped dependency added after `ValidatePipelines()` is not reported (ADR 0026 step 6 bullet 1; FR14 lifetime part, "call it last")**
-  - **USE COMMAND**: `/test-first when a Scoped dependency is registered after ValidatePipelines should not report a CaptiveDependency for it`
+  - **USE COMMAND**: `/tdd:test-first when a Scoped dependency is registered after ValidatePipelines should not report a CaptiveDependency for it`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_scoped_dependency_is_added_after_ValidatePipelines_should_not_be_reported.cs`
   - Test should verify:
@@ -1328,7 +1328,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T18.2 — A scope provider added between two `ValidatePipelines()` calls is seen through the second call's snapshot (ADR 0026 step 6 bullet 2; Invariant "the last call wins")**
-  - **USE COMMAND**: `/test-first when a scope provider is added between two ValidatePipelines calls should see it and report no InertScopeAffinity`
+  - **USE COMMAND**: `/tdd:test-first when a scope provider is added between two ValidatePipelines calls should see it and report no InertScopeAffinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_scope_provider_is_added_between_two_ValidatePipelines_calls_should_be_seen.cs`
   - Test should verify:
@@ -1339,7 +1339,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T18.3 — Validation creates no handler and no scope provider, and `ValidateAll` creates no scope at its own call level (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
-  - **USE COMMAND**: `/test-first when lifetime validation runs should never construct a handler or a scope provider and ValidateAll should create no scope`
+  - **USE COMMAND**: `/tdd:test-first when lifetime validation runs should never construct a handler or a scope provider and ValidateAll should create no scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_lifetime_validation_runs_should_create_no_handler_or_scope_provider.cs`
   - Test should verify:
@@ -1353,7 +1353,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T18.4 — Several lifetime mistakes appear in one combined result beside a pipeline finding (ADR 0026 step 6 bullet 4; FR3)**
-  - **USE COMMAND**: `/test-first when there are lifetime mistakes and a pipeline mistake should report all of them in one ValidateAll result`
+  - **USE COMMAND**: `/tdd:test-first when there are lifetime mistakes and a pipeline mistake should report all of them in one ValidateAll result`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_lifetime_and_pipeline_mistakes_coexist_should_report_all_in_one_result.cs`
   - Test should verify:
@@ -1364,7 +1364,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Need no production change.
 
 - [ ] **CHARACTERISE: T18.5 — Lifetime findings follow the pipeline findings in each list, and `DuplicateScopeProvider` precedes `CaptiveDependency` (ADR 0026 step 6 bullet 5; Invariant "order is deterministic within each severity list")**
-  - **USE COMMAND**: `/test-first when pipeline and lifetime findings of both severities coexist should list lifetime findings after pipeline findings and DuplicateScopeProvider before CaptiveDependency`
+  - **USE COMMAND**: `/tdd:test-first when pipeline and lifetime findings of both severities coexist should list lifetime findings after pipeline findings and DuplicateScopeProvider before CaptiveDependency`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_pipeline_and_lifetime_findings_coexist_should_order_them_by_validator_then_rule.cs`
   - Test should verify:
