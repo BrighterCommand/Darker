@@ -468,7 +468,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T7.17 — Two descriptions failing the same rule each yield a finding (ADR 0025 risk: `Specification<T>` is stateful)**
+- [x] **CHARACTERISE: T7.17 — Two descriptions failing the same rule each yield a finding (ADR 0025 risk: `Specification<T>` is stateful)**
   - **USE COMMAND**: `/tdd:test-first when two handlers fail the same rule should report one finding for each handler`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_two_handlers_fail_the_same_rule_should_report_a_finding_for_each.cs`
