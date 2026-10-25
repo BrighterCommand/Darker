@@ -202,12 +202,12 @@ If no spec is active, offer only options 1, 3 and 4.
 - **Evidence or nothing.** Every finding names a file, a line range and the code that shows it.
 - **Name the refactoring from Fowler's catalogue**, so the follow-up work has a clear, known shape.
 - **No behaviour changes disguised as refactorings.** If removing a smell needs a behaviour change,
-  say so; it belongs in `/test-first`, not `/refactor:tidy-first`.
+  say so; it belongs in `/tdd:test-first`, not `/refactor:tidy-first`.
 
 ## Related
 
 - [`/refactor:tidy-first`](tidy-first.md) — carries out the structural refactorings this command schedules
-- [`/test-first`](../tdd/test-first.md) — for any finding that turns out to need a behaviour change
+- [`/tdd:test-first`](../tdd/test-first.md) — for any finding that turns out to need a behaviour change
 - [`/spec:gear`](../spec/gear.md) — the review gear; run this command after a `review-after` stretch
 - [`/adr`](../adr/adr.md) — for a `public API change` finding that needs a recorded decision
 - [Design Principles](../../../.agent_instructions/design_principles.md) and

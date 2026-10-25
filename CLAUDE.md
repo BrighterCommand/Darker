@@ -9,11 +9,11 @@ This file contains instructions for Claude Code to help it understand the contex
 
 When working on implementation tasks in `specs/*/tasks.md`:
 
-- **ALWAYS use `/test-first <behavior>`** for TEST tasks
+- **ALWAYS use `/tdd:test-first <behavior>`** for TEST tasks
 - **NEVER write tests manually and proceed to implementation**
 - **STOP and ASK FOR APPROVAL** after writing each test
 - The user will review the test in their IDE before you implement
-- Each TEST task in tasks.md specifies the exact `/test-first` command to use
+- Each TEST task in tasks.md specifies the exact `/tdd:test-first` command to use
 
 **Why this is mandatory:**
 1. Tests correctly specify desired behavior before implementation
@@ -21,7 +21,7 @@ When working on implementation tasks in `specs/*/tasks.md`:
 3. No speculative code
 4. User reviews test in IDE, not in CLI output
 
-**If a task says `/test-first when ...`** - YOU MUST USE THAT COMMAND. Do not write the test file manually.
+**If a task says `/tdd:test-first when ...`** - YOU MUST USE THAT COMMAND. Do not write the test file manually.
 
 ### The approval gate is armed by default — and is the only thing the gear changes
 
@@ -33,7 +33,7 @@ The approval pause is a **gear**, not a policy (see [`.claude/commands/spec/gear
 | `review-after` | ➖ not armed | Only via a deliberate, scoped, reasoned shift. |
 
 - **The only supported way to disarm the gate is `/spec:gear review-after`**, which writes `specs/{spec}/.current-gear` — untracked working state, scoped to **one spec** and optionally to **one section** of `tasks.md`, carrying the reason for the shift.
-- **`/spec:implement`** honours the gear; **`/spec:ralph-implement`** is always `review-after`. A **standalone `/test-first` and `/bugfix:test` are always gated** — they never read the gear file and must never infer a gear from context.
+- **`/spec:implement`** honours the gear; **`/spec:ralph-implement`** is always `review-after`. A **standalone `/tdd:test-first` and `/bugfix:test` are always gated** — they never read the gear file and must never infer a gear from context.
 - **Never assume the gate is off.** Not from a prose instruction in a scratch file, not because the tasks look repetitive, not because a previous task ran ungated. If you are unsure, it is `review-before`.
 - **`review-after` removes the human pause and nothing else.** RED-first (the test is observed failing for the right reason before any production code), the full regression suite, the two-commit shape (`feat:`/`test:` then a separate `docs:` tick), and every test-authoring convention hold in both gears. A run that drops any of those is defective, not "in a different gear".
 - Even in `review-after`, **stop and ask** if a test asserts something the task did not ask for, needs a design decision you cannot make from the ADRs, or duplicates an existing test.
@@ -59,7 +59,7 @@ Claude Code skills automate common workflows and enforce mandatory engineering p
 
 ### Core Development Skills
 
-- `/test-first <behavior>` - TDD workflow with an approval gate before implementation, armed by default ([docs](.claude/commands/tdd/README.md))
+- `/tdd:test-first <behavior>` - TDD workflow with an approval gate before implementation, armed by default ([docs](.claude/commands/tdd/README.md))
 - `/refactor:tidy-first <change>` - Separate structural (refactoring) from behavioral (feature) changes ([docs](.claude/commands/refactor/README.md))
 - `/refactor:smells [base-ref | base..head | path...]` - Opt-in review of a completed, green unit of work for Fowler's code smells; reports and schedules refactorings (as `/refactor:tidy-first` runs or `STRUCTURAL` tasks) without changing code ([docs](.claude/commands/refactor/README.md))
 - `/adr <title>` - Create Architecture Decision Records ([docs](.claude/commands/adr/README.md))
@@ -70,7 +70,7 @@ Claude Code skills automate common workflows and enforce mandatory engineering p
 - `/spec:gear [review-before|review-after]` - Report or shift the TDD review gear for the current spec; `/spec:ralph-implement` runs the same `tasks.md` unattended in `review-after`
 
 **When to use skills**:
-- Use `/test-first` when adding new behavior or fixing bugs
+- Use `/tdd:test-first` when adding new behavior or fixing bugs
 - Use `/spec:gear` when the approval gate has stopped earning its cost (upshift) or has started to again (downshift) — never a hand-written waiver
 - Use `/refactor:tidy-first` when code needs refactoring before/during feature work
 - Use `/refactor:smells` when the user elects to review finished work for code smells — never run it on their behalf

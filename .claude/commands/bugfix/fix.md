@@ -14,7 +14,7 @@ Confirm gate: !`test -f bugfixes/$(cat bugfixes/.current-bug 2>/dev/null)/.confi
 **Workflow**: Issue → Triage → Confirm (✋ gate) → Test-first (✋ gate) → **Fix** → Verify
 
 Make the red regression test pass with the **minimum** change required by the confirmed cause —
-nothing more. This is the GREEN phase from `/test-first`, scoped by the confirmed diagnosis.
+nothing more. This is the GREEN phase from `/tdd:test-first`, scoped by the confirmed diagnosis.
 
 > **Recommended model: `sonnet`.** This is implementation work in the main agent (writes source,
 > runs `dotnet`). See `.claude/commands/bugfix/README.md` → "Sub-agents & model policy".

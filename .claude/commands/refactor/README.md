@@ -83,12 +83,12 @@ The `/refactor:tidy-first` command guides you through 9 phases:
 
 **Not a Good Fit:**
 - Pure refactoring with no functionality changes (just do it and commit as `refactor:`)
-- Pure feature addition (use `/test-first` instead for TDD)
+- Pure feature addition (use `/tdd:test-first` instead for TDD)
 - Trivial changes that don't need structural cleanup
 
 ## Related Commands
 
-- **`/test-first`** - TDD workflow for pure feature additions
+- **`/tdd:test-first`** - TDD workflow for pure feature additions
 - **`/spec:implement`** - Specification-driven implementation (uses TDD)
 - **`/adr`** - Document significant refactoring decisions
 
