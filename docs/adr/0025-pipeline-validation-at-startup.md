@@ -168,7 +168,7 @@ The mechanism holds these invariants:
 flowchart LR
     subgraph Core["Paramore.Darker (core)"]
         Spec["Specifications namespace: ISpecification, Specification, And, Or, Not, visitor, ValidationResultCollector, ValidationResult, ValidationError, ValidationSeverity, ValidationRuleId, ValidationRuleIds"]
-        PVNS["PipelineValidation namespace: IAmAPipelineValidator, PipelineValidator, PipelineValidationResult, PipelineValidationException, HandlerPipelineDescription, PipelineStepDescription, PipelinePath, QueryPipelineRules, DecoratorOrderingRule, DecoratorOrderingRules, IAmAComponentResolvabilityProbe"]
+        PVNS["PipelineValidation namespace: IAmAPipelineValidator, PipelineValidator, PipelineValidationResult, PipelineValidationException, HandlerPipelineDescription, PipelineStepDescription, PipelinePath, QueryPipelineRules, PipelineRuleIds, DecoratorOrderingRule, DecoratorOrderingRules, IAmAComponentResolvabilityProbe"]
         Insp["IAmAHandlerRegistryInspector and HandlerRegistration, NEW, implemented by the three core registries"]
         Desc["PipelineDescriber, internal"]
         Reader["PipelineAttributeReader, internal, shared with PipelineBuilder"]
@@ -324,7 +324,7 @@ Under the code's semantics, a Retry inside a Fallback means that the Retry attri
 |---|---|---|
 | Paramore.Darker | `ISpecification<T>`, `Specification<T>`, `AndSpecification<T>`, `OrSpecification<T>`, `NotSpecification<T>`, `ISpecificationVisitor<TData,TResult>`, `ValidationResultCollector<T>`, `ValidationResult`, `ValidationError`, `ValidationSeverity` | New, copied from Brighter into `Paramore.Darker.Specifications`. `ValidationError` gains an init-only nullable `RuleId`. |
 | Paramore.Darker | `ValidationRuleId`, `ValidationRuleIds` | New. The record wraps the identifier string. `ValidationRuleIds` holds the neutral `EvaluationFailed` constant. Both live in `Paramore.Darker.Specifications`. |
-| Paramore.Darker | `IAmAPipelineValidator`, `PipelineValidator`, `PipelineValidationResult`, `PipelineValidationException`, `HandlerPipelineDescription`, `PipelineStepDescription`, `PipelinePath`, `QueryPipelineRules`, `DecoratorOrderingRule`, `DecoratorOrderingRules`, `IAmAComponentResolvabilityProbe` | New, in `Paramore.Darker.PipelineValidation` |
+| Paramore.Darker | `IAmAPipelineValidator`, `PipelineValidator`, `PipelineValidationResult`, `PipelineValidationException`, `HandlerPipelineDescription`, `PipelineStepDescription`, `PipelinePath`, `QueryPipelineRules`, `PipelineRuleIds`, `DecoratorOrderingRule`, `DecoratorOrderingRules`, `IAmAComponentResolvabilityProbe` | New, in `Paramore.Darker.PipelineValidation` |
 | Paramore.Darker | `IAmAHandlerRegistryInspector`, `HandlerRegistration` | New |
 | Paramore.Darker | `QueryHandlerRegistry`, `QueryHandlerRegistryAsync`, `StreamQueryHandlerRegistry` | Implement the inspector (additive) |
 | Paramore.Darker | `PipelineAttributeReader`, `PipelineDescriber` | New, internal |
