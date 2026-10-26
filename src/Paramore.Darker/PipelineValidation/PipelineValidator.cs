@@ -60,14 +60,26 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         var rules = QueryPipelineRules.Create(_probe);
         var collector = new ValidationResultCollector<HandlerPipelineDescription>();
 
-        var findings = _registries
-            .SelectMany(entry => ValidateRegistry(entry.Reader, entry.Registry, rules, collector))
+        var findings = ProbeFindings()
+            .Concat(_registries.SelectMany(entry => ValidateRegistry(entry.Reader, entry.Registry, rules, collector)))
             .ToList();
 
         return new PipelineValidationResult(
             findings.Where(finding => finding.Severity == ValidationSeverity.Error),
             findings.Where(finding => finding.Severity != ValidationSeverity.Error));
     }
+
+    private IReadOnlyList<ValidationError> ProbeFindings() =>
+        _probe is null ? [ResolvabilityNotChecked()] : [];
+
+    private static ValidationError ResolvabilityNotChecked() =>
+        new(
+            ValidationSeverity.Warning,
+            "Validator",
+            "The validator has no resolvability probe, so HandlerResolvable and DecoratorResolvable were not evaluated. Supply an IAmAComponentResolvabilityProbe to check that handlers and decorators are registered.")
+        {
+            RuleId = PipelineRuleIds.ResolvabilityNotChecked
+        };
 
     private static IReadOnlyList<ValidationError> ValidateRegistry(
         PipelinePathReader reader,
