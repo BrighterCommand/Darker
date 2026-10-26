@@ -542,7 +542,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - When the probe is null, emit the `ResolvabilityNotChecked` warning once, before the registries. T8.1 and T8.2 already skip both resolvability rules in that case.
 
-- [ ] **CHARACTERISE: T8.4 — A probe that throws yields a `RuleEvaluationFailed` error through `PipelineValidator` (ADR 0025 step 8; FR3)**
+- [x] **CHARACTERISE: T8.4 — A probe that throws yields a `RuleEvaluationFailed` error through `PipelineValidator` (ADR 0025 step 8; FR3)**
   - **USE COMMAND**: `/tdd:test-first when the resolvability probe throws should report a RuleEvaluationFailed error with rule identifier RuleEvaluationFailed and not throw`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_throws_should_report_rule_evaluation_failed.cs`
