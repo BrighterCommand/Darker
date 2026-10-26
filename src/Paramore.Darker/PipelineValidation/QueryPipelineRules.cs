@@ -40,24 +40,6 @@ namespace Paramore.Darker.PipelineValidation;
 /// </remarks>
 public static class QueryPipelineRules
 {
-    /// <summary>The identifier of the rule that requires a registration to name a handler.</summary>
-    public static readonly ValidationRuleId HandlerRegisteredId = new("HandlerRegistered");
-
-    /// <summary>The identifier of the rule that requires a handler type to be public.</summary>
-    public static readonly ValidationRuleId HandlerPublicId = new("HandlerPublic");
-
-    /// <summary>The identifier of the rule that requires a handler to implement the interface of its registry's path.</summary>
-    public static readonly ValidationRuleId HandlerMatchesPathId = new("HandlerMatchesPath");
-
-    /// <summary>The identifier of the rule that forbids a path's method to carry another path's decorator attributes.</summary>
-    public static readonly ValidationRuleId DecoratorAttributeKindId = new("DecoratorAttributeKind");
-
-    /// <summary>The identifier of the rule that requires a handler's pipeline to be describable.</summary>
-    public static readonly ValidationRuleId PipelineDescribableId = new("PipelineDescribable");
-
-    /// <summary>The identifier of the rule that warns when two attributes of a path share a step.</summary>
-    public static readonly ValidationRuleId DuplicateStepId = new("DuplicateStep");
-
     /// <summary>Creates a fresh set of pipeline rules.</summary>
     /// <returns>The rules, each a new specification.</returns>
     public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
@@ -65,35 +47,35 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         ErrorRule(
-            HandlerRegisteredId,
+            PipelineRuleIds.HandlerRegistered,
             description => description.HandlerType is not null,
             description => $"Query '{description.QueryType?.Name}'",
             description => $"No handler type is registered {Where(description)}.");
 
     private static Specification<HandlerPipelineDescription> HandlerPublic() =>
         ErrorRule(
-            HandlerPublicId,
+            PipelineRuleIds.HandlerPublic,
             description => description.HandlerType is null || description.HandlerType.IsVisible,
             HandlerSource,
             description => $"{HandlerSource(description)} is not public. Make it public, because a handler is the public facade of a module.");
 
     private static Specification<HandlerPipelineDescription> HandlerMatchesPath() =>
         ErrorRule(
-            HandlerMatchesPathId,
+            PipelineRuleIds.HandlerMatchesPath,
             description => description.HandlerType is null || (ImplementsPathInterface(description) && description.HasPathMethod),
             HandlerSource,
             HandlerMatchesPathMessage);
 
     private static Specification<HandlerPipelineDescription> DecoratorAttributeKind() =>
         ErrorRule(
-            DecoratorAttributeKindId,
+            PipelineRuleIds.DecoratorAttributeKind,
             description => description.MisplacedAttributes.Count == 0,
             HandlerSource,
             DecoratorAttributeKindMessage);
 
     private static Specification<HandlerPipelineDescription> PipelineDescribable() =>
         ErrorRule(
-            PipelineDescribableId,
+            PipelineRuleIds.PipelineDescribable,
             description => description.Problems.Count == 0,
             HandlerSource,
             PipelineDescribableMessage);
@@ -105,7 +87,7 @@ public static class QueryPipelineRules
                 HandlerSource(description),
                 DuplicateStepMessage(description, group))
             {
-                RuleId = DuplicateStepId
+                RuleId = PipelineRuleIds.DuplicateStep
             }))));
 
     private static Specification<HandlerPipelineDescription> ErrorRule(
