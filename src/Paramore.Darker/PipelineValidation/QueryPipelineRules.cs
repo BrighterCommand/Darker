@@ -41,9 +41,29 @@ namespace Paramore.Darker.PipelineValidation;
 public static class QueryPipelineRules
 {
     /// <summary>Creates a fresh set of pipeline rules.</summary>
+    /// <param name="probe">The probe that answers whether a component type is registered. The resolvability rules are included only when it is supplied.</param>
     /// <returns>The rules, each a new specification.</returns>
-    public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create() =>
-        [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable(), DuplicateStep()];
+    public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create(IAmAComponentResolvabilityProbe? probe = null)
+    {
+        List<ISpecification<HandlerPipelineDescription>> rules =
+            [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable(), DuplicateStep()];
+
+        if (probe is not null)
+            rules.Add(HandlerResolvable(probe));
+
+        return rules;
+    }
+
+    private static Specification<HandlerPipelineDescription> HandlerResolvable(IAmAComponentResolvabilityProbe probe) =>
+        new(
+            description => probe.Resolves(description.HandlerType!),
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                HandlerSource(description),
+                $"{HandlerSource(description)} {Where(description)} is not registered. Register it with the container.")
+            {
+                RuleId = PipelineRuleIds.HandlerResolvable
+            });
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         ErrorRule(

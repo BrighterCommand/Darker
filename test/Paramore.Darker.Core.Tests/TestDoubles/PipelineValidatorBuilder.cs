@@ -10,6 +10,7 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
         private IQueryHandlerRegistry? _syncRegistry;
         private IQueryHandlerRegistryAsync? _asyncRegistry;
         private IStreamQueryHandlerRegistry? _streamRegistry;
+        private IAmAComponentResolvabilityProbe? _probe;
 
         public PipelineValidatorBuilder WithSyncRegistry(IQueryHandlerRegistry? registry)
         {
@@ -29,6 +30,12 @@ namespace Paramore.Darker.Core.Tests.TestDoubles
             return this;
         }
 
-        public PipelineValidator Build() => new(_syncRegistry, _asyncRegistry, _streamRegistry);
+        public PipelineValidatorBuilder WithProbe(IAmAComponentResolvabilityProbe? probe)
+        {
+            _probe = probe;
+            return this;
+        }
+
+        public PipelineValidator Build() => new(_syncRegistry, _asyncRegistry, _streamRegistry, _probe);
     }
 }
