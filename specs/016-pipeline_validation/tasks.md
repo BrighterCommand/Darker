@@ -507,7 +507,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 8 — Resolvability probe and rules (ADR 0025 step 8)
 
-- [ ] **TEST + IMPLEMENT: T8.1 — A handler type that the probe says is not registered is a `HandlerResolvable` error (ADR 0025 step 8; FR6; catalogue `HandlerResolvable`)**
+- [x] **TEST + IMPLEMENT: T8.1 — A handler type that the probe says is not registered is a `HandlerResolvable` error (ADR 0025 step 8; FR6; catalogue `HandlerResolvable`)**
   - **USE COMMAND**: `/tdd:test-first when the resolvability probe says a handler type is not registered should report a HandlerResolvable error naming the handler and advising to register it`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_says_a_handler_is_not_registered_should_report_handler_resolvable.cs`
