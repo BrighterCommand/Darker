@@ -531,7 +531,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the `DecoratorResolvable` rule over the description's closed step types, as a **predicate-form** specification, added only when a probe was supplied (as T8.1).
 
-- [ ] **TEST + IMPLEMENT: T8.3 — A validator without a probe reports one `ResolvabilityNotChecked` warning, ahead of every registry, and no resolvability error (ADR 0025 step 8; Invariant "without a probe, validation says so")**
+- [x] **TEST + IMPLEMENT: T8.3 — A validator without a probe reports one `ResolvabilityNotChecked` warning, ahead of every registry, and no resolvability error (ADR 0025 step 8; Invariant "without a probe, validation says so")**
   - **USE COMMAND**: `/tdd:test-first when PipelineValidator is built without a probe should report one ResolvabilityNotChecked warning first and no HandlerResolvable or DecoratorResolvable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_validating_without_a_probe_should_report_resolvability_not_checked.cs`
