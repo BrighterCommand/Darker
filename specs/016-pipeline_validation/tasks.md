@@ -520,7 +520,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the rule only when a probe was supplied. A validator without a probe (every earlier test, built through `PipelineValidatorBuilder` with no probe) evaluates no resolvability rule, so T6.1 and T7.19 stay green. T8.3 adds only the `ResolvabilityNotChecked` warning to that case.
     - Add `WithProbe(IAmAComponentResolvabilityProbe)` to `PipelineValidatorBuilder` (default: no probe) and pass it in `Build()`. The builder is the only call site that changes; no earlier test file is edited.
 
-- [ ] **TEST + IMPLEMENT: T8.2 — A closed decorator type that the probe says is not registered is a `DecoratorResolvable` error (ADR 0025 step 8; FR7; catalogue `DecoratorResolvable`)**
+- [!] **TEST + IMPLEMENT: T8.2 — A closed decorator type that the probe says is not registered is a `DecoratorResolvable` error (ADR 0025 step 8; FR7; catalogue `DecoratorResolvable`)** <!-- RALPH-FAILED: the describer closes decorators over the concrete query type (path readers pass registration.QueryType); PipelineBuilder closes over IQuery<TResult>/IStreamQuery<TResult> (PipelineBuilder.cs:243/330/399), so DecoratorResolvable would ask the probe about a type the builder never resolves. Fixing the closing is a behaviour change to Phase 7 code; needs its own RED test and a user decision. -->
   - **USE COMMAND**: `/tdd:test-first when the resolvability probe says a closed decorator type is not registered should report a DecoratorResolvable error naming the decorator and handler`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_the_probe_says_a_decorator_is_not_registered_should_report_decorator_resolvable.cs`
