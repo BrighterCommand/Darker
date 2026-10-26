@@ -56,7 +56,7 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> HandlerResolvable(IAmAComponentResolvabilityProbe probe) =>
         new(
-            description => probe.Resolves(description.HandlerType!),
+            description => description.HandlerType is null || probe.Resolves(description.HandlerType),
             description => new ValidationError(
                 ValidationSeverity.Error,
                 HandlerSource(description),
