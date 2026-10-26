@@ -68,7 +68,9 @@ internal static class PipelineDescriber
         // A failed lookup (for example an ambiguous method) is not an absent method; it is a description problem.
         var hasPathMethod = lookup.Failure is not null || lookup.Method is not null;
         var read = ReadPipeline(lookup, registration, reader);
-        return new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, handlerType, hasPathMethod, MisplacedAttributes(lookup.Method, reader), read.Problems, read.Steps);
+        var kinds = CheckAttributeKinds(lookup.Method, reader);
+        IReadOnlyList<DescriptionProblem> problems = [.. read.Problems, .. KindProblems(kinds, reader)];
+        return new HandlerPipelineDescription(reader.Path, registration.QueryType, registration.ResultType, handlerType, hasPathMethod, kinds.AttributeTypes, problems, read.Steps);
     }
 
     private static PipelineRead ReadPipeline(ExecuteMethodLookup lookup, HandlerRegistration registration, PipelinePathReader reader)
@@ -79,10 +81,10 @@ internal static class PipelineDescriber
         return lookup.Method is null ? new PipelineRead([], []) : reader.ReadDecorators(lookup.Method, registration);
     }
 
-    private static IReadOnlyList<Type> MisplacedAttributes(MethodInfo? method, PipelinePathReader reader)
-    {
-        if (method is null) return [];
+    private static WrongKindCheck CheckAttributeKinds(MethodInfo? method, PipelinePathReader reader) =>
+        method is null ? new WrongKindCheck(null, [], null) : PipelineAttributeReader.CheckAttributeKinds(method, reader.HandlerPath);
 
-        return PipelineAttributeReader.CheckAttributeKinds(method, reader.HandlerPath).AttributeTypes;
-    }
+    // A wrong-kind check that could not read the attributes would make the builder throw; it is a description problem.
+    private static IReadOnlyList<DescriptionProblem> KindProblems(WrongKindCheck check, PipelinePathReader reader) =>
+        check.Failure is null ? [] : [new DescriptionProblem(reader.MethodName, check.Failure.Exception.Message)];
 }
