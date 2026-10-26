@@ -60,6 +60,9 @@ internal abstract class PipelinePathReader
     /// <summary>The open generic handler interface the path requires.</summary>
     public abstract Type PathInterface { get; }
 
+    /// <summary>The open generic query interface the pipeline builder closes the path's decorators over.</summary>
+    public abstract Type QueryInterface { get; }
+
     /// <summary>Finds the reader for <paramref name="path"/>, or null when the path is not one Darker defines.</summary>
     public static PipelinePathReader? For(PipelinePath path) => path switch
     {
@@ -74,6 +77,9 @@ internal abstract class PipelinePathReader
 
     /// <summary>Reads the path's decorator attributes on <paramref name="method"/> and closes them over the registration's types.</summary>
     public abstract PipelineRead ReadDecorators(MethodInfo method, HandlerRegistration registration);
+
+    /// <summary>The query type the pipeline builder closes the registration's decorators over.</summary>
+    protected Type DecoratorQueryType(HandlerRegistration registration) => QueryInterface.MakeGenericType(registration.ResultType);
 
     protected PipelineRead ReadOf<TAttribute>(DecoratorEntries<TAttribute> read, Func<TAttribute, int> stepOf)
         where TAttribute : Attribute

@@ -44,11 +44,13 @@ internal sealed class SyncPipelinePathReader : PipelinePathReader
 
     public override Type PathInterface => typeof(IQueryHandler<,>);
 
+    public override Type QueryInterface => typeof(IQuery<>);
+
     public override ExecuteMethodLookup FindMethod(Type handlerType, Type queryType) => PipelineAttributeReader.FindExecute(handlerType);
 
     public override PipelineRead ReadDecorators(MethodInfo method, HandlerRegistration registration) =>
         ReadOf(
             PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(
-                method, registration.QueryType, registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()),
+                method, DecoratorQueryType(registration), registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()),
             attribute => attribute.Step);
 }

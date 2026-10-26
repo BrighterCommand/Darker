@@ -44,11 +44,13 @@ internal sealed class StreamPipelinePathReader : PipelinePathReader
 
     public override Type PathInterface => typeof(IStreamQueryHandler<,>);
 
+    public override Type QueryInterface => typeof(IStreamQuery<>);
+
     public override ExecuteMethodLookup FindMethod(Type handlerType, Type queryType) => PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType);
 
     public override PipelineRead ReadDecorators(MethodInfo method, HandlerRegistration registration) =>
         ReadOf(
             PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(
-                method, registration.QueryType, registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()),
+                method, DecoratorQueryType(registration), registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()),
             attribute => attribute.Step);
 }
