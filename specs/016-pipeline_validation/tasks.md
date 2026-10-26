@@ -553,7 +553,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T8.1 and T8.2 build both rules as predicate-form specifications, so T2.1's predicate catch path (`EvaluateSimple`) delivers this.
 
-- [ ] **TEST + IMPLEMENT: T8.5 — A description with no handler type yields no `HandlerResolvable` finding, and the probe is never asked about it (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
+- [x] **TEST + IMPLEMENT: T8.5 — A description with no handler type yields no `HandlerResolvable` finding, and the probe is never asked about it (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
   - **USE COMMAND**: `/tdd:test-first when a registration has no handler type and the probe answers false should report no HandlerResolvable finding and never ask the probe about a null type`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_handler_resolvable.cs`
