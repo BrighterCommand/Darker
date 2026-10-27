@@ -54,6 +54,9 @@ public static class PipelineRuleIds
     /// <summary>The rule that requires a handler type to be registered, according to the resolvability probe.</summary>
     public static readonly ValidationRuleId HandlerResolvable = new("HandlerResolvable");
 
+    /// <summary>The rule that requires every decorator type of a pipeline to be registered, according to the resolvability probe.</summary>
+    public static readonly ValidationRuleId DecoratorResolvable = new("DecoratorResolvable");
+
     /// <summary>The warning that the resolvability rules were skipped because the validator has no probe.</summary>
     public static readonly ValidationRuleId ResolvabilityNotChecked = new("ResolvabilityNotChecked");
 

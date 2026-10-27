@@ -49,7 +49,10 @@ public static class QueryPipelineRules
             [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable(), DuplicateStep()];
 
         if (probe is not null)
+        {
             rules.Add(HandlerResolvable(probe));
+            rules.Add(DecoratorResolvable(probe));
+        }
 
         return rules;
     }
@@ -64,6 +67,32 @@ public static class QueryPipelineRules
             {
                 RuleId = PipelineRuleIds.HandlerResolvable
             });
+
+    private static Specification<HandlerPipelineDescription> DecoratorResolvable(IAmAComponentResolvabilityProbe probe) =>
+        new(
+            description => description.Steps.All(step => probe.Resolves(step.DecoratorType)),
+            description => new ValidationError(
+                ValidationSeverity.Error,
+                HandlerSource(description),
+                $"{HandlerSource(description)} {Where(description)} uses {UnresolvedDecorators(description, probe)}, which is not registered. Register it with the container.")
+            {
+                RuleId = PipelineRuleIds.DecoratorResolvable
+            });
+
+    private static string UnresolvedDecorators(HandlerPipelineDescription description, IAmAComponentResolvabilityProbe probe)
+    {
+        var decorators = description.Steps.Select(step => step?.DecoratorType).Where(type => type is not null).ToList();
+        try
+        {
+            decorators = decorators.Where(type => !probe.Resolves(type!)).ToList();
+        }
+        catch (Exception)
+        {
+            // the probe failed again, so name every decorator of the pipeline rather than throw from the error factory
+        }
+
+        return string.Join(", ", decorators.Select(type => $"'{type!.Name}'"));
+    }
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
         ErrorRule(
