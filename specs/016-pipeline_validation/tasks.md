@@ -565,7 +565,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Make `HandlerResolvable` satisfied, without calling the probe, when the description has no handler type.
 
-- [ ] **CHARACTERISE: T8.6 — A description with no handler type yields no `DecoratorResolvable` finding (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
+- [x] **CHARACTERISE: T8.6 — A description with no handler type yields no `DecoratorResolvable` finding (ADR 0025 step 8; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
   - **USE COMMAND**: `/tdd:test-first when a registration has no handler type and the probe answers false should report no DecoratorResolvable finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_decorator_resolvable.cs`
