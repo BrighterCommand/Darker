@@ -603,7 +603,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the async pair to `DecoratorOrderingRules.Default`. Add no stream pair.
 
-- [ ] **CHARACTERISE: T9.3 — Fallback outside Retry (lower Fallback Step) yields no ordering warning (ADR 0025 risk "users read lower step against stale documentation")**
+- [x] **CHARACTERISE: T9.3 — Fallback outside Retry (lower Fallback Step) yields no ordering warning (ADR 0025 risk "users read lower step against stale documentation")**
   - **USE COMMAND**: `/tdd:test-first when FallbackPolicy has a lower Step than RetryableQuery should report no DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_fallback_sits_outside_a_retry_should_report_no_decorator_ordering.cs`
