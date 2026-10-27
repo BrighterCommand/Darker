@@ -35,12 +35,17 @@ namespace Paramore.Darker.PipelineValidation;
 /// </summary>
 public static class DecoratorOrderingRules
 {
-    /// <summary>The core table: a Fallback must wrap a Retry, because an inner Fallback hides the failure from the Retry.</summary>
+    /// <summary>The core table, for the sync and async paths: a Fallback must wrap a Retry, because an inner Fallback hides the failure from the Retry.</summary>
     public static readonly IReadOnlyList<DecoratorOrderingRule> Default =
     [
         new(
             typeof(FallbackPolicyDecorator<,>),
             typeof(RetryableQueryDecorator<,>),
+            PipelineRuleIds.DecoratorOrdering,
+            "the inner Fallback catches the failure, so the outer Retry never sees an exception and never retries. Give the Fallback a lower Step than the Retry."),
+        new(
+            typeof(FallbackPolicyDecoratorAsync<,>),
+            typeof(RetryableQueryDecoratorAsync<,>),
             PipelineRuleIds.DecoratorOrdering,
             "the inner Fallback catches the failure, so the outer Retry never sees an exception and never retries. Give the Fallback a lower Step than the Retry.")
     ];
