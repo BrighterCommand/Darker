@@ -649,7 +649,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 10 — Hosting package references (ADR 0025 step 10)
 
-- [ ] **SETUP: T10.1 — Add `Microsoft.Extensions.Hosting.Abstractions` to the DI package and `Microsoft.Extensions.Hosting` to the Extensions test project (ADR 0025 step 10; FR2; NFR multi-target)**
+- [x] **SETUP: T10.1 — Add `Microsoft.Extensions.Hosting.Abstractions` to the DI package and `Microsoft.Extensions.Hosting` to the Extensions test project (ADR 0025 step 10; FR2; NFR multi-target)**
   - `Directory.Packages.props`: add `<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.10" />` and `<PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />`, beside the other 10.0.10 `Microsoft.Extensions.*` entries.
   - `src/Paramore.Darker.Extensions.DependencyInjection/Paramore.Darker.Extensions.DependencyInjection.csproj`: add the abstractions `PackageReference`, with no version.
   - `test/Paramore.Darker.Extensions.Tests/Paramore.Darker.Extensions.Tests.csproj`: add the `Microsoft.Extensions.Hosting` `PackageReference`. It is a test-only reference.
