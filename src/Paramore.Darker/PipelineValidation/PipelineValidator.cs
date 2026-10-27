@@ -37,19 +37,23 @@ namespace Paramore.Darker.PipelineValidation;
 public sealed class PipelineValidator : IAmAPipelineValidator
 {
     private readonly (PipelinePathReader Reader, object? Registry)[] _registries;
+    private readonly IReadOnlyList<DecoratorOrderingRule> _orderingRules;
     private readonly IAmAComponentResolvabilityProbe? _probe;
 
     /// <summary>Initializes a new instance of the <see cref="PipelineValidator"/> class.</summary>
     /// <param name="syncRegistry">The sync registry, or null when there is none.</param>
     /// <param name="asyncRegistry">The async registry, or null when there is none.</param>
     /// <param name="streamRegistry">The stream registry, or null when there is none.</param>
+    /// <param name="orderingRules">The complete table of decorator ordering rules.</param>
     /// <param name="probe">The probe that answers whether a component type is registered, or null when there is none.</param>
     public PipelineValidator(
         IQueryHandlerRegistry? syncRegistry,
         IQueryHandlerRegistryAsync? asyncRegistry,
         IStreamQueryHandlerRegistry? streamRegistry,
+        IEnumerable<DecoratorOrderingRule> orderingRules,
         IAmAComponentResolvabilityProbe? probe = null)
     {
+        _orderingRules = orderingRules.ToList();
         _probe = probe;
         _registries = [(PipelinePathReader.Sync, syncRegistry), (PipelinePathReader.Async, asyncRegistry), (PipelinePathReader.Stream, streamRegistry)];
     }
@@ -57,7 +61,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     /// <inheritdoc />
     public PipelineValidationResult Validate()
     {
-        var rules = QueryPipelineRules.Create(_probe);
+        var rules = QueryPipelineRules.Create(_orderingRules, _probe);
         var collector = new ValidationResultCollector<HandlerPipelineDescription>();
 
         var findings = ProbeFindings()

@@ -41,12 +41,15 @@ namespace Paramore.Darker.PipelineValidation;
 public static class QueryPipelineRules
 {
     /// <summary>Creates a fresh set of pipeline rules.</summary>
+    /// <param name="orderingRules">The decorator ordering table. Each entry becomes its own rule.</param>
     /// <param name="probe">The probe that answers whether a component type is registered. The resolvability rules are included only when it is supplied.</param>
     /// <returns>The rules, each a new specification.</returns>
-    public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create(IAmAComponentResolvabilityProbe? probe = null)
+    public static IReadOnlyList<ISpecification<HandlerPipelineDescription>> Create(IEnumerable<DecoratorOrderingRule> orderingRules, IAmAComponentResolvabilityProbe? probe = null)
     {
         List<ISpecification<HandlerPipelineDescription>> rules =
             [HandlerRegistered(), HandlerPublic(), HandlerMatchesPath(), DecoratorAttributeKind(), PipelineDescribable(), DuplicateStep()];
+
+        rules.AddRange(orderingRules.Select(DecoratorOrdering));
 
         if (probe is not null)
         {
@@ -56,6 +59,31 @@ public static class QueryPipelineRules
 
         return rules;
     }
+
+    private static Specification<HandlerPipelineDescription> DecoratorOrdering(DecoratorOrderingRule orderingRule) =>
+        new(
+            description => !IsOutOfOrder(description, orderingRule),
+            description => new ValidationError(
+                ValidationSeverity.Warning,
+                HandlerSource(description),
+                $"{HandlerSource(description)} {Where(description)} has {OpenName(orderingRule.Inner)} outside {OpenName(orderingRule.Outer)}, but {OpenName(orderingRule.Outer)} must wrap {OpenName(orderingRule.Inner)}: {orderingRule.Reason}")
+            {
+                RuleId = orderingRule.RuleId
+            });
+
+    // Steps come in builder order: the first is closest to the handler and the last is outermost.
+    private static bool IsOutOfOrder(HandlerPipelineDescription description, DecoratorOrderingRule orderingRule)
+    {
+        var positions = description.Steps.Select(step => step.DecoratorType).ToList();
+        var outerPosition = positions.FindIndex(type => IsOpenGenericOf(type, orderingRule.Outer));
+        var innerPosition = positions.FindLastIndex(type => IsOpenGenericOf(type, orderingRule.Inner));
+        return outerPosition >= 0 && innerPosition > outerPosition;
+    }
+
+    private static bool IsOpenGenericOf(Type type, Type openType) =>
+        type == openType || (type.IsGenericType && type.GetGenericTypeDefinition() == openType);
+
+    private static string OpenName(Type? type) => $"'{type?.Name.Split('`')[0]}'";
 
     private static Specification<HandlerPipelineDescription> HandlerResolvable(IAmAComponentResolvabilityProbe probe) =>
         new(

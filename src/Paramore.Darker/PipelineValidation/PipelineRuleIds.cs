@@ -57,6 +57,9 @@ public static class PipelineRuleIds
     /// <summary>The rule that requires every decorator type of a pipeline to be registered, according to the resolvability probe.</summary>
     public static readonly ValidationRuleId DecoratorResolvable = new("DecoratorResolvable");
 
+    /// <summary>The rule that warns when two decorators of a <see cref="DecoratorOrderingRule"/> are in the wrong order.</summary>
+    public static readonly ValidationRuleId DecoratorOrdering = new("DecoratorOrdering");
+
     /// <summary>The warning that the resolvability rules were skipped because the validator has no probe.</summary>
     public static readonly ValidationRuleId ResolvabilityNotChecked = new("ResolvabilityNotChecked");
 
