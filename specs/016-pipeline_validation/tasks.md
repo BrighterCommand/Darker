@@ -625,7 +625,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T9.1 evaluates every rule in the supplied table, and T9.2 already relies on that for the async pair.
 
-- [ ] **TEST + IMPLEMENT: T9.5 — A null ordering-rule collection throws `ArgumentNullException` (ADR 0025 `PipelineValidator` constructor error condition)**
+- [x] **TEST + IMPLEMENT: T9.5 — A null ordering-rule collection throws `ArgumentNullException` (ADR 0025 `PipelineValidator` constructor error condition)**
   - **USE COMMAND**: `/tdd:test-first when PipelineValidator is constructed with a null ordering rule collection should throw ArgumentNullException`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_constructing_a_validator_with_null_ordering_rules_should_throw.cs`
