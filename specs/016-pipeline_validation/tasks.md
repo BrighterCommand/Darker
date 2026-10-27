@@ -593,7 +593,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the `IEnumerable<DecoratorOrderingRule>` constructor parameter, after the registries and before the optional probe (ADR 0025's order), and the `DecoratorOrdering` rule. `QueryPipelineRules` creates one **predicate-form** `DecoratorOrdering` specification per `DecoratorOrderingRule` in the supplied table, so each violated table entry yields its own finding (T9.4 relies on this). Each compares positions in the description's step order, which the builder's reader produces.
     - Add `WithOrderingRules(IEnumerable<DecoratorOrderingRule>)` to `PipelineValidatorBuilder`, defaulting to `DecoratorOrderingRules.Default`, and pass it in `Build()`. The builder is the only call site that changes; no T6–T8 test file is edited.
 
-- [ ] **TEST + IMPLEMENT: T9.2 — The same ordering rule holds on the async path (ADR 0025 step 9; FR9)**
+- [x] **TEST + IMPLEMENT: T9.2 — The same ordering rule holds on the async path (ADR 0025 step 9; FR9)**
   - **USE COMMAND**: `/tdd:test-first when an async handler's FallbackPolicyAsync sits inside its RetryableQueryAsync should report a DecoratorOrdering warning`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_an_async_fallback_sits_inside_an_async_retry_should_report_decorator_ordering.cs`
