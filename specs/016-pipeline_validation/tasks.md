@@ -635,7 +635,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Guard the parameter.
 
-- [ ] **CHARACTERISE: T9.6 — A description with no handler type yields no `DecoratorOrdering` finding (ADR 0025 step 9; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
+- [x] **CHARACTERISE: T9.6 — A description with no handler type yields no `DecoratorOrdering` finding (ADR 0025 step 9; catalogue note "every rule except HandlerRegistered is satisfied by a description that has no handler type")**
   - **USE COMMAND**: `/tdd:test-first when a registration has no handler type should report no DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_description_has_no_handler_type_should_report_no_decorator_ordering.cs`
