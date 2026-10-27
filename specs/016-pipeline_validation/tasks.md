@@ -579,7 +579,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 9 — Decorator ordering table (ADR 0025 step 9)
 
-- [ ] **TEST + IMPLEMENT: T9.1 — A Fallback inside a Retry on the sync path is a `DecoratorOrdering` warning naming the handler, both decorators and the reason (ADR 0025 step 9; FR9; catalogue `DecoratorOrdering`)**
+- [x] **TEST + IMPLEMENT: T9.1 — A Fallback inside a Retry on the sync path is a `DecoratorOrdering` warning naming the handler, both decorators and the reason (ADR 0025 step 9; FR9; catalogue `DecoratorOrdering`)**
   - **USE COMMAND**: `/tdd:test-first when a sync handler's FallbackPolicy sits inside its RetryableQuery should report a DecoratorOrdering warning naming the handler, both decorators and the reason`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_fallback_sits_inside_a_retry_should_report_decorator_ordering.cs`
