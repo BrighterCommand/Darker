@@ -614,7 +614,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T9.4 — A caller-supplied ordering rule extends the table (ADR 0025 step 9; force "Extensibility")**
+- [x] **CHARACTERISE: T9.4 — A caller-supplied ordering rule extends the table (ADR 0025 step 9; force "Extensibility")**
   - **USE COMMAND**: `/tdd:test-first when a caller passes Default plus its own DecoratorOrderingRule should report violations of both`
   - Test location: "test/Paramore.Darker.Core.Tests/PipelineValidation/"
   - Test file: `When_a_caller_adds_an_ordering_rule_should_report_its_violation.cs`
