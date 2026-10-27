@@ -46,6 +46,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
     /// <param name="streamRegistry">The stream registry, or null when there is none.</param>
     /// <param name="orderingRules">The complete table of decorator ordering rules.</param>
     /// <param name="probe">The probe that answers whether a component type is registered, or null when there is none.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="orderingRules"/> is null.</exception>
     public PipelineValidator(
         IQueryHandlerRegistry? syncRegistry,
         IQueryHandlerRegistryAsync? asyncRegistry,
@@ -53,7 +54,7 @@ public sealed class PipelineValidator : IAmAPipelineValidator
         IEnumerable<DecoratorOrderingRule> orderingRules,
         IAmAComponentResolvabilityProbe? probe = null)
     {
-        _orderingRules = orderingRules.ToList();
+        _orderingRules = (orderingRules ?? throw new ArgumentNullException(nameof(orderingRules))).ToList();
         _probe = probe;
         _registries = [(PipelinePathReader.Sync, syncRegistry), (PipelinePathReader.Async, asyncRegistry), (PipelinePathReader.Stream, streamRegistry)];
     }
