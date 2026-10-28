@@ -40,7 +40,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// Registers the pipeline validator.
         /// </summary>
         /// <param name="builder">The Darker builder returned by AddDarker.</param>
-        /// <param name="throwOnError">Whether errors should stop the host (not yet used).</param>
+        /// <param name="throwOnError">Whether errors should stop the host (true by default).</param>
         /// <returns>The same builder.</returns>
         /// <exception cref="InvalidOperationException">The builder was not created by AddDarker, so it does not expose the registries.</exception>
         public static IDarkerHandlerBuilder ValidatePipelines(this IDarkerHandlerBuilder builder, bool throwOnError = true)
@@ -52,6 +52,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 return builder;
 
             builder.Services.AddSingleton(PipelineValidationRegistration.Instance);
+            builder.Services.AddSingleton(new DarkerPipelineValidationOptions(throwOnError));
             RegisterValidation(darkerBuilder);
 
             return builder;

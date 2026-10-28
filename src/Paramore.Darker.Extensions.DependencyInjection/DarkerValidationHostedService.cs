@@ -37,11 +37,19 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     {
         private readonly IServiceProvider _provider;
 
-        public DarkerValidationHostedService(IServiceProvider provider) => _provider = provider;
+        private readonly DarkerPipelineValidationOptions _options;
+
+        public DarkerValidationHostedService(IServiceProvider provider, DarkerPipelineValidationOptions options)
+        {
+            _provider = provider;
+            _options = options;
+        }
 
         public Task StartingAsync(CancellationToken cancellationToken)
         {
-            _provider.ValidateAll();
+            var result = _provider.ValidateAll();
+            if (_options.ThrowOnError)
+                result.ThrowIfInvalid();
             return Task.CompletedTask;
         }
 
