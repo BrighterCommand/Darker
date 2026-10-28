@@ -62,7 +62,7 @@ public static class QueryPipelineRules
 
     private static Specification<HandlerPipelineDescription> DecoratorOrdering(DecoratorOrderingRule orderingRule) =>
         new(
-            description => !IsOutOfOrder(description, orderingRule),
+            description => !orderingRule.IsViolatedBy(description),
             description => new ValidationError(
                 ValidationSeverity.Warning,
                 HandlerSource(description),
@@ -70,18 +70,6 @@ public static class QueryPipelineRules
             {
                 RuleId = orderingRule.RuleId
             });
-
-    // Steps come in builder order: the first is closest to the handler and the last is outermost.
-    private static bool IsOutOfOrder(HandlerPipelineDescription description, DecoratorOrderingRule orderingRule)
-    {
-        var positions = description.Steps.Select(step => step.DecoratorType).ToList();
-        var outerPosition = positions.FindIndex(type => IsOpenGenericOf(type, orderingRule.Outer));
-        var innerPosition = positions.FindLastIndex(type => IsOpenGenericOf(type, orderingRule.Inner));
-        return outerPosition >= 0 && innerPosition > outerPosition;
-    }
-
-    private static bool IsOpenGenericOf(Type type, Type openType) =>
-        type == openType || (type.IsGenericType && type.GetGenericTypeDefinition() == openType);
 
     private static string OpenName(Type? type) => $"'{type?.Name.Split('`')[0]}'";
 

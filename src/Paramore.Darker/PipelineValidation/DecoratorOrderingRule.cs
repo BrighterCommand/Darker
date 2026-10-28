@@ -25,6 +25,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Linq;
 using Paramore.Darker.Specifications;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -36,4 +37,17 @@ namespace Paramore.Darker.PipelineValidation;
 /// <param name="Inner">The open generic decorator type that must be the inner one.</param>
 /// <param name="RuleId">The identifier reported on a finding when the pair is in the wrong order.</param>
 /// <param name="Reason">Why the order matters, reported in the finding's message.</param>
-public sealed record DecoratorOrderingRule(Type Outer, Type Inner, ValidationRuleId RuleId, string Reason);
+public sealed record DecoratorOrderingRule(Type Outer, Type Inner, ValidationRuleId RuleId, string Reason)
+{
+    // Steps come in builder order: the first is closest to the handler and the last is outermost.
+    internal bool IsViolatedBy(HandlerPipelineDescription description)
+    {
+        var positions = description.Steps.Select(step => step.DecoratorType).ToList();
+        var outerPosition = positions.FindIndex(type => IsOpenGenericOf(type, Outer));
+        var innerPosition = positions.FindLastIndex(type => IsOpenGenericOf(type, Inner));
+        return outerPosition >= 0 && innerPosition > outerPosition;
+    }
+
+    private static bool IsOpenGenericOf(Type type, Type openType) =>
+        type == openType || (type.IsGenericType && type.GetGenericTypeDefinition() == openType);
+}
