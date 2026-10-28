@@ -802,7 +802,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Inject `ILogger<DarkerValidationHostedService>`, and log each error at Error when not throwing.
 
-- [ ] **TEST + IMPLEMENT: T11.13 — Warnings are logged at Warning and never block start, and a clean result logs only a Debug summary (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "warnings alone never fail start")**
+- [x] **TEST + IMPLEMENT: T11.13 — Warnings are logged at Warning and never block start, and a clean result logs only a Debug summary (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "warnings alone never fail start")**
   - **USE COMMAND**: `/tdd:test-first when validation finds only warnings with throwOnError true should log each at Warning and start, and when clean should log nothing above Debug`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_only_warnings_should_log_them_and_start.cs`
