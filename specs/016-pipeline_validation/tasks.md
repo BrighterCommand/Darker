@@ -674,7 +674,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the public `ValidatePipelines(this IDarkerHandlerBuilder, bool throwOnError = true)` extension in the DI package.
     - It captures the registries through T4.1's internal properties, and registers `PipelineValidator` in a factory delegate (lazy, at resolve time), over those live registries and `DecoratorOrderingRules.Default`.
 
-- [ ] **TEST + IMPLEMENT: T11.2 — `ValidatePipelines()` on a builder that `AddDarker` did not create throws `InvalidOperationException` (ADR 0025 `ValidatePipelines` error condition)**
+- [x] **TEST + IMPLEMENT: T11.2 — `ValidatePipelines()` on a builder that `AddDarker` did not create throws `InvalidOperationException` (ADR 0025 `ValidatePipelines` error condition)**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called on a builder not created by AddDarker should throw InvalidOperationException`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_on_a_foreign_builder_should_throw_invalid_operation.cs`
