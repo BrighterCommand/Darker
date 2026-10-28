@@ -27,6 +27,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Paramore.Darker.PipelineValidation;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
@@ -35,12 +37,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class DarkerValidationHostedService : IHostedLifecycleService
     {
+        private const string ERROR_TEMPLATE = "Pipeline validation [{RuleId}] {Source}: {Message}";
+
         private readonly IServiceProvider _provider;
 
         private readonly DarkerPipelineValidationOptions _options;
 
-        public DarkerValidationHostedService(IServiceProvider provider, DarkerPipelineValidationOptions options)
+        private readonly ILogger<DarkerValidationHostedService> _logger;
+
+        public DarkerValidationHostedService(IServiceProvider provider, DarkerPipelineValidationOptions options, ILogger<DarkerValidationHostedService> logger)
         {
+            _logger = logger;
             _provider = provider;
             _options = options;
         }
@@ -50,7 +57,15 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var result = _provider.ValidateAll();
             if (_options.ThrowOnError)
                 result.ThrowIfInvalid();
+            else
+                LogErrors(result);
             return Task.CompletedTask;
+        }
+
+        private void LogErrors(PipelineValidationResult result)
+        {
+            foreach (var error in result.Errors)
+                _logger.LogError(ERROR_TEMPLATE, error.RuleId, error.Source, error.Message);
         }
 
         public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
