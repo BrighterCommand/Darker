@@ -768,7 +768,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the internal `DarkerValidationHostedService : IHostedLifecycleService`. `StartingAsync` calls `ValidateAll` and returns a completed task. The other lifecycle methods return completed tasks.
     - Register it with `AddHostedService` inside the once-only branch.
 
-- [ ] **TEST + IMPLEMENT: T11.10 — With `throwOnError` true, an error fails host start with `PipelineValidationException` listing every finding (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "throwOnError = true fails start")**
+- [x] **TEST + IMPLEMENT: T11.10 — With `throwOnError` true, an error fails host start with `PipelineValidationException` listing every finding (ADR 0025 step 11 bullet 5; FR4; acceptance criterion "throwOnError = true fails start")**
   - **USE COMMAND**: `/tdd:test-first when validation finds an error and throwOnError is true should fail host start with PipelineValidationException listing every finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_an_error_and_throw_on_error_is_true_should_fail_host_start.cs`
