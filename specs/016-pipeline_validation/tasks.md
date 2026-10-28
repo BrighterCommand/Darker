@@ -755,7 +755,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 11D — Hosted service at start (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T11.9 — Validation runs in the host's starting phase, before another hosted service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2)**
+- [x] **TEST + IMPLEMENT: T11.9 — Validation runs in the host's starting phase, before another hosted service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2)**
   - **USE COMMAND**: `/tdd:test-first when a host starts with ValidatePipelines should run validation in StartingAsync before another hosted service's StartAsync even if that service was registered first`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_host_starts_should_validate_before_any_hosted_service_starts.cs`
