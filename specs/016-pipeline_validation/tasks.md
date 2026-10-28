@@ -856,7 +856,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 11E — Call order and side effects (risk pins)
 
-- [ ] **CHARACTERISE: T11.17 — A handler added after `ValidatePipelines()` is still validated (ADR 0025 step 11 bullet 7; FR14, pipeline part)**
+- [x] **CHARACTERISE: T11.17 — A handler added after `ValidatePipelines()` is still validated (ADR 0025 step 11 bullet 7; FR14, pipeline part)**
   - **USE COMMAND**: `/tdd:test-first when a handler is registered after ValidatePipelines should still be validated`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_is_registered_after_ValidatePipelines_should_still_be_validated.cs`
