@@ -81,7 +81,7 @@ internal abstract class PipelinePathReader
     /// <summary>The query type the pipeline builder closes the registration's decorators over.</summary>
     protected Type DecoratorQueryType(HandlerRegistration registration) => QueryInterface.MakeGenericType(registration.ResultType);
 
-    protected PipelineRead ReadOf<TAttribute>(DecoratorEntries<TAttribute> read, Func<TAttribute, int> stepOf)
+    protected PipelineRead ReadOf<TAttribute>(DecoratorEntries<TAttribute> read)
         where TAttribute : Attribute
     {
         if (read.Failure is not null)
@@ -93,7 +93,7 @@ internal abstract class PipelinePathReader
             .ToList();
         var steps = read.Entries
             .Where(entry => entry.Failure is null && entry.DecoratorType is not null)
-            .Select(entry => new PipelineStepDescription(stepOf(entry.Attribute), entry.Attribute.GetType(), entry.DecoratorType!))
+            .Select(entry => new PipelineStepDescription(entry.Step, entry.Attribute.GetType(), entry.DecoratorType!))
             .ToList();
         return new PipelineRead(problems, steps);
     }

@@ -27,12 +27,15 @@ using System;
 
 namespace Paramore.Darker
 {
-    /// <summary>One decorator attribute with its closed decorator type, or the failure that prevented closing it.</summary>
-    internal sealed class DecoratorEntry<TAttribute>(TAttribute attribute, Type? decoratorType, AttributeReadFailure? failure)
+    /// <summary>One decorator attribute with its step and closed decorator type, or the failure that prevented closing it.</summary>
+    internal sealed class DecoratorEntry<TAttribute>(TAttribute attribute, int step, Type? decoratorType, AttributeReadFailure? failure)
         : ReadOutcome(failure)
         where TAttribute : Attribute
     {
         public TAttribute Attribute { get; } = attribute;
+
+        /// <summary>The attribute's step, as the entries were ordered by.</summary>
+        public int Step { get; } = step;
 
         public Type? DecoratorType { get; } = decoratorType;
     }

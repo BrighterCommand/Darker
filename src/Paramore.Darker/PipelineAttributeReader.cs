@@ -69,12 +69,13 @@ namespace Paramore.Darker
             Func<TAttribute, Type> decoratorTypeOf)
             where TAttribute : Attribute
         {
-            List<TAttribute> attributes;
+            List<(TAttribute Attribute, int Step)> attributes;
             try
             {
                 attributes = method.GetCustomAttributes(typeof(TAttribute), true)
                     .Cast<TAttribute>()
-                    .OrderByDescending(stepOf)
+                    .Select(attribute => (Attribute: attribute, Step: stepOf(attribute)))
+                    .OrderByDescending(entry => entry.Step)
                     .ToList();
             }
             catch (Exception ex)
@@ -82,7 +83,7 @@ namespace Paramore.Darker
                 return new DecoratorEntries<TAttribute>([], new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
             }
 
-            return new DecoratorEntries<TAttribute>(attributes.Select(attribute => Close(attribute, queryType, resultType, decoratorTypeOf)).ToList(), null);
+            return new DecoratorEntries<TAttribute>(attributes.Select(entry => Close(entry.Attribute, entry.Step, queryType, resultType, decoratorTypeOf)).ToList(), null);
         }
 
         /// <summary>
@@ -147,6 +148,7 @@ namespace Paramore.Darker
 
         private static DecoratorEntry<TAttribute> Close<TAttribute>(
             TAttribute attribute,
+            int step,
             Type queryType,
             Type resultType,
             Func<TAttribute, Type> decoratorTypeOf)
@@ -159,20 +161,20 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new DecoratorEntry<TAttribute>(attribute, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorType, ex));
+                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorType, ex));
             }
 
             if (openType == null)
-                return new DecoratorEntry<TAttribute>(attribute, null,
+                return new DecoratorEntry<TAttribute>(attribute, step, null,
                     new AttributeReadFailure(AttributeReadFailureKind.DecoratorType, new NullReferenceException()));
 
             try
             {
-                return new DecoratorEntry<TAttribute>(attribute, openType.MakeGenericType(queryType, resultType), null);
+                return new DecoratorEntry<TAttribute>(attribute, step, openType.MakeGenericType(queryType, resultType), null);
             }
             catch (Exception ex)
             {
-                return new DecoratorEntry<TAttribute>(attribute, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorClosing, ex));
+                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorClosing, ex));
             }
         }
     }

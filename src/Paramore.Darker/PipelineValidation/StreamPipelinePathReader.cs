@@ -51,6 +51,5 @@ internal sealed class StreamPipelinePathReader : PipelinePathReader
     public override PipelineRead ReadDecorators(MethodInfo method, HandlerRegistration registration) =>
         ReadOf(
             PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(
-                method, DecoratorQueryType(registration), registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()),
-            attribute => attribute.Step);
+                method, DecoratorQueryType(registration), registration.ResultType, attribute => attribute.Step, attribute => attribute.GetDecoratorType()));
 }
