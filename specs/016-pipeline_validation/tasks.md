@@ -662,7 +662,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 11A — Opt-in registration (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T11.1 — `ValidatePipelines()` registers the validator, and without it nothing is registered (ADR 0025 step 11 bullet 1; FR1; NFR opt-in and non-breaking; acceptance criterion "an application that does not call it is unaffected")**
+- [x] **TEST + IMPLEMENT: T11.1 — `ValidatePipelines()` registers the validator, and without it nothing is registered (ADR 0025 step 11 bullet 1; FR1; NFR opt-in and non-breaking; acceptance criterion "an application that does not call it is unaffected")**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called on the Darker builder should register an IAmAPipelineValidator, and when it is not called should register none`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_should_register_the_pipeline_validator.cs`
