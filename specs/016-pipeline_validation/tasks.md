@@ -867,7 +867,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. The lazy factory from T11.1 delivers this.
 
-- [ ] **CHARACTERISE: T11.18 — Validation creates no handler and no decorator (ADR 0025 step 11 bullet 8; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
+- [x] **CHARACTERISE: T11.18 — Validation creates no handler and no decorator (ADR 0025 step 11 bullet 8; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
   - **USE COMMAND**: `/tdd:test-first when validation runs at host start should never construct a handler or a decorator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_runs_should_create_no_handler_or_decorator.cs`
