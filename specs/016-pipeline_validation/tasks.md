@@ -828,7 +828,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Make `StartingAsync` set a flag when it has validated, and make `StartAsync` run the same validation as `StartingAsync` (`ValidateAll`, then throw or log exactly as `StartingAsync` does; this task's throw-path fact pins the throw, and the logging is shared code that T11.12 and T11.13 test through `StartingAsync`) only when that flag is not set. A real host therefore still validates once, in `StartingAsync`, so T11.9, T11.12 and T11.13 stay green.
     - Add no once-only guard against a second `StartAsync`; T11.15 drives it.
 
-- [ ] **TEST + IMPLEMENT: T11.15 — Validation runs exactly once, when both `StartingAsync` and `StartAsync` run and when `StartAsync` is called twice (ADR 0025 step 11 bullet 4; Invariant "a once-only guard")**
+- [x] **TEST + IMPLEMENT: T11.15 — Validation runs exactly once, when both `StartingAsync` and `StartAsync` run and when `StartAsync` is called twice (ADR 0025 step 11 bullet 4; Invariant "a once-only guard")**
   - **USE COMMAND**: `/tdd:test-first when StartAsync is called a second time, or the host runs both StartingAsync and StartAsync, should run validation exactly once`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_start_async_is_called_twice_should_validate_once.cs`
