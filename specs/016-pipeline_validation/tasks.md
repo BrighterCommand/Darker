@@ -840,7 +840,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Replace T11.14's flag with a once-only guard in `DarkerValidationHostedService` (for example `Interlocked.Exchange` on an int), taken by whichever of `StartingAsync` and `StartAsync` runs first, so validation runs at most once per hosted-service instance.
 
-- [ ] **CHARACTERISE: T11.16 — Under `ServicesStartConcurrently`, validation still precedes the other service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2 "does not depend on registration order")**
+- [x] **CHARACTERISE: T11.16 — Under `ServicesStartConcurrently`, validation still precedes the other service's `StartAsync` (ADR 0025 step 11 bullet 4; FR2 "does not depend on registration order")**
   - **USE COMMAND**: `/tdd:test-first when the host starts services concurrently should still validate before another hosted service's StartAsync`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_services_start_concurrently_should_still_validate_before_any_hosted_service_starts.cs`
