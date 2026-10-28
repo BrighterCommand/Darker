@@ -742,7 +742,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Register each `DecoratorOrderingRules.Default` rule with `AddSingleton`, not `TryAddEnumerable`, which would drop them. Have the validator factory read `GetServices<DecoratorOrderingRule>()`.
 
-- [ ] **TEST + IMPLEMENT: T11.8 — Calling `ValidatePipelines()` twice registers once, and yields a single `DecoratorOrdering` finding (ADR 0025 step 11 bullet 1; risk "duplicate registrations repeat findings")**
+- [x] **TEST + IMPLEMENT: T11.8 — Calling `ValidatePipelines()` twice registers once, and yields a single `DecoratorOrdering` finding (ADR 0025 step 11 bullet 1; risk "duplicate registrations repeat findings")**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called twice should register one pipeline validator and report a single DecoratorOrdering finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_register_once.cs`
