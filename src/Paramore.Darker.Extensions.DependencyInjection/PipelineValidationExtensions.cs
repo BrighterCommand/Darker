@@ -53,8 +53,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var stream = darkerBuilder.StreamRegistry;
 
             // Built lazily, at resolve time, over the live registries, so registration order does not matter.
-            builder.Services.AddSingleton<IAmAPipelineValidator>(_ =>
-                new PipelineValidator(sync, async, stream, DecoratorOrderingRules.Default));
+            builder.Services.AddSingleton<IAmAPipelineValidator>(provider =>
+                new PipelineValidator(sync, async, stream, DecoratorOrderingRules.Default, ServiceProviderResolvabilityProbe.From(provider)));
 
             return builder;
         }
