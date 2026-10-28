@@ -779,7 +779,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Register a `DarkerPipelineValidationOptions` holding `ThrowOnError`. In the hosted service, call `ThrowIfInvalid()` on the combined result when `ThrowOnError` is true.
 
-- [ ] **TEST + IMPLEMENT: T11.11 — The last `ValidatePipelines()` call sets `throwOnError` (ADR 0025 Scope FR1, "the last call sets throwOnError")**
+- [x] **TEST + IMPLEMENT: T11.11 — The last `ValidatePipelines()` call sets `throwOnError` (ADR 0025 Scope FR1, "the last call sets throwOnError")**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called first with throwOnError false and then with true should fail host start on an error`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_take_throw_on_error_from_the_last_call.cs`
