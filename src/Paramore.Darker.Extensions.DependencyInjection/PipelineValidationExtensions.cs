@@ -52,9 +52,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var async = darkerBuilder.AsyncRegistry;
             var stream = darkerBuilder.StreamRegistry;
 
+            // AddSingleton, not TryAddEnumerable: the latter drops equal-valued records, and packages add their own rules beside these.
+            foreach (var rule in DecoratorOrderingRules.Default)
+                builder.Services.AddSingleton(rule);
+
             // Built lazily, at resolve time, over the live registries, so registration order does not matter.
             builder.Services.AddSingleton<IAmAPipelineValidator>(provider =>
-                new PipelineValidator(sync, async, stream, DecoratorOrderingRules.Default, ServiceProviderResolvabilityProbe.From(provider)));
+                new PipelineValidator(sync, async, stream, provider.GetServices<DecoratorOrderingRule>(), ServiceProviderResolvabilityProbe.From(provider)));
 
             return builder;
         }
