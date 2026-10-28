@@ -28,11 +28,9 @@ using System.Runtime.ExceptionServices;
 
 namespace Paramore.Darker
 {
-    /// <summary>A reflective failure, typed by the operation that failed, carrying the exception it raised.</summary>
-    internal sealed class AttributeReadFailure(AttributeReadFailureKind kind, Exception exception)
+    /// <summary>A reflective failure, carrying the exception it raised.</summary>
+    internal sealed class AttributeReadFailure(Exception exception)
     {
-        public AttributeReadFailureKind Kind { get; } = kind;
-
         public Exception Exception { get; } = exception;
 
         /// <summary>Throws the carried exception, preserving its type and original stack trace.</summary>

@@ -80,7 +80,7 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new DecoratorEntries<TAttribute>([], new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
+                return new DecoratorEntries<TAttribute>([], new AttributeReadFailure(ex));
             }
 
             return new DecoratorEntries<TAttribute>(attributes.Select(entry => Close(entry.Attribute, entry.Step, queryType, resultType, decoratorTypeOf)).ToList(), null);
@@ -105,7 +105,7 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new WrongKindCheck(null, [], new AttributeReadFailure(AttributeReadFailureKind.AttributeRead, ex));
+                return new WrongKindCheck(null, [], new AttributeReadFailure(ex));
             }
         }
 
@@ -142,7 +142,7 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new ExecuteMethodLookup(null, new AttributeReadFailure(AttributeReadFailureKind.MethodLookup, ex));
+                return new ExecuteMethodLookup(null, new AttributeReadFailure(ex));
             }
         }
 
@@ -161,12 +161,12 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorType, ex));
+                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(ex));
             }
 
             if (openType == null)
                 return new DecoratorEntry<TAttribute>(attribute, step, null,
-                    new AttributeReadFailure(AttributeReadFailureKind.DecoratorType, new NullReferenceException()));
+                    new AttributeReadFailure(new NullReferenceException()));
 
             try
             {
@@ -174,7 +174,7 @@ namespace Paramore.Darker
             }
             catch (Exception ex)
             {
-                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(AttributeReadFailureKind.DecoratorClosing, ex));
+                return new DecoratorEntry<TAttribute>(attribute, step, null, new AttributeReadFailure(ex));
             }
         }
     }
