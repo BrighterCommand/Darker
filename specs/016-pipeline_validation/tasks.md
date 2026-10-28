@@ -697,7 +697,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 11B — Container-backed resolvability (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T11.4 — An unregistered decorator is reported through a real container (ADR 0025 step 11 bullet 3; FR7; acceptance criterion for FR7)**
+- [x] **TEST + IMPLEMENT: T11.4 — An unregistered decorator is reported through a real container (ADR 0025 step 11 bullet 3; FR7; acceptance criterion for FR7)**
   - **USE COMMAND**: `/tdd:test-first when a public handler names a decorator that is not registered in the container should report a DecoratorResolvable error through ValidateAll`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_is_not_registered_in_the_container_should_report_decorator_resolvable.cs`
