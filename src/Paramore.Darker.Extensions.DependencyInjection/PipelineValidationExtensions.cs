@@ -76,6 +76,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             // Built lazily, at resolve time, over the live registries, so registration order does not matter.
             services.AddSingleton<IAmAPipelineValidator>(provider =>
                 new PipelineValidator(sync, async, stream, provider.GetServices<DecoratorOrderingRule>(), ServiceProviderResolvabilityProbe.From(provider)));
+
+            services.AddHostedService<DarkerValidationHostedService>();
         }
 
         /// <summary>
