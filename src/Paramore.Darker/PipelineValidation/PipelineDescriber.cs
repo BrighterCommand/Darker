@@ -26,6 +26,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Paramore.Darker.PipelineValidation;
@@ -39,24 +40,15 @@ internal static class PipelineDescriber
     /// <param name="inspector">The registry to describe.</param>
     /// <param name="reader">The reader for the path the registry serves.</param>
     /// <returns>One description for each candidate handler of each registration, in registration order.</returns>
-    public static IReadOnlyList<HandlerPipelineDescription> Describe(IAmAHandlerRegistryInspector inspector, PipelinePathReader reader)
-    {
-        var descriptions = new List<HandlerPipelineDescription>();
+    public static IReadOnlyList<HandlerPipelineDescription> Describe(IAmAHandlerRegistryInspector inspector, PipelinePathReader reader) =>
+        inspector.GetRegistrations()
+            .SelectMany(registration => DescribeRegistration(registration, reader))
+            .ToList();
 
-        foreach (var registration in inspector.GetRegistrations())
-        {
-            if (registration.CandidateHandlerTypes.Count == 0)
-            {
-                descriptions.Add(HandlerPipelineDescription.WithoutHandler(reader.Path, registration.QueryType, registration.ResultType));
-                continue;
-            }
-
-            foreach (var candidate in registration.CandidateHandlerTypes)
-                descriptions.Add(DescribeCandidate(candidate, registration, reader));
-        }
-
-        return descriptions;
-    }
+    private static IEnumerable<HandlerPipelineDescription> DescribeRegistration(HandlerRegistration registration, PipelinePathReader reader) =>
+        registration.CandidateHandlerTypes.Count == 0
+            ? [HandlerPipelineDescription.WithoutHandler(reader.Path, registration.QueryType, registration.ResultType)]
+            : registration.CandidateHandlerTypes.Select(candidate => DescribeCandidate(candidate, registration, reader));
 
     private static HandlerPipelineDescription DescribeCandidate(Type? handlerType, HandlerRegistration registration, PipelinePathReader reader)
     {
