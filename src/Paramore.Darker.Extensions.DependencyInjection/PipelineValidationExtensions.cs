@@ -24,6 +24,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Builder;
 using Paramore.Darker.PipelineValidation;
@@ -57,5 +58,13 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
             return builder;
         }
+
+        /// <summary>
+        /// Runs every registered <see cref="IAmAPipelineValidator"/> and combines their findings in registration order.
+        /// </summary>
+        /// <param name="provider">The service provider to resolve the validators from.</param>
+        /// <returns>One combined result. Findings never cause this method to throw.</returns>
+        public static PipelineValidationResult ValidateAll(this IServiceProvider provider) =>
+            PipelineValidationResult.Combine(provider.GetServices<IAmAPipelineValidator>().Select(v => v.Validate()));
     }
 }
