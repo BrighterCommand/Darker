@@ -814,7 +814,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Always log warnings at Warning, and log one Debug summary when the combined result has no findings.
 
-- [ ] **TEST + IMPLEMENT: T11.14 — A host that never calls the starting phase still validates, from `StartAsync` (ADR 0025 `DarkerValidationHostedService.StartAsync`; Technology Choices limit 3)**
+- [x] **TEST + IMPLEMENT: T11.14 — A host that never calls the starting phase still validates, from `StartAsync` (ADR 0025 `DarkerValidationHostedService.StartAsync`; Technology Choices limit 3)**
   - **USE COMMAND**: `/tdd:test-first when only StartAsync is called on the registered hosted services should run validation`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_only_start_async_is_called_should_validate.cs`
