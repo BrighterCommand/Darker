@@ -791,7 +791,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - On every call, update the options instance found through its descriptor's `ImplementationInstance`.
 
-- [ ] **TEST + IMPLEMENT: T11.12 — With `throwOnError` false, each error is logged at Error and the host starts (ADR 0025 step 11 bullet 5; FR4)**
+- [x] **TEST + IMPLEMENT: T11.12 — With `throwOnError` false, each error is logged at Error and the host starts (ADR 0025 step 11 bullet 5; FR4)**
   - **USE COMMAND**: `/tdd:test-first when validation finds errors and throwOnError is false should log each error at Error level and let the host start`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_validation_finds_errors_and_throw_on_error_is_false_should_log_and_start.cs`
