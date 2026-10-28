@@ -732,7 +732,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ### 11C — Ordering table in the container (behaviour)
 
-- [ ] **TEST + IMPLEMENT: T11.7 — An ordering rule contributed with `AddSingleton` accumulates beside the default table (ADR 0025 step 11 bullet 2; force "Extensibility")**
+- [x] **TEST + IMPLEMENT: T11.7 — An ordering rule contributed with `AddSingleton` accumulates beside the default table (ADR 0025 step 11 bullet 2; force "Extensibility")**
   - **USE COMMAND**: `/tdd:test-first when a package adds a DecoratorOrderingRule with AddSingleton should report its violation beside the default Fallback and Retry rule`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_package_adds_an_ordering_rule_should_accumulate_it_beside_the_default_table.cs`
