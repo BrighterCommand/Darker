@@ -96,30 +96,26 @@ public static class QueryPipelineRules
                 RuleId = PipelineRuleIds.HandlerResolvable
             });
 
+    // The result-evaluator form asks the probe once per decorator, and evaluates the message inside the specification's try.
     private static Specification<HandlerPipelineDescription> DecoratorResolvable(IAmAComponentResolvabilityProbe probe) =>
-        new(
-            description => description.Steps.All(step => probe.Resolves(step.DecoratorType)),
-            description => new ValidationError(
-                ValidationSeverity.Error,
-                HandlerSource(description),
-                $"{HandlerSource(description)} {Where(description)} uses {UnresolvedDecorators(description, probe)}, which is not registered. Register it with the container.")
-            {
-                RuleId = PipelineRuleIds.DecoratorResolvable
-            });
+        new((Func<HandlerPipelineDescription, IEnumerable<ValidationResult>>)(description => UnresolvedDecorators(description, probe)));
 
-    private static string UnresolvedDecorators(HandlerPipelineDescription description, IAmAComponentResolvabilityProbe probe)
+    private static IEnumerable<ValidationResult> UnresolvedDecorators(HandlerPipelineDescription description, IAmAComponentResolvabilityProbe probe)
     {
-        var decorators = description.Steps.Select(step => step?.DecoratorType).Where(type => type is not null).ToList();
-        try
-        {
-            decorators = decorators.Where(type => !probe.Resolves(type!)).ToList();
-        }
-        catch (Exception)
-        {
-            // the probe failed again, so name every decorator of the pipeline rather than throw from the error factory
-        }
+        var unresolved = description.Steps.Where(step => !probe.Resolves(step.DecoratorType)).ToList();
+        return unresolved.Count == 0 ? [] : [ValidationResult.Fail(DecoratorResolvableError(description, unresolved))];
+    }
 
-        return string.Join(", ", decorators.Select(type => $"'{type!.Name}'"));
+    private static ValidationError DecoratorResolvableError(HandlerPipelineDescription description, IReadOnlyList<PipelineStepDescription> unresolved)
+    {
+        var decorators = string.Join(", ", unresolved.Select(step => $"'{step.DecoratorType?.Name}'"));
+        return new ValidationError(
+            ValidationSeverity.Error,
+            HandlerSource(description),
+            $"{HandlerSource(description)} {Where(description)} uses {decorators}, which is not registered. Register it with the container.")
+        {
+            RuleId = PipelineRuleIds.DecoratorResolvable
+        };
     }
 
     private static Specification<HandlerPipelineDescription> HandlerRegistered() =>
