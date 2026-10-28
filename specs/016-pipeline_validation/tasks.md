@@ -719,7 +719,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T8.1's `HandlerResolvable` rule and T11.4's container probe deliver this.
 
-- [ ] **CHARACTERISE: T11.6 — An open-generic decorator registration counts as registered once closed (ADR 0025 step 11 bullet 3; `IServiceProviderIsService` open-generic choice)**
+- [x] **CHARACTERISE: T11.6 — An open-generic decorator registration counts as registered once closed (ADR 0025 step 11 bullet 3; `IServiceProviderIsService` open-generic choice)**
   - **USE COMMAND**: `/tdd:test-first when a decorator is registered as an open generic should report no DecoratorResolvable error for its closed type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_decorator_is_registered_as_an_open_generic_should_report_no_decorator_resolvable.cs`
