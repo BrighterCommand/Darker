@@ -37,7 +37,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class DarkerValidationHostedService : IHostedLifecycleService
     {
-        private const string ERROR_TEMPLATE = "Pipeline validation [{RuleId}] {Source}: {Message}";
+        private const string FINDING_TEMPLATE = "Pipeline validation [{RuleId}] {Source}: {Message}";
+
+        private const string CLEAN_MESSAGE = "Pipeline validation found no problems";
 
         private readonly IServiceProvider _provider;
 
@@ -55,6 +57,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public Task StartingAsync(CancellationToken cancellationToken)
         {
             var result = _provider.ValidateAll();
+            LogWarningsOrSummary(result);
             if (_options.ThrowOnError)
                 result.ThrowIfInvalid();
             else
@@ -62,10 +65,18 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return Task.CompletedTask;
         }
 
+        private void LogWarningsOrSummary(PipelineValidationResult result)
+        {
+            foreach (var warning in result.Warnings)
+                _logger.LogWarning(FINDING_TEMPLATE, warning.RuleId, warning.Source, warning.Message);
+            if (result.Errors.Count == 0 && result.Warnings.Count == 0)
+                _logger.LogDebug(CLEAN_MESSAGE);
+        }
+
         private void LogErrors(PipelineValidationResult result)
         {
             foreach (var error in result.Errors)
-                _logger.LogError(ERROR_TEMPLATE, error.RuleId, error.Source, error.Message);
+                _logger.LogError(FINDING_TEMPLATE, error.RuleId, error.Source, error.Message);
         }
 
         public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
