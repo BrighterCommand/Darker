@@ -48,20 +48,26 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var darkerBuilder = builder as ServiceCollectionDarkerHandlerBuilder
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
-            if (IsRegistered(builder.Services))
-                return builder;
 
-            builder.Services.AddSingleton(PipelineValidationRegistration.Instance);
-            builder.Services.AddSingleton(new DarkerPipelineValidationOptions(throwOnError));
-            RegisterValidation(darkerBuilder);
+            var options = FindOptions(builder.Services);
+            if (options is null)
+            {
+                options = new DarkerPipelineValidationOptions(throwOnError);
+                builder.Services.AddSingleton(options);
+                RegisterValidation(darkerBuilder);
+            }
+
+            // The last call sets throwOnError; the options instance doubles as the "already registered" marker.
+            options.ThrowOnError = throwOnError;
 
             return builder;
         }
 
-        private static bool IsRegistered(IServiceCollection services) =>
-            services.Any(d => !d.IsKeyedService
-                && d.ServiceType == typeof(PipelineValidationRegistration)
-                && d.ImplementationInstance is PipelineValidationRegistration);
+        private static DarkerPipelineValidationOptions? FindOptions(IServiceCollection services) =>
+            services
+                .Where(d => !d.IsKeyedService && d.ServiceType == typeof(DarkerPipelineValidationOptions))
+                .Select(d => d.ImplementationInstance as DarkerPipelineValidationOptions)
+                .FirstOrDefault(o => o is not null);
 
         private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder)
         {

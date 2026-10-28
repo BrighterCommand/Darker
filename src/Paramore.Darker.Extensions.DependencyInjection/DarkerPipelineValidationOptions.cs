@@ -37,8 +37,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public DarkerPipelineValidationOptions(bool throwOnError) => ThrowOnError = throwOnError;
 
         /// <summary>
-        /// Gets whether errors should stop the host.
+        /// Gets or sets whether errors should stop the host. The last ValidatePipelines call sets it.
         /// </summary>
-        public bool ThrowOnError { get; }
+        public bool ThrowOnError { get; set; }
     }
 }
