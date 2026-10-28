@@ -48,19 +48,34 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var darkerBuilder = builder as ServiceCollectionDarkerHandlerBuilder
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
+            if (IsRegistered(builder.Services))
+                return builder;
+
+            builder.Services.AddSingleton(PipelineValidationRegistration.Instance);
+            RegisterValidation(darkerBuilder);
+
+            return builder;
+        }
+
+        private static bool IsRegistered(IServiceCollection services) =>
+            services.Any(d => !d.IsKeyedService
+                && d.ServiceType == typeof(PipelineValidationRegistration)
+                && d.ImplementationInstance is PipelineValidationRegistration);
+
+        private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder)
+        {
+            var services = darkerBuilder.Services;
             var sync = darkerBuilder.SyncRegistry;
             var async = darkerBuilder.AsyncRegistry;
             var stream = darkerBuilder.StreamRegistry;
 
             // AddSingleton, not TryAddEnumerable: the latter drops equal-valued records, and packages add their own rules beside these.
             foreach (var rule in DecoratorOrderingRules.Default)
-                builder.Services.AddSingleton(rule);
+                services.AddSingleton(rule);
 
             // Built lazily, at resolve time, over the live registries, so registration order does not matter.
-            builder.Services.AddSingleton<IAmAPipelineValidator>(provider =>
+            services.AddSingleton<IAmAPipelineValidator>(provider =>
                 new PipelineValidator(sync, async, stream, provider.GetServices<DecoratorOrderingRule>(), ServiceProviderResolvabilityProbe.From(provider)));
-
-            return builder;
         }
 
         /// <summary>
