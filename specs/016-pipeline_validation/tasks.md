@@ -708,7 +708,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the internal `ServiceProviderResolvabilityProbe` over `IServiceProviderIsService`, resolved from the provider in the validator factory. Pass null when the container supplies no `IServiceProviderIsService`.
 
-- [ ] **CHARACTERISE: T11.5 — A handler whose descriptor was removed is reported through a real container (ADR 0025 step 11 bullet 3; FR6; acceptance criterion for FR6)**
+- [x] **CHARACTERISE: T11.5 — A handler whose descriptor was removed is reported through a real container (ADR 0025 step 11 bullet 3; FR6; acceptance criterion for FR6)**
   - **USE COMMAND**: `/tdd:test-first when a registered handler's service descriptor is removed from the container should report a HandlerResolvable error through ValidateAll`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_descriptor_is_removed_should_report_handler_resolvable.cs`
