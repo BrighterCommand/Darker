@@ -47,6 +47,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private readonly ILogger<DarkerValidationHostedService> _logger;
 
+        private bool _validated;
+
         public DarkerValidationHostedService(IServiceProvider provider, DarkerPipelineValidationOptions options, ILogger<DarkerValidationHostedService> logger)
         {
             _logger = logger;
@@ -56,13 +58,19 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public Task StartingAsync(CancellationToken cancellationToken)
         {
+            _validated = true;
+            Validate();
+            return Task.CompletedTask;
+        }
+
+        private void Validate()
+        {
             var result = _provider.ValidateAll();
             LogWarningsOrSummary(result);
             if (_options.ThrowOnError)
                 result.ThrowIfInvalid();
             else
                 LogErrors(result);
-            return Task.CompletedTask;
         }
 
         private void LogWarningsOrSummary(PipelineValidationResult result)
@@ -79,7 +87,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 _logger.LogError(FINDING_TEMPLATE, error.RuleId, error.Source, error.Message);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            if (!_validated)
+                Validate();
+            return Task.CompletedTask;
+        }
 
         public Task StartedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
