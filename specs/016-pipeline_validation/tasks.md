@@ -684,7 +684,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Throw when the builder is not a `ServiceCollectionDarkerHandlerBuilder`.
 
-- [ ] **TEST + IMPLEMENT: T11.3 — `ValidateAll` runs every registered validator, combines their results in registration order and never throws (ADR 0025 step 11 bullet "on-demand ValidateAll"; FR5)**
+- [x] **TEST + IMPLEMENT: T11.3 — `ValidateAll` runs every registered validator, combines their results in registration order and never throws (ADR 0025 step 11 bullet "on-demand ValidateAll"; FR5)**
   - **USE COMMAND**: `/tdd:test-first when ValidateAll is called on the provider should return one combined result from every registered validator in registration order without throwing`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidateAll_is_called_should_combine_every_validator_in_registration_order.cs`
