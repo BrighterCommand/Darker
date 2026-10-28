@@ -23,6 +23,7 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Builder;
 using Paramore.Darker.PipelineValidation;
@@ -40,9 +41,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <param name="builder">The Darker builder returned by AddDarker.</param>
         /// <param name="throwOnError">Whether errors should stop the host (not yet used).</param>
         /// <returns>The same builder.</returns>
+        /// <exception cref="InvalidOperationException">The builder was not created by AddDarker, so it does not expose the registries.</exception>
         public static IDarkerHandlerBuilder ValidatePipelines(this IDarkerHandlerBuilder builder, bool throwOnError = true)
         {
-            var darkerBuilder = (ServiceCollectionDarkerHandlerBuilder)builder;
+            var darkerBuilder = builder as ServiceCollectionDarkerHandlerBuilder
+                ?? throw new InvalidOperationException(
+                    "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
             var sync = darkerBuilder.SyncRegistry;
             var async = darkerBuilder.AsyncRegistry;
             var stream = darkerBuilder.StreamRegistry;
