@@ -26,7 +26,6 @@ THE SOFTWARE. */
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Paramore.Darker.Builder;
 using Paramore.Darker.PipelineValidation;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -49,21 +48,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
 
-            var options = FindOptions(builder.Services);
+            var options = FindRegistration(builder.Services);
             if (options is null)
             {
-                options = new DarkerPipelineValidationOptions(throwOnError);
+                options = new DarkerPipelineValidationOptions();
                 builder.Services.AddSingleton(options);
                 RegisterValidation(darkerBuilder);
             }
 
-            // The last call sets throwOnError; the options instance doubles as the "already registered" marker.
+            // The last call sets throwOnError.
             options.ThrowOnError = throwOnError;
 
             return builder;
         }
 
-        private static DarkerPipelineValidationOptions? FindOptions(IServiceCollection services) =>
+        private static DarkerPipelineValidationOptions? FindRegistration(IServiceCollection services) =>
             services
                 .Where(d => !d.IsKeyedService && d.ServiceType == typeof(DarkerPipelineValidationOptions))
                 .Select(d => d.ImplementationInstance as DarkerPipelineValidationOptions)

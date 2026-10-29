@@ -31,12 +31,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     internal sealed class DarkerPipelineValidationOptions
     {
         /// <summary>
-        /// Initializes the options.
-        /// </summary>
-        /// <param name="throwOnError">Whether errors should stop the host.</param>
-        public DarkerPipelineValidationOptions(bool throwOnError) => ThrowOnError = throwOnError;
-
-        /// <summary>
         /// Gets or sets whether errors should stop the host. The last ValidatePipelines call sets it.
         /// </summary>
         public bool ThrowOnError { get; set; }
