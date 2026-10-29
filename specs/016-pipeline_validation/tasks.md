@@ -893,7 +893,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Do not correct the "higher step is outermost" wording in ADR 0002, `CLAUDE.md`, the caching README or `.agent_instructions/skills_overview.md`. ADR 0025 leaves that to a separate change.
   - Leave the lifetime rules to T19.1.
 
-- [ ] **DOC: T12.2 — XML documentation on every new public type of ADR 0025 (house standard, `.agent_instructions/documentation.md`)**
+- [x] **DOC: T12.2 — XML documentation on every new public type of ADR 0025 (house standard, `.agent_instructions/documentation.md`)**
   - Document the Specification types, `ValidationRuleId`/`ValidationRuleIds`, `IAmAHandlerRegistryInspector`/`HandlerRegistration`, every public `PipelineValidation` type, `ValidatePipelines`, `ValidateAll` and `DarkerPipelineValidationOptions`.
   - Copied Brighter types keep their XML docs.
   - State on `IAmAComponentResolvabilityProbe` that it must never create the type. State on `ValidateAll` that it never throws for a finding.
