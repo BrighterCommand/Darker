@@ -881,7 +881,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 12 — Pipeline validation documentation and ADR 0025 checkpoint (ADR 0025 step 12)
 
-- [ ] **DOC: T12.1 — README section on `ValidatePipelines()` (ADR 0025 step 12; FR13 pipeline part; FR14 pipeline part; acceptance criterion "README documents the call, the order, the rules")**
+- [x] **DOC: T12.1 — README section on `ValidatePipelines()` (ADR 0025 step 12; FR13 pipeline part; FR14 pipeline part; acceptance criterion "README documents the call, the order, the rules")**
   - Add a `## Validating pipelines at startup` section to `README.md`, after "Usage with Microsoft.Extensions.DependencyInjection". It covers:
     - the opt-in call and `throwOnError`;
     - that it should be called last;
