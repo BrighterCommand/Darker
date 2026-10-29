@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +26,7 @@ namespace Paramore.Darker.Extensions.Tests.TestDoubles
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            ValidationRecordedBeforeEntry = System.Array.IndexOf(_sequence.Entries, "validation") >= 0;
+            ValidationRecordedBeforeEntry = _sequence.Entries.Contains(RecordingValidator.ENTRY);
             _sequence.Record("gated service StartAsync");
             Entered.TrySetResult();
             await Release.Task;

@@ -29,7 +29,7 @@ namespace Paramore.Darker.Extensions.Tests.PipelineValidation
             await host.StartAsync(TestContext.Current.CancellationToken);
 
             // Assert — validation ran in the starting phase, ahead of the other service's StartAsync
-            sequence.Entries.ShouldBe(new[] { "validation", "other service StartAsync" });
+            sequence.Entries.ShouldBe(new[] { RecordingValidator.ENTRY, "other service StartAsync" });
 
             await host.StopAsync(TestContext.Current.CancellationToken);
         }
