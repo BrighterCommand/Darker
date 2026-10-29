@@ -24,11 +24,13 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker.PipelineValidation;
+using Paramore.Darker.Specifications;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
 {
@@ -71,25 +73,24 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         private void Validate()
         {
             var result = _provider.ValidateAll();
-            LogWarningsOrSummary(result);
+            LogFindings(result.Warnings, LogLevel.Warning);
+            LogSummaryIfClean(result);
             if (_options.ThrowOnError)
                 result.ThrowIfInvalid();
             else
-                LogErrors(result);
+                LogFindings(result.Errors, LogLevel.Error);
         }
 
-        private void LogWarningsOrSummary(PipelineValidationResult result)
+        private void LogFindings(IEnumerable<ValidationError> findings, LogLevel level)
         {
-            foreach (var warning in result.Warnings)
-                _logger.LogWarning(FINDING_TEMPLATE, warning.RuleId, warning.Source, warning.Message);
+            foreach (var finding in findings)
+                _logger.Log(level, FINDING_TEMPLATE, finding.RuleId, finding.Source, finding.Message);
+        }
+
+        private void LogSummaryIfClean(PipelineValidationResult result)
+        {
             if (result.Errors.Count == 0 && result.Warnings.Count == 0)
                 _logger.LogDebug(CLEAN_MESSAGE);
-        }
-
-        private void LogErrors(PipelineValidationResult result)
-        {
-            foreach (var error in result.Errors)
-                _logger.LogError(FINDING_TEMPLATE, error.RuleId, error.Source, error.Message);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
