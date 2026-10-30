@@ -943,7 +943,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 15 — InertScopeAffinity rule (ADR 0026 step 3)
 
-- [ ] **TEST + IMPLEMENT: T15.1 — `AddDarkerScopeProvider<T>(JoinAmbient)` with a Transient `HandlerLifetime` is an error naming `T` and `Transient` (ADR 0026 step 3 bullet 1; FR10; FR13 link)**
+- [x] **TEST + IMPLEMENT: T15.1 — `AddDarkerScopeProvider<T>(JoinAmbient)` with a Transient `HandlerLifetime` is an error naming `T` and `Transient` (ADR 0026 step 3 bullet 1; FR10; FR13 link)**
   - **USE COMMAND**: `/tdd:test-first when AddDarkerScopeProvider registers JoinAmbient and HandlerLifetime is Transient should report an InertScopeAffinity error naming the provider and Transient with the README link`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_is_registered_with_a_transient_handler_lifetime_should_report_inert_scope_affinity.cs`
