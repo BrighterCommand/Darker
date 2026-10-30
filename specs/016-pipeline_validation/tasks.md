@@ -930,7 +930,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - In `ValidatePipelines`, capture on every call. Inside the once-only branch, register the snapshot instance, then `AddSingleton<IAmAPipelineValidator>(sp => new ScopeConfigurationValidator(snapshot))`, after the pipeline validator.
     - A later call finds the snapshot through its descriptor's `ImplementationInstance`.
 
-- [ ] **CHARACTERISE: T14.2 — Calling `ValidatePipelines()` twice registers two validators in total, not three (ADR 0026 step 2 bullet 2; Invariant "the last call wins")**
+- [x] **CHARACTERISE: T14.2 — Calling `ValidatePipelines()` twice registers two validators in total, not three (ADR 0026 step 2 bullet 2; Invariant "the last call wins")**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called twice should register exactly two validators`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_twice_should_register_two_validators_in_total.cs`
