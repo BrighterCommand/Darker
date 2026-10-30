@@ -908,7 +908,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 13 — Builder carries the options (ADR 0026 step 1)
 
-- [ ] **STRUCTURAL: T13.1 — Pass `DarkerOptions` to `ServiceCollectionDarkerHandlerBuilder` and expose it internally (ADR 0026 step 1; force "DarkerOptions is not in the container")**
+- [x] **STRUCTURAL: T13.1 — Pass `DarkerOptions` to `ServiceCollectionDarkerHandlerBuilder` and expose it internally (ADR 0026 step 1; force "DarkerOptions is not in the container")**
   - Add a `DarkerOptions` parameter to the constructor at `ServiceCollectionDarkerHandlerBuilder.cs:17`, with an internal `Options` property.
   - Pass `options` from `AddDarker` at `ServiceCollectionExtensions.cs:33`.
   - No behaviour changes. Run the full suite before and after.
