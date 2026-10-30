@@ -988,7 +988,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **TEST + IMPLEMENT: T15.5 — `DefaultScopeAffinity = JoinAmbient` with a Scoped lifetime and no provider is an error that advises `AddDarkerScopeProvider` (ADR 0026 step 3 bullet 5; FR10 "no unkeyed provider")**
+- [x] **TEST + IMPLEMENT: T15.5 — `DefaultScopeAffinity = JoinAmbient` with a Scoped lifetime and no provider is an error that advises `AddDarkerScopeProvider` (ADR 0026 step 3 bullet 5; FR10 "no unkeyed provider")**
   - **USE COMMAND**: `/tdd:test-first when DefaultScopeAffinity is JoinAmbient with a Scoped handler lifetime and no scope provider should report an InertScopeAffinity error advising AddDarkerScopeProvider or AddDarkerRequestScope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_default_affinity_is_join_ambient_without_a_provider_should_report_inert_scope_affinity.cs`
