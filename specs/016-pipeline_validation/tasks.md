@@ -1045,7 +1045,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **TEST + IMPLEMENT: T15.10 — When the scope provider in use is a factory registration, the `InertScopeAffinity` message renders it as "a factory registration at position N" (ADR 0026 catalogue, `InertScopeAffinity` "the scope provider in use … rendered as in DuplicateScopeProvider")**
+- [x] **TEST + IMPLEMENT: T15.10 — When the scope provider in use is a factory registration, the `InertScopeAffinity` message renders it as "a factory registration at position N" (ADR 0026 catalogue, `InertScopeAffinity` "the scope provider in use … rendered as in DuplicateScopeProvider")**
   - **USE COMMAND**: `/tdd:test-first when the scope provider in use is registered by a factory and JoinAmbient is inert should report an InertScopeAffinity error rendering the provider as a factory registration at its position`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_scope_provider_in_use_is_a_factory_should_render_it_by_position_in_inert_scope_affinity.cs`
