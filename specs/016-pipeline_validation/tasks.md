@@ -966,7 +966,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Render the option as the affinity's source when no registration exists. Read `HandlerLifetime` from `snapshot.Options` inside `Validate`, at host start.
 
-- [ ] **CHARACTERISE: T15.3 — A registered `AlwaysNew` that overrides a `JoinAmbient` default yields nothing (ADR 0026 step 3 bullet 3; "Why the effective affinity")**
+- [x] **CHARACTERISE: T15.3 — A registered `AlwaysNew` that overrides a `JoinAmbient` default yields nothing (ADR 0026 step 3 bullet 3; "Why the effective affinity")**
   - **USE COMMAND**: `/tdd:test-first when a registered AlwaysNew affinity overrides a JoinAmbient default should report no InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_registered_always_new_overrides_a_join_ambient_default_should_report_nothing.cs`
