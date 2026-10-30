@@ -1009,7 +1009,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T15.5 composes every applicable cause into one finding, as the ADR 0026 catalogue requires.
 
-- [ ] **CHARACTERISE: T15.7 — A provider added with `AddSingleton` satisfies the rule, and a keyed-only provider does not (ADR 0026 step 3 bullet 7; risk "reading the wrong property family")**
+- [x] **CHARACTERISE: T15.7 — A provider added with `AddSingleton` satisfies the rule, and a keyed-only provider does not (ADR 0026 step 3 bullet 7; risk "reading the wrong property family")**
   - **USE COMMAND**: `/tdd:test-first when the only scope provider is keyed should report InertScopeAffinity, and when an unkeyed provider is added with AddSingleton should report nothing`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_only_scope_provider_is_keyed_should_report_inert_scope_affinity.cs`
