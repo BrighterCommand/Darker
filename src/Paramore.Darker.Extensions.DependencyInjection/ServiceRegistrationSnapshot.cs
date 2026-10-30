@@ -67,9 +67,25 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var affinity = registration?.Affinity ?? Options.DefaultScopeAffinity;
             var source = registration is null
                 ? "DarkerOptions.DefaultScopeAffinity"
-                : provider?.ImplementationType?.Name ?? provider?.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
+                : DescribeScopeProvider(provider);
 
             return new ScopeConfiguration(affinity, source, Options.HandlerLifetime, provider is not null);
+        }
+
+        /// <summary>
+        /// Renders an unkeyed <see cref="IAmAScopeProvider"/> descriptor: its implementation type, or for a factory
+        /// "a factory registration at position N", where N is its 1-based position among the unkeyed provider descriptors.
+        /// </summary>
+        private string DescribeScopeProvider(DescriptorRecord? provider)
+        {
+            if (provider is null) return "the registered scope provider";
+            if (provider.IsFactory)
+            {
+                var position = _descriptors.Where(d => !d.IsKeyed && d.ServiceType == typeof(IAmAScopeProvider)).ToList().IndexOf(provider) + 1;
+                return $"a factory registration at position {position}";
+            }
+
+            return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
         }
     }
 }

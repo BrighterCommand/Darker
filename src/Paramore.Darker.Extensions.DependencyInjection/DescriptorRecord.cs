@@ -33,13 +33,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class DescriptorRecord
     {
-        private DescriptorRecord(Type serviceType, ServiceLifetime lifetime, bool isKeyed, Type? implementationType, object? implementationInstance)
+        private DescriptorRecord(Type serviceType, ServiceLifetime lifetime, bool isKeyed, Type? implementationType, object? implementationInstance, bool isFactory)
         {
             ServiceType = serviceType;
             Lifetime = lifetime;
             IsKeyed = isKeyed;
             ImplementationType = implementationType;
             ImplementationInstance = implementationInstance;
+            IsFactory = isFactory;
         }
 
         public Type ServiceType { get; }
@@ -54,9 +55,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>The implementation instance, from the keyed or unkeyed property as the descriptor requires, or null.</summary>
         public object? ImplementationInstance { get; }
 
+        /// <summary>True when a factory registered the descriptor, so its implementation type is not known.</summary>
+        public bool IsFactory { get; }
+
         public static DescriptorRecord From(ServiceDescriptor descriptor) =>
             descriptor.IsKeyedService
-                ? new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, true, descriptor.KeyedImplementationType, descriptor.KeyedImplementationInstance)
-                : new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, false, descriptor.ImplementationType, descriptor.ImplementationInstance);
+                ? new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, true, descriptor.KeyedImplementationType, descriptor.KeyedImplementationInstance, descriptor.KeyedImplementationFactory is not null)
+                : new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, false, descriptor.ImplementationType, descriptor.ImplementationInstance, descriptor.ImplementationFactory is not null);
     }
 }
