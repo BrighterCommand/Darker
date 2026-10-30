@@ -1033,7 +1033,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T15.9 — `AddDarkerRequestScope()` with a Transient `HandlerLifetime` is an `InertScopeAffinity` error (ADR 0026 step 3 bullet 9; FR10 "including via AddDarkerRequestScope()")**
+- [x] **CHARACTERISE: T15.9 — `AddDarkerRequestScope()` with a Transient `HandlerLifetime` is an `InertScopeAffinity` error (ADR 0026 step 3 bullet 9; FR10 "including via AddDarkerRequestScope()")**
   - **USE COMMAND**: `/tdd:test-first when AddDarkerRequestScope is registered before AddDarker with a Transient handler lifetime should report an InertScopeAffinity error naming HttpContextScopeProvider`
   - Test location: "test/Paramore.Darker.Extensions.AspNetCore.Tests/"
   - Test file: `When_the_request_scope_is_registered_with_a_transient_handler_lifetime_should_report_inert_scope_affinity.cs`
