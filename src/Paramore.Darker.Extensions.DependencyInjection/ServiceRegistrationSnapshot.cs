@@ -25,6 +25,7 @@ THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -34,9 +35,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class ServiceRegistrationSnapshot
     {
-        private readonly IReadOnlyList<ServiceDescriptor> _descriptors;
+        private readonly IReadOnlyList<DescriptorRecord> _descriptors;
 
-        private ServiceRegistrationSnapshot(IReadOnlyList<ServiceDescriptor> descriptors, DarkerOptions options)
+        private ServiceRegistrationSnapshot(IReadOnlyList<DescriptorRecord> descriptors, DarkerOptions options)
         {
             _descriptors = descriptors;
             Options = options;
@@ -49,7 +50,26 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (services is null) throw new ArgumentNullException(nameof(services));
             if (options is null) throw new ArgumentNullException(nameof(options));
 
-            return new ServiceRegistrationSnapshot(new List<ServiceDescriptor>(services), options);
+            return new ServiceRegistrationSnapshot(services.Select(DescriptorRecord.From).ToList(), options);
+        }
+
+        /// <summary>
+        /// Reads the scope configuration. The effective affinity is the last unkeyed <see cref="ScopeAffinityRegistration"/> instance,
+        /// otherwise <see cref="DarkerOptions.DefaultScopeAffinity"/>.
+        /// </summary>
+        public ScopeConfiguration ReadScopeConfiguration()
+        {
+            var registration = _descriptors
+                .LastOrDefault(d => !d.IsKeyed && d.ServiceType == typeof(ScopeAffinityRegistration))
+                ?.ImplementationInstance as ScopeAffinityRegistration;
+            var provider = _descriptors.LastOrDefault(d => !d.IsKeyed && d.ServiceType == typeof(IAmAScopeProvider));
+
+            var affinity = registration?.Affinity ?? Options.DefaultScopeAffinity;
+            var source = registration is null
+                ? "DarkerOptions.DefaultScopeAffinity"
+                : provider?.ImplementationType?.Name ?? provider?.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
+
+            return new ScopeConfiguration(affinity, source, Options.HandlerLifetime);
         }
     }
 }

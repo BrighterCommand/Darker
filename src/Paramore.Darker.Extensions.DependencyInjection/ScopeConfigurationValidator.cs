@@ -42,7 +42,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         }
 
-        public PipelineValidationResult Validate() =>
-            new PipelineValidationResult(Enumerable.Empty<ValidationError>(), Enumerable.Empty<ValidationError>());
+        public PipelineValidationResult Validate()
+        {
+            var configuration = _snapshot.ReadScopeConfiguration();
+            var collector = new ValidationResultCollector<ScopeConfiguration>();
+
+            var findings = ScopeConfigurationRules.Create()
+                .Where(rule => !rule.IsSatisfiedBy(configuration))
+                .SelectMany(rule => rule.Accept(collector))
+                .Where(result => !result.Success && result.Error is not null)
+                .Select(result => result.Error!)
+                .ToList();
+
+            return new PipelineValidationResult(
+                findings.Where(finding => finding.Severity == ValidationSeverity.Error),
+                findings.Where(finding => finding.Severity != ValidationSeverity.Error));
+        }
     }
 }
