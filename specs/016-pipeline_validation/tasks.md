@@ -915,14 +915,14 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 14 — Lifetime snapshot and validator skeleton (ADR 0026 step 2)
 
-- [ ] **TEST + IMPLEMENT: T14.1 — `ValidatePipelines()` registers two validators, the pipeline validator first (ADR 0026 step 2 bullet 1; FR1, FR5)**
+- [x] **TEST + IMPLEMENT: T14.1 — `ValidatePipelines()` registers two validators, the pipeline validator first (ADR 0026 step 2 bullet 1; FR1, FR5)**
   - **USE COMMAND**: `/tdd:test-first when ValidatePipelines is called should register the pipeline validator first and then the lifetime validator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_ValidatePipelines_is_called_should_register_the_lifetime_validator_after_the_pipeline_validator.cs`
   - Test should verify:
     - Two `IAmAPipelineValidator` descriptors exist.
     - `GetServices<IAmAPipelineValidator>()` returns a `PipelineValidator` first, and a second validator that is not a `PipelineValidator`.
-    - `ValidateAll()` on a clean configuration has no errors.
+    - ~~`ValidateAll()` on a clean configuration has no errors.~~ Dropped at the approval gate: the validator has no rules yet, so the assertion is vacuous. T15.1 exercises `ValidateAll` once a rule exists.
   - **⛔ APPROVAL GATE — STOP HERE and WAIT FOR USER APPROVAL in IDE before implementing** *(fires in the `review-before` gear, which is the default)*
   - Implementation should:
     - Add the internal `ServiceRegistrationSnapshot`, whose `Capture(IServiceCollection, DarkerOptions)` copies the list with `new List<ServiceDescriptor>(services)` and throws `ArgumentNullException` for either argument.
