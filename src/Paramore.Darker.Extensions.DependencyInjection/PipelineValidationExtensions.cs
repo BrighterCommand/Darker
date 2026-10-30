@@ -48,12 +48,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
 
+            var snapshot = ServiceRegistrationSnapshot.Capture(builder.Services, darkerBuilder.Options);
+
             var options = FindRegistration(builder.Services);
             if (options is null)
             {
                 options = new DarkerPipelineValidationOptions();
                 builder.Services.AddSingleton(options);
-                RegisterValidation(darkerBuilder);
+                RegisterValidation(darkerBuilder, snapshot);
             }
 
             // The last call sets throwOnError.
@@ -68,7 +70,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 .Select(d => d.ImplementationInstance as DarkerPipelineValidationOptions)
                 .FirstOrDefault(o => o is not null);
 
-        private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder)
+        private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder, ServiceRegistrationSnapshot snapshot)
         {
             var services = darkerBuilder.Services;
             var sync = darkerBuilder.SyncRegistry;
@@ -82,6 +84,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             // Built lazily, at resolve time, over the live registries, so registration order does not matter.
             services.AddSingleton<IAmAPipelineValidator>(provider =>
                 new PipelineValidator(sync, async, stream, provider.GetServices<DecoratorOrderingRule>(), ServiceProviderResolvabilityProbe.From(provider)));
+
+            services.AddSingleton(snapshot);
+            services.AddSingleton<IAmAPipelineValidator>(_ => new ScopeConfigurationValidator(snapshot));
 
             services.AddHostedService<DarkerValidationHostedService>();
         }
