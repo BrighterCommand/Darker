@@ -956,7 +956,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - `Capture` reads `ImplementationType`/`ImplementationInstance` only when `IsKeyedService` is false, and the keyed properties otherwise. The keyed properties throw on unkeyed descriptors in 10.0.10.
     - The effective affinity is the last unkeyed `ScopeAffinityRegistration` instance, otherwise `Options.DefaultScopeAffinity`, as at `ServiceCollectionExtensions.cs:79-81`.
 
-- [ ] **TEST + IMPLEMENT: T15.2 — `DefaultScopeAffinity = JoinAmbient` with a Singleton `HandlerLifetime` and a provider added with `AddSingleton` is an error naming the option (ADR 0026 step 3 bullet 2; FR10)**
+- [x] **TEST + IMPLEMENT: T15.2 — `DefaultScopeAffinity = JoinAmbient` with a Singleton `HandlerLifetime` and a provider added with `AddSingleton` is an error naming the option (ADR 0026 step 3 bullet 2; FR10)**
   - **USE COMMAND**: `/tdd:test-first when DefaultScopeAffinity is JoinAmbient and HandlerLifetime is Singleton with a directly registered provider should report an InertScopeAffinity error naming DarkerOptions.DefaultScopeAffinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_default_affinity_is_join_ambient_with_a_singleton_handler_lifetime_should_report_inert_scope_affinity.cs`
