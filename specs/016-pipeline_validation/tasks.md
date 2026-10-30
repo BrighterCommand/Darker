@@ -998,7 +998,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the missing-provider cause, read from the unkeyed `IAmAScopeProvider` descriptors in the snapshot (`DescriptorsFor`, which excludes keyed descriptors, because Darker resolves the provider unkeyed). Add it to the same finding as the `HandlerLifetime` cause, not as a second finding, as the ADR 0026 catalogue says ("every cause that applies, in one finding"). T15.6 pins this.
 
-- [ ] **CHARACTERISE: T15.6 — A Transient lifetime and no provider yield one finding that names both causes (ADR 0026 step 3 bullet 6; catalogue "every cause that applies, in one finding")**
+- [x] **CHARACTERISE: T15.6 — A Transient lifetime and no provider yield one finding that names both causes (ADR 0026 step 3 bullet 6; catalogue "every cause that applies, in one finding")**
   - **USE COMMAND**: `/tdd:test-first when JoinAmbient has both a Transient handler lifetime and no scope provider should report one InertScopeAffinity error naming both causes`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_has_both_causes_should_report_one_finding_naming_both.cs`
