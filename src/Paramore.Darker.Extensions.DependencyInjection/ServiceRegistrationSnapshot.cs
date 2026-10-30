@@ -69,7 +69,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ? "DarkerOptions.DefaultScopeAffinity"
                 : provider?.ImplementationType?.Name ?? provider?.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
 
-            return new ScopeConfiguration(affinity, source, Options.HandlerLifetime);
+            return new ScopeConfiguration(affinity, source, Options.HandlerLifetime, provider is not null);
         }
     }
 }

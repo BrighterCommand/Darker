@@ -51,7 +51,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             new Specification<ScopeConfiguration>(
                 configuration => configuration is null
                     || configuration.Affinity != ScopeAffinity.JoinAmbient
-                    || configuration.HandlerLifetime == ServiceLifetime.Scoped,
+                    || (configuration.HandlerLifetime == ServiceLifetime.Scoped && configuration.ProviderRegistered),
                 configuration => new ValidationError(
                     ValidationSeverity.Error,
                     "Scope affinity",
@@ -62,8 +62,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private static string InertAffinityMessage(ScopeConfiguration? configuration)
         {
+            var causes = new List<string>();
+            if (configuration?.HandlerLifetime != ServiceLifetime.Scoped)
+                causes.Add($"HandlerLifetime is {configuration?.HandlerLifetime}. Set ServiceLifetime.Scoped.");
+            if (configuration?.ProviderRegistered != true)
+                causes.Add("no IAmAScopeProvider is registered. Call AddDarkerScopeProvider, or AddDarkerRequestScope() in ASP.NET Core.");
+
             return $"The scope affinity JoinAmbient from {configuration?.AffinitySource} cannot take effect, so each query gets a scope of its own. "
-                + $"HandlerLifetime is {configuration?.HandlerLifetime}. Set ServiceLifetime.Scoped."
+                + string.Join(" ", causes)
                 + " Use ScopeAffinity.AlwaysNew if joining is not wanted. "
                 + ReadmeLink(InertScopeAffinity);
         }
