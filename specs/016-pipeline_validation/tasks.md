@@ -977,7 +977,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T15.4 — `JoinAmbient` with a Scoped `HandlerLifetime` and a registered provider yields nothing (ADR 0026 step 3 bullet 4; acceptance criterion "correctly configured application starts cleanly")**
+- [x] **CHARACTERISE: T15.4 — `JoinAmbient` with a Scoped `HandlerLifetime` and a registered provider yields nothing (ADR 0026 step 3 bullet 4; acceptance criterion "correctly configured application starts cleanly")**
   - **USE COMMAND**: `/tdd:test-first when JoinAmbient is registered with a Scoped handler lifetime and a scope provider should report no InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_join_ambient_has_a_scoped_lifetime_and_a_provider_should_report_nothing.cs`
