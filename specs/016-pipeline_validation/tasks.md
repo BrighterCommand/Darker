@@ -1021,7 +1021,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T15.1's `Capture` checks `IsKeyedService` before reading a property family, and T15.5's `DescriptorsFor` returns unkeyed descriptors only.
 
-- [ ] **CHARACTERISE: T15.8 — A host with `throwOnError` true fails start on an `InertScopeAffinity` error (ADR 0026 step 3 bullet 8; FR4, FR10)**
+- [x] **CHARACTERISE: T15.8 — A host with `throwOnError` true fails start on an `InertScopeAffinity` error (ADR 0026 step 3 bullet 8; FR4, FR10)**
   - **USE COMMAND**: `/tdd:test-first when the host starts with an inert JoinAmbient configuration and throwOnError true should fail with PipelineValidationException listing the InertScopeAffinity finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_host_starts_with_an_inert_scope_affinity_should_fail_start.cs`
