@@ -311,7 +311,7 @@ then a separate `docs:` commit ticking the task off in `tasks.md`.
 
 ### `/spec:gear [review-before|review-after] ["section"] [--because "..."]`
 
-Report or shift the **review gear** — whether `/test-first`'s approval gate is armed for the
+Report or shift the **review gear** — whether `/tdd:test-first`'s approval gate is armed for the
 current spec. See [`gear.md`](gear.md) and Brighter's [ADR 0071](https://github.com/BrighterCommand/Brighter/blob/master/docs/adr/0071-tdd-review-gear.md).
 
 ```bash
@@ -346,7 +346,7 @@ open.
 **Why per-spec**: a root-level gear file would survive branch switches and silently disarm the gate
 for unrelated work.
 
-**Who honours it**: `/spec:implement` and `/spec:ralph-implement`. A standalone `/test-first` and
+**Who honours it**: `/spec:implement` and `/spec:ralph-implement`. A standalone `/tdd:test-first` and
 `/bugfix:test` are **always gated** — they never read the file.
 
 **What `review-after` does NOT remove**: RED-first, the full regression suite, the two-commit shape,

@@ -12,8 +12,9 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 
 | Skill | Purpose | Usage |
 |-------|---------|-------|
-| `/test-first` | TDD with an approval gate (armed by default) | `/test-first <behavior description>` |
-| `/tidy-first` | Separate refactoring from features | `/tidy-first <change description>` |
+| `/tdd:test-first` | TDD with an approval gate (armed by default) | `/tdd:test-first <behavior description>` |
+| `/refactor:tidy-first` | Separate refactoring from features | `/refactor:tidy-first <change description>` |
+| `/refactor:smells` | Find code smells in completed work, schedule refactorings | `/refactor:smells [base-ref \| base..head \| path...]` |
 | `/adr` | Create Architecture Decision Record | `/adr <title>` |
 | `/bugfix:*` | Diagnosis-first bug workflow (Confirm gate) | `/bugfix:triage [issue \| description]` |
 
@@ -23,7 +24,7 @@ Skills are slash commands that automate multi-step workflows and enforce Darker'
 |-------|---------|-------|
 | `/bugfix:triage` | Restate symptom, locate code, form hypothesis | `/bugfix:triage [issue-number \| description]` |
 | `/bugfix:confirm` | ✋ Prove the root cause before any fix | `/bugfix:confirm` |
-| `/bugfix:test` | Failing regression test (via `/test-first`) | `/bugfix:test` |
+| `/bugfix:test` | Failing regression test (via `/tdd:test-first`) | `/bugfix:test` |
 | `/bugfix:fix` | Minimal fix scoped to the confirmed cause | `/bugfix:fix` |
 | `/bugfix:verify` | Run suite; capture root cause + `Fixes #N` | `/bugfix:verify` |
 | `/bugfix:status` | Show all bugs and their phase | `/bugfix:status` |
@@ -60,16 +61,20 @@ BUGFIX (DIAGNOSIS-FIRST)
    Example: /bugfix:triage 123
 
 TEST-DRIVEN DEVELOPMENT
-   /test-first <behavior>
+   /tdd:test-first <behavior>
    Write test -> Approve -> Implement -> Refactor
    Approval before implementation — armed by default (shift with /spec:gear)
-   Example: /test-first when query handler throws it should invoke fallback policy
+   Example: /tdd:test-first when query handler throws it should invoke fallback policy
 
 REFACTORING
-   /tidy-first <change>
+   /refactor:tidy-first <change>
    Separate structural changes from behavioral changes
    Creates two commits: refactor + feat/fix/perf
-   Example: /tidy-first optimize query pipeline building
+   Example: /refactor:tidy-first optimize query pipeline building
+
+   /refactor:smells [base-ref | base..head | path...]
+   Opt-in, after a unit of work is green (esp. after review-after): find Fowler's code smells
+   Reports and schedules; /refactor:tidy-first or STRUCTURAL tasks do the refactoring
 
 ARCHITECTURE DECISIONS
    /adr <title>
@@ -109,24 +114,24 @@ RALPH LOOP (UNATTENDED)
                   +-------+-------+         +-------+-------+
                 NO              YES        YES             NO
                  |               |          |               |
-          /bugfix:triage    /test-first  Code needs    Just refactoring
-          (Confirm gate)                 cleanup?      -> /tidy-first
+          /bugfix:triage    /tdd:test-first  Code needs    Just refactoring
+          (Confirm gate)                 cleanup?      -> /refactor:tidy-first
                                              |
                                      +-------+-------+
                                    YES             NO
                                      |              |
-                               /tidy-first    /test-first
+                               /refactor:tidy-first    /tdd:test-first
 ```
 
 ## Enforcement of Darker Practices
 
 Each skill enforces specific practices from `.agent_instructions/`:
 
-### `/test-first` -> testing.md
+### `/tdd:test-first` -> testing.md
 
 **Enforces**:
 - Red-Green-Refactor TDD cycle
-- **Approval before implementation** — armed by default; a standalone `/test-first` is always gated
+- **Approval before implementation** — armed by default; a standalone `/tdd:test-first` is always gated
 - BDD-style test naming (`When_X_should_Y`)
 - One test per file
 - Developer tests (not unit tests)
@@ -145,7 +150,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 **Reference**: [documentation.md](documentation.md)
 
-### `/tidy-first` -> code_style.md
+### `/refactor:tidy-first` -> code_style.md
 
 **Enforces**:
 - Separation of structural from behavioral changes
@@ -167,7 +172,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 # 2. ✋ Confirm — prove the root cause BEFORE any fix (may widen the scope)
 /bugfix:confirm
 
-# 3. ✋ Test-first — failing regression test (delegates to /test-first)
+# 3. ✋ Test-first — failing regression test (delegates to /tdd:test-first)
 /bugfix:test
 
 # 4. Fix — minimal change to green, scoped to the confirmed cause
@@ -181,10 +186,10 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 ```bash
 # 1. Write test first
-/test-first when query handler returns null it should throw QueryHandlerNotFoundException
+/tdd:test-first when query handler returns null it should throw QueryHandlerNotFoundException
 
 # 2. Repeat for each behavior
-/test-first when decorator attribute has higher step it should execute first
+/tdd:test-first when decorator attribute has higher step it should execute first
 
 # 3. Document decision if significant
 /adr decorator ordering strategy
@@ -194,7 +199,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 ```bash
 # 1. Clean up and add feature in one workflow
-/tidy-first add caching to query pipeline
+/refactor:tidy-first add caching to query pipeline
 
 # Output: Two commits
 #   - refactor: simplify pipeline builder structure
@@ -219,7 +224,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 /spec:tasks
 /spec:approve tasks
 
-# 5. Implement (uses /test-first approach)
+# 5. Implement (uses /tdd:test-first approach)
 /spec:implement
 
 # 6. Check progress
@@ -230,7 +235,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 
 ```bash
 # Refactor without adding features
-/tidy-first simplify nested conditionals in PipelineBuilder
+/refactor:tidy-first simplify nested conditionals in PipelineBuilder
 
 # Output: Single commit
 #   - refactor: simplify nested conditionals in PipelineBuilder

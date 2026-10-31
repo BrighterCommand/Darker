@@ -15,9 +15,6 @@ namespace Paramore.Darker
 {
     internal sealed class PipelineBuilder<TResult> : IDisposable, IAsyncDisposable
     {
-        private const string ExecuteMethodName = nameof(IQueryHandler<IQuery<TResult>, TResult>.Execute);
-        private const string ExecuteAsyncMethodName = nameof(IQueryHandlerAsync<IQuery<TResult>, TResult>.ExecuteAsync);
-
         private static readonly ILogger _logger = ApplicationLogging.CreateLogger<PipelineBuilder<TResult>>();
 
         private readonly IQueryHandlerRegistry _handlerRegistry;
@@ -76,11 +73,8 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            var executeMethodInfo = GetExecuteMethodInfo(handlerType, queryType) as MethodInfo;
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
-                "Sync handler has async attribute(s) on Execute. Use sync attributes (e.g. QueryHandlerAttribute) for sync handlers, or switch to an async handler with ExecuteAsync.");
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(StreamQueryHandlerAttribute),
-                "Sync handler has stream attribute(s) on Execute. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+            var executeMethodInfo = ResolveMethod(PipelineAttributeReader.FindExecute(handlerType));
+            ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Sync);
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
             // Capture the span once; null when no tracer is configured (WriteQueryEvent is null-safe).
@@ -138,14 +132,11 @@ namespace Paramore.Darker
             _handler = handler;
             _handler.Context = queryContext;
 
-            var executeAsyncMethodInfo = GetExecuteAsyncMethodInfo(handlerType, queryType);
+            var executeAsyncMethodInfo = ResolveMethod(PipelineAttributeReader.FindExecuteAsync(handlerType));
             if (executeAsyncMethodInfo == null)
                 throw new ConfigurationException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
 
-            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(QueryHandlerAttribute),
-                "Async handler has sync attribute(s) on ExecuteAsync. Use async attributes (e.g. QueryHandlerAttributeAsync) for async handlers, or switch to a sync handler with Execute.");
-            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, typeof(StreamQueryHandlerAttribute),
-                "Async handler has stream attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute only on stream handlers implementing IStreamQueryHandler.");
+            ValidateNoMismatchedAttributes(executeAsyncMethodInfo, HandlerPath.Async);
 
             _asyncDecorators = GetDecoratorsAsync(executeAsyncMethodInfo, queryContext);
 
@@ -189,21 +180,19 @@ namespace Paramore.Darker
             return pipeline.Last();
         }
 
-        private static MemberInfo GetExecuteMethodInfo(Type handlerType, Type queryType)
+        // The reader returns a failed lookup rather than throwing; rethrow it here so the builder's behaviour is unchanged.
+        private static MethodInfo ResolveMethod(ExecuteMethodLookup lookup)
         {
-            return handlerType.GetMethod(ExecuteMethodName);
+            lookup.ThrowIfFailed();
+            return lookup.Method;
         }
 
-        private static MethodInfo GetExecuteAsyncMethodInfo(Type handlerType, Type queryType)
+        private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, HandlerPath path)
         {
-            return handlerType.GetMethod(ExecuteAsyncMethodName);
-        }
-
-        private static void ValidateNoMismatchedAttributes(MemberInfo methodInfo, Type wrongAttributeType, string message)
-        {
-            var mismatchedAttributes = methodInfo.GetCustomAttributes(wrongAttributeType, true);
-            if (mismatchedAttributes.Length > 0)
-                throw new ConfigurationException(message);
+            var check = PipelineAttributeReader.CheckAttributeKinds(methodInfo, path);
+            check.ThrowIfFailed();
+            if (check.Message != null)
+                throw new ConfigurationException(check.Message);
         }
 
         private (Type handlerType, IQueryHandler handler) ResolveHandler(Type queryType, IQuery query, IQueryContext context)
@@ -250,18 +239,19 @@ namespace Paramore.Darker
 
         private IReadOnlyList<IQueryHandlerDecorator<IQuery<TResult>, TResult>> GetDecorators(MemberInfo executeMethod, IQueryContext queryContext)
         {
-            var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttribute), true)
-                .Cast<QueryHandlerAttribute>()
-                .OrderByDescending(attr => attr.Step)
-                .ToList();
+            var read = PipelineAttributeReader.ReadDecorators<QueryHandlerAttribute>(
+                executeMethod, typeof(IQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
+            read.ThrowIfFailed();
 
-            _logger.LogDebug("Found {AttributesCount} query handler attributes", attributes.Count);
+            _logger.LogDebug("Found {AttributesCount} query handler attributes", read.Entries.Count);
 
             var decorators = new List<IQueryHandlerDecorator<IQuery<TResult>, TResult>>();
             _decorators = decorators; // visible to Dispose even if building throws part-way
-            foreach (var attribute in attributes)
+            foreach (var entry in read.Entries)
             {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
+                entry.ThrowIfFailed();
+                var attribute = entry.Attribute;
+                var decoratorType = entry.DecoratorType;
 
                 _logger.LogDebug("Resolving decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactory.Create<IQueryHandlerDecorator<IQuery<TResult>, TResult>>(decoratorType, _lifetime);
@@ -299,14 +289,11 @@ namespace Paramore.Darker
 
             // Resolve by signature to avoid AmbiguousMatchException when the handler
             // also exposes a Task<TResult> ExecuteAsync with different param types.
-            var executeMethodInfo = handlerType.GetMethod(ExecuteAsyncMethodName, new[] { queryType, typeof(CancellationToken) });
+            var executeMethodInfo = ResolveMethod(PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType));
             if (executeMethodInfo == null)
                 throw new ConfigurationException($"Handler {handlerType.FullName} does not implement a stream ExecuteAsync(TQuery, CancellationToken). Ensure it implements IStreamQueryHandler.");
 
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttribute),
-                "Stream handler has sync attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
-            ValidateNoMismatchedAttributes(executeMethodInfo, typeof(QueryHandlerAttributeAsync),
-                "Stream handler has async attribute(s) on ExecuteAsync. Use StreamQueryHandlerAttribute for stream handlers.");
+            ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Stream);
 
             _streamDecorators = GetStreamDecorators(executeMethodInfo, queryContext);
 
@@ -339,19 +326,20 @@ namespace Paramore.Darker
 
         private IReadOnlyList<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>> GetStreamDecorators(MemberInfo executeMethod, IQueryContext queryContext)
         {
-            var attributes = executeMethod.GetCustomAttributes(typeof(StreamQueryHandlerAttribute), true)
-                .Cast<StreamQueryHandlerAttribute>()
-                .OrderByDescending(attr => attr.Step)
-                .ToList();
+            var read = PipelineAttributeReader.ReadDecorators<StreamQueryHandlerAttribute>(
+                executeMethod, typeof(IStreamQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
+            read.ThrowIfFailed();
 
-            _logger.LogDebug("Found {AttributesCount} stream query handler attributes", attributes.Count);
+            _logger.LogDebug("Found {AttributesCount} stream query handler attributes", read.Entries.Count);
 
             var decorators = new List<IStreamQueryHandlerDecorator<IStreamQuery<TResult>, TResult>>();
             _streamDecorators = decorators; // visible to Dispose even if building throws part-way
 
-            foreach (var attribute in attributes)
+            foreach (var entry in read.Entries)
             {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IStreamQuery<TResult>), typeof(TResult));
+                entry.ThrowIfFailed();
+                var attribute = entry.Attribute;
+                var decoratorType = entry.DecoratorType;
 
                 _logger.LogDebug("Resolving stream decorator instance of type {DecoratorType}...", decoratorType.Name);
 
@@ -407,12 +395,11 @@ namespace Paramore.Darker
 
         private IReadOnlyList<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>> GetDecoratorsAsync(MemberInfo executeMethod, IQueryContext queryContext)
         {
-            var attributes = executeMethod.GetCustomAttributes(typeof(QueryHandlerAttributeAsync), true)
-                .Cast<QueryHandlerAttributeAsync>()
-                .OrderByDescending(attr => attr.Step)
-                .ToList();
+            var read = PipelineAttributeReader.ReadDecorators<QueryHandlerAttributeAsync>(
+                executeMethod, typeof(IQuery<TResult>), typeof(TResult), attr => attr.Step, attr => attr.GetDecoratorType());
+            read.ThrowIfFailed();
 
-            _logger.LogDebug("Found {AttributesCount} async query handler attributes", attributes.Count);
+            _logger.LogDebug("Found {AttributesCount} async query handler attributes", read.Entries.Count);
 
             var decorators = new List<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>();
             _asyncDecorators = decorators; // visible to Dispose even if building throws part-way
@@ -420,9 +407,11 @@ namespace Paramore.Darker
             if (_decoratorFactoryAsync == null)
                 return decorators;
 
-            foreach (var attribute in attributes)
+            foreach (var entry in read.Entries)
             {
-                var decoratorType = attribute.GetDecoratorType().MakeGenericType(typeof(IQuery<TResult>), typeof(TResult));
+                entry.ThrowIfFailed();
+                var attribute = entry.Attribute;
+                var decoratorType = entry.DecoratorType;
 
                 _logger.LogDebug("Resolving async decorator instance of type {DecoratorType}...", decoratorType.Name);
                 var decorator = _decoratorFactoryAsync.Create<IQueryHandlerDecoratorAsync<IQuery<TResult>, TResult>>(decoratorType, _lifetime);
