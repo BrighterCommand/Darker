@@ -1070,7 +1070,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the `DuplicateScopeProvider` specification to `ScopeConfigurationRules`, evaluated after `InertScopeAffinity`. It fails when the unkeyed provider records name more than one distinct implementation type, and renders each with T15.10's rendering.
 
-- [ ] **TEST + IMPLEMENT: T16.2 — A factory registration beside a type registration is a warning that renders "a factory registration at position N" (ADR 0026 step 4 bullet 2)**
+- [x] **TEST + IMPLEMENT: T16.2 — A factory registration beside a type registration is a warning that renders "a factory registration at position N" (ADR 0026 step 4 bullet 2)**
   - **USE COMMAND**: `/tdd:test-first when a factory-registered scope provider sits beside a type-registered one should report a DuplicateScopeProvider warning rendering the factory by its position`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_factory_scope_provider_sits_beside_a_type_registration_should_report_duplicate_scope_provider.cs`
