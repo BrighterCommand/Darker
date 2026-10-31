@@ -64,7 +64,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private static Specification<ScopeConfiguration> DuplicateProvider() =>
             new Specification<ScopeConfiguration>(
-                configuration => configuration is null || configuration.ProviderDescriptions.Distinct().Count() <= 1,
+                configuration => configuration is null || configuration.Providers.Distinct().Count() <= 1,
                 configuration => new ValidationError(
                     ValidationSeverity.Warning,
                     "Scope provider registration",
@@ -75,7 +75,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private static string DuplicateProviderMessage(ScopeConfiguration? configuration)
         {
-            var providers = configuration?.ProviderDescriptions ?? new List<string>();
+            var providers = configuration?.Providers.Select(p => p.Description).ToList() ?? new List<string>();
             var used = providers.Count > 0 ? providers[providers.Count - 1] : "none";
             return $"More than one IAmAScopeProvider is registered: {string.Join(", ", providers)}. {used} is used, because the last registration wins. "
                 + "Keep one provider, registered with AddDarkerScopeProvider or AddDarkerRequestScope. "

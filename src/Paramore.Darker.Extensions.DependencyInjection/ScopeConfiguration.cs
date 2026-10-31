@@ -36,9 +36,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     {
         public ScopeConfiguration(
             ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime, bool providerRegistered,
-            IReadOnlyList<string>? providerDescriptions = null)
+            IReadOnlyList<ScopeProviderRegistration>? providers = null)
         {
-            ProviderDescriptions = providerDescriptions ?? Array.Empty<string>();
+            Providers = providers ?? Array.Empty<ScopeProviderRegistration>();
             ProviderRegistered = providerRegistered;
             Affinity = affinity;
             AffinitySource = affinitySource;
@@ -56,7 +56,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>Whether an unkeyed <see cref="IAmAScopeProvider"/> is registered.</summary>
         public bool ProviderRegistered { get; }
 
-        /// <summary>The rendered unkeyed <see cref="IAmAScopeProvider"/> implementation types, in registration order.</summary>
-        public IReadOnlyList<string> ProviderDescriptions { get; }
+        /// <summary>The unkeyed <see cref="IAmAScopeProvider"/> registrations, in registration order.</summary>
+        public IReadOnlyList<ScopeProviderRegistration> Providers { get; }
     }
 }

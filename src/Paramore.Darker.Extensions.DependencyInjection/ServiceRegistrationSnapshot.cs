@@ -70,7 +70,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 : DescribeScopeProvider(provider);
 
             return new ScopeConfiguration(affinity, source, Options.HandlerLifetime, provider is not null,
-                UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).Select(DescribeScopeProvider).ToList());
+                UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).Select(RegisterScopeProvider).ToList());
         }
 
         /// <summary>
@@ -87,6 +87,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             }
 
             return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
+        }
+
+        private ScopeProviderRegistration RegisterScopeProvider(DescriptorRecord provider)
+        {
+            var identity = provider.IsFactory
+                ? (object)UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).ToList().IndexOf(provider)
+                : provider.ImplementationType ?? provider.ImplementationInstance?.GetType() ?? (object)provider;
+            return new ScopeProviderRegistration(identity, DescribeScopeProvider(provider));
         }
 
         private IEnumerable<DescriptorRecord> UnkeyedDescriptorsOf(Type serviceType) =>
