@@ -1092,7 +1092,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Derive the instance's runtime type from `DescriptorRecord`'s instance, both for the distinct-type comparison and in the shared rendering from T15.10.
 
-- [ ] **CHARACTERISE: T16.4 — The same provider type registered twice yields nothing (ADR 0026 step 4 bullet 4)**
+- [x] **CHARACTERISE: T16.4 — The same provider type registered twice yields nothing (ADR 0026 step 4 bullet 4)**
   - **USE COMMAND**: `/tdd:test-first when the same IAmAScopeProvider type is registered twice should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_same_scope_provider_type_is_registered_twice_should_report_nothing.cs`
