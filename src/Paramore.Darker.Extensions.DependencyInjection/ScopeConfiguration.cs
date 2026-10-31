@@ -23,7 +23,6 @@ THE SOFTWARE. */
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,9 +35,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     {
         public ScopeConfiguration(
             ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime, bool providerRegistered,
-            IReadOnlyList<ScopeProviderRegistration>? providers = null)
+            IReadOnlyList<ScopeProviderRegistration> providers)
         {
-            Providers = providers ?? Array.Empty<ScopeProviderRegistration>();
+            Providers = providers;
             ProviderRegistered = providerRegistered;
             Affinity = affinity;
             AffinitySource = affinitySource;
