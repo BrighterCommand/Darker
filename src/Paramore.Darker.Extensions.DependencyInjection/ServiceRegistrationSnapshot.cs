@@ -35,6 +35,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class ServiceRegistrationSnapshot
     {
+        private const string UNKNOWN_SCOPE_PROVIDER = "the registered scope provider";
+
         private readonly IReadOnlyList<DescriptorRecord> _descriptors;
 
         private ServiceRegistrationSnapshot(IReadOnlyList<DescriptorRecord> descriptors, DarkerOptions options)
@@ -62,39 +64,36 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var registration = UnkeyedDescriptorsOf(typeof(ScopeAffinityRegistration))
                 .LastOrDefault()
                 ?.ImplementationInstance as ScopeAffinityRegistration;
-            var provider = UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).LastOrDefault();
+            var providers = UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).ToList();
+            var provider = providers.LastOrDefault();
 
             var affinity = registration?.Affinity ?? Options.DefaultScopeAffinity;
             var source = registration is null
                 ? "DarkerOptions.DefaultScopeAffinity"
-                : DescribeScopeProvider(provider);
+                : DescribeScopeProvider(provider, providers.Count - 1);
 
             return new ScopeConfiguration(affinity, source, Options.HandlerLifetime, provider is not null,
-                UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).Select(RegisterScopeProvider).ToList());
+                providers.Select(RegisterScopeProvider).ToList());
         }
 
         /// <summary>
         /// Renders an unkeyed <see cref="IAmAScopeProvider"/> descriptor: its implementation type, or for a factory
         /// "a factory registration at position N", where N is its 1-based position among the unkeyed provider descriptors.
         /// </summary>
-        private string DescribeScopeProvider(DescriptorRecord? provider)
+        private static string DescribeScopeProvider(DescriptorRecord? provider, int index)
         {
-            if (provider is null) return "the registered scope provider";
-            if (provider.IsFactory)
-            {
-                var position = UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).ToList().IndexOf(provider) + 1;
-                return $"a factory registration at position {position}";
-            }
+            if (provider is null) return UNKNOWN_SCOPE_PROVIDER;
+            if (provider.IsFactory) return $"a factory registration at position {index + 1}";
 
-            return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
+            return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? UNKNOWN_SCOPE_PROVIDER;
         }
 
-        private ScopeProviderRegistration RegisterScopeProvider(DescriptorRecord provider)
+        private static ScopeProviderRegistration RegisterScopeProvider(DescriptorRecord provider, int index)
         {
             var identity = provider.IsFactory
-                ? (object)UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).ToList().IndexOf(provider)
+                ? (object)index
                 : provider.ImplementationType ?? provider.ImplementationInstance?.GetType() ?? (object)provider;
-            return new ScopeProviderRegistration(identity, DescribeScopeProvider(provider));
+            return new ScopeProviderRegistration(identity, DescribeScopeProvider(provider, index));
         }
 
         private IEnumerable<DescriptorRecord> UnkeyedDescriptorsOf(Type serviceType) =>
