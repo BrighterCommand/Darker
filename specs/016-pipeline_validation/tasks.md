@@ -1082,7 +1082,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Reuse T15.10's rendering of a provider record. Count each factory descriptor as distinct from every other descriptor (ADR 0026 `DuplicateScopeProvider` comparison rules).
 
-- [ ] **TEST + IMPLEMENT: T16.3 — An instance of a different type beside a type registration is a warning naming the instance's runtime type (ADR 0026 step 4 bullet 3)**
+- [x] **TEST + IMPLEMENT: T16.3 — An instance of a different type beside a type registration is a warning naming the instance's runtime type (ADR 0026 step 4 bullet 3)**
   - **USE COMMAND**: `/tdd:test-first when an instance-registered scope provider of a different type sits beside a type registration should report a DuplicateScopeProvider warning naming the instance's runtime type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_an_instance_scope_provider_sits_beside_a_type_registration_should_report_duplicate_scope_provider.cs`
