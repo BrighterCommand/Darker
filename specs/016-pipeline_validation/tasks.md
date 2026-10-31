@@ -1141,7 +1141,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 > Tests build the provider with `BuildServiceProvider()`, without `ValidateOnBuild` or `ValidateScopes`, and call `ValidateAll()`. They never resolve the handler. The ladder rows cited are ADR 0026's `CaptiveDependency` table.
 
-- [ ] **TEST + IMPLEMENT: T17.1 — A Singleton `HandlerLifetime` and a handler that takes a Scoped dependency is a warning, and a non-component Singleton service taking one is not (ADR 0026 step 5 bullet 1; FR11; FR13 link; ladder rows 3 (second clause), 8 and 11)**
+- [x] **TEST + IMPLEMENT: T17.1 — A Singleton `HandlerLifetime` and a handler that takes a Scoped dependency is a warning, and a non-component Singleton service taking one is not (ADR 0026 step 5 bullet 1; FR11; FR13 link; ladder rows 3 (second clause), 8 and 11)**
   - **USE COMMAND**: `/tdd:test-first when HandlerLifetime is Singleton and a handler takes a Scoped dependency should report a CaptiveDependency warning naming the handler, why it is Singleton, the parameter and the fix, and a plain non-component Singleton service taking a Scoped dependency should report none`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_a_scoped_dependency_should_report_captive_dependency.cs`
