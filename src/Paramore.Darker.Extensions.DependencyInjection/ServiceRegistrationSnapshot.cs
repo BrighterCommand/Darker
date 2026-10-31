@@ -85,14 +85,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (provider is null) return UNKNOWN_SCOPE_PROVIDER;
             if (provider.IsFactory) return $"a factory registration at position {index + 1}";
 
-            return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? UNKNOWN_SCOPE_PROVIDER;
+            return provider.RuntimeType?.Name ?? UNKNOWN_SCOPE_PROVIDER;
         }
 
         private static ScopeProviderRegistration RegisterScopeProvider(DescriptorRecord provider, int index)
         {
             var identity = provider.IsFactory
                 ? (object)index
-                : provider.ImplementationType ?? provider.ImplementationInstance?.GetType() ?? (object)provider;
+                : provider.RuntimeType ?? (object)provider;
             return new ScopeProviderRegistration(identity, DescribeScopeProvider(provider, index));
         }
 

@@ -58,6 +58,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>True when a factory registered the descriptor, so its implementation type is not known.</summary>
         public bool IsFactory { get; }
 
+        /// <summary>The type that implements the service: the implementation type, or the instance's runtime type, or null for a factory or when neither is known.</summary>
+        public Type? RuntimeType => IsFactory ? null : ImplementationType ?? ImplementationInstance?.GetType();
+
         public static DescriptorRecord From(ServiceDescriptor descriptor) =>
             descriptor.IsKeyedService
                 ? new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, true, descriptor.KeyedImplementationType, descriptor.KeyedImplementationInstance, descriptor.KeyedImplementationFactory is not null)
