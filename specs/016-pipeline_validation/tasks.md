@@ -1114,7 +1114,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T16.6 — A provider registered with `AddDarkerScopeProvider` and then replaced through the same API yields nothing (ADR 0026 step 4 bullet 6; "the Darker API alone never produces this finding")**
+- [x] **CHARACTERISE: T16.6 — A provider registered with `AddDarkerScopeProvider` and then replaced through the same API yields nothing (ADR 0026 step 4 bullet 6; "the Darker API alone never produces this finding")**
   - **USE COMMAND**: `/tdd:test-first when AddDarkerScopeProvider is called twice with different providers should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_AddDarkerScopeProvider_replaces_a_provider_should_report_no_duplicate_scope_provider.cs`
