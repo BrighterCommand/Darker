@@ -1125,7 +1125,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T16.7 — A `DuplicateScopeProvider` warning alone never blocks host start (ADR 0026 step 4 bullet 7; FR4)**
+- [x] **CHARACTERISE: T16.7 — A `DuplicateScopeProvider` warning alone never blocks host start (ADR 0026 step 4 bullet 7; FR4)**
   - **USE COMMAND**: `/tdd:test-first when the only finding is a DuplicateScopeProvider warning and throwOnError is true should let the host start and log the warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_the_only_finding_is_a_duplicate_scope_provider_should_let_the_host_start.cs`
