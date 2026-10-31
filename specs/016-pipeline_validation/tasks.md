@@ -1103,7 +1103,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T16.5 — A keyed provider beside one unkeyed provider yields nothing (ADR 0026 step 4 bullet 5)**
+- [x] **CHARACTERISE: T16.5 — A keyed provider beside one unkeyed provider yields nothing (ADR 0026 step 4 bullet 5)**
   - **USE COMMAND**: `/tdd:test-first when a keyed scope provider sits beside one unkeyed provider should report no DuplicateScopeProvider finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_keyed_scope_provider_sits_beside_an_unkeyed_one_should_report_nothing.cs`
