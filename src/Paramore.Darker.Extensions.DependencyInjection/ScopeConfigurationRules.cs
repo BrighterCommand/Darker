@@ -24,6 +24,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Specifications;
 
@@ -39,11 +40,12 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     internal static class ScopeConfigurationRules
     {
         public static readonly ValidationRuleId InertScopeAffinity = new ValidationRuleId("InertScopeAffinity");
+        public static readonly ValidationRuleId DuplicateScopeProvider = new ValidationRuleId("DuplicateScopeProvider");
 
         private const string ReadmeLinkBase = "https://github.com/BrighterCommand/Darker/blob/master/README.md#";
 
         public static IReadOnlyList<ISpecification<ScopeConfiguration>> Create() =>
-            new List<ISpecification<ScopeConfiguration>> { InertAffinity() };
+            new List<ISpecification<ScopeConfiguration>> { InertAffinity(), DuplicateProvider() };
 
         private static string ReadmeLink(ValidationRuleId ruleId) => ReadmeLinkBase + ruleId.ToString().ToLowerInvariant();
 
@@ -59,6 +61,26 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 {
                     RuleId = InertScopeAffinity
                 });
+
+        private static Specification<ScopeConfiguration> DuplicateProvider() =>
+            new Specification<ScopeConfiguration>(
+                configuration => configuration is null || configuration.ProviderDescriptions.Distinct().Count() <= 1,
+                configuration => new ValidationError(
+                    ValidationSeverity.Warning,
+                    "Scope provider registration",
+                    DuplicateProviderMessage(configuration))
+                {
+                    RuleId = DuplicateScopeProvider
+                });
+
+        private static string DuplicateProviderMessage(ScopeConfiguration? configuration)
+        {
+            var providers = configuration?.ProviderDescriptions ?? new List<string>();
+            var used = providers.Count > 0 ? providers[providers.Count - 1] : "none";
+            return $"More than one IAmAScopeProvider is registered: {string.Join(", ", providers)}. {used} is used, because the last registration wins. "
+                + "Keep one provider, registered with AddDarkerScopeProvider or AddDarkerRequestScope. "
+                + ReadmeLink(DuplicateScopeProvider);
+        }
 
         private static string InertAffinityMessage(ScopeConfiguration? configuration)
         {

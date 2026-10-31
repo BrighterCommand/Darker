@@ -23,6 +23,8 @@ THE SOFTWARE. */
 
 #nullable enable
 
+using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -33,8 +35,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     internal sealed class ScopeConfiguration
     {
         public ScopeConfiguration(
-            ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime, bool providerRegistered)
+            ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime, bool providerRegistered,
+            IReadOnlyList<string>? providerDescriptions = null)
         {
+            ProviderDescriptions = providerDescriptions ?? Array.Empty<string>();
             ProviderRegistered = providerRegistered;
             Affinity = affinity;
             AffinitySource = affinitySource;
@@ -51,5 +55,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         /// <summary>Whether an unkeyed <see cref="IAmAScopeProvider"/> is registered.</summary>
         public bool ProviderRegistered { get; }
+
+        /// <summary>The rendered unkeyed <see cref="IAmAScopeProvider"/> implementation types, in registration order.</summary>
+        public IReadOnlyList<string> ProviderDescriptions { get; }
     }
 }
