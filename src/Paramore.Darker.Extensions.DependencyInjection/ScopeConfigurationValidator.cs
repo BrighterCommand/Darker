@@ -24,6 +24,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Paramore.Darker.PipelineValidation;
 using Paramore.Darker.Specifications;
@@ -50,6 +51,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var findings = ScopeConfigurationRules.Create()
                 .Where(rule => !rule.IsSatisfiedBy(configuration))
                 .SelectMany(rule => rule.Accept(collector))
+                .Concat(CaptiveFindings())
                 .Where(result => !result.Success && result.Error is not null)
                 .Select(result => result.Error!)
                 .ToList();
@@ -57,6 +59,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return new PipelineValidationResult(
                 findings.Where(finding => finding.Severity == ValidationSeverity.Error),
                 findings.Where(finding => finding.Severity != ValidationSeverity.Error));
+        }
+
+        private IEnumerable<ValidationResult> CaptiveFindings()
+        {
+            var rule = ComponentRules.Captive(_snapshot);
+            var collector = new ValidationResultCollector<ComponentRegistration>();
+
+            return _snapshot.Components
+                .Where(component => !rule.IsSatisfiedBy(component))
+                .SelectMany(component => rule.Accept(collector))
+                .ToList();
         }
     }
 }

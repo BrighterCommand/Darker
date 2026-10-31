@@ -77,6 +77,20 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// The handlers whose registrations <c>CaptiveDependency</c> examines, in registration order.
+        /// </summary>
+        public IEnumerable<ComponentRegistration> Components =>
+            _descriptors
+                .Where(d => d.RuntimeType is not null && typeof(IQueryHandler).IsAssignableFrom(d.RuntimeType))
+                .Select(d => new ComponentRegistration(d.RuntimeType!, "Handler", SingletonReasonOf()));
+
+        /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
+        public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
+
+        private string? SingletonReasonOf() =>
+            Options.HandlerLifetime == ServiceLifetime.Singleton ? "HandlerLifetime is Singleton" : null;
+
+        /// <summary>
         /// Renders an unkeyed <see cref="IAmAScopeProvider"/> descriptor: its implementation type, or for a factory
         /// "a factory registration at position N", where N is its 1-based position among the unkeyed provider descriptors.
         /// </summary>

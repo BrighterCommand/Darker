@@ -47,7 +47,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public static IReadOnlyList<ISpecification<ScopeConfiguration>> Create() =>
             new List<ISpecification<ScopeConfiguration>> { InertAffinity(), DuplicateProvider() };
 
-        private static string ReadmeLink(ValidationRuleId ruleId) => ReadmeLinkBase + ruleId.ToString().ToLowerInvariant();
+        internal static string ReadmeLink(ValidationRuleId ruleId) => ReadmeLinkBase + ruleId.ToString().ToLowerInvariant();
 
         private static Specification<ScopeConfiguration> InertAffinity() =>
             new Specification<ScopeConfiguration>(
