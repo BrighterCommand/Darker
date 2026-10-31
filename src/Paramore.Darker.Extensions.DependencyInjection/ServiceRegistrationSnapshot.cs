@@ -59,10 +59,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// </summary>
         public ScopeConfiguration ReadScopeConfiguration()
         {
-            var registration = _descriptors
-                .LastOrDefault(d => !d.IsKeyed && d.ServiceType == typeof(ScopeAffinityRegistration))
+            var registration = UnkeyedDescriptorsOf(typeof(ScopeAffinityRegistration))
+                .LastOrDefault()
                 ?.ImplementationInstance as ScopeAffinityRegistration;
-            var provider = _descriptors.LastOrDefault(d => !d.IsKeyed && d.ServiceType == typeof(IAmAScopeProvider));
+            var provider = UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).LastOrDefault();
 
             var affinity = registration?.Affinity ?? Options.DefaultScopeAffinity;
             var source = registration is null
@@ -81,11 +81,14 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (provider is null) return "the registered scope provider";
             if (provider.IsFactory)
             {
-                var position = _descriptors.Where(d => !d.IsKeyed && d.ServiceType == typeof(IAmAScopeProvider)).ToList().IndexOf(provider) + 1;
+                var position = UnkeyedDescriptorsOf(typeof(IAmAScopeProvider)).ToList().IndexOf(provider) + 1;
                 return $"a factory registration at position {position}";
             }
 
             return provider.ImplementationType?.Name ?? provider.ImplementationInstance?.GetType().Name ?? "the registered scope provider";
         }
+
+        private IEnumerable<DescriptorRecord> UnkeyedDescriptorsOf(Type serviceType) =>
+            _descriptors.Where(d => !d.IsKeyed && d.ServiceType == serviceType);
     }
 }
