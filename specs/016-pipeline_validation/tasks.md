@@ -1059,7 +1059,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 16 — DuplicateScopeProvider rule (ADR 0026 step 4)
 
-- [ ] **TEST + IMPLEMENT: T16.1 — Two different provider types are a warning naming both and saying the last is used (ADR 0026 step 4 bullet 1; FR12; FR13 link)**
+- [x] **TEST + IMPLEMENT: T16.1 — Two different provider types are a warning naming both and saying the last is used (ADR 0026 step 4 bullet 1; FR12; FR13 link)**
   - **USE COMMAND**: `/tdd:test-first when two different IAmAScopeProvider types are registered with AddSingleton should report a DuplicateScopeProvider warning naming both and the last as the one used`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_two_different_scope_providers_are_registered_should_report_duplicate_scope_provider.cs`
