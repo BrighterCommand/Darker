@@ -1245,7 +1245,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add the row-3 alias exclusion to `Components`: keep only records whose service type equals their implementation type.
 
-- [ ] **TEST + IMPLEMENT: T17.10 — `[FromKeyedServices("k")]` reads the keyed registration, and a parameterless attribute reads unkeyed (ADR 0026 step 5 bullet 10; ladder rows 7 and 8; "Why [FromKeyedServices] is honoured")**
+- [x] **TEST + IMPLEMENT: T17.10 — `[FromKeyedServices("k")]` reads the keyed registration, and a parameterless attribute reads unkeyed (ADR 0026 step 5 bullet 10; ladder rows 7 and 8; "Why [FromKeyedServices] is honoured")**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler's parameter carries FromKeyedServices with a key should judge the keyed registration and ignore an unkeyed Scoped registration of the same type`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_parameter_is_from_keyed_services_should_judge_the_keyed_registration.cs`
