@@ -78,14 +78,23 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// The handlers and decorators whose registrations <c>CaptiveDependency</c> examines, in registration order. Only the effective (last unkeyed) descriptor for a service type counts, and an alias registration (a service type other than its implementation type) is ignored.
+        /// The handlers and decorators whose registrations <c>CaptiveDependency</c> examines, in registration order.
         /// </summary>
-        public IEnumerable<ComponentRegistration> Components =>
-            _descriptors
-                .Where(d => !d.IsKeyed && d.ImplementationType is not null && d.ServiceType == d.ImplementationType && ReferenceEquals(d, LastUnkeyedDescriptorOf(d.ServiceType)))
-                .Select(d => (Descriptor: d, Kind: KindOf(d.ImplementationType!)))
-                .Where(c => c.Kind is not null)
-                .Select(c => new ComponentRegistration(c.Descriptor.ImplementationType!, c.Kind!, SingletonReasonOf(c.Descriptor)));
+        public IEnumerable<ComponentRegistration> Components => _descriptors.Where(IsCandidate).Select(ToComponent);
+
+        /// <summary>
+        /// A candidate is an unkeyed handler or decorator that registers itself (a service type equal to its implementation type,
+        /// so not an alias) and is the effective, last unkeyed descriptor for that type. Factories and instances have no implementation type.
+        /// </summary>
+        private bool IsCandidate(DescriptorRecord descriptor) =>
+            !descriptor.IsKeyed
+            && descriptor.ImplementationType is not null
+            && descriptor.ServiceType == descriptor.ImplementationType
+            && ReferenceEquals(descriptor, LastUnkeyedDescriptorOf(descriptor.ServiceType))
+            && KindOf(descriptor.ImplementationType) is not null;
+
+        private ComponentRegistration ToComponent(DescriptorRecord descriptor) =>
+            new ComponentRegistration(descriptor.ImplementationType!, KindOf(descriptor.ImplementationType!)!, SingletonReasonOf(descriptor));
 
         private static string? KindOf(Type type) =>
             typeof(IQueryHandler).IsAssignableFrom(type) ? "Handler"
