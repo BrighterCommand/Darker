@@ -1157,7 +1157,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Add the rule with `Specification<T>`'s **result-evaluator** constructor, returning one result per Scoped parameter, each read from the parameter type's last unkeyed descriptor (row 8), with `LastOrDefault`: a parameter with no descriptor yields no result (row 10), which T17.5 pins. Reflection runs inside the evaluator, with no bespoke try/catch. Evaluate it after `DuplicateScopeProvider`, in snapshot order. The source is `"Handler 'X'"`, where X is the component type's `Type.Name`.
     - Here, only a Singleton `HandlerLifetime` counts as Singleton.
 
-- [ ] **CHARACTERISE: T17.2 — A Singleton handler with two Scoped parameters yields two warnings, in parameter order, and two captive handlers each yield their own (ADR 0026 step 5 bullet 2; Invariant "one finding for each Scoped parameter"; Risk "stateful `Specification<T>`")**
+- [x] **CHARACTERISE: T17.2 — A Singleton handler with two Scoped parameters yields two warnings, in parameter order, and two captive handlers each yield their own (ADR 0026 step 5 bullet 2; Invariant "one finding for each Scoped parameter"; Risk "stateful `Specification<T>`")**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes two Scoped dependencies should report two CaptiveDependency warnings in parameter order`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_two_scoped_dependencies_should_report_two_warnings_in_order.cs`
