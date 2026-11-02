@@ -1169,7 +1169,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **TEST + IMPLEMENT: T17.3 — An open-generic decorator registered through `RegisterDecorator` under a Singleton lifetime, taking a Scoped dependency, is a warning naming the decorator (ADR 0026 step 5 bullet 3; FR11 "handler or decorator")**
+- [x] **TEST + IMPLEMENT: T17.3 — An open-generic decorator registered through `RegisterDecorator` under a Singleton lifetime, taking a Scoped dependency, is a warning naming the decorator (ADR 0026 step 5 bullet 3; FR11 "handler or decorator")**
   - **USE COMMAND**: `/tdd:test-first when an open-generic decorator registered with RegisterDecorator under a Singleton handler lifetime takes a Scoped dependency should report a CaptiveDependency warning naming the decorator`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_open_generic_decorator_takes_a_scoped_dependency_should_report_captive_dependency.cs`
