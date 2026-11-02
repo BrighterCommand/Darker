@@ -49,7 +49,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (constructor is null) return Enumerable.Empty<ValidationResult>();
 
             return constructor.GetParameters()
-                .Where(parameter => snapshot.LastUnkeyedDescriptorOf(parameter.ParameterType)?.Lifetime == ServiceLifetime.Scoped)
+                .Where(parameter => EffectiveDescriptorOf(snapshot, parameter.ParameterType)?.Lifetime == ServiceLifetime.Scoped)
                 .Select(parameter => ValidationResult.Fail(new ValidationError(
                     ValidationSeverity.Warning,
                     component.ToString(),
@@ -58,6 +58,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                     RuleId = CaptiveDependency
                 }));
         }
+
+        private static DescriptorRecord? EffectiveDescriptorOf(ServiceRegistrationSnapshot snapshot, Type parameterType) =>
+            snapshot.LastUnkeyedDescriptorOf(parameterType)
+            ?? (parameterType.IsConstructedGenericType ? snapshot.LastUnkeyedDescriptorOf(parameterType.GetGenericTypeDefinition()) : null);
 
         private static string CaptiveMessage(ComponentRegistration component, System.Reflection.ParameterInfo parameter) =>
             $"{component.ImplementationType.Name} counts as Singleton because {component.SingletonReason}, but its constructor parameter "
