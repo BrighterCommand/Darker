@@ -1180,7 +1180,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Recognise as decorators the types, including open generic type definitions, that implement the **non-generic** `IQueryHandlerDecorator` (ADR 0026 Terms). That covers `IQueryHandlerDecorator<,>`, `IQueryHandlerDecoratorAsync<,>` (`src/Paramore.Darker/IQueryHandlerDecoratorAsync.cs:7`) and `IStreamQueryHandlerDecorator<,>` (`IStreamQueryHandlerDecorator.cs:10`). Read their constructors, and use the source `"Decorator 'X'"`.
 
-- [ ] **TEST + IMPLEMENT: T17.4 — A Transient `HandlerLifetime` with the handler registered Singleton before `AddDarker` is a warning (ADR 0026 step 5 bullet 4; "Why a component counts as Singleton when either lifetime says so"; ladder row 5)**
+- [x] **TEST + IMPLEMENT: T17.4 — A Transient `HandlerLifetime` with the handler registered Singleton before `AddDarker` is a warning (ADR 0026 step 5 bullet 4; "Why a component counts as Singleton when either lifetime says so"; ladder row 5)**
   - **USE COMMAND**: `/tdd:test-first when HandlerLifetime is Transient but the handler was registered Singleton before AddDarker and takes a Scoped dependency should report a CaptiveDependency warning naming its Singleton registration`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_registered_singleton_before_AddDarker_takes_a_scoped_dependency_should_report_captive_dependency.cs`
