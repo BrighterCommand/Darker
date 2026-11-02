@@ -1281,7 +1281,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. `CaptiveDependency` uses the result-evaluator form (T17.1), so T2.2's result-evaluator catch path (`EvaluateCollapsed`) delivers this.
 
-- [ ] **TEST + IMPLEMENT: T17.13 — Two equal-width public constructors yield nothing (ADR 0026 step 5 bullet 11; ladder row 6, second clause)**
+- [x] **TEST + IMPLEMENT: T17.13 — Two equal-width public constructors yield nothing (ADR 0026 step 5 bullet 11; ladder row 6, second clause)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler has two public constructors with the same widest parameter count should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_two_equal_width_constructors_should_report_nothing.cs`
