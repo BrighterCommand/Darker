@@ -33,21 +33,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class ComponentRegistration
     {
-        public ComponentRegistration(Type implementationType, string kind, string? singletonReason)
+        public ComponentRegistration(Type implementationType, ComponentKind kind, SingletonReason? singletonReason)
         {
             ImplementationType = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
-            Kind = kind ?? throw new ArgumentNullException(nameof(kind));
+            Kind = kind;
             SingletonReason = singletonReason;
         }
 
         /// <summary>The type the container constructs.</summary>
         public Type ImplementationType { get; }
 
-        /// <summary>"Handler" or "Decorator".</summary>
-        public string Kind { get; }
+        /// <summary>Whether the component is a handler or a decorator.</summary>
+        public ComponentKind Kind { get; }
 
         /// <summary>Why the component counts as Singleton, or null when it does not.</summary>
-        public string? SingletonReason { get; }
+        public SingletonReason? SingletonReason { get; }
 
         public override string ToString() => $"{Kind} '{ImplementationType.Name}'";
     }

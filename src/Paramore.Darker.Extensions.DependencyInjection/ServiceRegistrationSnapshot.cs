@@ -94,11 +94,11 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             && KindOf(descriptor.ImplementationType) is not null;
 
         private ComponentRegistration ToComponent(DescriptorRecord descriptor) =>
-            new ComponentRegistration(descriptor.ImplementationType!, KindOf(descriptor.ImplementationType!)!, SingletonReasonOf(descriptor));
+            new ComponentRegistration(descriptor.ImplementationType!, KindOf(descriptor.ImplementationType!)!.Value, SingletonReasonOf(descriptor));
 
-        private static string? KindOf(Type type) =>
-            typeof(IQueryHandler).IsAssignableFrom(type) ? "Handler"
-            : typeof(IQueryHandlerDecorator).IsAssignableFrom(type) ? "Decorator"
+        private static ComponentKind? KindOf(Type type) =>
+            typeof(IQueryHandler).IsAssignableFrom(type) ? ComponentKind.Handler
+            : typeof(IQueryHandlerDecorator).IsAssignableFrom(type) ? ComponentKind.Decorator
             : null;
 
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
@@ -123,9 +123,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public DescriptorRecord? LastKeyedDescriptorOf(Type serviceType, object key) =>
             _descriptors.LastOrDefault(d => d.IsKeyed && d.ServiceType == serviceType && Equals(d.ServiceKey, key));
 
-        private string? SingletonReasonOf(DescriptorRecord descriptor) =>
-            Options.HandlerLifetime == ServiceLifetime.Singleton ? "HandlerLifetime is Singleton"
-            : descriptor.Lifetime == ServiceLifetime.Singleton ? "its own registration is Singleton"
+        private SingletonReason? SingletonReasonOf(DescriptorRecord descriptor) =>
+            Options.HandlerLifetime == ServiceLifetime.Singleton ? SingletonReason.HandlerLifetime
+            : descriptor.Lifetime == ServiceLifetime.Singleton ? SingletonReason.OwnRegistration
             : null;
 
         /// <summary>
