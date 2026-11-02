@@ -81,7 +81,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// </summary>
         public IEnumerable<ComponentRegistration> Components =>
             _descriptors
-                .Where(d => d.RuntimeType is not null)
+                .Where(d => !d.IsKeyed && d.RuntimeType is not null)
                 .Select(d => (Descriptor: d, Kind: KindOf(d.RuntimeType!)))
                 .Where(c => c.Kind is not null)
                 .Select(c => new ComponentRegistration(c.Descriptor.RuntimeType!, c.Kind!, SingletonReasonOf(c.Descriptor)));
