@@ -34,6 +34,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal static class ComponentConstructorSelector
     {
-        public static ConstructorInfo? Select(Type componentType) => componentType.GetConstructors().FirstOrDefault();
+        public static ConstructorInfo? Select(Type componentType) => componentType.GetConstructors()
+            .Where(constructor => constructor.GetParameters().Length > 0)
+            .OrderByDescending(constructor => constructor.GetParameters().Length)
+            .FirstOrDefault();
     }
 }
