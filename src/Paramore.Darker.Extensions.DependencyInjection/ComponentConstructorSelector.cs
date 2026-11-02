@@ -34,9 +34,15 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal static class ComponentConstructorSelector
     {
-        public static ConstructorInfo? Select(Type componentType) => componentType.GetConstructors()
-            .Where(constructor => constructor.GetParameters().Length > 0)
-            .OrderByDescending(constructor => constructor.GetParameters().Length)
-            .FirstOrDefault();
+        public static ConstructorInfo? Select(Type componentType)
+        {
+            var widest = componentType.GetConstructors()
+                .Where(constructor => constructor.GetParameters().Length > 0)
+                .GroupBy(constructor => constructor.GetParameters().Length)
+                .OrderByDescending(group => group.Key)
+                .FirstOrDefault();
+
+            return widest is not null && widest.Count() == 1 ? widest.Single() : null;
+        }
     }
 }
