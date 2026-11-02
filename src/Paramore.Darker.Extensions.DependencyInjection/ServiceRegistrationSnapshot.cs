@@ -82,9 +82,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public IEnumerable<ComponentRegistration> Components =>
             _descriptors
                 .Where(d => d.RuntimeType is not null)
-                .Select(d => (Type: d.RuntimeType!, Kind: KindOf(d.RuntimeType!)))
+                .Select(d => (Descriptor: d, Kind: KindOf(d.RuntimeType!)))
                 .Where(c => c.Kind is not null)
-                .Select(c => new ComponentRegistration(c.Type, c.Kind!, SingletonReasonOf()));
+                .Select(c => new ComponentRegistration(c.Descriptor.RuntimeType!, c.Kind!, SingletonReasonOf(c.Descriptor)));
 
         private static string? KindOf(Type type) =>
             typeof(IQueryHandler).IsAssignableFrom(type) ? "Handler"
@@ -94,8 +94,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
         public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
 
-        private string? SingletonReasonOf() =>
-            Options.HandlerLifetime == ServiceLifetime.Singleton ? "HandlerLifetime is Singleton" : null;
+        private string? SingletonReasonOf(DescriptorRecord descriptor) =>
+            Options.HandlerLifetime == ServiceLifetime.Singleton ? "HandlerLifetime is Singleton"
+            : descriptor.Lifetime == ServiceLifetime.Singleton ? "its own registration is Singleton"
+            : null;
 
         /// <summary>
         /// Renders an unkeyed <see cref="IAmAScopeProvider"/> descriptor: its implementation type, or for a factory
