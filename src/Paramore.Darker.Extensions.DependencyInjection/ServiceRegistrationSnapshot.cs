@@ -77,12 +77,19 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// The handlers whose registrations <c>CaptiveDependency</c> examines, in registration order.
+        /// The handlers and decorators whose registrations <c>CaptiveDependency</c> examines, in registration order.
         /// </summary>
         public IEnumerable<ComponentRegistration> Components =>
             _descriptors
-                .Where(d => d.RuntimeType is not null && typeof(IQueryHandler).IsAssignableFrom(d.RuntimeType))
-                .Select(d => new ComponentRegistration(d.RuntimeType!, "Handler", SingletonReasonOf()));
+                .Where(d => d.RuntimeType is not null)
+                .Select(d => (Type: d.RuntimeType!, Kind: KindOf(d.RuntimeType!)))
+                .Where(c => c.Kind is not null)
+                .Select(c => new ComponentRegistration(c.Type, c.Kind!, SingletonReasonOf()));
+
+        private static string? KindOf(Type type) =>
+            typeof(IQueryHandler).IsAssignableFrom(type) ? "Handler"
+            : typeof(IQueryHandlerDecorator).IsAssignableFrom(type) ? "Decorator"
+            : null;
 
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
         public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
