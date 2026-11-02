@@ -50,7 +50,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (constructor is null) return Enumerable.Empty<ValidationResult>();
 
             return constructor.GetParameters()
-                .Where(parameter => EffectiveDescriptorOf(snapshot, parameter)?.Lifetime == ServiceLifetime.Scoped)
+                .Where(parameter => snapshot.EffectiveDescriptorOf(parameter)?.Lifetime == ServiceLifetime.Scoped)
                 .Select(parameter => ValidationResult.Fail(new ValidationError(
                     ValidationSeverity.Warning,
                     component.ToString(),
@@ -58,16 +58,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 {
                     RuleId = CaptiveDependency
                 }));
-        }
-
-        private static DescriptorRecord? EffectiveDescriptorOf(ServiceRegistrationSnapshot snapshot, ParameterInfo parameter)
-        {
-            var key = parameter.GetCustomAttribute<FromKeyedServicesAttribute>()?.Key;
-            if (key is not null) return snapshot.LastKeyedDescriptorOf(parameter.ParameterType, key);
-
-            var parameterType = parameter.ParameterType;
-            return snapshot.LastUnkeyedDescriptorOf(parameterType)
-                ?? (parameterType.IsConstructedGenericType ? snapshot.LastUnkeyedDescriptorOf(parameterType.GetGenericTypeDefinition()) : null);
         }
 
         private static string CaptiveMessage(ComponentRegistration component, ParameterInfo parameter) =>

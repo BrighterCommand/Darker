@@ -26,6 +26,7 @@ THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Paramore.Darker.Extensions.DependencyInjection
@@ -93,6 +94,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
         public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
+
+        /// <summary>
+        /// The descriptor the container would use for a constructor parameter: the last keyed descriptor for a
+        /// <c>[FromKeyedServices]</c> parameter with a key, otherwise the last unkeyed descriptor for its type,
+        /// falling back to the generic type definition of a constructed generic. Null when none matches.
+        /// </summary>
+        public DescriptorRecord? EffectiveDescriptorOf(ParameterInfo parameter)
+        {
+            var key = parameter.GetCustomAttribute<FromKeyedServicesAttribute>()?.Key;
+            if (key is not null) return LastKeyedDescriptorOf(parameter.ParameterType, key);
+
+            var parameterType = parameter.ParameterType;
+            return LastUnkeyedDescriptorOf(parameterType)
+                ?? (parameterType.IsConstructedGenericType ? LastUnkeyedDescriptorOf(parameterType.GetGenericTypeDefinition()) : null);
+        }
 
         /// <summary>The last keyed descriptor registered for the service type and key, or null.</summary>
         public DescriptorRecord? LastKeyedDescriptorOf(Type serviceType, object key) =>
