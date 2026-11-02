@@ -1214,7 +1214,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Exclude keyed records from `ServiceRegistrationSnapshot.Components` (row 1: Darker resolves components unkeyed). Keep reading the keyed properties in `Capture`, which T15.7 pins.
 
-- [ ] **TEST + IMPLEMENT: T17.7 — Only the effective descriptor counts: `AddSingleton<H>()` then `AddTransient<H>()` yields nothing (ADR 0026 step 5 bullet 7; ladder row 4)**
+- [x] **TEST + IMPLEMENT: T17.7 — Only the effective descriptor counts: `AddSingleton<H>()` then `AddTransient<H>()` yields nothing (ADR 0026 step 5 bullet 7; ladder row 4)**
   - **USE COMMAND**: `/tdd:test-first when a handler is registered Singleton and then Transient before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_later_descriptor_replaces_a_singleton_component_should_report_nothing.cs`
