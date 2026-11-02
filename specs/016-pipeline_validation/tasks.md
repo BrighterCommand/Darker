@@ -1234,7 +1234,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - When no descriptor matches a constructed generic parameter, read the effective descriptor of its generic type definition, ignoring constraints.
 
-- [ ] **TEST + IMPLEMENT: T17.9 — An interface registration of a handler beside Darker's own registration yields nothing (ADR 0026 step 5 bullet 9; ladder row 3)**
+- [x] **TEST + IMPLEMENT: T17.9 — An interface registration of a handler beside Darker's own registration yields nothing (ADR 0026 step 5 bullet 9; ladder row 3)**
   - **USE COMMAND**: `/tdd:test-first when a handler is also registered Singleton under IQueryHandlerAsync beside the Transient registration Darker uses should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_an_interface_alias_registration_should_report_nothing.cs`
