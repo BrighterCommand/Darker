@@ -26,6 +26,7 @@ THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.Specifications;
 
@@ -49,7 +50,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             if (constructor is null) return Enumerable.Empty<ValidationResult>();
 
             return constructor.GetParameters()
-                .Where(parameter => EffectiveDescriptorOf(snapshot, parameter.ParameterType)?.Lifetime == ServiceLifetime.Scoped)
+                .Where(parameter => EffectiveDescriptorOf(snapshot, parameter)?.Lifetime == ServiceLifetime.Scoped)
                 .Select(parameter => ValidationResult.Fail(new ValidationError(
                     ValidationSeverity.Warning,
                     component.ToString(),
@@ -59,11 +60,17 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 }));
         }
 
-        private static DescriptorRecord? EffectiveDescriptorOf(ServiceRegistrationSnapshot snapshot, Type parameterType) =>
-            snapshot.LastUnkeyedDescriptorOf(parameterType)
-            ?? (parameterType.IsConstructedGenericType ? snapshot.LastUnkeyedDescriptorOf(parameterType.GetGenericTypeDefinition()) : null);
+        private static DescriptorRecord? EffectiveDescriptorOf(ServiceRegistrationSnapshot snapshot, ParameterInfo parameter)
+        {
+            var key = parameter.GetCustomAttribute<FromKeyedServicesAttribute>()?.Key;
+            if (key is not null) return snapshot.LastKeyedDescriptorOf(parameter.ParameterType, key);
 
-        private static string CaptiveMessage(ComponentRegistration component, System.Reflection.ParameterInfo parameter) =>
+            var parameterType = parameter.ParameterType;
+            return snapshot.LastUnkeyedDescriptorOf(parameterType)
+                ?? (parameterType.IsConstructedGenericType ? snapshot.LastUnkeyedDescriptorOf(parameterType.GetGenericTypeDefinition()) : null);
+        }
+
+        private static string CaptiveMessage(ComponentRegistration component, ParameterInfo parameter) =>
             $"{component.ImplementationType.Name} counts as Singleton because {component.SingletonReason}, but its constructor parameter "
             + $"'{parameter.Name}' of type {parameter.ParameterType.Name} is registered Scoped, so one instance is captured for the life of the container. "
             + $"Register {parameter.ParameterType.Name} Singleton or Transient, or change the lifetime of {component.ImplementationType.Name}. "

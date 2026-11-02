@@ -94,6 +94,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
         public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
 
+        /// <summary>The last keyed descriptor registered for the service type and key, or null.</summary>
+        public DescriptorRecord? LastKeyedDescriptorOf(Type serviceType, object key) =>
+            _descriptors.LastOrDefault(d => d.IsKeyed && d.ServiceType == serviceType && Equals(d.ServiceKey, key));
+
         private string? SingletonReasonOf(DescriptorRecord descriptor) =>
             Options.HandlerLifetime == ServiceLifetime.Singleton ? "HandlerLifetime is Singleton"
             : descriptor.Lifetime == ServiceLifetime.Singleton ? "its own registration is Singleton"
