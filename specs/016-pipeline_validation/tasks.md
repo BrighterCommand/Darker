@@ -1203,7 +1203,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. T17.1's lookup yields no result for a parameter with no descriptor, and T17.3 makes decorators candidates.
 
-- [ ] **TEST + IMPLEMENT: T17.6 — A keyed component registration yields nothing (ADR 0026 step 5 bullet 6, keyed part; ladder row 1)**
+- [x] **TEST + IMPLEMENT: T17.6 — A keyed component registration yields nothing (ADR 0026 step 5 bullet 6, keyed part; ladder row 1)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered keyed before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_keyed_should_report_nothing.cs`
