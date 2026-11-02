@@ -81,10 +81,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// </summary>
         public IEnumerable<ComponentRegistration> Components =>
             _descriptors
-                .Where(d => !d.IsKeyed && d.RuntimeType is not null && d.ServiceType == d.RuntimeType && ReferenceEquals(d, LastUnkeyedDescriptorOf(d.ServiceType)))
-                .Select(d => (Descriptor: d, Kind: KindOf(d.RuntimeType!)))
+                .Where(d => !d.IsKeyed && d.ImplementationType is not null && d.ServiceType == d.ImplementationType && ReferenceEquals(d, LastUnkeyedDescriptorOf(d.ServiceType)))
+                .Select(d => (Descriptor: d, Kind: KindOf(d.ImplementationType!)))
                 .Where(c => c.Kind is not null)
-                .Select(c => new ComponentRegistration(c.Descriptor.RuntimeType!, c.Kind!, SingletonReasonOf(c.Descriptor)));
+                .Select(c => new ComponentRegistration(c.Descriptor.ImplementationType!, c.Kind!, SingletonReasonOf(c.Descriptor)));
 
         private static string? KindOf(Type type) =>
             typeof(IQueryHandler).IsAssignableFrom(type) ? "Handler"
