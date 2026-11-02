@@ -1224,7 +1224,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Add `ServiceRegistrationSnapshot.EffectiveDescriptor(type, key)`: the last match, where a null key matches unkeyed only. Make `Components` keep only effective descriptors.
 
-- [ ] **TEST + IMPLEMENT: T17.8 — A closed generic parameter falls back to its open generic registration (ADR 0026 step 5 bullet 8; ladder row 9)**
+- [x] **TEST + IMPLEMENT: T17.8 — A closed generic parameter falls back to its open generic registration (ADR 0026 step 5 bullet 8; ladder row 9)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes IRepository<Order> and only the open generic IRepository<> is registered Scoped should report a CaptiveDependency warning naming the parameter`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_a_closed_generic_of_a_scoped_open_generic_should_report_captive_dependency.cs`
