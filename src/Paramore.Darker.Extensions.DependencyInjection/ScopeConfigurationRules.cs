@@ -42,12 +42,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public static readonly ValidationRuleId InertScopeAffinity = new ValidationRuleId("InertScopeAffinity");
         public static readonly ValidationRuleId DuplicateScopeProvider = new ValidationRuleId("DuplicateScopeProvider");
 
-        private const string ReadmeLinkBase = "https://github.com/BrighterCommand/Darker/blob/master/README.md#";
-
         public static IReadOnlyList<ISpecification<ScopeConfiguration>> Create() =>
             new List<ISpecification<ScopeConfiguration>> { InertAffinity(), DuplicateProvider() };
-
-        internal static string ReadmeLink(ValidationRuleId ruleId) => ReadmeLinkBase + ruleId.ToString().ToLowerInvariant();
 
         private static Specification<ScopeConfiguration> InertAffinity() =>
             new Specification<ScopeConfiguration>(
@@ -79,7 +75,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             var used = providers.Count > 0 ? providers[providers.Count - 1] : "none";
             return $"More than one IAmAScopeProvider is registered: {string.Join(", ", providers)}. {used} is used, because the last registration wins. "
                 + "Keep one provider, registered with AddDarkerScopeProvider or AddDarkerRequestScope. "
-                + ReadmeLink(DuplicateScopeProvider);
+                + RuleLinks.ReadmeLink(DuplicateScopeProvider);
         }
 
         private static string InertAffinityMessage(ScopeConfiguration? configuration)
@@ -93,7 +89,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return $"The scope affinity JoinAmbient from {configuration?.AffinitySource} cannot take effect, so each query gets a scope of its own. "
                 + string.Join(" ", causes)
                 + " Use ScopeAffinity.AlwaysNew if joining is not wanted. "
-                + ReadmeLink(InertScopeAffinity);
+                + RuleLinks.ReadmeLink(InertScopeAffinity);
         }
     }
 }

@@ -64,6 +64,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             $"{component.ImplementationType.Name} counts as Singleton because {component.SingletonReason}, but its constructor parameter "
             + $"'{parameter.Name}' of type {parameter.ParameterType.Name} is registered Scoped, so one instance is captured for the life of the container. "
             + $"Register {parameter.ParameterType.Name} Singleton or Transient, or change the lifetime of {component.ImplementationType.Name}. "
-            + ScopeConfigurationRules.ReadmeLink(CaptiveDependency);
+            + RuleLinks.ReadmeLink(CaptiveDependency);
     }
 }
