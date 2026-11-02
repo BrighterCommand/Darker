@@ -1190,7 +1190,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Count a component as Singleton when its own descriptor is Singleton, as well as under a Singleton `HandlerLifetime`. `ComponentRegistration` records why. (T17.7 narrows "its own descriptor" to the effective one.)
 
-- [ ] **CHARACTERISE: T17.5 — Transient or Singleton dependencies, `IServiceProvider` and unregistered parameters yield nothing (ADR 0026 step 5 bullet 5; ladder rows 10 and 11)**
+- [x] **CHARACTERISE: T17.5 — Transient or Singleton dependencies, `IServiceProvider` and unregistered parameters yield nothing (ADR 0026 step 5 bullet 5; ladder rows 10 and 11)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler takes a Transient, Singleton, IServiceProvider or unregistered dependency should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_singleton_handler_takes_no_scoped_dependency_should_report_nothing.cs`
