@@ -1303,7 +1303,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change. A factory record has no implementation type (T15.1, T15.10), so T17.1's `Components` never makes it a candidate.
 
-- [ ] **CHARACTERISE: T17.15 — A component registered as an instance yields nothing (ADR 0026 step 5 bullet 6, instance part; ladder row 2, "an instance's runtime type does not count")**
+- [x] **CHARACTERISE: T17.15 — A component registered as an instance yields nothing (ADR 0026 step 5 bullet 6, instance part; ladder row 2, "an instance's runtime type does not count")**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered as an instance before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_as_an_instance_should_report_nothing.cs`
