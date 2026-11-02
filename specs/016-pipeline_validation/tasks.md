@@ -1292,7 +1292,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Make `ComponentConstructorSelector` return nothing when two or more public constructors share the widest parameter count. The rule counts constructors of the widest width, so it does not depend on the order `GetConstructors()` returns.
 
-- [ ] **CHARACTERISE: T17.14 — A component registered by a factory delegate yields nothing (ADR 0026 step 5 bullet 6, factory part; ladder row 2)**
+- [x] **CHARACTERISE: T17.14 — A component registered by a factory delegate yields nothing (ADR 0026 step 5 bullet 6, factory part; ladder row 2)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler is registered by a factory delegate before AddDarker with a Transient handler lifetime should report no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_component_is_registered_by_factory_should_report_nothing.cs`
