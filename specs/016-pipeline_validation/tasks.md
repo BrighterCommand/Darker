@@ -1257,7 +1257,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - For a parameter with an explicit non-null key, read the last keyed descriptor for that type and key. Otherwise fall through to the unkeyed lookup.
 
-- [ ] **TEST + IMPLEMENT: T17.11 — The widest public constructor is the one inspected, and a handler whose constructors take no parameters yields nothing (ADR 0026 step 5; "Why the widest public constructor"; ladder row 6, first clause)**
+- [x] **TEST + IMPLEMENT: T17.11 — The widest public constructor is the one inspected, and a handler whose constructors take no parameters yields nothing (ADR 0026 step 5; "Why the widest public constructor"; ladder row 6, first clause)**
   - **USE COMMAND**: `/tdd:test-first when a Singleton handler has two public constructors of different widths and only the wider takes a Scoped dependency should report a CaptiveDependency warning`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_handler_has_constructors_of_different_widths_should_inspect_the_widest.cs`
