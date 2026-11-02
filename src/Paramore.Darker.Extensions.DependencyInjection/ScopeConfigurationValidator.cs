@@ -45,13 +45,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public PipelineValidationResult Validate()
         {
-            var configuration = _snapshot.ReadScopeConfiguration();
-            var collector = new ValidationResultCollector<ScopeConfiguration>();
-
-            var findings = ScopeConfigurationRules.Create()
-                .Where(rule => !rule.IsSatisfiedBy(configuration))
-                .SelectMany(rule => rule.Accept(collector))
-                .Concat(CaptiveFindings())
+            var findings = Evaluate(ScopeConfigurationRules.Create(), new[] { _snapshot.ReadScopeConfiguration() })
+                .Concat(Evaluate(new[] { ComponentRules.Captive(_snapshot) }, _snapshot.Components))
                 .Where(result => !result.Success && result.Error is not null)
                 .Select(result => result.Error!)
                 .ToList();
@@ -61,14 +56,18 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 findings.Where(finding => finding.Severity != ValidationSeverity.Error));
         }
 
-        private IEnumerable<ValidationResult> CaptiveFindings()
+        /// <summary>
+        /// Runs each rule over each entity, in that order, and collects the results of those the rule is not satisfied by.
+        /// A rule holds its last results, so they are collected straight after the rule is evaluated.
+        /// </summary>
+        private static List<ValidationResult> Evaluate<T>(IEnumerable<ISpecification<T>> rules, IEnumerable<T> entities)
         {
-            var rule = ComponentRules.Captive(_snapshot);
-            var collector = new ValidationResultCollector<ComponentRegistration>();
+            var collector = new ValidationResultCollector<T>();
 
-            return _snapshot.Components
-                .Where(component => !rule.IsSatisfiedBy(component))
-                .SelectMany(component => rule.Accept(collector))
+            return rules
+                .SelectMany(rule => entities
+                    .Where(entity => !rule.IsSatisfiedBy(entity))
+                    .SelectMany(entity => rule.Accept(collector)))
                 .ToList();
         }
     }
