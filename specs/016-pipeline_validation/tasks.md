@@ -1268,7 +1268,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Make `ComponentConstructorSelector` return the public constructor with the most parameters, and nothing when no public constructor has parameters. The tie is T17.13's.
 
-- [ ] **CHARACTERISE: T17.12 — Constructor reflection that throws yields a `RuleEvaluationFailed` error and no `CaptiveDependency` finding (ADR 0026 step 5 bullet 12; Invariant "a misconfiguration never throws out of Validate")**
+- [x] **CHARACTERISE: T17.12 — Constructor reflection that throws yields a `RuleEvaluationFailed` error and no `CaptiveDependency` finding (ADR 0026 step 5 bullet 12; Invariant "a misconfiguration never throws out of Validate")**
   - **USE COMMAND**: `/tdd:test-first when reading a Singleton handler's constructor throws should report a RuleEvaluationFailed error with its rule identifier and no CaptiveDependency finding`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_constructor_reflection_throws_should_report_rule_evaluation_failed.cs`
