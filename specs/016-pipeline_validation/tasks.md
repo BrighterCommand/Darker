@@ -1342,7 +1342,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - Do not change `ThrowOnError` handling (T11.11) or the once-only marker.
     - T15.x to T17.x tests must stay green. They call `ValidatePipelines()` once, so they exercise the first-call path.
 
-- [ ] **CHARACTERISE: T18.3 — Validation creates no handler and no scope provider, and `ValidateAll` creates no scope at its own call level (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
+- [x] **CHARACTERISE: T18.3 — Validation creates no handler and no scope provider, and `ValidateAll` creates no scope at its own call level (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
   - **USE COMMAND**: `/tdd:test-first when lifetime validation runs should never construct a handler or a scope provider and ValidateAll should create no scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test files (one fact each): `When_lifetime_validation_runs_should_create_no_handler_or_scope_provider.cs` (the counter fact) and `When_ValidateAll_is_called_should_create_no_scope.cs` (the scope fact)
