@@ -1356,7 +1356,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T18.4 — Several lifetime mistakes appear in one combined result beside a pipeline finding (ADR 0026 step 6 bullet 4; FR3)**
+- [x] **CHARACTERISE: T18.4 — Several lifetime mistakes appear in one combined result beside a pipeline finding (ADR 0026 step 6 bullet 4; FR3)**
   - **USE COMMAND**: `/tdd:test-first when there are lifetime mistakes and a pipeline mistake should report all of them in one ValidateAll result`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_lifetime_and_pipeline_mistakes_coexist_should_report_all_in_one_result.cs`
