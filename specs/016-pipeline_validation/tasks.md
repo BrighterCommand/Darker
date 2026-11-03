@@ -1317,7 +1317,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 18 — Snapshot semantics and side effects (ADR 0026 step 6)
 
-- [ ] **CHARACTERISE: T18.1 — A Scoped dependency added after `ValidatePipelines()` is not reported (ADR 0026 step 6 bullet 1; FR14 lifetime part, "call it last")**
+- [x] **CHARACTERISE: T18.1 — A Scoped dependency added after `ValidatePipelines()` is not reported (ADR 0026 step 6 bullet 1; FR14 lifetime part, "call it last")**
   - **USE COMMAND**: `/tdd:test-first when a Scoped dependency is registered after ValidatePipelines should not report a CaptiveDependency for it`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_scoped_dependency_is_added_after_ValidatePipelines_should_not_be_reported.cs`
