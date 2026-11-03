@@ -24,6 +24,7 @@ THE SOFTWARE. */
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker.PipelineValidation;
@@ -48,14 +49,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
 
-            // Replace the previous snapshot, removing it before capturing so the new one does not contain the old one.
-            foreach (var previous in builder.Services
-                         .Where(d => !d.IsKeyedService && d.ServiceType == typeof(ServiceRegistrationSnapshot) && d.ImplementationInstance is ServiceRegistrationSnapshot)
-                         .ToList())
-                builder.Services.Remove(previous);
-
-            var snapshot = ServiceRegistrationSnapshot.Capture(builder.Services, darkerBuilder.Options);
-            builder.Services.AddSingleton(snapshot);
+            ReplaceSnapshot(builder.Services, darkerBuilder.Options);
 
             var options = FindRegistration(builder.Services);
             if (options is null)
@@ -71,11 +65,22 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             return builder;
         }
 
+        // Replaces the previous snapshot, removing it before capturing so the new one does not contain the old one.
+        private static void ReplaceSnapshot(IServiceCollection services, DarkerOptions options)
+        {
+            foreach (var previous in UnkeyedInstanceDescriptors<ServiceRegistrationSnapshot>(services).ToList())
+                services.Remove(previous);
+
+            services.AddSingleton(ServiceRegistrationSnapshot.Capture(services, options));
+        }
+
         private static DarkerPipelineValidationOptions? FindRegistration(IServiceCollection services) =>
-            services
-                .Where(d => !d.IsKeyedService && d.ServiceType == typeof(DarkerPipelineValidationOptions))
-                .Select(d => d.ImplementationInstance as DarkerPipelineValidationOptions)
-                .FirstOrDefault(o => o is not null);
+            UnkeyedInstanceDescriptors<DarkerPipelineValidationOptions>(services)
+                .Select(d => (DarkerPipelineValidationOptions)d.ImplementationInstance!)
+                .FirstOrDefault();
+
+        private static IEnumerable<ServiceDescriptor> UnkeyedInstanceDescriptors<T>(IServiceCollection services) where T : class =>
+            services.Where(d => !d.IsKeyedService && d.ServiceType == typeof(T) && d.ImplementationInstance is T);
 
         private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder)
         {
