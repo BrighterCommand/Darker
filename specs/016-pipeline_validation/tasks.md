@@ -1367,7 +1367,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **CHARACTERISE: T18.5 — Lifetime findings follow the pipeline findings in each list, and `DuplicateScopeProvider` precedes `CaptiveDependency` (ADR 0026 step 6 bullet 5; Invariant "order is deterministic within each severity list")**
+- [x] **CHARACTERISE: T18.5 — Lifetime findings follow the pipeline findings in each list, and `DuplicateScopeProvider` precedes `CaptiveDependency` (ADR 0026 step 6 bullet 5; Invariant "order is deterministic within each severity list")**
   - **USE COMMAND**: `/tdd:test-first when pipeline and lifetime findings of both severities coexist should list lifetime findings after pipeline findings and DuplicateScopeProvider before CaptiveDependency`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_pipeline_and_lifetime_findings_coexist_should_order_them_by_validator_then_rule.cs`
