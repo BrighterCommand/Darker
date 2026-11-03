@@ -48,14 +48,21 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ?? throw new InvalidOperationException(
                     "ValidatePipelines requires the builder returned by AddDarker, because only that builder exposes the handler registries.");
 
+            // Replace the previous snapshot, removing it before capturing so the new one does not contain the old one.
+            foreach (var previous in builder.Services
+                         .Where(d => !d.IsKeyedService && d.ServiceType == typeof(ServiceRegistrationSnapshot) && d.ImplementationInstance is ServiceRegistrationSnapshot)
+                         .ToList())
+                builder.Services.Remove(previous);
+
             var snapshot = ServiceRegistrationSnapshot.Capture(builder.Services, darkerBuilder.Options);
+            builder.Services.AddSingleton(snapshot);
 
             var options = FindRegistration(builder.Services);
             if (options is null)
             {
                 options = new DarkerPipelineValidationOptions();
                 builder.Services.AddSingleton(options);
-                RegisterValidation(darkerBuilder, snapshot);
+                RegisterValidation(darkerBuilder);
             }
 
             // The last call sets throwOnError.
@@ -70,7 +77,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 .Select(d => d.ImplementationInstance as DarkerPipelineValidationOptions)
                 .FirstOrDefault(o => o is not null);
 
-        private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder, ServiceRegistrationSnapshot snapshot)
+        private static void RegisterValidation(ServiceCollectionDarkerHandlerBuilder darkerBuilder)
         {
             var services = darkerBuilder.Services;
             var sync = darkerBuilder.SyncRegistry;
@@ -85,8 +92,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             services.AddSingleton<IAmAPipelineValidator>(provider =>
                 new PipelineValidator(sync, async, stream, provider.GetServices<DecoratorOrderingRule>(), ServiceProviderResolvabilityProbe.From(provider)));
 
-            services.AddSingleton(snapshot);
-            services.AddSingleton<IAmAPipelineValidator>(_ => new ScopeConfigurationValidator(snapshot));
+            services.AddSingleton<IAmAPipelineValidator>(provider =>
+                new ScopeConfigurationValidator(provider.GetRequiredService<ServiceRegistrationSnapshot>()));
 
             services.AddHostedService<DarkerValidationHostedService>();
         }
