@@ -1328,7 +1328,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production change.
 
-- [ ] **TEST + IMPLEMENT: T18.2 — A scope provider added between two `ValidatePipelines()` calls is seen through the second call's snapshot (ADR 0026 step 6 bullet 2; Invariant "the last call wins")**
+- [x] **TEST + IMPLEMENT: T18.2 — A scope provider added between two `ValidatePipelines()` calls is seen through the second call's snapshot (ADR 0026 step 6 bullet 2; Invariant "the last call wins")**
   - **USE COMMAND**: `/tdd:test-first when a scope provider is added between two ValidatePipelines calls should see it and report no InertScopeAffinity`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
   - Test file: `When_a_scope_provider_is_added_between_two_ValidatePipelines_calls_should_be_seen.cs`
