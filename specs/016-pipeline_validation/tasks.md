@@ -47,6 +47,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
   - New core files use `#nullable enable`.
   - Records rely on `src/Paramore.Darker/IsExternalInit.cs` for netstandard2.0.
 - **Building validators in core tests.** Phases 6–9 build every `PipelineValidator` through the test-data builder `PipelineValidatorBuilder` (T6.1), so the constructor can grow without editing earlier tests.
+- **One fact per file.** When a task lists several facts, each goes in its own file named after its method, in a class named after its behaviour. Phase 17 was split afterwards for this reason (`cf750dc`).
 - **Naming.** Test files and methods are named `When_[condition]_should_[behaviour]`, test classes `[Behavior]Tests`. Name the class-under-test variable after its class, for example `pipelineValidator`. Write Arrange/Act/Assert comments and use Evident Data.
 - **CHARACTERISE tasks.** Observe RED by applying the named mutation to **production** code. The test must fail on the assertion it exists for. Revert, confirm green, check that `git status` shows no modified production file, run the full suite, and commit the test alone as `test:`, noting the mutation in the message.
 - **Commits.** Each behavioural task produces one `feat:`/`test:` commit, then a separate `docs:` commit that ticks the box. STRUCTURAL tasks commit as `refactor:`, with the suite green before and after.
@@ -1341,7 +1342,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 - [ ] **CHARACTERISE: T18.3 — Validation creates no handler and no scope provider, and `ValidateAll` creates no scope at its own call level (ADR 0026 step 6 bullet 3; NFR no side effects; acceptance criterion "creates no handler, decorator or scope")**
   - **USE COMMAND**: `/tdd:test-first when lifetime validation runs should never construct a handler or a scope provider and ValidateAll should create no scope`
   - Test location: "test/Paramore.Darker.Extensions.Tests/PipelineValidation/"
-  - Test file: `When_lifetime_validation_runs_should_create_no_handler_or_scope_provider.cs`
+  - Test files (one fact each): `When_lifetime_validation_runs_should_create_no_handler_or_scope_provider.cs` (the counter fact) and `When_ValidateAll_is_called_should_create_no_scope.cs` (the scope fact)
   - Test should verify:
     - `ConstructionRecordingHandler` (from T11.18) and `ConstructionRecordingScopeProvider` (new) have counters of 0 after `ValidateAll()` and after a host start.
     - Scope creation: `ScopeRecordingServiceProvider` (new) wraps the built provider and, when asked for `IServiceScopeFactory`, returns a `RecordingServiceScopeFactory` (new) over the real one that counts `CreateScope` calls; every other request passes through. `ValidateAll()` called on the wrapper, with both validators registered, leaves the count at 0. (Microsoft's container answers `IServiceScopeFactory` itself and ignores a registered one, so the double wraps the provider rather than registering a factory.)
