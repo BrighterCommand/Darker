@@ -1394,7 +1394,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 20 — Release notes and final verification
 
-- [ ] **DOC: T20.1 — Release notes for spec 016 (house convention; ADR 0025 Negative "every user of the DI package gains a package reference")**
+- [x] **DOC: T20.1 — Release notes for spec 016 (house convention; ADR 0025 Negative "every user of the DI package gains a package reference")**
   - Use `/spec:write_release_notes` to write the `<!-- spec: 016-pipeline_validation -->` section in `release_notes.md`. It covers:
     - the opt-in `ValidatePipelines()`, with the "call it last" rule;
     - the rule list;
