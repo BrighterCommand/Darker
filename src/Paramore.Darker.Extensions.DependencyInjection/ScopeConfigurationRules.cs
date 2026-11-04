@@ -47,8 +47,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private static Specification<ScopeConfiguration> InertAffinity() =>
             new Specification<ScopeConfiguration>(
-                configuration => configuration is null
-                    || configuration.Affinity != ScopeAffinity.JoinAmbient
+                configuration => configuration.Affinity != ScopeAffinity.JoinAmbient
                     || (configuration.HandlerLifetime == ServiceLifetime.Scoped && configuration.ProviderRegistered),
                 configuration => new ValidationError(
                     ValidationSeverity.Error,
@@ -60,7 +59,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         private static Specification<ScopeConfiguration> DuplicateProvider() =>
             new Specification<ScopeConfiguration>(
-                configuration => configuration is null || configuration.Providers.Distinct().Count() <= 1,
+                configuration => configuration.Providers.Distinct().Count() <= 1,
                 configuration => new ValidationError(
                     ValidationSeverity.Warning,
                     "Scope provider registration",
@@ -69,24 +68,24 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                     RuleId = DuplicateScopeProvider
                 });
 
-        private static string DuplicateProviderMessage(ScopeConfiguration? configuration)
+        private static string DuplicateProviderMessage(ScopeConfiguration configuration)
         {
-            var providers = configuration?.Providers.Select(p => p.Description).ToList() ?? new List<string>();
+            var providers = configuration.Providers.Select(p => p.Description).ToList();
             var used = providers.Count > 0 ? providers[providers.Count - 1] : "none";
             return $"More than one IAmAScopeProvider is registered: {string.Join(", ", providers)}. {used} is used, because the last registration wins. "
                 + "Keep one provider, registered with AddDarkerScopeProvider or AddDarkerRequestScope. "
                 + RuleLinks.ReadmeLink(DuplicateScopeProvider);
         }
 
-        private static string InertAffinityMessage(ScopeConfiguration? configuration)
+        private static string InertAffinityMessage(ScopeConfiguration configuration)
         {
             var causes = new List<string>();
-            if (configuration?.HandlerLifetime != ServiceLifetime.Scoped)
-                causes.Add($"HandlerLifetime is {configuration?.HandlerLifetime}. Set ServiceLifetime.Scoped.");
-            if (configuration?.ProviderRegistered != true)
+            if (configuration.HandlerLifetime != ServiceLifetime.Scoped)
+                causes.Add($"HandlerLifetime is {configuration.HandlerLifetime}. Set ServiceLifetime.Scoped.");
+            if (!configuration.ProviderRegistered)
                 causes.Add("no IAmAScopeProvider is registered. Call AddDarkerScopeProvider, or AddDarkerRequestScope() in ASP.NET Core.");
 
-            return $"The scope affinity JoinAmbient from {configuration?.AffinitySource} cannot take effect, so each query gets a scope of its own. "
+            return $"The scope affinity JoinAmbient from {configuration.AffinitySource} cannot take effect, so each query gets a scope of its own. "
                 + string.Join(" ", causes)
                 + " Use ScopeAffinity.AlwaysNew if joining is not wanted. "
                 + RuleLinks.ReadmeLink(InertScopeAffinity);
