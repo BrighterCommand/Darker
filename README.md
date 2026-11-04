@@ -24,10 +24,10 @@ public void ConfigureServices(IServiceCollection services)
 ```
 **EF Core and the request scope.** EF Core registers the `DbContext` as Scoped. A Scoped `QueryProcessor` gets a sibling scope, so it does **not** share the request's `DbContext`. To share it, use Scoped handlers and opt in to the request scope with the `Paramore.Darker.Extensions.AspNetCore` package:
 ```csharp
+services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore; before the chain, so ValidatePipelines() sees it
+services.AddBrighterRequestScope();  // Brighter's own opt-in, if you also use Brighter
 services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
     .AddHandlersFromAssemblies(typeof(MyHandler).Assembly);
-services.AddDarkerRequestScope();    // Paramore.Darker.Extensions.AspNetCore
-services.AddBrighterRequestScope();  // Brighter's own opt-in, if you also use Brighter
 ```
 The two opt-in calls are independent. Queries in one request share its Scoped services, so concurrent queries in one request need `ScopeAffinity.AlwaysNew`.
 
@@ -111,7 +111,23 @@ services.AddDarker()
 
 `ValidatePipelines` takes `throwOnError`, which is `true` by default. With `throwOnError: true` an error finding throws a `PipelineValidationException` that stops the host. With `ValidatePipelines(throwOnError: false)` errors are logged at Error and the host starts. Warnings never stop the host. Calling it more than once registers validation once, and the last call sets `throwOnError`.
 
-Call `ValidatePipelines()` last, after the other `AddDarker` calls and your handler registrations. Pipeline findings do not depend on the order, because the validator reads the live registries, but the call order matches Brighter's `ValidatePipelines()`.
+Call `ValidatePipelines()` last: after `AddDarker`, handler registration, `AddDarkerScopeProvider` or `AddDarkerRequestScope()`, and the registrations of your handlers' dependencies. Pipeline findings do not depend on the order, because the validator reads the live registries. The [lifetime and scope rules](#lifetime-and-scope-rules) do depend on it: they read a snapshot of the service collection taken when `ValidatePipelines()` is called, so a registration made afterwards is invisible to them. A scope provider registered after the call can even make `InertScopeAffinity` report a provider that exists as missing, and that is an Error that stops the host.
+
+There are two safe shapes. Register the scope provider before a chain that ends in `ValidatePipelines()`:
+```csharp
+services.AddDarkerRequestScope();    // or AddDarkerScopeProvider<T>(), and your handlers' dependencies
+services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
+    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly)
+    .ValidatePipelines();
+```
+Or hold the builder and call `ValidatePipelines()` as the final statement:
+```csharp
+var darker = services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
+    .AddHandlersFromAssemblies(typeof(MyHandler).Assembly);
+services.AddDarkerRequestScope();
+services.AddScoped<IMyDbContext, MyDbContext>();
+darker.ValidatePipelines();
+```
 
 Validation reads registrations and handler and decorator types. It never creates a handler, a decorator or a scope.
 
@@ -140,6 +156,38 @@ Warnings are logged before any exception is thrown. Each finding is logged as `P
 | `RuleEvaluationFailed` | Error | A rule, or a registry read, threw while validating. | Read the exception message in the finding and fix the registry or the rule. |
 
 Resolvability asks the container whether a type is registered. It does not construct it, so a registered handler with a missing constructor dependency passes. The container's own `ValidateOnBuild` option (`new ServiceProviderOptions { ValidateOnBuild = true }`) reports that case.
+
+### Lifetime and scope rules
+`ValidatePipelines()` also checks how handlers, decorators and the scope provider are configured. These rules read the snapshot described above, so they depend on [call order](#validating-pipelines-at-startup).
+
+| Rule | Severity |
+|------|----------|
+| `InertScopeAffinity` | Error |
+| `CaptiveDependency` | Warning |
+| `DuplicateScopeProvider` | Warning |
+
+#### InertScopeAffinity
+**Cause.** The effective scope affinity is `JoinAmbient`, but joining cannot take effect, so every query silently gets a scope of its own. Either `HandlerLifetime` is not `Scoped`, or no `IAmAScopeProvider` is registered. The message lists every cause that applies.
+
+**Fix.** Set `HandlerLifetime = ServiceLifetime.Scoped`, and register a provider with `AddDarkerScopeProvider<T>()` (or `AddDarkerRequestScope()` in ASP.NET Core). If you do not want to join an ambient scope, use `ScopeAffinity.AlwaysNew`. If the provider is registered and the rule still reports it missing, move the registration before `ValidatePipelines()`.
+
+#### CaptiveDependency
+**Cause.** A handler or decorator that counts as Singleton takes a constructor parameter whose registration is Scoped. The container creates one instance of the Scoped dependency and keeps it for the life of the container, so it is shared by every request. A Singleton `HandlerLifetime` makes every handler and decorator Singleton. The finding is one per Scoped parameter.
+
+**Fix.** Register the dependency as Singleton or Transient, or change the lifetime of the handler or decorator so that it is not Singleton.
+
+The rule stays silent on some cases, so a clean result is not a proof:
+- components registered by factory delegate or by instance;
+- keyed component registrations, which Darker never resolves;
+- `IEnumerable<T>` parameters;
+- transitive captivity (a Singleton that takes a Transient that takes a Scoped);
+- closed registrations behind a parameter of an open-generic decorator that uses the decorator's type parameters;
+- `KeyedService.AnyKey` registrations.
+
+#### DuplicateScopeProvider
+**Cause.** More than one distinct `IAmAScopeProvider` implementation is registered. The container returns the last registration and the others are silently ignored.
+
+**Fix.** Keep one provider, and register it with `AddDarkerScopeProvider<T>()` or `AddDarkerRequestScope()`, each of which replaces an earlier registration.
 
 ### Step order
 The position meaning of `Step` is the one to watch. The **lowest `Step` is outermost**: it runs first on the way in and last on the way out. `[FallbackPolicy(1)]` with `[RetryableQuery(2)]` puts the fallback outside the retry, which is the order the `DecoratorOrdering` rule wants.

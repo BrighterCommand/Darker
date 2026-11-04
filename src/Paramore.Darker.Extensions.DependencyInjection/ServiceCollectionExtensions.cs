@@ -48,7 +48,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// in one ambient scope share its Scoped services, including a Scoped handler instance of the same handler
         /// type, so concurrent queries in one request (for example under <c>Task.WhenAll</c>) need
         /// <see cref="ScopeAffinity.AlwaysNew"/>. A streaming query reads the ambient scope on its first
-        /// <c>MoveNextAsync</c>.
+        /// <c>MoveNextAsync</c>. Call this before <c>ValidatePipelines()</c>, because the lifetime validation reads a
+        /// snapshot of the service collection taken at that call and would not see a provider registered afterwards.
         /// </remarks>
         public static IServiceCollection AddDarkerScopeProvider<TProvider>(
             this IServiceCollection services,
