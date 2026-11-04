@@ -34,11 +34,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     internal sealed class ScopeConfiguration
     {
         public ScopeConfiguration(
-            ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime, bool providerRegistered,
+            ScopeAffinity affinity, string affinitySource, ServiceLifetime handlerLifetime,
             IReadOnlyList<ScopeProviderRegistration> providers)
         {
             Providers = providers;
-            ProviderRegistered = providerRegistered;
             Affinity = affinity;
             AffinitySource = affinitySource;
             HandlerLifetime = handlerLifetime;
@@ -53,7 +52,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         public ServiceLifetime HandlerLifetime { get; }
 
         /// <summary>Whether an unkeyed <see cref="IAmAScopeProvider"/> is registered.</summary>
-        public bool ProviderRegistered { get; }
+        public bool ProviderRegistered => Providers.Count > 0;
 
         /// <summary>The unkeyed <see cref="IAmAScopeProvider"/> registrations, in registration order.</summary>
         public IReadOnlyList<ScopeProviderRegistration> Providers { get; }

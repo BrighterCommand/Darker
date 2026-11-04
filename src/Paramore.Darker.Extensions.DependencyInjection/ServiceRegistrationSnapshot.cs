@@ -71,7 +71,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
                 ? "DarkerOptions.DefaultScopeAffinity"
                 : ScopeProviderRegistration.Describe(provider, providers.Count - 1);
 
-            return new ScopeConfiguration(affinity, source, Options.HandlerLifetime, provider is not null,
+            return new ScopeConfiguration(affinity, source, Options.HandlerLifetime,
                 providers.Select(ScopeProviderRegistration.From).ToList());
         }
 
