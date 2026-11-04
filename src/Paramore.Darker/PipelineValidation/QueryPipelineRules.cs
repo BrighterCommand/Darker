@@ -192,7 +192,8 @@ public static class QueryPipelineRules
 
     private static string HandlerMatchesPathMessage(HandlerPipelineDescription description)
     {
-        var interfaceName = PipelinePathReader.For(description.Path)?.PathInterface.Name.Replace("`2", "<,>");
+        var pathInterface = PipelinePathReader.For(description.Path)?.PathInterface;
+        var interfaceName = pathInterface is null ? null : TypeNames.Open(pathInterface);
         var prefix = $"{HandlerSource(description)} {Where(description)}";
         return description.HandlerType is not null && ImplementsPathInterface(description)
             ? $"{prefix} implements '{interfaceName}' only explicitly, so it has no public method for the path. Implement the method publicly."
