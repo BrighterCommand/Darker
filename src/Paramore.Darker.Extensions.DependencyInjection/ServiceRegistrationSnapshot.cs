@@ -44,7 +44,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             Options = options;
         }
 
-        public DarkerOptions Options { get; }
+        private DarkerOptions Options { get; }
 
         public static ServiceRegistrationSnapshot Capture(IServiceCollection services, DarkerOptions options)
         {
@@ -104,7 +104,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
             : null;
 
         /// <summary>The last unkeyed descriptor registered for the service type, or null.</summary>
-        public DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
+        private DescriptorRecord? LastUnkeyedDescriptorOf(Type serviceType) => UnkeyedDescriptorsOf(serviceType).LastOrDefault();
 
         /// <summary>
         /// The descriptor the container would use for a constructor parameter: the last keyed descriptor for a
@@ -122,7 +122,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         /// <summary>The last keyed descriptor registered for the service type and key, or null.</summary>
-        public DescriptorRecord? LastKeyedDescriptorOf(Type serviceType, object key) =>
+        private DescriptorRecord? LastKeyedDescriptorOf(Type serviceType, object key) =>
             _descriptors.LastOrDefault(d => d.IsKeyed && d.ServiceType == serviceType && Equals(d.ServiceKey, key));
 
         private SingletonReason? SingletonReasonOf(DescriptorRecord descriptor) =>
