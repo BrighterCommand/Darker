@@ -1381,7 +1381,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 19 — Lifetime documentation and sample (ADR 0026 step 7)
 
-- [ ] **DOC: T19.1 — README lifetime rule sections, the "call it last" rule, XML remarks and the sample, in one commit (ADR 0026 step 7; FR13 lifetime part; FR14 lifetime part; acceptance criterion "README documents … how to fix each lifetime finding")**
+- [x] **DOC: T19.1 — README lifetime rule sections, the "call it last" rule, XML remarks and the sample, in one commit (ADR 0026 step 7; FR13 lifetime part; FR14 lifetime part; acceptance criterion "README documents … how to fix each lifetime finding")**
   - In T12.1's README section:
     - add one `####` heading per rule, named exactly `InertScopeAffinity`, `CaptiveDependency` and `DuplicateScopeProvider`, each stating the cause and the fix. Confirm that GitHub's generated anchors match the links in the messages (`#inertscopeaffinity`, `#captivedependency`, `#duplicatescopeprovider`);
     - state that `ValidatePipelines()` must be called last, after `AddDarker`, handler registration, `AddDarkerScopeProvider` or `AddDarkerRequestScope`, and the registrations of handlers' dependencies. Show both safe shapes: the scope provider registered before a chain that ends in `ValidatePipelines()`, and `ValidatePipelines()` called on the held builder as the final statement;
