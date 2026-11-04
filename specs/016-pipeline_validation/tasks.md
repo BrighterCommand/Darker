@@ -1403,7 +1403,7 @@ No phase may start until the phase before it is green on net8.0 and net9.0.
     - that an explicitly registered internal handler now fails validation once the application opts in;
     - that no existing signature changed.
 
-- [ ] **VERIFY: T20.2 — Final checkpoint**
+- [x] **VERIFY: T20.2 — Final checkpoint**
   - Run `dotnet build Darker.Filter.slnf -c Release`, succeeding on netstandard2.0, net8.0 and net9.0. New build warnings are not a gate (the package is unshipped).
   - Run `dotnet test Darker.Filter.slnf -c Release --no-build`, green on net8.0 and net9.0, including `test/Paramore.Darker.Extensions.AspNetCore.Tests`.
   - `grep -rn "InternalsVisibleTo" src test` finds nothing new.
