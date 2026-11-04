@@ -33,11 +33,10 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </summary>
     internal sealed class DescriptorRecord
     {
-        private DescriptorRecord(Type serviceType, ServiceLifetime lifetime, bool isKeyed, object? serviceKey, Type? implementationType, object? implementationInstance, bool isFactory)
+        private DescriptorRecord(Type serviceType, ServiceLifetime lifetime, object? serviceKey, Type? implementationType, object? implementationInstance, bool isFactory)
         {
             ServiceType = serviceType;
             Lifetime = lifetime;
-            IsKeyed = isKeyed;
             ServiceKey = serviceKey;
             ImplementationType = implementationType;
             ImplementationInstance = implementationInstance;
@@ -48,7 +47,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public ServiceLifetime Lifetime { get; }
 
-        public bool IsKeyed { get; }
+        public bool IsKeyed => ServiceKey is not null;
 
         /// <summary>The service key of a keyed descriptor, or null for an unkeyed one.</summary>
         public object? ServiceKey { get; }
@@ -67,7 +66,7 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public static DescriptorRecord From(ServiceDescriptor descriptor) =>
             descriptor.IsKeyedService
-                ? new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, true, descriptor.ServiceKey, descriptor.KeyedImplementationType, descriptor.KeyedImplementationInstance, descriptor.KeyedImplementationFactory is not null)
-                : new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, false, null, descriptor.ImplementationType, descriptor.ImplementationInstance, descriptor.ImplementationFactory is not null);
+                ? new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, descriptor.ServiceKey, descriptor.KeyedImplementationType, descriptor.KeyedImplementationInstance, descriptor.KeyedImplementationFactory is not null)
+                : new DescriptorRecord(descriptor.ServiceType, descriptor.Lifetime, null, descriptor.ImplementationType, descriptor.ImplementationInstance, descriptor.ImplementationFactory is not null);
     }
 }
