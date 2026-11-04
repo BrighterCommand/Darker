@@ -96,7 +96,7 @@ public static class QueryPipelineRules
 
     private static ValidationError DecoratorResolvableError(HandlerPipelineDescription description, IReadOnlyList<PipelineStepDescription> unresolved)
     {
-        var decorators = string.Join(", ", unresolved.Select(step => $"'{step.DecoratorType?.Name}'"));
+        var decorators = string.Join(", ", unresolved.Select(step => $"'{(step.DecoratorType is null ? null : TypeNames.Open(step.DecoratorType))}'"));
         return new ValidationError(
             ValidationSeverity.Error,
             HandlerSource(description),
