@@ -36,6 +36,8 @@ namespace Paramore.Darker.Extensions.DependencyInjection
     /// </remarks>
     internal sealed class ScopeProviderRegistration : IEquatable<ScopeProviderRegistration>
     {
+        private const string UNKNOWN_SCOPE_PROVIDER = "the registered scope provider";
+
         private readonly object _identity;
 
         public ScopeProviderRegistration(object identity, string description)
@@ -46,6 +48,34 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         /// <summary>The registration rendered for a message.</summary>
         public string Description { get; }
+
+        /// <summary>
+        /// Creates the registration for an unkeyed <see cref="IAmAScopeProvider"/> descriptor. A factory registration is
+        /// identified by its position, any other by its implementation type.
+        /// </summary>
+        /// <param name="provider">The descriptor.</param>
+        /// <param name="index">The 0-based position of the descriptor among the unkeyed provider descriptors.</param>
+        public static ScopeProviderRegistration From(DescriptorRecord provider, int index)
+        {
+            var identity = provider.IsFactory
+                ? (object)index
+                : provider.RuntimeType ?? (object)provider;
+            return new ScopeProviderRegistration(identity, Describe(provider, index));
+        }
+
+        /// <summary>
+        /// Renders an unkeyed <see cref="IAmAScopeProvider"/> descriptor: its implementation type, or for a factory
+        /// "a factory registration at position N", where N is its 1-based position among the unkeyed provider descriptors.
+        /// </summary>
+        /// <param name="provider">The descriptor, or null when there is none.</param>
+        /// <param name="index">The 0-based position of the descriptor among the unkeyed provider descriptors.</param>
+        public static string Describe(DescriptorRecord? provider, int index)
+        {
+            if (provider is null) return UNKNOWN_SCOPE_PROVIDER;
+            if (provider.IsFactory) return $"a factory registration at position {index + 1}";
+
+            return provider.RuntimeType?.Name ?? UNKNOWN_SCOPE_PROVIDER;
+        }
 
         public bool Equals(ScopeProviderRegistration? other) => other is not null && _identity.Equals(other._identity);
 
