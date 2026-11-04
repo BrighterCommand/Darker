@@ -78,21 +78,25 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>
         /// The handlers and decorators whose registrations <c>CaptiveDependency</c> examines, in registration order.
         /// </summary>
-        public IEnumerable<ComponentRegistration> Components => _descriptors.Where(IsCandidate).Select(ToComponent);
+        public IEnumerable<ComponentRegistration> Components => _descriptors.Select(ComponentOf).OfType<ComponentRegistration>();
 
         /// <summary>
         /// A candidate is an unkeyed handler or decorator that registers itself (a service type equal to its implementation type,
         /// so not an alias) and is the effective, last unkeyed descriptor for that type. Factories and instances have no implementation type.
+        /// Returns null for any other descriptor.
         /// </summary>
-        private bool IsCandidate(DescriptorRecord descriptor) =>
-            !descriptor.IsKeyed
-            && descriptor.ImplementationType is not null
-            && descriptor.ServiceType == descriptor.ImplementationType
-            && ReferenceEquals(descriptor, LastUnkeyedDescriptorOf(descriptor.ServiceType))
-            && KindOf(descriptor.ImplementationType) is not null;
+        private ComponentRegistration? ComponentOf(DescriptorRecord descriptor)
+        {
+            if (descriptor.IsKeyed
+                || descriptor.ImplementationType is not { } type
+                || descriptor.ServiceType != type
+                || !ReferenceEquals(descriptor, LastUnkeyedDescriptorOf(descriptor.ServiceType)))
+                return null;
 
-        private ComponentRegistration ToComponent(DescriptorRecord descriptor) =>
-            new ComponentRegistration(descriptor.ImplementationType!, KindOf(descriptor.ImplementationType!)!.Value, SingletonReasonOf(descriptor));
+            return KindOf(type) is { } kind
+                ? new ComponentRegistration(type, kind, SingletonReasonOf(descriptor))
+                : null;
+        }
 
         private static ComponentKind? KindOf(Type type) =>
             typeof(IQueryHandler).IsAssignableFrom(type) ? ComponentKind.Handler
