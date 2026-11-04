@@ -24,11 +24,12 @@ namespace Paramore.Darker.Extensions.Tests.PipelineValidation
             // Act — validate through the real container, without resolving the decorator
             var result = provider.ValidateAll();
 
-            // Assert — one Warning names the decorator, why it is Singleton and the parameter
+            // Assert — one Warning names the decorator in open generic notation, why it is Singleton and the parameter
             var captive = result.Warnings.Where(w => w.RuleId == new ValidationRuleId("CaptiveDependency")).ToList();
             var finding = captive.ShouldHaveSingleItem();
             finding.Severity.ShouldBe(ValidationSeverity.Warning);
-            finding.Source.ShouldBe("Decorator 'CaptiveDecoratorAsync`2'");
+            finding.Source.ShouldBe("Decorator 'CaptiveDecoratorAsync<,>'");
+            finding.Message.ShouldStartWith("CaptiveDecoratorAsync<,> counts as Singleton");
             finding.Message.ShouldContain("HandlerLifetime is Singleton");
             finding.Message.ShouldContain("ScopedDependency");
         }

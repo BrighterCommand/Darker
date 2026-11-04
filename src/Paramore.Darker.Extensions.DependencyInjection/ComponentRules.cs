@@ -61,9 +61,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         }
 
         private static string CaptiveMessage(ComponentRegistration component, ParameterInfo parameter) =>
-            $"{component.ImplementationType.Name} counts as Singleton because {component.SingletonReason}, but its constructor parameter "
-            + $"'{parameter.Name}' of type {parameter.ParameterType.Name} is registered Scoped, so one instance is captured for the life of the container. "
-            + $"Register {parameter.ParameterType.Name} Singleton or Transient, or change the lifetime of {component.ImplementationType.Name}. "
+            $"{TypeNames.Open(component.ImplementationType)} counts as Singleton because {component.SingletonReason}, but its constructor parameter "
+            + $"'{parameter.Name}' of type {TypeNames.Open(parameter.ParameterType)} is registered Scoped, so one instance is captured for the life of the container. "
+            + $"Register {TypeNames.Open(parameter.ParameterType)} Singleton or Transient, or change the lifetime of {TypeNames.Open(component.ImplementationType)}. "
             + RuleLinks.ReadmeLink(CaptiveDependency);
     }
 }

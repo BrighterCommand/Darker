@@ -49,6 +49,6 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <summary>Why the component counts as Singleton, or null when it does not.</summary>
         public SingletonReason? SingletonReason { get; }
 
-        public override string ToString() => $"{Kind} '{ImplementationType.Name}'";
+        public override string ToString() => $"{Kind} '{TypeNames.Open(ImplementationType)}'";
     }
 }
