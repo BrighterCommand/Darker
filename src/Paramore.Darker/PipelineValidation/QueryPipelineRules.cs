@@ -71,7 +71,7 @@ public static class QueryPipelineRules
                 RuleId = orderingRule.RuleId
             });
 
-    private static string OpenName(Type? type) => $"'{type?.Name.Split('`')[0]}'";
+    private static string OpenName(Type? type) => $"'{(type is null ? null : TypeNames.Open(type))}'";
 
     private static Specification<HandlerPipelineDescription> HandlerResolvable(IAmAComponentResolvabilityProbe probe) =>
         new(
