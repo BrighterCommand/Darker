@@ -21,4 +21,10 @@ if (result != 0)
     return result;
 }
 
+result = await ScopedDependencyIsProvidedAndDisposed.RunAsync();
+if (result != 0)
+{
+    return result;
+}
+
 return 0;
