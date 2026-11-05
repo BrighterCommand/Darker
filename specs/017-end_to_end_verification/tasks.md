@@ -255,7 +255,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - The step name names the harness (ADR 0027 Risks).
   - Commit as `ci:`.
 
-- [ ] **DOC: T4.2 — Document both projects in `.agent_instructions/project_structure.md` (ADR 0027 step 5)**
+- [x] **DOC: T4.2 — Document both projects in `.agent_instructions/project_structure.md` (ADR 0027 step 5)**
   - Add two entries.
     - `test/Paramore.Darker.SampleMinimalApi.Tests/` is an xunit v3 test that starts `samples/SampleMinimalApi` in memory through `WebApplicationFactory<Program>`, with one shared host per assembly.
     - `test/Paramore.Darker.Tests.EndToEnd/` is a console harness that runs scenarios in a Generic Host with no ASP.NET Core and reports through its exit code. CI runs it as its own step.
