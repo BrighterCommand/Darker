@@ -123,7 +123,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.3 — `GET /people/{id}` returns the name for a known id (FR2; AC2)**
+- [x] **CHARACTERISE: T2.3 — `GET /people/{id}` returns the name for a known id (FR2; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting a known person by id should return success and that person's name`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_a_known_person_should_return_their_name.cs` (class `PersonNameEndpointTests`, `[Collection("SampleMinimalApi")]`)
