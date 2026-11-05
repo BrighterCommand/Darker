@@ -5,6 +5,10 @@
 - `src/Paramore.Darker.Extensions.AspNetCore/` - ASP.NET Core request-scope opt-in (`AddDarkerRequestScope`)
 - `src/Paramore.Darker.Testing/` - Testing utilities
 - `test/` - Test suites organized by component
+- `test/Paramore.Darker.SampleMinimalApi.Tests/` - xunit v3 test that starts `samples/SampleMinimalApi` in memory through `WebApplicationFactory<Program>`, with one shared host per assembly
+- `test/Paramore.Darker.Tests.EndToEnd/` - Console harness that runs scenarios in a Generic Host with no ASP.NET Core and reports through its exit code; CI runs it as its own step
+
+Both end-to-end projects use only public API and project references.
 
 ## Testing Framework
 
