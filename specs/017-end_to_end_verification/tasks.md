@@ -184,7 +184,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register them with `AddHandlers`, `AddAsyncHandlers` and `AddStreamHandlers`. Do not use assembly scanning.
     - In `Program.cs`, call `ValidConfigurationRunsSyncAsyncAndStreamQueries.RunAsync()` and return its result when it is non-zero, before `return 0;`.
 
-- [ ] **CHARACTERISE: T3.2 — A retry pipeline recovers a handler that fails on its first call (FR8; NFR4; AC5)**
+- [x] **CHARACTERISE: T3.2 — A retry pipeline recovers a handler that fails on its first call (FR8; NFR4; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when an async handler fails on its first call and is decorated with a retry resilience pipeline should return the handler's result after exactly two calls`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `RetryPipelineRecoversATransientFailure.cs`
