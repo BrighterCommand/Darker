@@ -150,7 +150,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.5 — `GET /request-scope` returns the same id for the endpoint and the handler (FR4; AC3)**
+- [x] **CHARACTERISE: T2.5 — `GET /request-scope` returns the same id for the endpoint and the handler (FR4; AC3)**
   - **USE COMMAND**: `/tdd:test-first when getting the request scope should return the same correlation id for the endpoint and the handler`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_the_request_scope_should_return_the_same_id_for_endpoint_and_handler.cs` (class `RequestScopeEndpointTests`, `[Collection("SampleMinimalApi")]`)
