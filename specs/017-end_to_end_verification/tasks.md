@@ -242,7 +242,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 4 — CI and docs
 
-- [ ] **SETUP: T4.1 — Run the harness for net8.0 and net9.0 in CI, after the test step (FR13; AC6; ADR 0027 step 4)**
+- [x] **SETUP: T4.1 — Run the harness for net8.0 and net9.0 in CI, after the test step (FR13; AC6; ADR 0027 step 4)**
   - In `.github/workflows/dotnet-core.yml`, add this step immediately after `- name: Core Tests`:
     ```yaml
     - name: End-to-end harness (Paramore.Darker.Tests.EndToEnd)
