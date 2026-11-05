@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Paramore.Darker.Core.Tests.TestDoubles;
+using Paramore.Darker.Extensions.Tests.TestDoubles;
 using Paramore.Darker.Extensions.DependencyInjection;
 using Paramore.Darker.Policies;
 using Polly.Registry;

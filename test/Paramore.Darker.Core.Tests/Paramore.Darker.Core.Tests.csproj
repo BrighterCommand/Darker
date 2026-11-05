@@ -4,9 +4,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Paramore.Darker.Extensions.Tests" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Paramore.Darker.Extensions.DependencyInjection\Paramore.Darker.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker.Testing\Paramore.Darker.Testing.csproj" />
     <ProjectReference Include="..\..\src\Paramore.Darker\Paramore.Darker.csproj" />

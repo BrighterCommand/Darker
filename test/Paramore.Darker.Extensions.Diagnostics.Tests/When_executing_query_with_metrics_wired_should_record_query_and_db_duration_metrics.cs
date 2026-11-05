@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Paramore.Darker;
 using Paramore.Darker.Observability;
@@ -74,11 +75,14 @@ public class EndToEndMetricsFromQueryExecutionTests
     // WithMetrics is wired BEFORE WithTracing so the meter registrations are visible when the
     // tracer builder's AddDarkerInstrumentation checks for them (the ConfigureServices callback
     // runs immediately at call time, not lazily at provider-build time).
-    private static ServiceProvider BuildStackWithMetrics(List<Metric> metrics)
+    private static ServiceProvider BuildStackWithMetrics(List<Metric> metrics, string? serviceName = null)
     {
         var services = new ServiceCollection();
         services.TryAddSingleton<IMeterFactory, TestMeterFactory>();
-        services.AddOpenTelemetry()
+        var openTelemetry = services.AddOpenTelemetry();
+        if (serviceName is not null)
+            openTelemetry.ConfigureResource(r => r.AddService(serviceName));
+        openTelemetry
             .WithMetrics(b => b.AddDarkerInstrumentation().AddInMemoryExporter(metrics))
             .WithTracing(b => b.AddDarkerInstrumentation());
         return services.BuildServiceProvider();
@@ -157,6 +161,31 @@ public class EndToEndMetricsFromQueryExecutionTests
         var allTags = metrics.SelectMany(TagKeys).ToList();
         allTags.ShouldNotContain(DarkerSemanticConventions.QueryBody);
         allTags.ShouldNotContain(k => k.StartsWith("spancontext", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void When_executing_query_with_a_named_service_should_record_service_name_dimension()
+    {
+        //Arrange
+        var metrics = new List<Metric>();
+        using var sp = BuildStackWithMetrics(metrics, serviceName: "svc-a");
+        var tracerProvider = sp.GetRequiredService<TracerProvider>();
+        var meterProvider = sp.GetRequiredService<MeterProvider>();
+        var processor = CreateDbQueryProcessor(sp.GetRequiredService<IAmADarkerTracer>());
+
+        //Act
+        processor.Execute(new DbQuery());
+        tracerProvider.ForceFlush();
+        meterProvider.ForceFlush();
+
+        //Assert — the service identity from the meter provider's resource rides on the query metric
+        var queryMetric = metrics.Single(m => m.Name == DarkerSemanticConventions.QueryDurationMetricName);
+        var serviceNames = new List<object?>();
+        foreach (var point in queryMetric.GetMetricPoints())
+            foreach (var tag in point.Tags)
+                if (tag.Key == DarkerSemanticConventions.ServiceName)
+                    serviceNames.Add(tag.Value);
+        serviceNames.ShouldBe(new object?[] { "svc-a" });
     }
 
     [Fact]
