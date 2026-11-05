@@ -45,7 +45,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 1 — Scaffolding (setup)
 
-- [ ] **STRUCTURAL: T1.1 — Let tests name the sample's `Program` type (ADR 0027 Implementation Approach step 1; NFR6; AC8)**
+- [x] **STRUCTURAL: T1.1 — Let tests name the sample's `Program` type (ADR 0027 Implementation Approach step 1; NFR6; AC8)**
   - Add one line, `public partial class Program;`, after `app.Run();` at the end of `samples/SampleMinimalApi/Program.cs`. On net8.0 and net9.0 the compiler generates `Program` as internal, so without this line `WebApplicationFactory<Program>` would need `InternalsVisibleTo`.
   - Change nothing else in the sample. AC8 allows exactly one changed line.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds. `dotnet test Darker.Filter.slnf -c Release` is green before and after. Commit as `refactor:`.
