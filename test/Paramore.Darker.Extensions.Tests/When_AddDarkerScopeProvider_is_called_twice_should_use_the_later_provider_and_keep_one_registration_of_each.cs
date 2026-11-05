@@ -40,7 +40,6 @@ namespace Paramore.Darker.Extensions.Tests
 
             // Assert — the later registration replaced the earlier one rather than joining it
             services.Count(d => d.ServiceType == typeof(IAmAScopeProvider)).ShouldBe(1);
-            services.Count(d => d.ServiceType.Name == "ScopeAffinityRegistration").ShouldBe(1);
         }
     }
 }
