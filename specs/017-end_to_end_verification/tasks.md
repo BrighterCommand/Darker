@@ -110,7 +110,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change. T1.1, T1.3 and T1.4 deliver this.
 
-- [ ] **CHARACTERISE: T2.2 — `GET /people` returns every person in the repository (FR2; AC2)**
+- [x] **CHARACTERISE: T2.2 — `GET /people` returns every person in the repository (FR2; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting people should return success and every person in the sample repository`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_people_should_return_every_person_in_the_repository.cs` (class `PeopleEndpointTests`, `[Collection("SampleMinimalApi")]`)
