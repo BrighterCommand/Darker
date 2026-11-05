@@ -50,7 +50,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Change nothing else in the sample. AC8 allows exactly one changed line.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds. `dotnet test Darker.Filter.slnf -c Release` is green before and after. Commit as `refactor:`.
 
-- [ ] **SETUP: T1.2 — Add a central package version for `Microsoft.AspNetCore.Mvc.Testing` (ADR 0027 "Where each type is touched", `Directory.Packages.props` row; Constraints, central package version)**
+- [x] **SETUP: T1.2 — Add a central package version for `Microsoft.AspNetCore.Mvc.Testing` (ADR 0027 "Where each type is touched", `Directory.Packages.props` row; Constraints, central package version)**
   - Add `PackageVersion` entries for `Microsoft.AspNetCore.Mvc.Testing` to `Directory.Packages.props`.
   - Version choice:
     - The package's major version must match the ASP.NET Core shared framework of each target framework: 8.0.x for net8.0 and 9.0.x for net9.0.
