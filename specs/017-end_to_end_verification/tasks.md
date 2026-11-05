@@ -135,7 +135,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.4 — `GET /flaky` returns the success text after the retry pipeline recovers the first failure (FR3; AC2)**
+- [x] **CHARACTERISE: T2.4 — `GET /flaky` returns the success text after the retry pipeline recovers the first failure (FR3; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting the flaky result should return success and the text saying it succeeded on attempt 2 after a transient failure`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_the_flaky_result_should_return_the_success_text_after_a_retry.cs` (class `FlakyEndpointTests`, `[Collection("SampleMinimalApi")]`)
