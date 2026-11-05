@@ -69,7 +69,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Add the project to `Darker.slnx` under `/test/`, with the same four `<Configuration …>` mappings as its siblings. Add `test\\Paramore.Darker.SampleMinimalApi.Tests\\Paramore.Darker.SampleMinimalApi.Tests.csproj` to `Darker.Filter.slnf`.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds for net8.0 and net9.0. `dotnet test Darker.Filter.slnf -c Release` stays green; the new project has no tests yet.
 
-- [ ] **SETUP: T1.4 — Risk mitigation: one shared sample host for the whole assembly, which protects the static logger factory (NFR5; ADR 0027 Risks, "Disposing the factory disposes a real `ILoggerFactory`")**
+- [x] **SETUP: T1.4 — Risk mitigation: one shared sample host for the whole assembly, which protects the static logger factory (NFR5; ADR 0027 Risks, "Disposing the factory disposes a real `ILoggerFactory`")**
   - Add `test/Paramore.Darker.SampleMinimalApi.Tests/SampleMinimalApiCollection.cs`:
     - `[CollectionDefinition("SampleMinimalApi", DisableParallelization = true)] public sealed class SampleMinimalApiCollection : ICollectionFixture<WebApplicationFactory<Program>>`;
     - an XML summary that explains the static `ApplicationLogging.LoggerFactory` hazard, following `test/Paramore.Darker.Extensions.AspNetCore.Tests/DarkerHostBootstrapCollection.cs`.
