@@ -15,4 +15,10 @@ if (result != 0)
     return result;
 }
 
+result = await RetryPipelineRecoversATransientFailure.RunAsync();
+if (result != 0)
+{
+    return result;
+}
+
 return 0;
