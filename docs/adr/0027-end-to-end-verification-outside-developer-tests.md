@@ -147,8 +147,8 @@ The arrows point from user to dependency. Nothing in `src/` references either ne
 
 | Role | Type | Responsibilities | Responsibility classifier | Collaborators |
 | --- | --- | --- | --- | --- |
-| Starts the sample in memory | `WebApplicationFactory<Program>` fixture, one per test class | Builds the sample host once, shares it across tests, disposes it at the end | **doing** | `SampleMinimalApi`, the test class |
-| Knows what the sample promises | `SampleEndpointsTests` | Holds the expected status codes and bodies for each endpoint | **knowing** | The fixture's `HttpClient` |
+| Starts the sample in memory | `WebApplicationFactory<Program>` collection fixture, shared by every sample test class | Builds the sample host once, shares it across all tests in the assembly, disposes it at the end | **doing** | `SampleMinimalApi`, the test class |
+| Knows what the sample promises | One test class per endpoint (for example `PeopleEndpointTests`) | Holds the expected status code and body for its endpoint | **knowing** | The fixture's `HttpClient` |
 | Runs scenarios and decides pass or fail | `Program` in the harness | Runs scenarios in order, stops at the first non-zero result and returns it as the exit code | **deciding** | The scenarios |
 | Exercises one behaviour | One class per scenario | Builds a host, runs queries, compares results and returns 0 or non-zero | **doing** | Generic Host, `IQueryProcessor` |
 | Provides the handlers the scenarios query | Harness `Handlers/` types | Answer fixed queries, including one that fails once | **knowing** | The scenarios |
@@ -160,7 +160,7 @@ The roles split on one line. The fixture and the scenarios start things. The tes
 | Assembly | Type | Change |
 | --- | --- | --- |
 | `SampleMinimalApi` | `Program` | Adds `public partial class Program;` so the factory can name it |
-| `Paramore.Darker.SampleMinimalApi.Tests` | Test project, fixture, `SampleEndpointsTests` | New |
+| `Paramore.Darker.SampleMinimalApi.Tests` | Test project, collection fixture, one test class per endpoint | New |
 | `Paramore.Darker.Tests.EndToEnd` | Console project, scenarios, handlers | New |
 | `Directory.Packages.props` | `Microsoft.AspNetCore.Mvc.Testing` | New central package version |
 | `Darker.slnx`, `Darker.Filter.slnf` | Both new projects | Added |
@@ -178,6 +178,10 @@ The factory starts the host in memory, so the test needs no port, no process man
 
 The harness follows `Paramore.Darker.Tests.AOT`, which is already the precedent for a program that runs outside a test runner. It also proves that Darker needs nothing from a test framework at run time. A later decision can publish the same harness for AOT without a rewrite.
 
+#### Why a collection fixture and not a class fixture?
+
+The sample tests follow the repository rule of one test per file, so there are several test classes. A class fixture builds one host for each class. A collection fixture builds one host for all of them, which keeps the single shared host that protects the static logger factory. The `DarkerHostBootstrap` collection already sets this precedent.
+
 #### Why project references and not packed packages?
 
 Project references are fast and need no local feed. They do not prove packaging. That gap is accepted and stated under Consequences.
@@ -185,7 +189,7 @@ Project references are fast and need no local feed. They do not prove packaging.
 ### Implementation Approach
 
 1. **Structural.** Add `public partial class Program;` to the sample.
-2. **Behavioural.** Add `Microsoft.AspNetCore.Mvc.Testing` to `Directory.Packages.props`. Create `Paramore.Darker.SampleMinimalApi.Tests`, add it to `Darker.slnx` and `Darker.Filter.slnf`, and write one test per endpoint using a single shared fixture.
+2. **Behavioural.** Add `Microsoft.AspNetCore.Mvc.Testing` to `Directory.Packages.props`. Create `Paramore.Darker.SampleMinimalApi.Tests`, add it to `Darker.slnx` and `Darker.Filter.slnf`, and write one test class per endpoint, all sharing one collection fixture.
 3. **Behavioural.** Create `Paramore.Darker.Tests.EndToEnd` with the four scenarios, one commit per scenario, and add it to the solution files.
 4. **Behavioural.** Add a CI step after the test step that runs the harness for `net8.0` and `net9.0`.
 5. **Documentation.** Update `.agent_instructions/project_structure.md` with the two projects.
@@ -212,7 +216,7 @@ Each test and scenario is written test-first through `/tdd:test-first`. Each is 
 
 | Risk | Mitigation |
 | --- | --- |
-| Disposing the factory disposes a real `ILoggerFactory` that `AddDarker` stored globally, and breaks later static loggers | The sample test is its own assembly, so no other test shares the process. One shared fixture builds the host once |
+| Disposing the factory disposes a real `ILoggerFactory` that `AddDarker` stored globally, and breaks later static loggers | The sample test is its own assembly, so no other test shares the process. One shared collection fixture builds the host once |
 | The harness runs only in its own CI step and is forgotten when the workflow changes | The step names the harness, and the harness is in `Darker.Filter.slnf`, so a build break fails CI too |
 | Scenarios depend on timing in the retry pipeline | The retry handler fails by call count, never by delay, and the pipeline uses no delay in the harness |
 | The sample changes and the test lags | The sample test lives beside the sample in the solution and fails when an endpoint's body changes |
