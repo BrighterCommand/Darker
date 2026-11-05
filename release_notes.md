@@ -7,6 +7,16 @@ refreshes those sections.
 
 ## Master
 
+### Validate query pipelines when the host starts (spec 016, #305)
+<!-- spec: 016-pipeline_validation -->
+
+`ValidatePipelines()` is a new opt-in on the `AddDarker` chain. When the host starts, it checks every registered handler and its decorator pipeline, and reports all problems at once instead of one at a time on the first query: a missing or non-public handler, a handler on the wrong interface, a decorator attribute on the wrong path, an unregistered handler or decorator, a duplicate `Step`, and a fallback placed inside a retry. It also checks lifetimes and scopes: `InertScopeAffinity`, `CaptiveDependency` and `DuplicateScopeProvider`. Errors stop the host unless you pass `throwOnError: false`. Call it last, after `AddDarker`, handler registration, the scope provider and your handlers' dependencies, because the lifetime rules read a snapshot taken at that call. `provider.ValidateAll()` runs every validator on demand and returns one combined result, for a test or a health check. No existing signature changed, and nothing changes for an application that does not call `ValidatePipelines()`. The README lists each rule with its cause and fix.
+
+#### Breaking changes
+
+- `Paramore.Darker.Extensions.DependencyInjection` now references `Microsoft.Extensions.Hosting.Abstractions`, and so its transitive abstractions, even if you never opt in. *(compatibility)* Check for version conflicts with your own hosting packages.
+- An internal handler that you register explicitly still runs, but fails validation once you call `ValidatePipelines()`. *(behavioural)* Make the handler public.
+
 ### Share the request scope with Brighter and harden pipeline teardown (spec 015, #377)
 <!-- spec: 015-di_lifetime_conformance -->
 

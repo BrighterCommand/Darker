@@ -14,17 +14,27 @@ namespace Paramore.Darker.Extensions.DependencyInjection
 
         public IServiceCollection Services { get; }
 
+        internal DarkerOptions Options { get; }
+
+        internal ServiceCollectionHandlerRegistry SyncRegistry => _registry;
+
+        internal ServiceCollectionHandlerRegistryAsync AsyncRegistry => _registryAsync;
+
+        internal ServiceCollectionStreamHandlerRegistry StreamRegistry => _registryStream;
+
         public ServiceCollectionDarkerHandlerBuilder(ServiceCollectionHandlerRegistry registry,
             ServiceCollectionHandlerRegistryAsync registryAsync,
             ServiceCollectionStreamHandlerRegistry registryStream,
             ServiceCollectionDecoratorRegistry decoratorRegistry,
-            IServiceCollection services)
+            IServiceCollection services,
+            DarkerOptions options)
         {
             _registry = registry;
             _registryAsync = registryAsync;
             _registryStream = registryStream;
             _decoratorRegistry = decoratorRegistry;
             Services = services;
+            Options = options;
         }
 
         public IDarkerHandlerBuilder AddHandlersFromAssemblies(params Assembly[] assemblies)

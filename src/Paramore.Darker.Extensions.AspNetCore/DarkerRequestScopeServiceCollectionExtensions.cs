@@ -44,8 +44,9 @@ namespace Paramore.Darker.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException"><paramref name="services"/> is null.</exception>
         /// <remarks>
         /// <para>
-        /// Adoption requires <c>HandlerLifetime = Scoped</c>. The order of this call relative to
-        /// <c>AddDarker</c> does not matter.
+        /// Adoption requires <c>HandlerLifetime = Scoped</c>. Call this before <c>ValidatePipelines()</c>, because
+        /// the lifetime validation reads a snapshot of the service collection taken at that call and would not
+        /// see a scope provider registered afterwards.
         /// </para>
         /// <para>
         /// Queries in one request share the request scope's Scoped services, including a Scoped handler instance

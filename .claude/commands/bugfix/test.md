@@ -1,6 +1,6 @@
 ---
 allowed-tools: Bash(cat:*), Bash(test:*), Bash(ls:*), Bash(echo:*), Bash(dotnet:*), Read, Write, Edit, Glob, Grep, AskUserQuestion
-description: Write the failing regression test for a confirmed bug (delegates to /test-first)
+description: Write the failing regression test for a confirmed bug (delegates to /tdd:test-first)
 argument-hint: (no arguments — operates on the active bug)
 ---
 
@@ -14,7 +14,7 @@ Confirm gate: !`test -f bugfixes/$(cat bugfixes/.current-bug 2>/dev/null)/.confi
 **Workflow**: Issue → Triage → Confirm (✋ gate) → **Test-first (✋ gate)** → Fix → Verify
 
 Write the **failing regression test** that pins the confirmed bug. This step is a thin wrapper
-around `/test-first` — it carries the confirmed diagnosis in, and `/test-first`'s own
+around `/tdd:test-first` — it carries the confirmed diagnosis in, and `/tdd:test-first`'s own
 IDE-approval gate governs the test before any implementation.
 
 > **Always gated.** The TDD review gear ([`spec/gear.md`](../spec/gear.md)) is a spec-workflow
@@ -37,25 +37,25 @@ IDE-approval gate governs the test before any implementation.
 3. Read `bugfixes/{current-bug}/bugfix.md` for the Confirmed Root Cause, Evidence, and **Scope
    Notes** (the test set must also cover any additional defects surfaced at Confirm).
 
-### Step 2: Delegate to /test-first
+### Step 2: Delegate to /tdd:test-first
 
-Hand the confirmed behaviour to the `/test-first` workflow. Frame the behaviour from the
+Hand the confirmed behaviour to the `/tdd:test-first` workflow. Frame the behaviour from the
 **Confirmed Root Cause**, not the raw symptom — e.g.
-`/test-first when a query handler throws and a [FallbackPolicy] decorator is in the pipeline the
+`/tdd:test-first when a query handler throws and a [FallbackPolicy] decorator is in the pipeline the
 fallback runs because the TargetInvocationException is unwrapped before the policy's exception
 predicate is evaluated`.
 
-Follow `/test-first` exactly:
+Follow `/tdd:test-first` exactly:
 - 🔴 RED: write the test per `.agent_instructions/testing.md` conventions
   (`When_[condition]_should_[behavior]`, one test per file, Arrange/Act/Assert, Evident Data,
   real/Simple/InMemory* test doubles over mocks, public exports only) and run it to confirm it
   fails for the right reason.
-- ✋ **APPROVAL GATE**: `/test-first` requires explicit user approval of the test before any
+- ✋ **APPROVAL GATE**: `/tdd:test-first` requires explicit user approval of the test before any
   implementation. Honour it — do not write the fix here. This gate is unconditional in the bugfix
   workflow; there is no gear to shift.
 
 If the Scope Notes listed additional defects (including a sync/async pipeline parity twin), write
-a failing test for each (run `/test-first` once per behaviour) so the fix can't leave a known
+a failing test for each (run `/tdd:test-first` once per behaviour) so the fix can't leave a known
 defect uncovered.
 
 ### Step 3: Record the Test

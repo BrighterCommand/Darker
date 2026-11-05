@@ -6,8 +6,9 @@ using Paramore.Darker.Exceptions;
 
 namespace Paramore.Darker
 {
-    public class QueryHandlerRegistryAsync : IQueryHandlerRegistryAsync
+    public class QueryHandlerRegistryAsync : IQueryHandlerRegistryAsync, IAmAHandlerRegistryInspector
     {
+        private readonly RegistrationLog _registrations = new RegistrationLog();
         private readonly IDictionary<Type, IResolveHandlers> _registry;
 
         public QueryHandlerRegistryAsync()
@@ -36,6 +37,7 @@ namespace Paramore.Darker
                 throw new ConfigurationException($"Result type not valid for query {queryType.Name}");
 
             _registry.Add(queryType, new FixedHandlerRoute(handlerType));
+            _registrations.RecordFixed(queryType, resultType, handlerType);
         }
 
         private static bool HasMatchingResultType(Type queryType, Type resultType)
@@ -62,7 +64,11 @@ namespace Paramore.Darker
 
             Func<IQuery, IQueryContext, Type?> typeErasedRouter = (q, ctx) => router((TQuery)q, ctx);
             _registry.Add(queryType, new RoutedHandlers(queryType, typeErasedRouter, candidateHandlerTypes));
+            _registrations.RecordRouted(queryType, typeof(TResult), candidateHandlerTypes);
         }
+
+        /// <inheritdoc />
+        public IReadOnlyList<HandlerRegistration> GetRegistrations() => _registrations.Snapshot();
 
         public void RegisterFromAssemblies(IEnumerable<Assembly> assemblies)
         {
