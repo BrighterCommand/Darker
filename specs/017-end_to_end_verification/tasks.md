@@ -59,7 +59,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Use no floating versions. Central Package Management does not have floating versions enabled.
   - Build success is checked in T1.3, the first consumer. This commit changes only `Directory.Packages.props`.
 
-- [ ] **SETUP: T1.3 — Create `test/Paramore.Darker.SampleMinimalApi.Tests` and add it to both solution files (ADR 0027 step 2; FR12; FR14; NFR1; NFR5 separate assembly)**
+- [x] **SETUP: T1.3 — Create `test/Paramore.Darker.SampleMinimalApi.Tests` and add it to both solution files (ADR 0027 step 2; FR12; FR14; NFR1; NFR5 separate assembly)**
   - New `test/Paramore.Darker.SampleMinimalApi.Tests/Paramore.Darker.SampleMinimalApi.Tests.csproj`. Model it on `test/Paramore.Darker.Extensions.AspNetCore.Tests/Paramore.Darker.Extensions.AspNetCore.Tests.csproj`:
     - `Microsoft.NET.Sdk`, `<TargetFrameworks>net8.0;net9.0</TargetFrameworks>`, `<IsPackable>false</IsPackable>`, `<Nullable>enable</Nullable>`;
     - `<FrameworkReference Include="Microsoft.AspNetCore.App" />`;
