@@ -1,7 +1,7 @@
 ---
 id: 0027-end-to-end-verification-outside-developer-tests
 title: "End-to-End Verification Outside Developer Tests"
-status: Proposed
+status: Accepted
 author:
   - "Ian Cooper"
 created: 2026-11-05
@@ -18,7 +18,7 @@ Date: 2026-11-05
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
