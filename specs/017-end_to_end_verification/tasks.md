@@ -95,7 +95,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 2 — Sample endpoints (characterise)
 
-- [ ] **CHARACTERISE: T2.1 — The sample starts with pipeline validation enabled, and validation finds no errors (FR1; FR5; AC1)**
+- [x] **CHARACTERISE: T2.1 — The sample starts with pipeline validation enabled, and validation finds no errors (FR1; FR5; AC1)**
   - **USE COMMAND**: `/tdd:test-first when the sample starts should have registered pipeline validation and report no validation errors`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_the_sample_starts_should_validate_its_pipelines_and_find_no_errors.cs` (class `SampleStartupTests`, `[Collection("SampleMinimalApi")]`)
