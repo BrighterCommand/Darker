@@ -79,7 +79,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Risk check: if the content root does not resolve (the repo uses `.slnx`, and older `WebApplicationFactory` fallbacks search for `*.sln`), stop and ask. Do not add a content-root override without approval.
   - The build succeeds and the suite stays green.
 
-- [ ] **SETUP: T1.5 — Create the `test/Paramore.Darker.Tests.EndToEnd` console harness with an empty runner, and add it to both solution files (ADR 0027 step 3; FR6; FR11 runner; FR14; AC9)**
+- [x] **SETUP: T1.5 — Create the `test/Paramore.Darker.Tests.EndToEnd` console harness with an empty runner, and add it to both solution files (ADR 0027 step 3; FR6; FR11 runner; FR14; AC9)**
   - New `test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj`. Model it on `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj`:
     - `Microsoft.NET.Sdk`, `<OutputType>Exe</OutputType>`, `<TargetFrameworks>net8.0;net9.0</TargetFrameworks>`, `<IsPackable>false</IsPackable>`, `<Nullable>enable</Nullable>`;
     - **no** `PublishAot` or `TrimMode`, because AOT is out of scope;
