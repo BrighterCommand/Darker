@@ -7,4 +7,12 @@
 // returns a non-zero result and exits with that result; it exits 0 when every
 // scenario passes.
 
+using Paramore.Darker.Tests.EndToEnd.Scenarios;
+
+var result = await ValidConfigurationRunsSyncAsyncAndStreamQueries.RunAsync();
+if (result != 0)
+{
+    return result;
+}
+
 return 0;
