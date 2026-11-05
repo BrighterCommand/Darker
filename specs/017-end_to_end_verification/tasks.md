@@ -201,7 +201,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - In the scenario, build a `ResiliencePipelineRegistry<string>` with `"EndToEnd.Retry"`: `AddRetry` with `ShouldHandle` for that exception only, `MaxRetryAttempts = 1` and `Delay = TimeSpan.Zero`. Pass it to `.AddResiliencePipelines(…)` before `.ValidatePipelines()`.
     - Append the scenario to `Program.cs` after T3.1's.
 
-- [ ] **CHARACTERISE: T3.3 — A Scoped dependency is provided to the handler and disposed when the query ends (FR9; AC5)**
+- [x] **CHARACTERISE: T3.3 — A Scoped dependency is provided to the handler and disposed when the query ends (FR9; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when a Scoped handler takes a Scoped disposable dependency should receive an undisposed instance during the query and the host should dispose it after the query ends`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `ScopedDependencyIsProvidedAndDisposed.cs`
