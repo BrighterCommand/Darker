@@ -26,7 +26,7 @@ Which review mode applies is called the **gear** (see
 
 **This command runs `review-before` unless the invoking command states otherwise in its prompt.**
 
-- Invoked directly by the user (`/test-first <behavior>`) → **`review-before`**, always. Do **not**
+- Invoked directly by the user (`/tdd:test-first <behavior>`) → **`review-before`**, always. Do **not**
   read `specs/*/.current-gear` yourself. A standalone run must never inherit a mode it did not ask
   for from whichever spec happens to be current.
 - Invoked by `/bugfix:test` → **`review-before`**, always. Bugfixes are outside this mechanism.
@@ -222,7 +222,7 @@ After completing all phases:
 ## Example Session
 
 ```
-User: /test-first when a query handler is not registered it should throw QueryHandlerNotFoundException
+User: /tdd:test-first when a query handler is not registered it should throw QueryHandlerNotFoundException
 
 RED: Writing test When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException
 
@@ -267,4 +267,4 @@ Should I commit these changes?
 - The gate is armed by default; `/spec:gear` is the only supported way to disarm it, and it does so
   for one spec (optionally one section of its task list) at a time
 - Following this workflow provides scope control and better design
-- You may run `/test-first` multiple times to build up functionality incrementally
+- You may run `/tdd:test-first` multiple times to build up functionality incrementally

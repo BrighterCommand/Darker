@@ -10,11 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<RequestCorrelation>();
 
 // Scoped handlers plus AddDarkerRequestScope() let a handler share the request's Scoped services.
+// Register the request scope before the chain, and end the chain with ValidatePipelines(), so the
+// validation sees every registration.
+builder.Services.AddDarkerRequestScope();
 builder.Services.AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)
     .AddHandlersFromAssemblies(typeof(GetPeopleQuery).Assembly)
     .AddJsonQueryLogging()
-    .AddResiliencePipelines(DarkerSettings.ConfigureResiliencePipelines());
-builder.Services.AddDarkerRequestScope();
+    .AddResiliencePipelines(DarkerSettings.ConfigureResiliencePipelines())
+    .ValidatePipelines();
 
 var app = builder.Build();
 

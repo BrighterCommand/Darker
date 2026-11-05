@@ -267,7 +267,7 @@ You are a skeptical reviewer. Assume the task list has problems — your job is 
 
 **Test-First Framing:**
 - Does every behavioral task follow the pattern: write test -> get approval -> implement -> refactor?
-- Does each TEST task specify a `/test-first` command?
+- Does each TEST task specify a `/tdd:test-first` command?
 
 **Ordering and Dependencies:**
 - Are dependencies between tasks explicit?

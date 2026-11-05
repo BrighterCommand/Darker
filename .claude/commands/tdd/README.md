@@ -4,17 +4,17 @@ This directory contains Claude Code commands that enforce Test-Driven Developmen
 
 ## Commands
 
-### `/test-first <behavior description>`
+### `/tdd:test-first <behavior description>`
 
 Guides you through the Red-Green-Refactor TDD cycle with an **approval gate** before implementation. The gate is armed by default; a standalone
-`/test-first` is always gated, and only a spec command running in the `review-after` gear
+`/tdd:test-first` is always gated, and only a spec command running in the `review-after` gear
 (`/spec:gear`) skips the pause.
 
 **Purpose**: Ensures you write and approve tests before writing implementation code, preventing scope creep and promoting better design.
 
 **Usage:**
 ```bash
-/test-first when a query handler throws it should invoke the fallback policy
+/tdd:test-first when a query handler throws it should invoke the fallback policy
 ```
 
 **Workflow:**
@@ -58,7 +58,7 @@ This command enforces that requirement automatically, ensuring:
 
 ## Integration with Spec Workflow
 
-The `/test-first` command can be used standalone or as part of the [specification workflow](../spec/README.md).
+The `/tdd:test-first` command can be used standalone or as part of the [specification workflow](../spec/README.md).
 
 - **Standalone**: Use anytime you want to add behavior with TDD
 - **With /spec:implement**: The spec implement command uses the same TDD workflow with approval gates
@@ -66,7 +66,7 @@ The `/test-first` command can be used standalone or as part of the [specificatio
 ## Best Practices
 
 1. **Start small**: Write the simplest test that moves you toward your goal
-2. **One behavior at a time**: Use `/test-first` multiple times to build up functionality
+2. **One behavior at a time**: Use `/tdd:test-first` multiple times to build up functionality
 3. **Review the test carefully**: The test is your specification - make sure it's correct before approving
 4. **Trust the process**: Don't skip ahead to implementation - the approval gate is there for a reason
 5. **Refactor regularly**: Take advantage of the refactor phase to improve design while tests are green

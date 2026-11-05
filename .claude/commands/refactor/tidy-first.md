@@ -127,7 +127,7 @@ refactor: [brief description of structural changes]
 **Now you can change behavior.**
 
 **If adding significant new behavior:**
-- Suggest using `/test-first` command instead
+- Suggest using `/tdd:test-first` command instead
 - Tidy First is best for changes with both refactoring and behavior modifications
 - Pure feature additions work better with TDD workflow
 
@@ -167,10 +167,10 @@ Show the user:
 
 **Not a good fit:**
 - Pure refactoring (no behavioral changes planned)
-- Pure feature addition (use `/test-first` instead)
+- Pure feature addition (use `/tdd:test-first` instead)
 - Trivial changes that don't need structural cleanup
 
 ## Related Commands
 
-- **`/test-first`** - Use for pure feature addition with TDD
+- **`/tdd:test-first`** - Use for pure feature addition with TDD
 - **`/spec:implement`** - Uses TDD workflow, could benefit from tidy-first approach

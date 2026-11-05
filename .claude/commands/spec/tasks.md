@@ -66,13 +66,13 @@ prompt MUST include:
 
 #### CRITICAL: TDD Task Format (include verbatim in the sub-agent prompt)
 
-**MANDATORY**: When creating TEST tasks, you MUST format them to enforce `/test-first` skill usage.
+**MANDATORY**: When creating TEST tasks, you MUST format them to enforce `/tdd:test-first` skill usage.
 
 ##### Task Template
 
 ```markdown
 - [ ] **TEST + IMPLEMENT: [Behavior description]**
-  - **USE COMMAND**: `/test-first [behavior description for command]`
+  - **USE COMMAND**: `/tdd:test-first [behavior description for command]`
   - Test location: "[test directory path]"
   - Test file: `[When_condition_should_behavior.cs]`
   - Test should verify:
@@ -88,7 +88,7 @@ prompt MUST include:
 
 ```markdown
 - [ ] **TEST + IMPLEMENT: QueryProcessor throws when handler not registered**
-  - **USE COMMAND**: `/test-first when query handler not registered should throw QueryHandlerNotFoundException`
+  - **USE COMMAND**: `/tdd:test-first when query handler not registered should throw QueryHandlerNotFoundException`
   - Test location: "test/Paramore.Darker.Core.Tests"
   - Test file: `When_query_handler_not_registered_should_throw_QueryHandlerNotFoundException.cs`
   - Test should verify:
@@ -104,7 +104,7 @@ prompt MUST include:
 
 ##### Why This Format?
 
-1. **Visible command**: The `/test-first` command is prominently displayed
+1. **Visible command**: The `/tdd:test-first` command is prominently displayed
 2. **Stop sign**: The ⛔ and "STOP HERE" make the approval gate unmissable
 3. **Single task**: Combines TEST + IMPLEMENT so workflow is clear
 4. **Complete context**: All details needed for test and implementation
@@ -201,7 +201,7 @@ After the sub-agent returns:
      or is missing, send it back to the sub-agent. This is deliberately a **sampling check, not
      full verification** — the exhaustive adversarial coverage review is `/spec:review tasks`,
      which the user is prompted to run before approval.
-   - Each behavioral task uses the `TEST + IMPLEMENT` template with `/test-first` and the
+   - Each behavioral task uses the `TEST + IMPLEMENT` template with `/tdd:test-first` and the
      `⛔ APPROVAL GATE` line — none are split into separate TEST/IMPLEMENT tasks, and none omit
      the gate line.
    - Every task opens with its tag, tag first; every `CHARACTERISE` task names its RED mutation.
