@@ -234,7 +234,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register it with `AddAsyncHandlers`, and deliberately omit `.AddJsonQueryLogging()` from the chain, which still ends with `.ValidatePipelines()`.
     - Append the scenario to `Program.cs` as the last scenario.
 
-- [ ] **VERIFY: T3.5 — The harness exits 0 on both frameworks, and exits with the first non-zero result (FR11; AC5)**
+- [x] **VERIFY: T3.5 — The harness exits 0 on both frameworks, and exits with the first non-zero result (FR11; AC5)**
   - Run `dotnet build Darker.Filter.slnf -c Release`. Then, for `-f net8.0` and `-f net9.0`, run `dotnet run --project test/Paramore.Darker.Tests.EndToEnd -c Release --no-build`. Each exits 0 (`echo $?`).
   - Apply T3.1's mutation. The harness exits non-zero, and no output from T3.2–T3.4 appears, which shows it stops at the first failure. Revert. `git status` shows no modified `src/` file.
   - Apply T3.4's mutation. The harness exits non-zero after T3.1–T3.3 pass. Revert.
