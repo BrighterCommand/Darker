@@ -218,7 +218,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register with `AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)` and `services.AddScoped<ScopedDependency>()`, before `.ValidatePipelines()`, so `CaptiveDependency` raises no finding.
     - Append the scenario to `Program.cs`.
 
-- [ ] **CHARACTERISE: T3.4 — An invalid configuration fails at host start with a message that names the fault, and the harness treats that as success (FR10; AC5)**
+- [x] **CHARACTERISE: T3.4 — An invalid configuration fails at host start with a message that names the fault, and the harness treats that as success (FR10; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when a handler's decorator is not registered and the chain ends with ValidatePipelines should fail host start with a PipelineValidationException naming DecoratorResolvable and the handler`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `InvalidConfigurationFailsAtHostStart.cs`
