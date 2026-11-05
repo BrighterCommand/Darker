@@ -27,4 +27,10 @@ if (result != 0)
     return result;
 }
 
+result = await InvalidConfigurationFailsAtHostStart.RunAsync();
+if (result != 0)
+{
+    return result;
+}
+
 return 0;
