@@ -8,6 +8,9 @@
     <PackageVersion Include="FluentValidation" Version="11.12.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.11" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
+    <!-- TEST-ONLY: major version must match the ASP.NET Core shared framework of each TFM (no single version spans net8.0 and net9.0) -->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.33" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.22" Condition="'$(TargetFramework)' == 'net9.0'" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.9.0" />
     <!-- TEST-ONLY: FusionCache as a drop-in HybridCache implementation (no production source dependency) -->
     <PackageVersion Include="ZiggyCreatures.FusionCache" Version="2.6.0" />

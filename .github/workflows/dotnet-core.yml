@@ -45,6 +45,10 @@ jobs:
         run:  dotnet build Darker.Filter.slnf -c Release
       - name: Core Tests
         run: dotnet test Darker.Filter.slnf -c Release --no-restore --no-build --verbosity d
+      - name: End-to-end harness (Paramore.Darker.Tests.EndToEnd)
+        run: |
+          dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net8.0
+          dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net9.0
       - name: Upload packages as artifacts
         uses: actions/upload-artifact@v7
         with:

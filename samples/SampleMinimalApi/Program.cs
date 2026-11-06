@@ -47,3 +47,4 @@ app.MapGet("/request-scope",
 
 
 app.Run();
+public partial class Program;

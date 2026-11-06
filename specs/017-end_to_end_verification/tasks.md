@@ -45,12 +45,12 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 1 — Scaffolding (setup)
 
-- [ ] **STRUCTURAL: T1.1 — Let tests name the sample's `Program` type (ADR 0027 Implementation Approach step 1; NFR6; AC8)**
+- [x] **STRUCTURAL: T1.1 — Let tests name the sample's `Program` type (ADR 0027 Implementation Approach step 1; NFR6; AC8)**
   - Add one line, `public partial class Program;`, after `app.Run();` at the end of `samples/SampleMinimalApi/Program.cs`. On net8.0 and net9.0 the compiler generates `Program` as internal, so without this line `WebApplicationFactory<Program>` would need `InternalsVisibleTo`.
   - Change nothing else in the sample. AC8 allows exactly one changed line.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds. `dotnet test Darker.Filter.slnf -c Release` is green before and after. Commit as `refactor:`.
 
-- [ ] **SETUP: T1.2 — Add a central package version for `Microsoft.AspNetCore.Mvc.Testing` (ADR 0027 "Where each type is touched", `Directory.Packages.props` row; Constraints, central package version)**
+- [x] **SETUP: T1.2 — Add a central package version for `Microsoft.AspNetCore.Mvc.Testing` (ADR 0027 "Where each type is touched", `Directory.Packages.props` row; Constraints, central package version)**
   - Add `PackageVersion` entries for `Microsoft.AspNetCore.Mvc.Testing` to `Directory.Packages.props`.
   - Version choice:
     - The package's major version must match the ASP.NET Core shared framework of each target framework: 8.0.x for net8.0 and 9.0.x for net9.0.
@@ -59,7 +59,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Use no floating versions. Central Package Management does not have floating versions enabled.
   - Build success is checked in T1.3, the first consumer. This commit changes only `Directory.Packages.props`.
 
-- [ ] **SETUP: T1.3 — Create `test/Paramore.Darker.SampleMinimalApi.Tests` and add it to both solution files (ADR 0027 step 2; FR12; FR14; NFR1; NFR5 separate assembly)**
+- [x] **SETUP: T1.3 — Create `test/Paramore.Darker.SampleMinimalApi.Tests` and add it to both solution files (ADR 0027 step 2; FR12; FR14; NFR1; NFR5 separate assembly)**
   - New `test/Paramore.Darker.SampleMinimalApi.Tests/Paramore.Darker.SampleMinimalApi.Tests.csproj`. Model it on `test/Paramore.Darker.Extensions.AspNetCore.Tests/Paramore.Darker.Extensions.AspNetCore.Tests.csproj`:
     - `Microsoft.NET.Sdk`, `<TargetFrameworks>net8.0;net9.0</TargetFrameworks>`, `<IsPackable>false</IsPackable>`, `<Nullable>enable</Nullable>`;
     - `<FrameworkReference Include="Microsoft.AspNetCore.App" />`;
@@ -69,7 +69,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Add the project to `Darker.slnx` under `/test/`, with the same four `<Configuration …>` mappings as its siblings. Add `test\\Paramore.Darker.SampleMinimalApi.Tests\\Paramore.Darker.SampleMinimalApi.Tests.csproj` to `Darker.Filter.slnf`.
   - `dotnet build Darker.Filter.slnf -c Release` succeeds for net8.0 and net9.0. `dotnet test Darker.Filter.slnf -c Release` stays green; the new project has no tests yet.
 
-- [ ] **SETUP: T1.4 — Risk mitigation: one shared sample host for the whole assembly, which protects the static logger factory (NFR5; ADR 0027 Risks, "Disposing the factory disposes a real `ILoggerFactory`")**
+- [x] **SETUP: T1.4 — Risk mitigation: one shared sample host for the whole assembly, which protects the static logger factory (NFR5; ADR 0027 Risks, "Disposing the factory disposes a real `ILoggerFactory`")**
   - Add `test/Paramore.Darker.SampleMinimalApi.Tests/SampleMinimalApiCollection.cs`:
     - `[CollectionDefinition("SampleMinimalApi", DisableParallelization = true)] public sealed class SampleMinimalApiCollection : ICollectionFixture<WebApplicationFactory<Program>>`;
     - an XML summary that explains the static `ApplicationLogging.LoggerFactory` hazard, following `test/Paramore.Darker.Extensions.AspNetCore.Tests/DarkerHostBootstrapCollection.cs`.
@@ -79,7 +79,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Risk check: if the content root does not resolve (the repo uses `.slnx`, and older `WebApplicationFactory` fallbacks search for `*.sln`), stop and ask. Do not add a content-root override without approval.
   - The build succeeds and the suite stays green.
 
-- [ ] **SETUP: T1.5 — Create the `test/Paramore.Darker.Tests.EndToEnd` console harness with an empty runner, and add it to both solution files (ADR 0027 step 3; FR6; FR11 runner; FR14; AC9)**
+- [x] **SETUP: T1.5 — Create the `test/Paramore.Darker.Tests.EndToEnd` console harness with an empty runner, and add it to both solution files (ADR 0027 step 3; FR6; FR11 runner; FR14; AC9)**
   - New `test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj`. Model it on `test/Paramore.Darker.Tests.AOT/Paramore.Darker.Tests.AOT.csproj`:
     - `Microsoft.NET.Sdk`, `<OutputType>Exe</OutputType>`, `<TargetFrameworks>net8.0;net9.0</TargetFrameworks>`, `<IsPackable>false</IsPackable>`, `<Nullable>enable</Nullable>`;
     - **no** `PublishAot` or `TrimMode`, because AOT is out of scope;
@@ -95,7 +95,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 2 — Sample endpoints (characterise)
 
-- [ ] **CHARACTERISE: T2.1 — The sample starts with pipeline validation enabled, and validation finds no errors (FR1; FR5; AC1)**
+- [x] **CHARACTERISE: T2.1 — The sample starts with pipeline validation enabled, and validation finds no errors (FR1; FR5; AC1)**
   - **USE COMMAND**: `/tdd:test-first when the sample starts should have registered pipeline validation and report no validation errors`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_the_sample_starts_should_validate_its_pipelines_and_find_no_errors.cs` (class `SampleStartupTests`, `[Collection("SampleMinimalApi")]`)
@@ -110,7 +110,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change. T1.1, T1.3 and T1.4 deliver this.
 
-- [ ] **CHARACTERISE: T2.2 — `GET /people` returns every person in the repository (FR2; AC2)**
+- [x] **CHARACTERISE: T2.2 — `GET /people` returns every person in the repository (FR2; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting people should return success and every person in the sample repository`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_people_should_return_every_person_in_the_repository.cs` (class `PeopleEndpointTests`, `[Collection("SampleMinimalApi")]`)
@@ -123,7 +123,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.3 — `GET /people/{id}` returns the name for a known id (FR2; AC2)**
+- [x] **CHARACTERISE: T2.3 — `GET /people/{id}` returns the name for a known id (FR2; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting a known person by id should return success and that person's name`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_a_known_person_should_return_their_name.cs` (class `PersonNameEndpointTests`, `[Collection("SampleMinimalApi")]`)
@@ -135,7 +135,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.4 — `GET /flaky` returns the success text after the retry pipeline recovers the first failure (FR3; AC2)**
+- [x] **CHARACTERISE: T2.4 — `GET /flaky` returns the success text after the retry pipeline recovers the first failure (FR3; AC2)**
   - **USE COMMAND**: `/tdd:test-first when getting the flaky result should return success and the text saying it succeeded on attempt 2 after a transient failure`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_the_flaky_result_should_return_the_success_text_after_a_retry.cs` (class `FlakyEndpointTests`, `[Collection("SampleMinimalApi")]`)
@@ -150,7 +150,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - Implementation should:
     - Need no production or sample change.
 
-- [ ] **CHARACTERISE: T2.5 — `GET /request-scope` returns the same id for the endpoint and the handler (FR4; AC3)**
+- [x] **CHARACTERISE: T2.5 — `GET /request-scope` returns the same id for the endpoint and the handler (FR4; AC3)**
   - **USE COMMAND**: `/tdd:test-first when getting the request scope should return the same correlation id for the endpoint and the handler`
   - Test location: "test/Paramore.Darker.SampleMinimalApi.Tests/"
   - Test file: `When_getting_the_request_scope_should_return_the_same_id_for_endpoint_and_handler.cs` (class `RequestScopeEndpointTests`, `[Collection("SampleMinimalApi")]`)
@@ -167,7 +167,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 > Every scenario builds its own host and calls the public `AddDarker` chain, ending with `.ValidatePipelines()` (FR6). The harness runs four hosts one after another in one process, and Darker's static loggers capture the first host's `ILoggerFactory`. So each scenario creates its host with `Host.CreateApplicationBuilder()` and registers `builder.Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)` after the builder's defaults. The container does not dispose a supplied instance, so later scenarios never log through a disposed factory. The three lines are repeated in each scenario, not shared, so a scenario reads on its own. A scenario reports through `Console.Error`, not through logging. It then calls `await host.StartAsync()`, runs its queries through `host.Services.GetRequiredService<IQueryProcessor>()`, calls `await host.StopAsync()` and disposes the host. Each scenario catches exceptions around its own checks and turns them into a printed difference and a non-zero return. One scenario per commit (ADR 0027 step 3).
 
-- [ ] **CHARACTERISE: T3.1 — A valid configuration starts the Generic Host and runs a sync, an async and a stream query (FR6; FR7; FR11; AC5; AC9)**
+- [x] **CHARACTERISE: T3.1 — A valid configuration starts the Generic Host and runs a sync, an async and a stream query (FR6; FR7; FR11; AC5; AC9)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when a Generic Host with no web server is configured through AddDarker ending with ValidatePipelines should start and return the expected results for a sync, an async and a stream query`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `ValidConfigurationRunsSyncAsyncAndStreamQueries.cs`
@@ -184,7 +184,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register them with `AddHandlers`, `AddAsyncHandlers` and `AddStreamHandlers`. Do not use assembly scanning.
     - In `Program.cs`, call `ValidConfigurationRunsSyncAsyncAndStreamQueries.RunAsync()` and return its result when it is non-zero, before `return 0;`.
 
-- [ ] **CHARACTERISE: T3.2 — A retry pipeline recovers a handler that fails on its first call (FR8; NFR4; AC5)**
+- [x] **CHARACTERISE: T3.2 — A retry pipeline recovers a handler that fails on its first call (FR8; NFR4; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when an async handler fails on its first call and is decorated with a retry resilience pipeline should return the handler's result after exactly two calls`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `RetryPipelineRecoversATransientFailure.cs`
@@ -201,7 +201,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - In the scenario, build a `ResiliencePipelineRegistry<string>` with `"EndToEnd.Retry"`: `AddRetry` with `ShouldHandle` for that exception only, `MaxRetryAttempts = 1` and `Delay = TimeSpan.Zero`. Pass it to `.AddResiliencePipelines(…)` before `.ValidatePipelines()`.
     - Append the scenario to `Program.cs` after T3.1's.
 
-- [ ] **CHARACTERISE: T3.3 — A Scoped dependency is provided to the handler and disposed when the query ends (FR9; AC5)**
+- [x] **CHARACTERISE: T3.3 — A Scoped dependency is provided to the handler and disposed when the query ends (FR9; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when a Scoped handler takes a Scoped disposable dependency should receive an undisposed instance during the query and the host should dispose it after the query ends`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `ScopedDependencyIsProvidedAndDisposed.cs`
@@ -218,7 +218,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register with `AddDarker(options => options.HandlerLifetime = ServiceLifetime.Scoped)` and `services.AddScoped<ScopedDependency>()`, before `.ValidatePipelines()`, so `CaptiveDependency` raises no finding.
     - Append the scenario to `Program.cs`.
 
-- [ ] **CHARACTERISE: T3.4 — An invalid configuration fails at host start with a message that names the fault, and the harness treats that as success (FR10; AC5)**
+- [x] **CHARACTERISE: T3.4 — An invalid configuration fails at host start with a message that names the fault, and the harness treats that as success (FR10; AC5)**
   - **USE COMMAND**: `/tdd:test-first harness scenario: when a handler's decorator is not registered and the chain ends with ValidatePipelines should fail host start with a PipelineValidationException naming DecoratorResolvable and the handler`
   - Test location: "test/Paramore.Darker.Tests.EndToEnd/Scenarios/"
   - Test file: `InvalidConfigurationFailsAtHostStart.cs`
@@ -234,7 +234,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
     - Register it with `AddAsyncHandlers`, and deliberately omit `.AddJsonQueryLogging()` from the chain, which still ends with `.ValidatePipelines()`.
     - Append the scenario to `Program.cs` as the last scenario.
 
-- [ ] **VERIFY: T3.5 — The harness exits 0 on both frameworks, and exits with the first non-zero result (FR11; AC5)**
+- [x] **VERIFY: T3.5 — The harness exits 0 on both frameworks, and exits with the first non-zero result (FR11; AC5)**
   - Run `dotnet build Darker.Filter.slnf -c Release`. Then, for `-f net8.0` and `-f net9.0`, run `dotnet run --project test/Paramore.Darker.Tests.EndToEnd -c Release --no-build`. Each exits 0 (`echo $?`).
   - Apply T3.1's mutation. The harness exits non-zero, and no output from T3.2–T3.4 appears, which shows it stops at the first failure. Revert. `git status` shows no modified `src/` file.
   - Apply T3.4's mutation. The harness exits non-zero after T3.1–T3.3 pass. Revert.
@@ -242,7 +242,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
 
 ## Phase 4 — CI and docs
 
-- [ ] **SETUP: T4.1 — Run the harness for net8.0 and net9.0 in CI, after the test step (FR13; AC6; ADR 0027 step 4)**
+- [x] **SETUP: T4.1 — Run the harness for net8.0 and net9.0 in CI, after the test step (FR13; AC6; ADR 0027 step 4)**
   - In `.github/workflows/dotnet-core.yml`, add this step immediately after `- name: Core Tests`:
     ```yaml
     - name: End-to-end harness (Paramore.Darker.Tests.EndToEnd)
@@ -255,14 +255,14 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - The step name names the harness (ADR 0027 Risks).
   - Commit as `ci:`.
 
-- [ ] **DOC: T4.2 — Document both projects in `.agent_instructions/project_structure.md` (ADR 0027 step 5)**
+- [x] **DOC: T4.2 — Document both projects in `.agent_instructions/project_structure.md` (ADR 0027 step 5)**
   - Add two entries.
     - `test/Paramore.Darker.SampleMinimalApi.Tests/` is an xunit v3 test that starts `samples/SampleMinimalApi` in memory through `WebApplicationFactory<Program>`, with one shared host per assembly.
     - `test/Paramore.Darker.Tests.EndToEnd/` is a console harness that runs scenarios in a Generic Host with no ASP.NET Core and reports through its exit code. CI runs it as its own step.
   - State that both use only public API and project references.
   - Commit as `docs:`.
 
-- [ ] **VERIFY: T4.3 — Final checkpoint (AC4, AC6, AC7, AC8, AC9; NFR1, NFR2, NFR3, NFR6)**
+- [x] **VERIFY: T4.3 — Final checkpoint (AC4, AC6, AC7, AC8, AC9; NFR1, NFR2, NFR3, NFR6)**
   - **AC4 / FR12.** `dotnet test Darker.Filter.slnf -c Release` is green. The output shows `Paramore.Darker.SampleMinimalApi.Tests` running its 5 tests on both net8.0 and net9.0.
   - **AC6 / FR13.** Locally, run the T4.1 step script under `bash -e` with T3.2's mutation applied. It exits non-zero. Revert. Then, on the PR, confirm that the CI log shows the "End-to-end harness" step running both frameworks green.
   - **AC7 / NFR1.**
