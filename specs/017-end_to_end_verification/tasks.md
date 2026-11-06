@@ -262,7 +262,7 @@ No phase starts until the phase before it is green on net8.0 and net9.0.
   - State that both use only public API and project references.
   - Commit as `docs:`.
 
-- [!] **VERIFY: T4.3 — Final checkpoint (AC4, AC6, AC7, AC8, AC9; NFR1, NFR2, NFR3, NFR6)** <!-- RALPH-FAILED: all local checks PASS (AC4 5/5 sample tests per TFM; AC6 local mutated step exits 1; AC7; AC9; NFR2; NFR5; build+suite green; src unchanged vs master). PENDING: AC6 CI log on the PR and NFR3 times in the PR description (no PR yet; local: sample tests ~2.6s/TFM, harness ~1.0s/TFM). AC8 strict wording: git diff master -- samples/ is +2/-1 because the original Program.cs had no trailing newline (app.Run(); re-added); with --ignore-space-at-eol it is exactly one added line. Human to accept the newline nuance and tick after the PR. -->
+- [x] **VERIFY: T4.3 — Final checkpoint (AC4, AC6, AC7, AC8, AC9; NFR1, NFR2, NFR3, NFR6)**
   - **AC4 / FR12.** `dotnet test Darker.Filter.slnf -c Release` is green. The output shows `Paramore.Darker.SampleMinimalApi.Tests` running its 5 tests on both net8.0 and net9.0.
   - **AC6 / FR13.** Locally, run the T4.1 step script under `bash -e` with T3.2's mutation applied. It exits non-zero. Revert. Then, on the PR, confirm that the CI log shows the "End-to-end harness" step running both frameworks green.
   - **AC7 / NFR1.**
