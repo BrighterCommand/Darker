@@ -31,6 +31,8 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+            10.0.x
+            11.0.x
       - run: dotnet --info
       - uses: actions/checkout@v7
         with:
@@ -49,6 +51,8 @@ jobs:
         run: |
           dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net8.0
           dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net9.0
+          dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net10.0
+          dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net11.0
       - name: Upload packages as artifacts
         uses: actions/upload-artifact@v7
         with:

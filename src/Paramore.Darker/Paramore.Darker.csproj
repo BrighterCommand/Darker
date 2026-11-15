@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <Description>Darker is the query-side counterpart to Brighter, implementing the Query pattern (CQRS read-side) with a pipeline architecture for cross-cutting concerns including retry, fallback, and request logging.</Description>
     <!-- Validates the FR13 IL2026/IL3050 suppressions in Logging/ at the library's own build.
          Unsupported on netstandard2.0 (UnconditionalSuppressMessageAttribute is internal there), so net8/net9 only. -->
