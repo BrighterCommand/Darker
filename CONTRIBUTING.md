@@ -38,7 +38,7 @@ Welcome! Here's how to get started:
 
 ### Quick Setup
 1. Fork and clone the repository
-2. Ensure you have the .NET 8 and .NET 9 SDKs installed: `dotnet --list-sdks`
+2. Ensure you have the .NET 8, .NET 9, .NET 10 and .NET 11 SDKs installed: `dotnet --list-sdks`
 3. Build the solution: `dotnet build Darker.Filter.slnf`
 4. Run the tests (no external dependencies needed): `dotnet test Darker.Filter.slnf`
 
@@ -272,7 +272,7 @@ dotnet test test/Paramore.Darker.Core.Tests
 dotnet test test/Paramore.Darker.Core.Tests --filter "FullyQualifiedName~When_query_handler_not_registered"
 ```
 
-Ensure all tests pass before submitting a PR. CI builds and tests against .NET 8 and .NET 9.
+Ensure all tests pass before submitting a PR. CI builds and tests against .NET 8, .NET 9, .NET 10 and .NET 11.
 
 ### Commit Messages
 
