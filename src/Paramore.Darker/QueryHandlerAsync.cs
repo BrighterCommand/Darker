@@ -5,7 +5,7 @@ using Paramore.Darker.Logging;
 
 namespace Paramore.Darker
 {
-    public abstract class QueryHandlerAsync<TQuery, TResult> : IQueryHandlerAsync<TQuery, TResult>
+    public abstract class QueryHandlerAsync<TQuery, TResult> : IQueryHandlerAsync<TQuery, TResult>, IAmAFallbackTargetAsync<TResult>
         where TQuery : IQuery<TResult>
     {
         private static readonly ILogger _logger = ApplicationLogging.CreateLogger<QueryHandlerAsync<TQuery, TResult>>();
@@ -19,5 +19,8 @@ namespace Paramore.Darker
             _logger.LogInformation("Executing the default fallback implementation, returning default(TResult)");
             return Task.FromResult(default(TResult));
         }
+
+        Task<TResult> IAmAFallbackTargetAsync<TResult>.FallbackAsync(IQuery<TResult> query, CancellationToken cancellationToken)
+            => FallbackAsync((TQuery)query, cancellationToken);
     }
 }

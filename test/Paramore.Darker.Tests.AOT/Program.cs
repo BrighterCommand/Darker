@@ -14,4 +14,8 @@ var case1 = await Case1PropertyBearingJson.RunAsync();
 if (case1 != 0)
     return case1;
 
-return await Case2CycleBearingNoThrow.RunAsync();
+var case2 = await Case2CycleBearingNoThrow.RunAsync();
+if (case2 != 0)
+    return case2;
+
+return await Case3FallbackRunsWhenOnlyExecuteIsRooted.RunAsync();
