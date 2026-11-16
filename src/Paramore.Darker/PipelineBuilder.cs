@@ -98,8 +98,7 @@ namespace Paramore.Darker
             };
 
             // fallback doesn't have an incoming pipeline
-            var fallbackMethodInfo = handlerType.GetMethod("Fallback", new[] { queryType });
-            Func<IQuery<TResult>, TResult> fallback = r => (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+            var fallback = ResolveFallback(handlerType, queryType);
 
             foreach (var decorator in _decorators)
             {
@@ -161,8 +160,7 @@ namespace Paramore.Darker
             };
 
             // fallback doesn't have an incoming pipeline
-            var fallbackMethodInfo = handlerType.GetMethod("FallbackAsync", new[] { queryType, typeof(CancellationToken) });
-            Func<IQuery<TResult>, CancellationToken, Task<TResult>> fallback = (r, ct) => (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+            var fallback = ResolveFallbackAsync(handlerType, queryType);
 
             foreach (var decorator in _asyncDecorators)
             {
@@ -179,6 +177,37 @@ namespace Paramore.Darker
 
             return pipeline.Last();
         }
+
+        // A QueryHandler<,> runs its fallback without reflection, so a trimmed or Native AOT app keeps it.
+        // Any other handler is reached through its IQueryHandler<,> interface, so an explicit Fallback is found too.
+        private Func<IQuery<TResult>, TResult> ResolveFallback(Type handlerType, Type queryType)
+        {
+            if (_handler is IAmAFallbackTarget<TResult> target)
+                return target.Fallback;
+
+            var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandler<,>), queryType, "Fallback");
+            return r => (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+        }
+
+        // A QueryHandlerAsync<,> runs its fallback without reflection, so a trimmed or Native AOT app keeps it.
+        // Any other handler is reached through its IQueryHandlerAsync<,> interface, so an explicit FallbackAsync is found too.
+        private Func<IQuery<TResult>, CancellationToken, Task<TResult>> ResolveFallbackAsync(Type handlerType, Type queryType)
+        {
+            if (_handler is IAmAFallbackTargetAsync<TResult> target)
+                return target.FallbackAsync;
+
+            var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandlerAsync<,>), queryType, "FallbackAsync");
+            return (r, ct) => (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+        }
+
+        // Invoking the interface's method dispatches to the handler's implementation, explicit or not.
+        private static MethodInfo FindHandlerInterfaceMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType, string methodName)
+            => handlerType.GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType
+                    && i.GetGenericTypeDefinition() == handlerInterfaceDefinition
+                    && i.GenericTypeArguments[0] == queryType
+                    && i.GenericTypeArguments[1] == typeof(TResult))
+                ?.GetMethod(methodName);
 
         // The reader returns a failed lookup rather than throwing; rethrow it here so the builder's behaviour is unchanged.
         private static MethodInfo ResolveMethod(ExecuteMethodLookup lookup)
