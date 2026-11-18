@@ -202,12 +202,15 @@ namespace Paramore.Darker
 
         // Invoking the interface's method dispatches to the handler's implementation, explicit or not.
         private static MethodInfo FindHandlerInterfaceMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType, string methodName)
+            => FindHandlerInterface(handlerType, handlerInterfaceDefinition, queryType)?.GetMethod(methodName);
+
+        // The handler's closed interface for this query and result, or null when it does not implement one.
+        private static Type FindHandlerInterface(Type handlerType, Type handlerInterfaceDefinition, Type queryType)
             => handlerType.GetInterfaces()
                 .FirstOrDefault(i => i.IsGenericType
                     && i.GetGenericTypeDefinition() == handlerInterfaceDefinition
                     && i.GenericTypeArguments[0] == queryType
-                    && i.GenericTypeArguments[1] == typeof(TResult))
-                ?.GetMethod(methodName);
+                    && i.GenericTypeArguments[1] == typeof(TResult));
 
         // The reader returns a failed lookup rather than throwing; rethrow it here so the builder's behaviour is unchanged.
         private static MethodInfo ResolveMethod(ExecuteMethodLookup lookup)
