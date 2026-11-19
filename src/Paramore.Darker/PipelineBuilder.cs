@@ -74,6 +74,10 @@ namespace Paramore.Darker
             _handler.Context = queryContext;
 
             var executeMethodInfo = ResolveMethod(PipelineAttributeReader.FindExecute(handlerType));
+            if (executeMethodInfo == null)
+                throw MissingPathMethod(handlerType, typeof(IQueryHandler<,>), queryType, "Execute",
+                    $"Handler {handlerType.FullName} does not implement Execute. Ensure it implements IQueryHandler.");
+
             ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Sync);
             _decorators = GetDecorators(executeMethodInfo, queryContext);
 
@@ -133,7 +137,8 @@ namespace Paramore.Darker
 
             var executeAsyncMethodInfo = ResolveMethod(PipelineAttributeReader.FindExecuteAsync(handlerType));
             if (executeAsyncMethodInfo == null)
-                throw new ConfigurationException($"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
+                throw MissingPathMethod(handlerType, typeof(IQueryHandlerAsync<,>), queryType, "ExecuteAsync",
+                    $"Handler {handlerType.FullName} does not implement ExecuteAsync. Register an async handler or use Execute instead.");
 
             ValidateNoMismatchedAttributes(executeAsyncMethodInfo, HandlerPath.Async);
 
@@ -203,6 +208,17 @@ namespace Paramore.Darker
         // Invoking the interface's method dispatches to the handler's implementation, explicit or not.
         private static MethodInfo FindHandlerInterfaceMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType, string methodName)
             => FindHandlerInterface(handlerType, handlerInterfaceDefinition, queryType)?.GetMethod(methodName);
+
+        // A handler that implements its path interface but has no public method for the path has an explicit
+        // (or trimmed) method, not a missing one; the advice matches the validator's HandlerMatchesPath finding.
+        private static ConfigurationException MissingPathMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType,
+            string methodName, string notImplementedMessage)
+            => FindHandlerInterface(handlerType, handlerInterfaceDefinition, queryType) is null
+                ? new ConfigurationException(notImplementedMessage)
+                : new ConfigurationException(
+                    $"Handler {handlerType.FullName} implements '{PipelineValidation.TypeNames.Open(handlerInterfaceDefinition)}' only explicitly, " +
+                    $"or its public {methodName} was trimmed, so it has no public {methodName}. Implement {methodName} publicly. " +
+                    "Validate pipelines at startup (ValidatePipelines) to report this before the first query.");
 
         // The handler's closed interface for this query and result, or null when it does not implement one.
         private static Type FindHandlerInterface(Type handlerType, Type handlerInterfaceDefinition, Type queryType)
@@ -323,7 +339,8 @@ namespace Paramore.Darker
             // also exposes a Task<TResult> ExecuteAsync with different param types.
             var executeMethodInfo = ResolveMethod(PipelineAttributeReader.FindStreamExecuteAsync(handlerType, queryType));
             if (executeMethodInfo == null)
-                throw new ConfigurationException($"Handler {handlerType.FullName} does not implement a stream ExecuteAsync(TQuery, CancellationToken). Ensure it implements IStreamQueryHandler.");
+                throw MissingPathMethod(handlerType, typeof(IStreamQueryHandler<,>), queryType, "ExecuteAsync",
+                    $"Handler {handlerType.FullName} does not implement a stream ExecuteAsync(TQuery, CancellationToken). Ensure it implements IStreamQueryHandler.");
 
             ValidateNoMismatchedAttributes(executeMethodInfo, HandlerPath.Stream);
 
