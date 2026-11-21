@@ -190,8 +190,8 @@ namespace Paramore.Darker
             if (_handler is IAmAFallbackTarget<TResult> target)
                 return target.Fallback;
 
-            var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandler<,>), queryType, "Fallback");
-            return r => (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+            var fallback = typeof(IQueryHandler<,>).GetMethod("Fallback");
+            return r => (TResult)ResolveFallbackMethod(handlerType, queryType, fallback).Invoke(_handler, new object[] { r });
         }
 
         // A QueryHandlerAsync<,> runs its fallback without reflection, so a trimmed or Native AOT app keeps it.
@@ -201,17 +201,24 @@ namespace Paramore.Darker
             if (_handler is IAmAFallbackTargetAsync<TResult> target)
                 return target.FallbackAsync;
 
-            var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandlerAsync<,>), queryType, "FallbackAsync");
-            return (r, ct) => (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+            var fallback = typeof(IQueryHandlerAsync<,>).GetMethod("FallbackAsync");
+            return (r, ct) => (Task<TResult>)ResolveFallbackMethod(handlerType, queryType, fallback).Invoke(_handler, new object[] { r, ct });
         }
 
-        // Invoking the interface's method dispatches to the handler's implementation, explicit or not.
-        private static MethodInfo FindHandlerInterfaceMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType, string methodName)
-            => FindHandlerInterface(handlerType, handlerInterfaceDefinition, queryType)?.GetMethod(methodName);
+        // Looking up the named method on the known open interface roots it for trimming.
+        // Bind that same method to the closed interface so explicit implementations dispatch normally.
+        private MethodInfo ResolveFallbackMethod(Type handlerType, Type queryType, MethodInfo fallback)
+        {
+            var handlerInterface = FindHandlerInterface(handlerType, fallback.DeclaringType, queryType);
+            if (handlerInterface == null)
+                throw new ConfigurationException($"Handler {handlerType.FullName} has no {fallback.Name} for query {queryType.FullName}.");
+
+            return (MethodInfo)MethodBase.GetMethodFromHandle(fallback.MethodHandle, handlerInterface.TypeHandle);
+        }
 
         // A handler that implements its path interface but has no public method for the path has an explicit
         // (or trimmed) method, not a missing one; the advice matches the validator's HandlerMatchesPath finding.
-        private static ConfigurationException MissingPathMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType,
+        private ConfigurationException MissingPathMethod(Type handlerType, Type handlerInterfaceDefinition, Type queryType,
             string methodName, string notImplementedMessage)
             => FindHandlerInterface(handlerType, handlerInterfaceDefinition, queryType) is null
                 ? new ConfigurationException(notImplementedMessage)
@@ -220,13 +227,15 @@ namespace Paramore.Darker
                     $"or its public {methodName} was trimmed, so it has no public {methodName}. Implement {methodName} publicly. " +
                     "Validate pipelines at startup (ValidatePipelines) to report this before the first query.");
 
-        // The handler's closed interface for this query and result, or null when it does not implement one.
-        private static Type FindHandlerInterface(Type handlerType, Type handlerInterfaceDefinition, Type queryType)
-            => handlerType.GetInterfaces()
+        // Read the preserved interfaces from the instance. A factory proxy can implement interfaces
+        // of its own, so only match a contract also implemented by the registered handler type.
+        private Type FindHandlerInterface(Type handlerType, Type handlerInterfaceDefinition, Type queryType)
+            => _handler.GetType().GetInterfaces()
                 .FirstOrDefault(i => i.IsGenericType
                     && i.GetGenericTypeDefinition() == handlerInterfaceDefinition
                     && i.GenericTypeArguments[0] == queryType
-                    && i.GenericTypeArguments[1] == typeof(TResult));
+                    && i.GenericTypeArguments[1] == typeof(TResult)
+                    && i.IsAssignableFrom(handlerType));
 
         // The reader returns a failed lookup rather than throwing; rethrow it here so the builder's behaviour is unchanged.
         private static MethodInfo ResolveMethod(ExecuteMethodLookup lookup)
