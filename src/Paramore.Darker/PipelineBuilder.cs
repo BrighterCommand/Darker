@@ -191,7 +191,18 @@ namespace Paramore.Darker
                 return target.Fallback;
 
             var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandler<,>), queryType, "Fallback");
-            return r => (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+            return r =>
+            {
+                try
+                {
+                    return (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached
+                }
+            };
         }
 
         // A QueryHandlerAsync<,> runs its fallback without reflection, so a trimmed or Native AOT app keeps it.
@@ -202,7 +213,18 @@ namespace Paramore.Darker
                 return target.FallbackAsync;
 
             var fallbackMethodInfo = FindHandlerInterfaceMethod(handlerType, typeof(IQueryHandlerAsync<,>), queryType, "FallbackAsync");
-            return (r, ct) => (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+            return (r, ct) =>
+            {
+                try
+                {
+                    return (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached
+                }
+            };
         }
 
         // Invoking the interface's method dispatches to the handler's implementation, explicit or not.
