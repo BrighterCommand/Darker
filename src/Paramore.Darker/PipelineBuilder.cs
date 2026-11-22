@@ -191,7 +191,19 @@ namespace Paramore.Darker
                 return target.Fallback;
 
             var fallback = typeof(IQueryHandler<,>).GetMethod("Fallback");
-            return r => (TResult)ResolveFallbackMethod(handlerType, queryType, fallback).Invoke(_handler, new object[] { r });
+            return r =>
+            {
+                var fallbackMethodInfo = ResolveFallbackMethod(handlerType, queryType, fallback);
+                try
+                {
+                    return (TResult)fallbackMethodInfo.Invoke(_handler, new object[] { r });
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached
+                }
+            };
         }
 
         // A QueryHandlerAsync<,> runs its fallback without reflection, so a trimmed or Native AOT app keeps it.
@@ -202,7 +214,19 @@ namespace Paramore.Darker
                 return target.FallbackAsync;
 
             var fallback = typeof(IQueryHandlerAsync<,>).GetMethod("FallbackAsync");
-            return (r, ct) => (Task<TResult>)ResolveFallbackMethod(handlerType, queryType, fallback).Invoke(_handler, new object[] { r, ct });
+            return (r, ct) =>
+            {
+                var fallbackMethodInfo = ResolveFallbackMethod(handlerType, queryType, fallback);
+                try
+                {
+                    return (Task<TResult>)fallbackMethodInfo.Invoke(_handler, new object[] { r, ct });
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw; // never reached
+                }
+            };
         }
 
         // Looking up the named method on the known open interface roots it for trimming.
