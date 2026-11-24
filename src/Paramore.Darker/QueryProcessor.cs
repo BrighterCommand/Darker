@@ -74,7 +74,17 @@ namespace Paramore.Darker
                 queryContext.Span = span;
                 queryContext.Tracer = _tracer;
 
-                var entryPoint = pipelineBuilder.Build(query, queryContext, _instrumentationOptions);
+                Func<IQuery<TResult>, TResult> entryPoint;
+                try
+                {
+                    entryPoint = pipelineBuilder.Build(query, queryContext, _instrumentationOptions);
+                }
+                catch (Exception ex)
+                {
+                    _tracer?.AddExceptionToSpan(span, ex);
+                    _tracer?.EndSpan(span);
+                    throw;
+                }
 
                 try
                 {
@@ -114,7 +124,17 @@ namespace Paramore.Darker
                 queryContext.Span = span;
                 queryContext.Tracer = _tracer;
 
-                var entryPoint = pipelineBuilder.BuildAsync(query, queryContext, _instrumentationOptions);
+                Func<IQuery<TResult>, CancellationToken, Task<TResult>> entryPoint;
+                try
+                {
+                    entryPoint = pipelineBuilder.BuildAsync(query, queryContext, _instrumentationOptions);
+                }
+                catch (Exception ex)
+                {
+                    _tracer?.AddExceptionToSpan(span, ex);
+                    _tracer?.EndSpan(span);
+                    throw;
+                }
 
                 try
                 {
@@ -158,7 +178,17 @@ namespace Paramore.Darker
                 queryContext.Span = span;
                 queryContext.Tracer = _tracer;
 
-                var entryPoint = pipelineBuilder.BuildStream(query, queryContext, _instrumentationOptions);
+                Func<IStreamQuery<TResult>, CancellationToken, IAsyncEnumerable<TResult>> entryPoint;
+                try
+                {
+                    entryPoint = pipelineBuilder.BuildStream(query, queryContext, _instrumentationOptions);
+                }
+                catch (Exception ex)
+                {
+                    _tracer?.AddExceptionToSpan(span, ex);
+                    _tracer?.EndSpan(span);
+                    throw;
+                }
                 try
                 {
                     await foreach (var item in entryPoint(query, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
