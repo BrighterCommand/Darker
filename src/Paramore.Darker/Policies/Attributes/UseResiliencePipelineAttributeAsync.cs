@@ -40,7 +40,7 @@ namespace Paramore.Darker.Policies.Attributes
         /// <summary>
         /// Initializes a new instance of the <see cref="UseResiliencePipelineAttributeAsync"/> class.
         /// </summary>
-        /// <param name="step">The ordinal position of this decorator in the pipeline; higher executes first.</param>
+        /// <param name="step">The ordinal position of this decorator in the pipeline; the lowest step is outermost and executes first.</param>
         /// <param name="policy">The registry key of the resilience pipeline to apply.</param>
         /// <param name="useTypePipeline">
         /// When <c>true</c>, resolves a result-type-scoped pipeline (one instance per <c>(key, TResult)</c>);

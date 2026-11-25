@@ -55,7 +55,7 @@ The `PipelineBuilder<TResult>` (internal, sealed) builds the pipeline through th
 
 2. **Discover decorators**: Reflect on the handler's `Execute`/`ExecuteAsync` method for `QueryHandlerAttribute` subclasses (e.g. `[QueryLogging(1)]`, `[RetryableQuery(3)]`).
 
-3. **Order by step**: Sort attributes by their `Step` property in descending order. Higher step numbers execute first (outermost in the pipeline).
+3. **Order by step**: Sort attributes by their `Step` property in descending order, so the highest step is wrapped around the handler first. The lowest step number therefore ends up outermost and executes first.
 
 4. **Build the chain**: Starting with the handler's `Execute` method as the innermost function, wrap each decorator around it. Each decorator receives:
    - `next` - a delegate to the next stage in the pipeline
@@ -65,17 +65,17 @@ The `PipelineBuilder<TResult>` (internal, sealed) builds the pipeline through th
 
 ### Step Ordering
 
-Decorators are ordered by step number, with higher numbers executing first (outermost):
+Decorators are ordered by step number, with the lowest number executing first (outermost):
 
 ```
-Step 3 (outermost) -> Step 2 -> Step 1 -> Handler.Execute (innermost)
+Step 1 (outermost) -> Step 2 -> Step 3 -> Handler.Execute (innermost)
 ```
 
 For example:
 ```csharp
-[QueryLogging(1)]       // Step 1: innermost decorator, logs around handler
-[FallbackPolicy(2)]     // Step 2: catches exceptions, invokes fallback
-[RetryableQuery(3)]     // Step 3: outermost, retries the entire inner pipeline
+[QueryLogging(1)]       // Step 1: outermost, logs around the whole pipeline, including fallback
+[FallbackPolicy(2)]     // Step 2: catches exceptions that retry gives up on, invokes fallback
+[RetryableQuery(3)]     // Step 3: innermost decorator, retries the handler
 public override async Task<string> ExecuteAsync(GetFoo query, CancellationToken ct)
 ```
 

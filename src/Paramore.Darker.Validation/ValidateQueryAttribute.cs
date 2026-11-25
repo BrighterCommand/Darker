@@ -35,7 +35,7 @@ namespace Paramore.Darker.Validation;
 /// </summary>
 /// <remarks>
 /// Place this attribute on the handler's <c>Execute</c> method and supply a <paramref name="step"/>
-/// to control where validation runs in the decorator pipeline (higher step executes first).
+/// to control where validation runs in the decorator pipeline (the lowest step is outermost and executes first).
 /// A provider package (e.g. <c>Paramore.Darker.Validation.FluentValidation</c>) must be registered
 /// via its <c>Use*()</c> extension; otherwise the pipeline cannot resolve the abstract decorator.
 /// </remarks>
@@ -46,7 +46,7 @@ public sealed class ValidateQueryAttribute : QueryHandlerAttribute
     /// Initialises a new instance of <see cref="ValidateQueryAttribute"/>.
     /// </summary>
     /// <param name="step">
-    /// The step order for this decorator in the handler pipeline. Higher values execute earlier.
+    /// The step order for this decorator in the handler pipeline. Lower values are further out and execute earlier.
     /// </param>
     public ValidateQueryAttribute(int step) : base(step) { }
 
