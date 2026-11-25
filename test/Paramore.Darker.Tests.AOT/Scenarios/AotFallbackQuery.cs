@@ -43,4 +43,29 @@ namespace Paramore.Darker.Tests.AOT.Scenarios
         public override Task<AotFallbackQuery.Result> FallbackAsync(AotFallbackQuery query, CancellationToken cancellationToken = default)
             => Task.FromResult(new AotFallbackQuery.Result { Value = query.Id });
     }
+
+    public sealed class DirectFallbackQueryHandler : IQueryHandler<AotFallbackQuery, AotFallbackQuery.Result>
+    {
+        public IQueryContext Context { get; set; } = null!;
+
+        [FallbackPolicy(1)]
+        public AotFallbackQuery.Result Execute(AotFallbackQuery query)
+            => throw new InvalidOperationException("trigger fallback");
+
+        AotFallbackQuery.Result IQueryHandler<AotFallbackQuery, AotFallbackQuery.Result>.Fallback(AotFallbackQuery query)
+            => new AotFallbackQuery.Result { Value = query.Id };
+    }
+
+    public sealed class DirectFallbackQueryHandlerAsync : IQueryHandlerAsync<AotFallbackQuery, AotFallbackQuery.Result>
+    {
+        public IQueryContext Context { get; set; } = null!;
+
+        [FallbackPolicyAttributeAsync(1)]
+        public Task<AotFallbackQuery.Result> ExecuteAsync(AotFallbackQuery query, CancellationToken cancellationToken)
+            => throw new InvalidOperationException("trigger fallback");
+
+        Task<AotFallbackQuery.Result> IQueryHandlerAsync<AotFallbackQuery, AotFallbackQuery.Result>.FallbackAsync(
+            AotFallbackQuery query, CancellationToken cancellationToken)
+            => Task.FromResult(new AotFallbackQuery.Result { Value = query.Id });
+    }
 }

@@ -10,7 +10,7 @@ using Paramore.Darker.Policies.Handlers;
 namespace Paramore.Darker.Tests.AOT.Scenarios
 {
     /// <summary>
-    /// Issue #409 — under native AOT with full trimming, a <c>[FallbackPolicy]</c> query whose handler
+    /// Issues #409 and #410 — under native AOT with full trimming, a <c>[FallbackPolicy]</c> query whose handler
     /// throws must run the handler's <c>Fallback</c> / <c>FallbackAsync</c>, on both the sync and the async
     /// pipeline. Returns 0 when both pipelines return the fallback's result; returns 1 otherwise.
     /// </summary>
@@ -21,17 +21,30 @@ namespace Paramore.Darker.Tests.AOT.Scenarios
         // FallbackAsync and hide #409, where the pipeline's own fallback lookup is not rooted.
         [DynamicDependency(nameof(AotFallbackQueryHandler.Execute), typeof(AotFallbackQueryHandler))]
         [DynamicDependency(nameof(AotFallbackQueryHandlerAsync.ExecuteAsync), typeof(AotFallbackQueryHandlerAsync))]
+        [DynamicDependency(nameof(DirectFallbackQueryHandler.Execute), typeof(DirectFallbackQueryHandler))]
+        [DynamicDependency(nameof(DirectFallbackQueryHandlerAsync.ExecuteAsync), typeof(DirectFallbackQueryHandlerAsync))]
         public static async Task<int> RunAsync()
+        {
+            var result = await RunAsync<AotFallbackQueryHandler, AotFallbackQueryHandlerAsync>();
+            if (result != 0)
+                return result;
+
+            return await RunAsync<DirectFallbackQueryHandler, DirectFallbackQueryHandlerAsync>();
+        }
+
+        private static async Task<int> RunAsync<TSync, TAsync>()
+            where TSync : IQueryHandler<AotFallbackQuery, AotFallbackQuery.Result>, new()
+            where TAsync : IQueryHandlerAsync<AotFallbackQuery, AotFallbackQuery.Result>, new()
         {
             // Arrange
             var registry = new QueryHandlerRegistry();
-            registry.Register<AotFallbackQuery, AotFallbackQuery.Result, AotFallbackQueryHandler>();
+            registry.Register<AotFallbackQuery, AotFallbackQuery.Result, TSync>();
             var asyncRegistry = new QueryHandlerRegistryAsync();
-            asyncRegistry.Register<AotFallbackQuery, AotFallbackQuery.Result, AotFallbackQueryHandlerAsync>();
+            asyncRegistry.Register<AotFallbackQuery, AotFallbackQuery.Result, TAsync>();
 
-            var handlerFactory = new SimpleHandlerFactory(handlerType => handlerType == typeof(AotFallbackQueryHandler)
-                ? new AotFallbackQueryHandler()
-                : new AotFallbackQueryHandlerAsync());
+            var handlerFactory = new SimpleHandlerFactory(handlerType => handlerType == typeof(TSync)
+                ? new TSync()
+                : new TAsync());
             var decoratorFactory = new SimpleHandlerDecoratorFactory(decoratorType =>
                 decoratorType == typeof(FallbackPolicyDecorator<IQuery<AotFallbackQuery.Result>, AotFallbackQuery.Result>)
                     ? new FallbackPolicyDecorator<IQuery<AotFallbackQuery.Result>, AotFallbackQuery.Result>()
@@ -64,7 +77,7 @@ namespace Paramore.Darker.Tests.AOT.Scenarios
                 return 1;
             }
 
-            Console.WriteLine("[Case3] PASS: sync and async fallbacks ran under AOT with only Execute rooted.");
+            Console.WriteLine($"[Case3] PASS: {typeof(TSync).Name} and {typeof(TAsync).Name} ran their fallbacks with only Execute rooted.");
             return 0;
         }
     }

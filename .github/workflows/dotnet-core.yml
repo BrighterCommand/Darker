@@ -53,6 +53,10 @@ jobs:
           dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net9.0
           dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net10.0
           dotnet run --project test/Paramore.Darker.Tests.EndToEnd/Paramore.Darker.Tests.EndToEnd.csproj -c Release --no-build -f net11.0
+      - name: Run the Native AOT harness
+        run: |
+          dotnet publish test/Paramore.Darker.Tests.AOT -c Release -f net11.0 -r linux-x64 --artifacts-path "$RUNNER_TEMP/darker-aot-build" -o "$RUNNER_TEMP/darker-aot"
+          "$RUNNER_TEMP/darker-aot/Paramore.Darker.Tests.AOT"
       - name: Upload packages as artifacts
         uses: actions/upload-artifact@v7
         with:
