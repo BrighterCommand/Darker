@@ -20,6 +20,9 @@ Date: 2026-07-01
 
 Accepted
 
+Amended 2026-11-25 (#419): a DB span records its own failure, and ending a DB span restores the activity that was current
+before it.
+
 ## Context
 
 **Parent Requirement**: [specs/011-telemetry/requirements.md](../../specs/011-telemetry/requirements.md)
@@ -152,7 +155,8 @@ parentActivity?.Id`. When that is null (no caller-supplied span), `ActivitySourc
 treats a null `parentId` as "use `Activity.Current`", so the span still nests under the ambient
 ASP.NET/Brighter activity when one exists, or becomes a root otherwise. The method sets
 `Activity.Current = activity` (as `BrighterTracer` does) so downstream steps and DB spans nest;
-`EndSpan` reverts it.
+`EndSpan` reverts it. `CreateDbSpan` records the activity that was current before it in the same way (the DB span becomes
+current through `StartActivity`), so ending a DB span restores the query span rather than clearing `Activity.Current`.
 
 **2. `Query` base class** (core) — RD1
 
@@ -226,10 +230,11 @@ The innermost handler closure calls `DarkerTracer.WriteQueryEvent(span, handlerN
 options, isSink: true)` before invoking; each decorator-wrapping closure writes
 `WriteQueryEvent(span, decoratorName, isAsync, options)` before calling `next`. `PipelineBuilder`
 receives the tracer/options/span (via constructor args threaded from `QueryProcessor`, or read from
-`queryContext`). Events are pass-through markers; the **exception is recorded once by the
-processor** (the span owner) to avoid duplicate exception events as it bubbles — a deliberate
+`queryContext`). Events are pass-through markers; the **exception is recorded on the query span once, by the
+processor** (the span owner), to avoid duplicate exception events as it bubbles — a deliberate
 refinement of FR10a keeping the "terminal status" responsibility with the coordinator that owns the
-span.
+span. Each span records its own failure: a DB span, which is a separate span, records the exception on itself
+(see 8), and the query span still records it once.
 
 **8. DB-span support** (core) — RD3, two layers:
 
@@ -240,8 +245,10 @@ span.
 - `QueryDbSpanDecorator<TQuery,TResult>` + `[QueryDbSpan(step, DbSystem, dbName, dbTable,
   operation)]` (sync + async), following the existing `QueryLogging` decorator/attribute pattern
   (`GetAttributeParams`/`InitializeFromAttributeParams`). The decorator reads `Context.Tracer` +
-  `Context.Span`, opens a child DB span, invokes `next` (the handler's DB work), ends it, and lets
-  the processor record any exception. It times the wrapped handler as a proxy for the DB call;
+  `Context.Span`, opens a child DB span, invokes `next` (the handler's DB work), records any exception on
+  the DB span (`AddExceptionToSpan`: `Error` status, the exception event and `error.type`), ends it, and rethrows so
+  the processor records it on the query span. A failed DB step therefore reports as failed, and
+  `db.client.operation.duration` (ADR 0018) carries its `error.type`. It times the wrapped handler as a proxy for the DB call;
   handlers needing finer scoping call `CreateDbSpan` directly.
 
 **9. `Paramore.Darker.Extensions.Diagnostics`** (new assembly) — `AddDarkerInstrumentation(this
@@ -302,7 +309,8 @@ status, the no-listener no-op path, and correct child-nesting of DB spans (sync 
   and restore the previous `Activity.Current` in `EndSpan` (Brighter's proven approach); assert with
   a no-listener test that `Activity.Current` is unchanged.
 - **Double exception events** if every step records on unwind — centralise exception recording in
-  the processor; steps only write pass-through events.
+  the processor; steps only write pass-through events. The one exception is the DB-span decorator, which owns a span
+  of its own: it records the failure on that span once, and never on the query span.
 - **PII via `query_body`/`spancontext.*`** — off unless explicitly enabled and gated by
   `IsAllDataRequested`.
 - **Overhead when unobserved** — `HasListeners`/null guards short-circuit before any allocation or
