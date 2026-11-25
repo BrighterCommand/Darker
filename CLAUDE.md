@@ -160,11 +160,11 @@ Handlers can inherit from:
 - `IQueryHandler<TQuery, TResult>` - full control (implement both sync/async)
 
 ### Decorator Ordering
-Decorator attributes specify step numbers (higher executes first):
+Decorator attributes specify step numbers (the lowest step is outermost and executes first):
 ```csharp
-[QueryLogging(1)]              // Executes third (logs outer timing)
-[FallbackPolicy(2)]            // Executes second (handles failures)
-[RetryableQuery(3)]            // Executes first (retries on transient failures)
+[QueryLogging(1)]              // Executes first (outermost; logs the whole pipeline's timing)
+[FallbackPolicy(2)]            // Executes second (handles failures retry gives up on)
+[RetryableQuery(3)]            // Executes third (innermost; retries the handler)
 public override async Task<TResult> ExecuteAsync(...)
 ```
 

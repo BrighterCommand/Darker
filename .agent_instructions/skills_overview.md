@@ -189,7 +189,7 @@ Each skill enforces specific practices from `.agent_instructions/`:
 /tdd:test-first when query handler returns null it should throw QueryHandlerNotFoundException
 
 # 2. Repeat for each behavior
-/tdd:test-first when decorator attribute has higher step it should execute first
+/tdd:test-first when decorator attribute has a lower step it should execute first
 
 # 3. Document decision if significant
 /adr decorator ordering strategy
