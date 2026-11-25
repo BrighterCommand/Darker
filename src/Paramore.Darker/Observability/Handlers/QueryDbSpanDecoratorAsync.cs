@@ -12,8 +12,8 @@ namespace Paramore.Darker.Observability.Handlers
     /// <remarks>
     /// Reads <see cref="IQueryContext.Tracer"/> and <see cref="IQueryContext.Span"/> from the ambient
     /// query context. When no tracer is configured (zero-overhead path), both properties are null and
-    /// the handler executes unchanged. Exception recording is left to the <c>QueryProcessor</c>
-    /// (the span owner) to avoid duplicate exception events.
+    /// the handler executes unchanged. An exception from the wrapped work is recorded on the DB span,
+    /// then rethrown; the <c>QueryProcessor</c> records it on the query span, which it owns.
     /// </remarks>
     /// <typeparam name="TQuery">The query type handled by the pipeline.</typeparam>
     /// <typeparam name="TResult">The result type returned by the handler.</typeparam>
@@ -45,6 +45,11 @@ namespace Paramore.Darker.Observability.Handlers
             try
             {
                 return await next(query, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Context.Tracer?.AddExceptionToSpan(dbSpan, ex);
+                throw;
             }
             finally
             {

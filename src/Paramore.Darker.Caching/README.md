@@ -61,10 +61,10 @@ await hybridCache.RemoveByTagAsync("product-catalogue");
 
 ## Ordering matters — cache hits short-circuit the pipeline
 
-Darker executes decorators in **descending step order**: the decorator with the highest `step` runs
-first (outermost) and the decorator with the lowest `step` runs last (innermost, just before the
+Darker executes decorators in **ascending step order**: the decorator with the lowest `step` runs
+first (outermost) and the decorator with the highest `step` runs last (innermost, just before the
 handler). On a cache **hit** the caching decorator returns immediately without calling `next`. Every
-decorator ordered **inside** the cache decorator — every decorator whose `step` is **lower** than
+decorator ordered **inside** the cache decorator — every decorator whose `step` is **higher** than
 the `[CacheableQueryAsync]` attribute's `step` — is therefore **skipped entirely on a hit**.
 
 This is a deliberate consequence of how `HybridCache.GetOrCreateAsync` short-circuits: its factory
@@ -75,25 +75,25 @@ aware of it.
 
 | Goal | How to order |
 |------|--------------|
-| Logging / retry / fallback runs on **every** request (hit or miss) | Give those decorators a **higher** `step` than `[CacheableQueryAsync]` so they are **outside** it |
-| Logging / retry / fallback runs **only on a miss** (only when the handler actually executes) | Give those decorators a **lower** `step` so they are **inside** the cache decorator and skipped on a hit |
+| Logging / retry / fallback runs on **every** request (hit or miss) | Give those decorators a **lower** `step` than `[CacheableQueryAsync]` so they are **outside** it |
+| Logging / retry / fallback runs **only on a miss** (only when the handler actually executes) | Give those decorators a **higher** `step` so they are **inside** the cache decorator and skipped on a hit |
 
 ### Example — cache outer, logging inner (logging skipped on a hit)
 
 ```csharp
-[CacheableQueryAsync(step: 2, expirationSeconds: 300)]  // outer — runs first; hit returns here
-[QueryLoggingAsync(step: 1)]                             // inner — only runs on a miss
+[CacheableQueryAsync(step: 1, expirationSeconds: 300)]  // outer — runs first; hit returns here
+[QueryLoggingAsync(step: 2)]                             // inner — only runs on a miss
 public override Task<ProductDto> ExecuteAsync(GetProductQuery query,
     CancellationToken ct = default) { ... }
 ```
 
-When the cache has an entry for the key, execution returns after step 2; step 1 never fires.
+When the cache has an entry for the key, execution returns after step 1; step 2 never fires.
 
 ### Example — logging outer, cache inner (logging always runs)
 
 ```csharp
-[QueryLoggingAsync(step: 2)]                             // outer — always runs (both hit and miss)
-[CacheableQueryAsync(step: 1, expirationSeconds: 300)]  // inner — hit short-circuits here
+[QueryLoggingAsync(step: 1)]                             // outer — always runs (both hit and miss)
+[CacheableQueryAsync(step: 2, expirationSeconds: 300)]  // inner — hit short-circuits here
 public override Task<ProductDto> ExecuteAsync(GetProductQuery query,
     CancellationToken ct = default) { ... }
 ```

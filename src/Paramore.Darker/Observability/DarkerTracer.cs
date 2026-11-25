@@ -100,10 +100,15 @@ public sealed class DarkerTracer : IAmADarkerTracer
             ? $"{info.DbOperation} {info.DbName}"
             : $"{info.DbOperation} {info.DbName} {info.DbTable}";
 
+        var previous = Activity.Current;
+
         var activity = ActivitySource.StartActivity(
             name,
             ActivityKind.Client,
             parentActivity?.Id);
+
+        // StartActivity makes the DB span current; record what it replaced so EndSpan restores it.
+        activity?.SetCustomProperty("darker.previous_current", previous);
 
         if (activity?.IsAllDataRequested == true && options.HasFlag(InstrumentationOptions.DatabaseInformation))
         {

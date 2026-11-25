@@ -44,7 +44,7 @@ namespace Paramore.Darker.Policies.Attributes
         /// <summary>
         /// Initializes a new instance of the <see cref="UseResiliencePipelineStreamAttribute"/> class.
         /// </summary>
-        /// <param name="step">The ordinal position of this decorator in the pipeline; higher executes first.</param>
+        /// <param name="step">The ordinal position of this decorator in the pipeline; the lowest step is outermost and executes first.</param>
         /// <param name="policy">The registry key of the untyped resilience pipeline to apply.</param>
         public UseResiliencePipelineStreamAttribute(int step, string policy)
             : base(step)

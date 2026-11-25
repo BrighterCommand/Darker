@@ -23,7 +23,7 @@ namespace Paramore.Darker.Observability.Attributes
         /// <summary>
         /// Initialises a new <see cref="QueryDbSpanAttributeAsync"/>.
         /// </summary>
-        /// <param name="step">The pipeline step order (higher executes first, outermost).</param>
+        /// <param name="step">The pipeline step order (the lowest step is outermost and executes first).</param>
         /// <param name="system">The database system (e.g. <see cref="DbSystem.MsSql"/>).</param>
         /// <param name="dbName">The name of the database being accessed.</param>
         /// <param name="dbTable">The name of the table or collection being accessed.</param>

@@ -39,7 +39,8 @@ public interface IAmADarkerTracer : IDisposable
     void AddExceptionToSpan(Activity? span, Exception exception);
 
     /// <summary>
-    /// Sets the span status to <c>Ok</c> (if not already set) and stops the span.
+    /// Sets the span status to <c>Ok</c> (if not already set), stops the span, and restores
+    /// <see cref="Activity.Current"/> to the activity that was current when the span was created.
     /// No-op when <paramref name="span"/> is <c>null</c>.
     /// </summary>
     void EndSpan(Activity? span);
